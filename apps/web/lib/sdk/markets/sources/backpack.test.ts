@@ -2,7 +2,7 @@ import { expect, test } from "vitest";
 import type { BackpackSecurity } from "./backpack";
 import { parseBackpackSecurities, getBackpackCatalog } from "./backpack";
 import { getMainnetCatalog, getMainnetMarkets } from "../index";
-import { hasCompleteIssuerCatalogs } from "../../trading";
+import { hasCompleteIssuerCatalogs } from "../../trade";
 const mint = "SPCXxcqXj6e5dJDVNovHN8744zkbhM2bYudU45BimGb";
 const session = {
   name: "US_EQUITIES_REGULAR",

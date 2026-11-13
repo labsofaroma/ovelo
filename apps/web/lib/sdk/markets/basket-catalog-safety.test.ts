@@ -5,7 +5,7 @@ import {
   resolveCanonicalBasket,
   type MarketAsset,
 } from "./index";
-import { getBasketLiquidityAudit } from "../basket/liquidity-audit";
+import { getBasketLiquidityAudit } from "../baskets/liquidity-audit";
 const definition = CANONICAL_BASKET_DEFINITIONS.find(
   (item) => item.id === "sol-digital-economy",
 )!;

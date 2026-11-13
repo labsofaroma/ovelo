@@ -1,4 +1,4 @@
-import type { MainnetHolding, MainnetPortfolio } from "../trading";
+import type { MainnetHolding, MainnetPortfolio } from "../trade";
 
 export const PORTFOLIO_CACHE_MAX_AGE_MS = 5 * 60_000;
 export const PORTFOLIO_FRESH_MS = 30_000;

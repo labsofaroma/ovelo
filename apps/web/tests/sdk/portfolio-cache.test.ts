@@ -6,7 +6,7 @@ import {
   serializePortfolioCache,
   PORTFOLIO_CACHE_MAX_AGE_MS,
 } from "../../lib/sdk/portfolio/cache";
-import type { MainnetPortfolio } from "../../lib/sdk/trading";
+import type { MainnetPortfolio } from "../../lib/sdk/trade";
 const owner = "11111111111111111111111111111111";
 const other = "So11111111111111111111111111111111111111112";
 const now = Date.parse("2026-09-30T00:00:00.000Z");

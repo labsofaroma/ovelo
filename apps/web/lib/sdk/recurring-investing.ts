@@ -1,4 +1,4 @@
-import type { WalletTransactionOrder } from "./basket/mainnet";
+import type { WalletTransactionOrder } from "./baskets/mainnet";
 
 /** Devnet plans use valueless KUSD and test stock mints, never mainnet equities. */
 export interface DevnetRecurringPlanRequest {

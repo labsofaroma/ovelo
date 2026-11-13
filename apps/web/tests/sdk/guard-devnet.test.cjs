@@ -7,7 +7,7 @@ const subscriptions = require('@solana/subscriptions');
 const { address, createNoopSigner } = require('@solana/kit');
 const guard = require('../../lib/sdk/guard/devnet');
 const { AROMA_GUARD_PROGRAM_ID } = require('../../lib/sdk/guard/client');
-const { composeV1Transaction, inspectWalletTransaction } = require('../../lib/sdk/basket/mainnet');
+const { composeV1Transaction, inspectWalletTransaction } = require('../../lib/sdk/baskets/mainnet');
 const { DEVNET_RECURRING_BASKETS } = require('../../lib/sdk/devnet-xstocks');
 
 // Synthetic local fixtures only: these addresses do not describe deployed pools or mints.

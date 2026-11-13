@@ -63,7 +63,7 @@ import {
   getAssociatedTokenAddressSync,
   createAssociatedTokenAccountIdempotentInstruction,
 } from "@solana/spl-token";
-import { kitInstructionToWeb3 } from "../basket/mainnet";
+import { kitInstructionToWeb3 } from "../baskets/mainnet";
 import { MAINNET_SUBSCRIPTIONS_PROGRAM } from "../subscriptions/mainnet";
 import {
   AROMA_GUARD_PROGRAM_ID,

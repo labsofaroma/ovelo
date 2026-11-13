@@ -1,7 +1,7 @@
 export * from "./index.shared";
-export * from "./basket/mainnet";
+export * from "./baskets/mainnet";
 export * from "./subscriptions/mainnet";
 
 
 export * from "./guard/devnet";
-export * from "./basket/bundle";
+export * from "./baskets/bundle";

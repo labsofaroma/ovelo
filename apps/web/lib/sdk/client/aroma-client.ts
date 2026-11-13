@@ -3,23 +3,23 @@ import type {
   WalletTransactionOrder,
   RecurringPayment,
   RecurringPaymentRequest,
-} from "../basket/mainnet";
+} from "../baskets/mainnet";
 import type { MarketSnapshot } from "../markets";
 import type {
   BasketRouteHealthRequest,
   BasketRouteHealth,
   BasketRouteCoverage,
-} from "../basket/route-health";
+} from "../baskets/route-health";
 import type {
   BasketBundleExecution,
   BasketPurchaseOrder,
-} from "../basket/bundle";
+} from "../baskets/bundle";
 import {
   BASKET_MAX_TRANSACTIONS,
   MAX_BASKET_TRANSACTION_BASE64_LENGTH,
   V0_MAX_BYTES,
   V1_MAX_BYTES,
-} from "../basket/transaction-limits";
+} from "../baskets/transaction-limits";
 import {
   assertRecurringInvestmentSchedule,
   deriveRecurringPermissionWindow,
@@ -38,7 +38,7 @@ import {
   type MainnetTradeOrder,
   type MainnetTradeResult,
   type SwapToken,
-} from "../trading";
+} from "../trade";
 
 export interface TradeOrderRequest {
   supportedTransactionVersions?: number[];

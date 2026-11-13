@@ -4,6 +4,9 @@
   // off here. Everything else stays on: wrong imports, property names and call signatures still fail.
   // Tests written from scratch are NOT listed here; they are checked by tsconfig.json in full.
   // Shrink this list as fixtures are typed. tsconfig.json excludes the same files.
+  // Converted files whose fixtures still do not type-check (they were untyped .cjs before) are in
+  // tsconfig.json's exclude only: still linted and run by Vitest, just not by tsc. See the M2 status
+  // in docs/REWRITE-PLAN.md for the list.
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "strictNullChecks": false,
@@ -17,7 +20,8 @@
     "lib/sdk/research/pulse.test.ts",
     "lib/sdk/research/service.test.ts",
     "lib/sdk/research/cache.test.ts",
-    "lib/sdk/research/enrichment.test.ts"
+    "lib/sdk/research/enrichment.test.ts",
+    "lib/sdk/baskets/rebalance.test.ts"
   ],
   "exclude": ["node_modules"]
 }

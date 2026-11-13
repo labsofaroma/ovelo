@@ -3,7 +3,7 @@ import {
   getAssociatedTokenAddressSync,
   createAssociatedTokenAccountIdempotentInstruction,
 } from "@solana/spl-token";
-import { kitInstructionToWeb3, type RecurringPayment, inspectWalletTransaction } from "../basket/mainnet";
+import { kitInstructionToWeb3, type RecurringPayment, inspectWalletTransaction } from "../baskets/mainnet";
 
 export const MAINNET_SUBSCRIPTIONS_PROGRAM =
   "De1egAFMkMWZSN5rYXRj9CAdheBamobVNubTsi9avR44";

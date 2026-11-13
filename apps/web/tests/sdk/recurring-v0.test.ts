@@ -14,7 +14,7 @@ import {
 import {
   composeV1Transaction,
   inspectWalletTransaction,
-} from "../../lib/sdk/basket/mainnet";
+} from "../../lib/sdk/baskets/mainnet";
 import {
   DEVNET_RECURRING_BASKETS,
   createUnprovisionedDevnetManifest,

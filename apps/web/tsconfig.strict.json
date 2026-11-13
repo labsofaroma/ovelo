@@ -13,6 +13,13 @@
     "instrumentation-client.ts",
     "server/**/*.ts",
     "lib/sdk/core/**/*.ts",
+    "lib/sdk/pyth/**/*.ts",
+    "lib/sdk/jupiter/**/*.ts",
+    "lib/sdk/markets/**/*.ts",
+    "lib/sdk/research/**/*.ts",
+    "lib/sdk/baskets/**/*.ts",
+    "lib/sdk/paper/**/*.ts",
+    "lib/sdk/trade/**/*.ts",
     "instrumentation*.ts",
     "sentry.*.ts",
     "scripts/check-env.ts",
@@ -21,5 +28,6 @@
     "app/api/v1/**/*.ts",
     "app/(app)/**/*.{ts,tsx}",
     "app/(marketing)/**/*.{ts,tsx}"
-  ]
+  ],
+  "exclude": ["lib/sdk/**/*.test.ts", "lib/sdk/jupiter/test-fixtures.ts"]
 }

@@ -47,7 +47,13 @@ export function parseBars(chart: Row, now: number): ResearchBar[] {
     "low",
     "close",
     "volume",
-  ].map((key) => list(quote[key]));
+  ].map((key) => list(quote[key])) as [
+    unknown[],
+    unknown[],
+    unknown[],
+    unknown[],
+    unknown[],
+  ];
   const byDate = new Map<string, ResearchBar>();
   list(chart.timestamp)
     .slice(-400)
@@ -107,12 +113,12 @@ export function calculateResearchTechnicals(
     let gain = 0,
       loss = 0;
     for (let index = 1; index <= 14; index++) {
-      const change = closes[index] - closes[index - 1];
+      const change = (closes[index] as number) - (closes[index - 1] as number);
       gain += Math.max(change, 0) / 14;
       loss += Math.max(-change, 0) / 14;
     }
     for (let index = 15; index < closes.length; index++) {
-      const change = closes[index] - closes[index - 1];
+      const change = (closes[index] as number) - (closes[index - 1] as number);
       gain = (gain * 13 + Math.max(change, 0)) / 14;
       loss = (loss * 13 + Math.max(-change, 0)) / 14;
     }
@@ -123,14 +129,14 @@ export function calculateResearchTechnicals(
           ? 100
           : 100 - 100 / (1 + gain / loss);
   }
-  const latest = bars[bars.length - 1];
+  const latest = bars[bars.length - 1] as ResearchBar;
   const sma50 = average(50);
   const volumes = bars.slice(-20).map((bar) => bar.volume);
   const cutoff = Date.parse(latest.date) - 365.25 * 24 * 60 * 60 * 1000;
   const yearBars = bars.filter((bar) => Date.parse(bar.date) >= cutoff);
   const hasYearCoverage =
     yearBars.length >= 200 &&
-    Date.parse(latest.date) - Date.parse(yearBars[0].date) >=
+    Date.parse(latest.date) - Date.parse((yearBars[0] as ResearchBar).date) >=
       360 * 24 * 60 * 60 * 1000;
   return {
     asOf: latest.date,

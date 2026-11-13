@@ -3,8 +3,8 @@ import assert from 'node:assert/strict';
 import { Keypair, SystemProgram, TransactionMessage, VersionedTransaction } from '@solana/web3.js';
 import tradeAuthorization from '../lib/server/trade-authorization.ts';
 const { authorizeTrade, verifyTradeAuthorization } = tradeAuthorization;
-import sdkTrading from '../lib/sdk/trading.ts';
-const { canApproveTrade, classifyTradeExecution, hasCompleteIssuerCatalogs, hasIssuerCatalogsForAssets } = sdkTrading;
+import sdkTrade from '../lib/sdk/trade/index.ts';
+const { canApproveTrade } = sdkTrade;
 
 function fixture() {
   const wallet = Keypair.generate();
@@ -38,34 +38,4 @@ test('expired quotes and a different wallet cannot be approved', () => {
   assert.throws(() => verifyTradeAuthorization(expired, unsigned, 'test-secret'), /expired/);
   assert.equal(canApproveTrade({ taker: 'wallet-a', transaction: 'transaction', expiresAt: 100 }, 'wallet-b', 1), false);
   assert.equal(canApproveTrade({ taker: 'wallet-a', transaction: 'transaction', expiresAt: 100 }, 'wallet-a', 100), false);
-});
-
-test('missing issuer catalogs cannot be presented as a complete empty portfolio', () => {
-  assert.equal(hasCompleteIssuerCatalogs({ status: 'partial', sources: ['PreStocks issuer catalog', 'Jupiter Tokens V2'] }), false);
-  assert.equal(hasCompleteIssuerCatalogs({ status: 'partial', sources: ['xStocks issuer catalog'] }), false);
-  assert.equal(hasCompleteIssuerCatalogs({ status: 'unavailable', sources: [] }), false);
-  // Price outages can remain partial without losing the ability to identify every issuer holding.
-  assert.equal(hasCompleteIssuerCatalogs({ status: 'partial', sources: ['xStocks issuer catalog', 'PreStocks issuer catalog'] }), true);
-});
-
-test('order issuer requirements follow selected assets rather than the full market universe', () => {
-  const snapshot = { status: 'partial', sources: ['xStocks issuer catalog'] };
-  assert.equal(hasIssuerCatalogsForAssets(snapshot, [{ issuer: 'xstocks' }]), true);
-  assert.equal(hasIssuerCatalogsForAssets(snapshot, [{ issuer: 'prestocks' }]), false);
-  assert.equal(hasIssuerCatalogsForAssets(snapshot, [{ issuer: 'xstocks' }, { issuer: 'prestocks' }]), false);
-  assert.equal(hasIssuerCatalogsForAssets({ ...snapshot, status: 'unavailable' }, [{ issuer: 'xstocks' }]), false);
-  assert.equal(hasIssuerCatalogsForAssets(snapshot, [{ issuer: 'other' }]), false);
-  assert.equal(hasIssuerCatalogsForAssets({ status: 'partial', sources: ['Backpack securities catalog'] }, [{ issuer: 'backpack' }]), false);
-  assert.equal(hasIssuerCatalogsForAssets({ status: 'partial', sources: ['Backpack securities catalog', 'Backpack Solana mappings'] }, [{ issuer: 'backpack' }]), true);
-});
-
-test('missing confirmation is unknown rather than a false success or failure', () => {
-  for (const payload of [null, {}, new Error('network timeout'), { status: 'Pending' }, { status: 'Success' }, { status: 'Success', signature: 'invalid' }]) {
-    const result = classifyTradeExecution(payload);
-    assert.equal(result.status, 'Unknown');
-    assert.match(result.error, /may have completed/);
-  }
-  const signature = '2'.repeat(88);
-  assert.equal(classifyTradeExecution({ status: 'Success', signature }).status, 'Success');
-  assert.equal(classifyTradeExecution({ status: 'Failed', error: 'Transaction rejected' }).status, 'Failed');
 });

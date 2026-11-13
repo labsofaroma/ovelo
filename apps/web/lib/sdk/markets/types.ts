@@ -1,4 +1,4 @@
-import type { BasketLiquidityAudit } from "../basket/liquidity-audit";
+import type { BasketLiquidityAudit } from "../baskets/liquidity-audit";
 import type { BackpackSecurity } from "./sources/backpack";
 
 /** Mainnet issuer catalogs and observed onchain market prices. Unknown values stay null. */

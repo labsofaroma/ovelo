@@ -9,7 +9,7 @@ import {
 import {
   validateProgrammableBasket,
   type ProgrammableBasket,
-} from "../basket/custom";
+} from "../baskets/custom";
 
 export interface StorageAdapter {
   getItem(key: string): string | null | Promise<string | null>;
