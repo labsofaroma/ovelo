@@ -228,7 +228,7 @@ Each milestone is merged to `main` behind feature flags. The prototype stays dep
 |---|---|---|---|
 | **M0** | Foundation (week 1) | tag `prototype-final`; new layout; `packages/config`; ESLint, Prettier, Vitest; CI; `server/env.ts`; Sentry + logger; Neon + Drizzle + first migration; Upstash | empty app deploys to a preview URL; CI green; env validation fails on a missing secret |
 | **M1** | Design system (week 1–2, **implemented**, see status below) | `packages/ui`: tokens from `foundation.css` and `DESIGN.md`, Tailwind v4, shadcn primitives, `Brand`/`AssetAvatar`/`Change`, light and dark, reduced motion | Storybook or Ladle page for every primitive; axe has zero violations |
-| **M2** | Shared helpers cleanup (weeks 1–3) | in `apps/web/lib/sdk`: `core/`, `pyth/`, `jupiter/`, `markets/`, `research/`, `baskets/`, `paper/` ported with their tests | ≥ 85% coverage; one `@solana/kit` version; no `any` in public types |
+| **M2** | Shared helpers cleanup (weeks 1–3, **implemented**, see status below) | in `apps/web/lib/sdk`: `core/`, `pyth/`, `jupiter/`, `markets/`, `research/`, `baskets/`, `paper/` ported with their tests | ≥ 85% coverage; one `@solana/kit` version; no `any` in public types |
 | **M3** | Read-only app (weeks 2–4) | marketing pages, markets, stock detail, baskets list and detail, watchlist, all as RSC with ISR | Lighthouse ≥ 90 on performance, SEO and accessibility; meets PRODUCT.md data rules (sources, timestamps, stale states) |
 | **M4** | Wallet + spot trading (weeks 3–6) | `features/wallet`, `features/trade` (single stock + basket, Jito bundles), receipts, portfolio | Playwright test buys on a mainnet fork or simulator; ported authorization tests pass; rate limits and CSP nonces live |
 | **M5** | Creators (weeks 5–6) | publish flow, invites table, dashboard, Solana Actions | creator E2E; single-use invites enforced |
@@ -305,12 +305,31 @@ Each milestone is merged to `main` behind feature flags. The prototype stays dep
 8. **`AGENTS.md` still says design tokens live in `apps/web/styles/foundation.css`.** True for the prototype until M7; not edited here (outside M1's docs scope). Suggest one added line pointing new code at `packages/ui/tokens.css`.
 9. **New dependencies** (all dev unless noted): `@base-ui/react` and `lucide-react` (same versions as the prototype) in `packages/ui`; `tailwindcss` 4, `@tailwindcss/vite`, `@ladle/react`, `vite`, `@vitejs/plugin-react`, `jsdom`, Testing Library, `vitest-axe`, `@playwright/test`, `@axe-core/playwright`, `tsx`, `eslint-plugin-react-hooks`; `tailwindcss-v4` (alias) and `@tailwindcss/postcss` in `apps/web`. Playwright's Chromium is downloaded on demand.
 
-### M2 status: in progress on branch `m2-shared-helpers` (not pushed, not merged)
+### M2 status: implemented on branch `m2-shared-helpers` (not pushed, not merged, nothing deployed)
 
-- [x] Baseline: 472 prototype tests (456 pass, 16 skipped), 91.4% lines over the files the tests load, 10 SDK files over 400 lines, 0 exported symbols with `any`, 2 stray `any` keywords (`basket/performance.ts`). `scripts/sdk-inventory.ts` reproduces it.
-- [x] One `@solana/kit` (7.1.1): the aliased 8.3.0 is gone. 7.1.1 builds and encodes v1 messages at runtime (tests unchanged) but its types stop at legacy/0, so `basket/mainnet.ts` has one documented shim. `@solana/subscriptions` requires `^7`. Unused `@solana-program/*` and `@solana/sysvars` removed.
-- [x] `lib/sdk/core/` (amounts, errors, mint-precision) ported with its tests converted to Vitest (98.7% lines), under the strict tsconfig. `scripts/node-test-to-vitest.ts` converts the rest mechanically.
-- [ ] Remaining modules, in order: markets, pyth, jupiter, research, baskets, paper. Convert tests per module; split files over 400 lines; strict tsconfig + coverage per module.
+Exit criteria (§7): **one `@solana/kit` version** (7.1.1), **no `any` in public types** (0 exported, 0 explicit in `lib/sdk`), **≥ 85% coverage** on the ported modules (97.5% lines, 90% branches, enforced: `vitest run --coverage` fails below 85/85/85/80). `apps/web/lib/sdk/sdk-rules.test.ts` fails the build if a second kit, an explicit `any`, a ported file over 400 lines, or a server/app import comes back.
+
+- [x] Baseline and `scripts/sdk-inventory.ts`; one kit version; unused Solana packages removed
+- [x] `core/` (amounts, errors, mint-precision), `pyth/` (types, feeds, hermes, solana, streaming, xstocks), `jupiter/` (price, instruction, route-plan, simulate, IDL), `markets/` (types, parse, http, zod schemas, definitions, baskets, catalog, sources/{xstocks, prestocks, backpack}), `research/` (types, http, bars, fundamentals, company, cache, service, client, pulse), `baskets/` (performance/*, custom/*, atomic-swap, bundle, liquidity, liquidity-audit, route-health, transaction-limits, mainnet, rebalance, creator), `paper/` (types, account, orders, swap, basket, valuation, plans), `trade/` (types, tokens, execution, catalogs, holdings)
+- [x] 31 prototype test files moved to Vitest next to their modules (48 Vitest files now live in `lib/sdk`, 52 legacy test files remain for the unported layers and the server) (`scripts/node-test-to-vitest.ts`); new tests for amounts, Hermes, Jupiter price, schemas, PreStocks, weights, share codes, performance history and trade execution
+- [x] `tsconfig.strict.json` (with `noUncheckedIndexedAccess`) covers the sources of every ported module
+- [ ] **Open, by plan:** `client/*`, `state/*`, `portfolio/*` (replaced by feature `queries.ts` + TanStack Query from M3), `guard/*`, `subscriptions/*`, `recurring-investing.ts`, `devnet-xstocks.ts` (rewritten against the v1 contract in M6) stay in `lib/sdk` untouched and outside the coverage gate. They hold the only files over 400 lines besides the generated IDLs (`client/aroma-client.ts` 955, `guard/devnet.ts` 755)
+
+**Decisions**
+
+1. **Kit 7.1.1, not 8.3.** 7.1.1 already builds and encodes v1 transactions at runtime (the tests pass unchanged) and `@solana/subscriptions` requires `^7`; only its published types stop at legacy/0. `baskets/mainnet.ts` has one documented shim (`createV1Message` and narrow casts). Remove it when kit's types catch up.
+2. **Meteora dropped** (§5.1): no route used it. `wallet-capabilities.ts` was kept even though §5.1 says drop, because the prototype's wallet components import `advertisedSigningVersions`; delete it at M7. `mobile-signer.ts` had no users and is gone.
+3. **zod at the provider boundary, not strict everywhere.** xStocks, PreStocks and Jupiter payload items go through schemas whose field semantics match the old readers (a malformed field becomes missing data, never an exception); envelope checks still fail closed.
+4. **Coverage gate is scoped to the ported modules** and the thresholds are global over them, so one file can sit below 85% while the whole stays above. Lowest ported files by branch coverage: `baskets/custom/resolve.ts` 67%, `validate.ts` 73%, `jupiter/simulate.ts` 78%.
+5. **Tests converted mechanically from untyped `.cjs`** have partial-object fixtures that do not type-check. `tsconfig.legacy-tests.json` (strictNullChecks and noImplicitAny off) checks the 6 that pass; 8 more are excluded from `tsc` (still linted and run): `baskets/custom/custom.test.ts`, `baskets/{liquidity,mainnet}.test.ts`, `baskets/performance/performance.test.ts`, `paper/{paper,swap}.test.ts`, `trade/{catalogs,holdings}.test.ts`. They were never type-checked before either. Typing them is debt, not a regression.
+
+**Deviations and findings**
+
+1. **Defects found by the new tests, before they shipped:** the first zod port would have thrown on an xStocks node with no `deployments` and on array input (it would have failed a whole catalog page); the history test showed the code correctly never back-fills before a constituent's first bar (my first expectation was wrong, the code was right).
+2. **A real type gap an `any` was hiding:** `underlyingPriceSource` was typed without `jupiter-stock-data` and `prestocks-issuer`, which can flow into it. The field type now matches the sources a `MarketAsset` can carry.
+3. **Formatting changed file sizes:** `paper.ts` was 207 dense lines and became 630 when formatted, so it was split. Check size after Prettier.
+4. **Baseline correction:** the first `any` count (137) was a bug in my script (it read value types of type symbols); the true figure was 2 explicit keywords, 0 exported.
+5. **Not verified here:** CI (nothing pushed), the prototype in a browser (build and tests only). The PGlite database test (M0) timed out its setup hook under the larger parallel suite; `hookTimeout` is now 30 s.
 
 **Critical path:** M0 → M2 → M4 (spot trading is the revenue path). M6 depends on your contract being deployed. Develop it against a local LiteSVM build until then.
 
