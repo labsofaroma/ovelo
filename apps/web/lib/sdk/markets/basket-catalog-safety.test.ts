@@ -1,12 +1,11 @@
-import assert from "node:assert/strict";
-import test from "node:test";
+import { expect, test } from "vitest";
 import {
   CANONICAL_BASKET_DEFINITIONS,
   resolveAllMarketBaskets,
   resolveCanonicalBasket,
   type MarketAsset,
-} from "../../lib/sdk/markets";
-import { getBasketLiquidityAudit } from "../../lib/sdk/basket/liquidity-audit";
+} from "./index";
+import { getBasketLiquidityAudit } from "../basket/liquidity-audit";
 const definition = CANONICAL_BASKET_DEFINITIONS.find(
   (item) => item.id === "sol-digital-economy",
 )!;
@@ -35,13 +34,10 @@ test("expanded allocation keeps exact weights without inventing liquidity or pri
   const basket = resolveAllMarketBaskets(assets).find(
     (item) => item.id === definition.id,
   )!;
-  assert.equal(basket.assets.length, 12);
-  assert.equal(
-    basket.assets.reduce((sum, item) => sum + item.weight, 0),
-    10000,
-  );
-  assert.equal(basket.available, true);
-  assert.equal(basket.liquidityAudit, undefined);
+  expect(basket.assets.length).toBe(12);
+  expect(basket.assets.reduce((sum, item) => sum + item.weight, 0)).toBe(10000);
+  expect(basket.available).toBe(true);
+  expect(basket.liquidityAudit).toBe(undefined);
   for (const patch of [
     { verified: false },
     { tradingHalted: true },
@@ -50,32 +46,30 @@ test("expanded allocation keeps exact weights without inventing liquidity or pri
     const degraded = assets.map((value, index) =>
       index === 0 ? { ...value, ...patch } : value,
     );
-    assert.equal(
+    expect(
       resolveAllMarketBaskets(degraded).find(
         (item) => item.id === definition.id,
       )!.available,
-      false,
-    );
+    ).toBe(false);
   }
-  assert.equal(
+  expect(
     resolveAllMarketBaskets(assets.slice(1)).find(
       (item) => item.id === definition.id,
     )!.available,
-    false,
-  );
+  ).toBe(false);
 });
 test("research-only canonical symbols never masquerade as verified tradable mints", () => {
   const basket = resolveCanonicalBasket(definition.id)!;
-  assert.equal(basket.available, false);
-  assert.equal(basket.missingSymbols.length, 12);
-  assert.ok(
+  expect(basket.available).toBe(false);
+  expect(basket.missingSymbols.length).toBe(12);
+  expect(
     basket.assets.every(
       ({ asset }) =>
         !asset.verified && asset.priceUsd === null && asset.decimals === null,
     ),
-  );
+  ).toBeTruthy();
 });
 
 test("an unaudited definition has no invented verification record", () => {
-  assert.equal(getBasketLiquidityAudit("sol-digital-economy"), null);
+  expect(getBasketLiquidityAudit("sol-digital-economy")).toBe(null);
 });

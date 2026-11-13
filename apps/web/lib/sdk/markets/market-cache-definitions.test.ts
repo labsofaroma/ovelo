@@ -1,7 +1,6 @@
-import assert from "node:assert/strict";
-import test from "node:test";
-import { createAromaCore } from "../../lib/sdk/state/aroma-core";
-import { resolveAllMarketBaskets, type MarketSnapshot } from "../../lib/sdk/markets";
+import { expect, test } from "vitest";
+import { createAromaCore } from "../state/aroma-core";
+import { resolveAllMarketBaskets, type MarketSnapshot } from "./index";
 const cached: MarketSnapshot = {
   network: "mainnet-beta",
   assets: [],
@@ -36,28 +35,27 @@ test("persisted and fresh snapshots use current definitions without changing obs
     now: () => 1,
   });
   await core.hydrate();
-  assert.deepEqual(
-    core.getSnapshot().market?.baskets,
+  expect(core.getSnapshot().market?.baskets).toEqual(
     resolveAllMarketBaskets([]),
   );
-  assert.equal(core.getSnapshot().market?.asOf, cached.asOf);
-  assert.equal(core.getSnapshot().customBaskets.length, 0);
+  expect(core.getSnapshot().market?.asOf).toBe(cached.asOf);
+  expect(core.getSnapshot().customBaskets.length).toBe(0);
   await core.refresh();
   await core.flush();
-  assert.equal(core.getSnapshot().market?.assets, cached.assets);
-  assert.ok(
+  expect(core.getSnapshot().market?.assets).toBe(cached.assets);
+  expect(
     core
       .getSnapshot()
       .market?.baskets.some((basket) => basket.id === "sol-digital-economy"),
-  );
-  assert.ok(
+  ).toBeTruthy();
+  expect(
     core
       .getSnapshot()
       .market?.baskets.every(
         (basket) => !basket.available && !basket.liquidityAudit,
       ),
-  );
+  ).toBeTruthy();
   const persisted = JSON.parse(writes.get("market")!);
-  assert.equal(persisted.snapshot.asOf, cached.asOf);
-  assert.deepEqual(persisted.snapshot.baskets, resolveAllMarketBaskets([]));
+  expect(persisted.snapshot.asOf).toBe(cached.asOf);
+  expect(persisted.snapshot.baskets).toEqual(resolveAllMarketBaskets([]));
 });

@@ -48,13 +48,15 @@ function convertAssert(call: ts.CallExpression): string | null {
     case "strictEqual":
       return y === undefined || x === undefined
         ? null
-        : `expect(${x}).toBe(${y})`;
+        : `expect(${x}${a[2] ? `, ${a[2]}` : ""}).toBe(${y})`;
     case "notEqual":
     case "notStrictEqual":
       return x && y ? `expect(${x}).not.toBe(${y})` : null;
     case "deepEqual":
     case "deepStrictEqual":
-      return x && y ? `expect(${x}).toEqual(${y})` : null;
+      return x && y
+        ? `expect(${x}${a[2] ? `, ${a[2]}` : ""}).toEqual(${y})`
+        : null;
     case "notDeepEqual":
     case "notDeepStrictEqual":
       return x && y ? `expect(${x}).not.toEqual(${y})` : null;
@@ -88,13 +90,7 @@ function visit(n: ts.Node): void {
         (name === "throws" || name === "rejects") &&
         second &&
         !/^\//.test(text(second));
-      const msgArg =
-        (name === "equal" ||
-          name === "strictEqual" ||
-          name === "deepEqual" ||
-          name === "deepStrictEqual") &&
-        n.arguments.length > 2;
-      if (needsManual || msgArg)
+      if (needsManual)
         unconverted.push(
           `line ${sf.getLineAndCharacterOfPosition(n.getStart()).line + 1}: ${text(n).slice(0, 80)}`,
         );
