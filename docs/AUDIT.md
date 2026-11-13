@@ -4,6 +4,8 @@ _Audit date: 13 November 2026. Scope: the whole monorepo (`apps/web` including `
 
 Severity scale: **Critical** (funds, integrity or an outage) · **High** (security or correctness risk in normal use) · **Medium** (reliability, maintainability) · **Low** (hygiene, polish).
 
+> **Status update after M0 (branch `m0-foundation`, unpushed).** Items below carry a **Status** line: **Addressed**, **Partial** or **Pending (milestone)**. Items without one are unchanged. Baseline numbers in §0 are from the audit date; measured at M0: 1 `tsc` error (not 4) and 5 failing test files (not 8). See [REWRITE-PLAN.md §7](./REWRITE-PLAN.md#m0-status-implemented-on-branch-m0-foundation-not-pushed-not-merged-nothing-deployed).
+
 ---
 
 ## 0. Snapshot of current state
@@ -70,6 +72,8 @@ The SDK still ships Raydium CPMM helpers (`DEVNET_RAYDIUM_CPMM_PROGRAM`, `decode
 - When the map reaches 10,000 keys, **every new IP is rejected** (`return Math.ceil(windowMs/1000)`). An attacker who rotates source IPs fills the map and blocks all new visitors for a minute, repeatedly.
 - Fix: Upstash Ratelimit (Redis is already a dependency) or Vercel WAF rules, and evict the oldest key instead of failing closed for everyone.
 
+**Status: Partial (groundwork only; still open until M4).** `server/ratelimit.ts` provides an Upstash sliding-window limiter that fails closed on a config error and evicts the oldest key instead of rejecting new ones (tested). `middleware.ts` still uses the old in-memory limiter; M4 rewires it.
+
 ### H-5 (High): the devnet faucet can be drained
 `/api/faucet` has no authentication or CAPTCHA. Its only guard is a **15-second, in-memory, per-wallet cooldown** (`lib/server/faucet.ts`). Generating fresh wallets bypasses it completely, and each claim sends up to 1,000 KUSD + 0.1 SOL. The SOL top-up also swallows every error silently.
 - Fix: cooldowns stored in Redis by wallet **and** IP, the Cloudflare Turnstile you already allow in the CSP, a daily budget, and a lower SOL top-up.
@@ -80,17 +84,23 @@ The SDK still ships Raydium CPMM helpers (`DEVNET_RAYDIUM_CPMM_PROGRAM`, `decode
 ### M-5 (Medium): internal error messages reach clients
 19 API handlers return `error.message` directly (for example `faucet`, `recurring/collect`). RPC errors, keypair-parse failures and Redis errors can leak infrastructure details. Map errors to user-safe codes and log the details on the server.
 
+**Status: Partial.** `server/errors.ts` (`mapError`) and `server/http.ts` return only `{ code, message }`; the new `/api/v1/health` uses them. The 19 prototype handlers still return `error.message`; they move to `mapError` as each route is rewritten (M4 to M6).
+
 ### M-6 (Medium): a requirement on a missing `Origin` header
 `allowedOrigin` accepts requests that have no `Origin`, because native apps omit it. That is fine for unauthenticated reads. Make sure every state-changing route also needs a signature or HMAC token, as trade, creator and collector routes already do. **`/api/faucet` does not.**
 
 ### M-7 (Medium): no real health check or observability
 `/api/health` returns a hard-coded `ok`. There is no RPC, Redis or Jupiter probe, no structured logging, no Sentry or OpenTelemetry, and no alerting on collector failures.
 
+**Status: Partial.** Added: `GET /api/v1/health` (RPC genesis and slot lag, Redis, Postgres, with timeouts), pino JSON logs with redaction, and Sentry (no-op without a DSN). Still pending: Jupiter/Pyth probes, alerting, OpenTelemetry. The old `/api/health` is unchanged.
+
 ### M-8 (Medium): very large components
 `Details.tsx` (1,362 lines), `Account.tsx` (926), `RecurringInvestingPanel.tsx` (864), `BasketBuilder.tsx` (803), `DevnetPlansList.tsx` (757). There is no data-fetching layer (React Query/SWR), and state lives across `localStorage` in seven components. This makes the UI hard to test and to change.
 
 ### M-9 (Medium): state stored on disk on serverless
 `disk-cache.ts` writes to `.aroma-cache` or `/tmp`. On Vercel this is per instance and temporary, so cache hit rates are unpredictable. Use Redis or the Next Data Cache for everything.
+
+**Status: Pending (M3/M4).** `disk-cache.ts` is untouched; `server/redis.ts` is the replacement.
 
 ### L-2 (Low)
 - HSTS is set twice and has no `includeSubDomains; preload`.
@@ -99,6 +109,14 @@ The SDK still ships Raydium CPMM helpers (`DEVNET_RAYDIUM_CPMM_PROGRAM`, `decode
 - `next lint` is the lint script, but there is no ESLint config or dependency, and `next lint` is deprecated in Next 15.5+.
 - `tsconfig.tsbuildinfo` (1 MB) and `.DS_Store` files sit in the tree.
 - React 18 with Next 15. Plan the move to React 19.
+
+**Status by item:**
+- HSTS set twice, no `includeSubDomains; preload`: **Pending (M4, with the middleware and CSP rewrite).**
+- No OG image in `lib/metadata.ts`: **Pending (M3).**
+- Mixed code style: **Partial.** Prettier is configured and enforced for new code only; prototype files keep their style until they are rewritten.
+- `next lint` with no ESLint config: **Addressed.** ESLint 9 flat config via `packages/config`, run by `pnpm lint` through Turbo (0 errors; 219 warnings in prototype code).
+- `tsconfig.tsbuildinfo` and `.DS_Store` in the tree: **Addressed.** Deleted and ignored (they were never tracked).
+- React 18 with Next 15: **Pending (M1).**
 
 ---
 
@@ -115,14 +133,25 @@ The SDK still ships Raydium CPMM helpers (`DEVNET_RAYDIUM_CPMM_PROGRAM`, `decode
 
 As a result `pnpm typecheck`, `pnpm test`, `pnpm test:upgrade` and the cron workflow all fail.
 
+**Status: Addressed** (the references are gone; the missing scripts are not recreated).
+- `apps/mobile` removed from the root scripts, `typecheck`, the `react-native`/`metro` overrides and `.npmrc`; `patches/@expo__cli` deleted.
+- `keeper:trigger`, `dev:api-tunnel` and `devnet:create-xstocks` removed (replacements planned: keeper on QStash and devnet provisioning in M6).
+- `pnpm typecheck` and `pnpm test` run green. 16 tests are skipped, each marked `TODO(milestone)` ([list](./REWRITE-PLAN.md#m0-status-implemented-on-branch-m0-foundation-not-pushed-not-merged-nothing-deployed)). `check-client-secrets.mjs` and `audit-devnet-recurring.mjs` are still missing; their tests return in M4 and M6.
+
 ### C-4 (Critical): the recurring collector does not actually run
 The GitHub Action runs every 10 minutes, fails at `scripts/bot.ts` and burns Actions minutes. GitHub cron is also best-effort; delays of 10–60 minutes are common. Combined with H-1, users lose installments. Use Vercel Cron or Upstash QStash calling `GET /api/recurring/collect` with the bearer secret, plus alerting.
+
+**Status: Partial.** The broken `recurring-bot.yml` workflow is deleted, so it no longer burns Actions minutes (after the branch is pushed and merged; the scheduled run on GitHub keeps failing until then). **Pending (M6):** the real collector, `apps/keeper` on QStash with alerting. `apps/keeper` is an empty placeholder today, so **nothing collects recurring plans**, as before.
 
 ### H-7 (High): no version control history
 Nothing is committed. There is no rollback, no review and no blame. Make a first commit now.
 
+**Status: Addressed locally; protection pending.** The repo has history (`e85d128`), the `prototype-final` tag, and the M0 work as small commits on `m0-foundation`. Pending: pushing the tag and branch, and a branch-protection rule on `main` (needs your go-ahead).
+
 ### H-8 (High): no CI quality gate
 No workflow runs typecheck, tests, `cargo test`, `anchor build`, IDL sync check, lint or `pnpm audit`.
+
+**Status: Partial.** `ci.yml` (install, format, lint, typecheck, tests, build, informational `pnpm audit`) and `contracts.yml` (`cargo test` and an IDL-drift check) are written; both pass their steps locally but **have not run on GitHub** yet. Not in CI: `anchor build`, the LiteSVM runtime tests (they need SBF fixtures), Playwright and Lighthouse (later milestones).
 
 ### M-10 (Medium): tests reach into another package's `node_modules`
 _Fixed:_ three web tests imported `packages/sdk/node_modules/@solana/kit-v1`. The SDK is now part of the web app and they import `@solana/kit-v1` normally.
@@ -130,12 +159,18 @@ _Fixed:_ three web tests imported `packages/sdk/node_modules/@solana/kit-v1`. Th
 ### M-11 (Medium): an outside developer's machine path is committed
 `.codex/hooks.json` points at `/home/utkarsh/.agents/...`. Remove it or make it opt-in per developer.
 
+**Status: Addressed.** `.codex/` deleted and ignored (it was never tracked).
+
 ### M-12 (Medium): two Solana SDK generations side by side
 `@solana/web3.js` v1, `@solana/kit` 3.x (web) **and** 7.1.1 (sdk) **and** `kit-v1` aliased to 8.3.0. This bloats the bundle and invites type mismatches. Pick one kit version.
+
+**Status: Pending (M2).** No dependency changes in M0.
 
 ### L-3 (Low)
 - `.gitignore` hides many internal docs (`docs/audits/`, `docs/deployment.md`, `TODO.md`). Fine, but contributors then lack them, so keep public summaries.
 - No `LICENSE`, `CODEOWNERS`, PR template, Dependabot/Renovate or `engines` field.
+
+**Status: Partial.** Added: `CODEOWNERS`, PR template, Dependabot config and the `engines` field. `LICENSE` is a **placeholder**; the license is still to be chosen. Hidden internal docs: unchanged.
 
 ---
 

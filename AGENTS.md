@@ -6,10 +6,10 @@ Rules for human contributors and AI coding agents. _Referenced by `.21st/DESIGN.
 ```bash
 pnpm install && pnpm dev:web
 ```
-Node 24.12.0, pnpm 10.31.0. Never commit `.env*` files except `.env.example`.
+Node 24.12.0, pnpm 10.31.0. Copy `apps/web/.env.example` to `apps/web/.env.local`; with `AROMA_V1_ENABLED=true` a missing or invalid variable stops boot and `pnpm build:web` with a list of names. Never commit `.env*` files except `.env.example`.
 
 ## Where things go
-- Server-only code → `apps/web/lib/server/`. It must never be imported from a client component.
+- Server-only code → `apps/web/server/` (v1: env, logger, errors, http, redis, ratelimit, rpc, db). Import `server-only`; never import it from a client component. Prototype server code still lives in `apps/web/lib/server/` until it is ported (REWRITE-PLAN §5.2).
 - Chain, market and basket helpers → `apps/web/lib/sdk/` (import as `@/lib/sdk`). There is no separate SDK package; no build step.
 - Contract changes → `packages/anchor/programs/aroma_guard/`. Then run `pnpm --filter @aroma/anchor idl:sync` (it writes into `apps/web/lib/sdk/guard/`).
 - Design tokens → `apps/web/styles/foundation.css`. Design context → `.21st/DESIGN.md`.
@@ -24,7 +24,8 @@ Node 24.12.0, pnpm 10.31.0. Never commit `.env*` files except `.env.example`.
 
 ## Before you open a PR
 ```bash
-pnpm --filter @aroma/web exec tsc --noEmit
+pnpm lint
+pnpm typecheck
 pnpm test
 pnpm test:anchor        # if you touched the program
 ```

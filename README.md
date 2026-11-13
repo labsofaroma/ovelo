@@ -30,14 +30,18 @@ pnpm install
 cp apps/web/.env.example apps/web/.env.local   # fill in what you need
 pnpm dev:web                                   # http://localhost:3000
 ```
-Every variable is documented inline in `apps/web/.env.example`. The minimum for local browsing is none; public RPC defaults apply. Trading needs `JUPITER_API_KEY` and `AROMA_TRADE_SECRET`.
+Every variable is documented inline in `apps/web/.env.example`. The minimum for local browsing is none; public RPC defaults apply. Trading needs `JUPITER_API_KEY` and `AROMA_TRADE_SECRET`. The v1 foundation (`AROMA_V1_ENABLED=true`) also requires `DATABASE_URL`, `UPSTASH_REDIS_REST_URL`/`_TOKEN` and `SOLANA_RPC_URL`; it is off by default so the prototype boots without them.
 
 ## Scripts
 | Command | What it does |
 |---|---|
 | `pnpm dev:web` | Next dev server |
 | `pnpm build` | Turbo build of all packages |
-| `pnpm test` | all web and helper tests (`apps/web/tests`, `apps/web/tests/sdk`) |
+| `pnpm lint` | ESLint 9 (flat config from `packages/config`) through Turbo; prototype code reports warnings, new code errors |
+| `pnpm typecheck` | `tsc` for every workspace; `apps/web` also checks `tsconfig.strict.json` (new code, `noUncheckedIndexedAccess`) |
+| `pnpm test` | Vitest for `packages/*`, `apps/keeper` and `apps/web/server`, plus the prototype `node:test` suites (`apps/web/tests`) |
+| `pnpm format:check` | Prettier on new code (prototype paths are listed in `.prettierignore`) |
+| `pnpm db:generate` / `pnpm db:migrate` | Drizzle: generate a migration from `apps/web/server/db/schema.ts` / apply migrations to `DATABASE_URL` (Neon) |
 | `pnpm test:anchor` | Rust unit tests + IDL check + LiteSVM runtime tests |
 | `pnpm build:anchor` | `anchor build` |
 

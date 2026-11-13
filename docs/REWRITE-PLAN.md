@@ -120,6 +120,8 @@ aroma/
 └─ .github/workflows/  ci.yml · contracts.yml · e2e.yml · deploy.yml
 ```
 
+> **Decision (M0): `packages/anchor` is not renamed to `packages/contracts` yet.** AGENTS.md, the Anchor tooling (`idl:sync` writes into `apps/web/lib/sdk/guard/`), the root `test:anchor` and `build:anchor` scripts, and the new `contracts.yml` path filter all name `packages/anchor`, and M0 must not move contract code. `packages/contracts` is created as a sibling **when the v1 program is scaffolded** (you own that work, Phase 1 of the ROADMAP). The prototype `packages/anchor` stays until M7, then is deleted (§9 step 3). When `packages/contracts` appears, update in one change: AGENTS.md, `contracts.yml` paths, `idl:sync`, `CODEOWNERS` and the root scripts.
+
 ---
 
 ## 5. Module-by-module mapping
@@ -233,6 +235,42 @@ Each milestone is merged to `main` behind feature flags. The prototype stays dep
 | **M6** | Recurring on the v1 contract (weeks 5–9, after your devnet deploy) | Codama client, `features/invest`, `apps/keeper` on QStash, `plans_index`, alerts, faucet | create → 3 installments → close + revoke works end-to-end on devnet; keeper alerting tested; skipped periods shown in the UI |
 | **M7** | Cutover (week 9–10) | point the production domain at v1, retire the prototype routes and the prototype devnet program | prototype plans closed or owners notified; old repo paths deleted; docs updated |
 | **M8** | Launch features | notifications, P&L, compliance gate, onboarding funnel ([ROADMAP.md](./ROADMAP.md) Phase 5) | |
+
+### M0 status: implemented on branch `m0-foundation` (not pushed, not merged, nothing deployed)
+
+- [x] Baseline recorded; tag `prototype-final` (already existed at `e85d128`, so it was not recreated)
+- [x] Repo integrity (AUDIT C-3)
+- [x] `packages/config`, empty `packages/ui` and `apps/keeper`
+- [x] ESLint 9 + Prettier + Vitest, wired through Turbo (`pnpm lint`, `typecheck`, `test`, `build`)
+- [x] `apps/web/server/`: env, logger, errors, http, redis, ratelimit, lease, rpc, db (Drizzle + Neon)
+- [x] Sentry (no-op without a DSN) and `GET /api/v1/health`
+- [x] `ci.yml`, `contracts.yml`, Dependabot, CODEOWNERS, PR template, `engines`
+- [x] `(app)` and `(marketing)` route-group skeleton; `pnpm build:web` passes with `.env.example` and fails without a required secret
+- [ ] **Open:** an actual preview deploy (needs a Vercel project), the first CI run on GitHub (needs a push), a migration applied to a real Neon database, `LICENSE` choice
+
+**Baseline measured at M0** (differs from the AUDIT figures, which were from an earlier snapshot): `tsc` had 1 error (a missing `scripts/check-client-secrets.mjs` import), not 4. `pnpm test` ran 457 tests, 452 passed, and 5 test files failed because they import scripts that were never committed. After M0: 472 prototype tests, 456 pass, 0 fail, **16 skipped** (each marked `TODO(milestone)`):
+
+| Skipped test file | Missing script | Restored in |
+|---|---|---|
+| `client-secret-scan.test.mjs`, `secrets-configuration.test.mjs` | `scripts/check-client-secrets.mjs` | M4 (CI bundle secret scan) |
+| `devnet-authority-audit.test.mjs` (4 tests) | `scripts/audit-devnet-recurring.mjs` | M6 (audit for the v1 contract) |
+| `sdk/devnet-xstocks.test.ts` (8 tests) | `scripts/create-devnet-xstocks.cjs` | M6 (provisioning against the v1 registry) |
+| `sdk/devnet-xstocks.test.ts` (1 test) | none: a **real, pre-existing failure** the import crash had hidden. The devnet catalog lists SBUX, RTX, COP, CAT, DE and GE, which no canonical basket uses | M6 (devnet catalog rewrite) |
+| `dev-tunnel-limits.test.ts` | `scripts/dev-api-tunnel.mjs` (mobile only) | post-v1 mobile |
+
+**Deviations and decisions**
+
+1. **`AROMA_V1_ENABLED` gates env enforcement.** The prototype stays deployed and has none of the v1 services (Postgres, Upstash, trade secret) configured. If boot validation required them unconditionally, merging M0 would take the prototype down. With the flag unset, boot validation is skipped; with it `true`, any missing or invalid variable makes the process exit 1 and `pnpm build` fail. Format rules still apply to any variable that is set. Remove the flag at M7.
+2. **Drizzle uses the Neon WebSocket `Pool`, not `neon-http`**, because transactions are needed (a basket and its allocations are written together and the weights rule is checked at COMMIT).
+3. **The weights-sum rule is two deferred constraint triggers** in a custom migration (`0001_basket_weights_trigger.sql`), because it spans rows. It applies once `status = 'published'`; drafts may hold partial weights.
+4. **"Slot lag" in `/api/v1/health`** is measured as the age of a recently confirmed slot's block time (ok ≤ 15 s, degraded ≤ 60 s, then fail), after the genesis-hash check. No reference RPC is needed. The RPC check covers mainnet only; devnet joins at M6.
+5. **Genesis constants are repeated in `server/rpc.ts`**, not imported from `lib/sdk`, because the strict tsconfig must not pull legacy files into its checks. Tests assert they equal the prototype's constants.
+6. **Strictness applies to new code only.** `tsconfig.strict.json` (with `noUncheckedIndexedAccess`) covers `server/`, `observability/`, `app/api/v1`, `app/(app)` and `app/(marketing)`. ESLint reports prototype code as warnings (219 today, 0 errors), and Prettier skips prototype paths (`.prettierignore`). `max-lines` is a warning for the 30 files listed in `packages/config/max-lines-allowlist.json` (shrink only) and an error for any other file.
+7. **Turbo:** `envMode: loose`, and the build task hashes the env variables the check reads. Without that, a cached build is replayed after a secret is removed and the check never runs.
+8. **Sentry** is imported dynamically and only when a DSN is set; `withSentryConfig` (source-map upload) only when `SENTRY_AUTH_TOKEN` is set. Events are scrubbed of user identity, IPs, cookies, headers, bodies, query strings and wallet addresses.
+9. **`pnpm test` excludes `@aroma/anchor`.** Its LiteSVM runtime tests need SBF fixtures (`target/test-programs/*.so`) and were never part of `pnpm test`. Use `pnpm test:anchor`. The IDL-drift check and `cargo test` pass locally and run in `contracts.yml`.
+10. **Version choices:** ESLint 9.39, Vitest 3.2, zod 4, Sentry 10.78, Drizzle 0.45, Prettier 3. Dependabot is configured; `@solana/kit` majors and React majors are ignored until their planned tasks.
+11. **CODEOWNERS** names `@labsofaroma` (the org's only admin); switch to a team once teams exist.
 
 **Critical path:** M0 → M2 → M4 (spot trading is the revenue path). M6 depends on your contract being deployed. Develop it against a local LiteSVM build until then.
 
