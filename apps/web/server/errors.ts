@@ -40,6 +40,66 @@ export const ERROR_CODES = {
     message: "This service is temporarily unavailable.",
   },
   INTERNAL: { status: 500, message: "Something went wrong." },
+  // Trading (M4). Messages are fixed; details stay in logs.
+  ORIGIN_FORBIDDEN: {
+    status: 403,
+    message: "This browser origin is not allowed.",
+  },
+  TRADING_UNAVAILABLE: {
+    status: 503,
+    message: "Trading is temporarily unavailable on this deployment.",
+  },
+  WALLET_UNSUPPORTED: {
+    status: 422,
+    message:
+      "Connect a wallet that can sign Solana v0 or v1 transactions to trade.",
+  },
+  ASSET_UNAVAILABLE: {
+    status: 422,
+    message: "This asset or basket is not tradable right now.",
+  },
+  ROUTE_UNAVAILABLE: {
+    status: 422,
+    message:
+      "No safe route is available for this order right now. Try a smaller amount or another funding token.",
+  },
+  INSUFFICIENT_FUNDS: {
+    status: 422,
+    message:
+      "Your wallet does not hold enough for this order, including network fees, account rent and the reviewed allowance.",
+  },
+  SIMULATION_FAILED: {
+    status: 422,
+    message:
+      "The transaction failed its mainnet simulation, so it was not offered for signing.",
+  },
+  QUOTE_EXPIRED: {
+    status: 410,
+    message: "This quote expired. Request a new quote.",
+  },
+  BLOCKHASH_EXPIRED: {
+    status: 410,
+    message: "The transaction's blockhash expired. Request a new quote.",
+  },
+  AUTHORIZATION_INVALID: {
+    status: 403,
+    message: "This trade authorization is not valid. Request a new quote.",
+  },
+  TRANSACTION_MISMATCH: {
+    status: 409,
+    message:
+      "The signed transactions differ from the reviewed ones. Request a new quote.",
+  },
+  SIGNATURE_INVALID: {
+    status: 400,
+    message:
+      "A valid wallet signature is required on every reviewed transaction.",
+  },
+  BUNDLE_UNAVAILABLE: {
+    status: 422,
+    message:
+      "This basket needs several transactions and bundle submission is not available. No partial order was created.",
+  },
 } as const;
 
 export type ErrorCode = keyof typeof ERROR_CODES;

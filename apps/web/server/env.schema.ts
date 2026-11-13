@@ -51,6 +51,18 @@ const serverShape = {
   UPSTASH_REDIS_REST_URL: httpsUrl.optional(),
   UPSTASH_REDIS_REST_TOKEN: optionalText,
   AROMA_TRADE_SECRET: secret32.optional(),
+  /** The previous trade secret during a rotation: quotes signed with it still verify until they expire. */
+  AROMA_TRADE_SECRET_PREVIOUS: secret32.optional(),
+  /** Jito Block Engine bundle endpoint. Unset: multi-transaction baskets are refused (no partial orders). */
+  JITO_BLOCK_ENGINE_URL: httpsUrl.optional(),
+  JITO_AUTH_UUID: optionalText,
+  JITO_MAX_TIP_LAMPORTS: z
+    .string()
+    .regex(/^\d+$/, "must be an integer")
+    .refine((v) => Number(v) >= 1000 && Number(v) <= 100_000, {
+      message: "must be between 1000 and 100000",
+    })
+    .optional(),
   AROMA_SITE_URL: httpsUrl.optional(),
   AROMA_ALLOWED_ORIGINS: optionalText,
   AROMA_TRUST_PROXY: bool.default(false),
@@ -69,6 +81,21 @@ const serverShape = {
    * AROMA_V1_SIMULATE_UPSTREAM_OUTAGE. Rejected outright when VERCEL_ENV=production.
    */
   AROMA_V1_ALLOW_TEST_SWITCHES: bool.default(false),
+  /**
+   * E2E only (test switches): genesis hash of a LOCAL fork (solana-test-validator) that stands in
+   * for mainnet. Honoured only with a loopback SOLANA_RPC_URL while test switches are allowed.
+   */
+  AROMA_V1_TEST_FORK_GENESIS: z
+    .string()
+    .regex(/^[1-9A-HJ-NP-Za-km-z]{32,44}$/, "must be a base58 hash")
+    .optional(),
+  /** E2E only (test switches): a loopback Jupiter stand-in serving recorded routes. */
+  AROMA_V1_TEST_JUPITER_URL: z
+    .url({ message: "must be a URL" })
+    .refine((v) => /^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?\/?$/.test(v), {
+      message: "must be a loopback http URL",
+    })
+    .optional(),
 };
 
 const devnetShape = {
@@ -109,11 +136,28 @@ export const V1_REQUIRED = [
 ] as const;
 
 const flatSchema = z.object(flatShape).superRefine((env, ctx) => {
-  if (env.AROMA_V1_ALLOW_TEST_SWITCHES && env.VERCEL_ENV === "production") {
+  if (env.VERCEL_ENV === "production") {
+    for (const key of [
+      "AROMA_V1_ALLOW_TEST_SWITCHES",
+      "AROMA_V1_TEST_FORK_GENESIS",
+      "AROMA_V1_TEST_JUPITER_URL",
+    ] as const) {
+      if (env[key])
+        ctx.addIssue({
+          code: "custom",
+          path: [key],
+          message: "must not be set in a production deployment",
+        });
+    }
+  }
+  if (
+    env.AROMA_TRADE_SECRET_PREVIOUS &&
+    env.AROMA_TRADE_SECRET_PREVIOUS === env.AROMA_TRADE_SECRET
+  ) {
     ctx.addIssue({
       code: "custom",
-      path: ["AROMA_V1_ALLOW_TEST_SWITCHES"],
-      message: "must not be set in a production deployment",
+      path: ["AROMA_TRADE_SECRET_PREVIOUS"],
+      message: "must differ from AROMA_TRADE_SECRET",
     });
   }
   if (!env.AROMA_V1_ENABLED) return;
