@@ -2,7 +2,9 @@ import type { MarketAsset, MarketSnapshot } from "@/lib/sdk/markets";
 import type { StockResearch } from "@/lib/sdk/research/types";
 
 /** Test-only fixtures. Values are arbitrary test numbers, never shown in the UI. */
-export const mint = (n: number): string => `Mint${n}`.padEnd(44, "1");
+/** A valid base58 mint for test number n ("0" is not base58, so digits 0 become "z"). */
+export const mint = (n: number): string =>
+  `Mint${String(n).replaceAll("0", "z")}x`.padEnd(44, "1");
 
 export const NOW = Date.parse("2026-11-13T12:00:00.000Z");
 export const iso = (offsetMs = 0): string =>
