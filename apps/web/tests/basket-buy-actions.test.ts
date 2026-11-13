@@ -152,27 +152,6 @@ test("Action returns the complete single transaction and refuses bundles and pre
     assert.equal((await response.json()).transaction, undefined);
   }
 });
-test("middleware error and OPTIONS headers follow the Action network", () => {
-  const { middleware } = load<{
-    middleware: (request: NextRequest) => Response;
-  }>("../middleware.ts", {
-    "./lib/server/request-policy": requestPolicy,
-  });
-  for (const [path, network] of [
-    ["buy-baskets", "mainnet"],
-    ["baskets", "devnet"],
-  ] as const) {
-    for (const method of ["OPTIONS", "POST"]) {
-      const response = middleware(
-        new NextRequest(`http://localhost:3000/api/actions/${path}/sol-chips`, {
-          method,
-        }),
-      );
-      assert.equal(response.status, method === "OPTIONS" ? 204 : 415);
-      assert.equal(
-        response.headers.get("X-Blockchain-Ids"),
-        actionHeaders(network)["X-Blockchain-Ids"],
-      );
-    }
-  }
-});
+
+// M4: the middleware tests that were here moved to server/middleware.test.ts (Vitest), against
+// the rewritten Node.js middleware (async, Upstash limiter, nonce CSP). Same assertions.

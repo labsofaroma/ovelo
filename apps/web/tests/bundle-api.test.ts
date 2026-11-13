@@ -29,28 +29,6 @@ function load<T>(path: string, dependencies: Record<string, unknown>): T {
   return exports as T;
 }
 
-test("only bundle execution and recovery receive the 32 KiB middleware allowance", () => {
-  const { middleware } = load<{
-    middleware: (request: NextRequest) => Response;
-  }>("../middleware.ts", {
-    "./lib/server/request-policy": requestPolicy,
-  });
-  const request = (path: string, length: number) =>
-    new NextRequest(`http://localhost:3000${path}`, {
-      method: "POST",
-      headers: {
-        "content-type": "application/json",
-        "content-length": String(length),
-      },
-      body: "{}",
-    });
-  for (const path of ["/api/bundles/execute", "/api/bundles/status"]) {
-    assert.equal(middleware(request(path, 32_768)).status, 200);
-    assert.equal(middleware(request(path, 32_769)).status, 413);
-  }
-  assert.equal(middleware(request("/api/trade/execute", 16_385)).status, 413);
-});
-
 test("five V1 envelopes pass API limits, but broadcast rechecks activation and keeps uncertain sends unknown", async () => {
   let active = true,
     correctGenesis = true,
@@ -167,3 +145,6 @@ test("basket API admits twelve allocations and rejects thirteen before provider 
   assert.equal((await POST(request(13))).status, 422);
   assert.equal(preparations, 1);
 });
+
+// M4: the middleware tests that were here moved to server/middleware.test.ts (Vitest), against
+// the rewritten Node.js middleware (async, Upstash limiter, nonce CSP). Same assertions.

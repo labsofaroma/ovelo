@@ -1,0 +1,110 @@
+/**
+ * Content Security Policy for v1 (AUDIT H-6). Pure (no `server-only`, no I/O): the middleware
+ * calls it per request with a fresh nonce, and tests call it directly.
+ *
+ * - script-src: 'self' + the per-request nonce + 'strict-dynamic'. No 'unsafe-inline'. Scripts
+ *   loaded by a nonced script (Next chunks, the lazily loaded wallet stack) are allowed by
+ *   'strict-dynamic'; nothing injected by markup is.
+ * - connect-src: an explicit list DERIVED FROM CONFIGURATION (the browser RPC and its websocket,
+ *   Sentry's ingest host, Plausible when configured), plus the fixed endpoints the client stack
+ *   talks to: Jupiter, Pyth Hermes, Privy, Jito, WalletConnect (wallet-adapter mobile/QR) and
+ *   Cloudflare Turnstile. Never `https:` or `wss:` wildcards.
+ * - style-src keeps 'unsafe-inline': React style attributes and Base UI positioning need it,
+ *   and styles cannot execute code. Scripts are the XSS vector this closes.
+ */
+
+type Env = Record<string, string | undefined>;
+
+export const FIXED_CONNECT_SOURCES = [
+  // Jupiter (prices for paper practice go through our API; listed for the wallet stack's use).
+  "https://api.jup.ag",
+  "https://lite-api.jup.ag",
+  // Pyth Hermes reference prices.
+  "https://hermes.pyth.network",
+  // Privy embedded wallets.
+  "https://auth.privy.io",
+  "https://*.privy.io",
+  "wss://*.privy.io",
+  "https://*.rpc.privy.systems",
+  // Jito Block Engine (bundles are sent by the server; listed for status links only).
+  "https://mainnet.block-engine.jito.wtf",
+  // WalletConnect relay and verify (wallet-adapter mobile / QR wallets).
+  "wss://relay.walletconnect.com",
+  "wss://relay.walletconnect.org",
+  "https://verify.walletconnect.org",
+  "https://explorer-api.walletconnect.com",
+  // Cloudflare Turnstile.
+  "https://challenges.cloudflare.com",
+] as const;
+
+const DEFAULT_RPC = "https://api.mainnet-beta.solana.com";
+
+function origin(value: string | undefined): string | null {
+  if (!value) return null;
+  try {
+    const url = new URL(value);
+    if (!/^(https|wss|http|ws):$/.test(url.protocol)) return null;
+    return url.origin;
+  } catch {
+    return null;
+  }
+}
+
+/** Every connect-src origin, deduplicated, from configuration plus the fixed list. */
+export function connectSources(env: Env): string[] {
+  const rpc = origin(env.NEXT_PUBLIC_SOLANA_RPC_URL) ?? DEFAULT_RPC;
+  const ws =
+    origin(env.NEXT_PUBLIC_SOLANA_WS_URL) ??
+    rpc.replace(/^https:/, "wss:").replace(/^http:/, "ws:");
+  const sentry = origin(env.NEXT_PUBLIC_SENTRY_DSN);
+  const plausible = env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN
+    ? "https://plausible.io"
+    : null;
+  return [
+    ...new Set(
+      ["'self'", rpc, ws, sentry, plausible, ...FIXED_CONNECT_SOURCES].filter(
+        (value): value is string => Boolean(value),
+      ),
+    ),
+  ];
+}
+
+export function generateNonce(): string {
+  const bytes = new Uint8Array(16);
+  crypto.getRandomValues(bytes);
+  let text = "";
+  for (const byte of bytes) text += String.fromCharCode(byte);
+  return btoa(text);
+}
+
+export function buildCsp(input: {
+  nonce: string;
+  env: Env;
+  development: boolean;
+}): string {
+  const { nonce, env, development } = input;
+  return [
+    "default-src 'self'",
+    "base-uri 'self'",
+    "object-src 'none'",
+    "frame-ancestors 'none'",
+    "form-action 'self'",
+    `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${development ? " 'unsafe-eval'" : ""}`,
+    "style-src 'self' 'unsafe-inline'",
+    "img-src 'self' data: blob: https://xstocks-metadata.backed.fi https://prestocks.com https://backpack.exchange",
+    "font-src 'self' data:",
+    `connect-src ${connectSources(env).join(" ")}`,
+    "frame-src https://auth.privy.io https://*.privy.io https://verify.walletconnect.org https://challenges.cloudflare.com",
+    "worker-src 'self' blob:",
+    "manifest-src 'self'",
+    ...(development ? [] : ["upgrade-insecure-requests"]),
+  ].join("; ");
+}
+
+/** One HSTS header, two years, subdomains, preload (AUDIT L-2). Only ever sent over HTTPS. */
+export const HSTS = "max-age=63072000; includeSubDomains; preload";
+
+/** Paths that get the strict nonce CSP (M4: v1 first; the prototype keeps its policy until M7). */
+export function isV1Path(pathname: string): boolean {
+  return /^\/(v1|api\/v1)(\/|$)/.test(pathname);
+}

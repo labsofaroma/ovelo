@@ -3,6 +3,7 @@ import { pingDb } from "./db/client";
 import { isV1Enabled, tryGetEnv } from "./env";
 import { logger } from "./logger";
 import { getRedis } from "./redis";
+import { jupiterProbe, pythProbe } from "./health-providers";
 import { getMainnetConnection } from "./rpc";
 
 /**
@@ -136,4 +137,7 @@ export const defaultProbes: Record<string, Probe> = {
   rpc: rpcProbe,
   redis: redisProbe,
   db: dbProbe,
+  // M4 (AUDIT M-7): the market-data providers the trade flow depends on.
+  jupiter: jupiterProbe(),
+  pyth: pythProbe(),
 };

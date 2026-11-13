@@ -1,39 +1,101 @@
-import { NextRequest, NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
+import { buildCsp, generateNonce, HSTS, isV1Path } from "./server/csp";
+import { testSwitchesAllowed } from "./server/env.schema";
+import { ERROR_CODES, type ErrorCode } from "./server/errors";
+import { createRateLimiter, type RateLimiter } from "./server/ratelimit";
+import { getRedis } from "./server/redis";
 import {
   allowedOrigin,
-  createRequestLimiter,
+  bucketFor,
+  clientIp,
   isLoopback,
-} from "./lib/server/request-policy";
+  LIMITS,
+  maxBodyBytes,
+  requestProtocol,
+  type Bucket,
+} from "./server/request-guard";
 
-const reads = createRequestLimiter(120);
-const writes = createRequestLimiter(20);
-export function middleware(request: NextRequest) {
-  // Five 4096-byte transactions need 27,320 base64 bytes before authorization/JSON.
-  const maxBodyBytes = ["/api/bundles/execute", "/api/bundles/status"].includes(
-    request.nextUrl.pathname,
-  )
-    ? 32_768
-    : 16_384;
-  const api = request.nextUrl.pathname.startsWith("/api/");
-  const action =
-    request.nextUrl.pathname.startsWith("/api/actions/") ||
-    request.nextUrl.pathname === "/actions.json";
-  const development = process.env.NODE_ENV !== "production";
-  const trustProxy =
-    process.env.VERCEL === "1" || process.env.AROMA_TRUST_PROXY === "true";
-  const protocol = (
-    trustProxy
-      ? (request.headers.get("x-forwarded-proto")?.split(",")[0].trim() ??
-        request.nextUrl.protocol.replace(":", ""))
-      : request.nextUrl.protocol.replace(":", "")
-  ).toLowerCase();
-  if (
-    !development &&
-    !isLoopback(request.nextUrl.hostname) &&
-    protocol !== "https"
-  ) {
-    const target = process.env.AROMA_SITE_URL;
-    if (!target?.startsWith("https://"))
+/**
+ * Middleware (M4 B8; closes AUDIT H-4 and H-6 for v1, and the L-2 HSTS item).
+ * - HTTPS: redirect to AROMA_SITE_URL in production, then ONE HSTS header with includeSubDomains
+ *   and preload.
+ * - /v1/* and /api/v1/*: a per-request nonce CSP (no 'unsafe-inline' scripts), the nonce passed to
+ *   Next via the request headers.
+ * - /api/*: origin allowlist, JSON-only mutations, body cap, and Upstash rate limits split into
+ *   read, write and trade buckets (a bounded local fallback evicts the oldest key and never
+ *   locks everyone out). The prototype keeps its `{ error }` bodies; v1 gets `{ code, message }`.
+ * Runs on the Node.js runtime so it can use the server modules (pino, Upstash).
+ */
+
+const required =
+  process.env.AROMA_V1_ENABLED?.trim() === "true" &&
+  !testSwitchesAllowed(process.env);
+let limiters: Record<Bucket, RateLimiter> | null = null;
+function limiter(bucket: Bucket): RateLimiter {
+  limiters ??= {
+    read: createRateLimiter({
+      name: "api:read",
+      ...LIMITS.read,
+      redis: getRedis(),
+      required,
+    }),
+    write: createRateLimiter({
+      name: "api:write",
+      ...LIMITS.write,
+      redis: getRedis(),
+      required,
+    }),
+    trade: createRateLimiter({
+      name: "api:trade",
+      ...LIMITS.trade,
+      redis: getRedis(),
+      required,
+    }),
+  };
+  return limiters[bucket];
+}
+
+function reject(
+  v1: boolean,
+  action: boolean,
+  code: ErrorCode,
+  headers: Record<string, string> = {},
+): NextResponse {
+  const message = ERROR_CODES[code].message;
+  return NextResponse.json(
+    v1 ? { code, message } : action ? { message } : { error: message },
+    {
+      status: ERROR_CODES[code].status,
+      headers: { "Cache-Control": "no-store", ...headers },
+    },
+  );
+}
+
+export async function middleware(request: NextRequest): Promise<NextResponse> {
+  const { pathname } = request.nextUrl;
+  const env = process.env;
+  const development = env.NODE_ENV !== "production";
+  const protocol = requestProtocol(
+    request.headers,
+    request.nextUrl.protocol,
+    env,
+  );
+  const local = isLoopback(request.nextUrl.hostname);
+
+  if (!development && !local && protocol !== "https") {
+    const target = env.AROMA_SITE_URL;
+    try {
+      const destination = new URL(target ?? "");
+      if (
+        destination.protocol !== "https:" ||
+        destination.username ||
+        destination.password
+      )
+        throw new Error("invalid site url");
+      destination.pathname = pathname;
+      destination.search = request.nextUrl.search;
+      return NextResponse.redirect(destination, 308);
+    } catch {
       return NextResponse.json(
         {
           error:
@@ -41,126 +103,101 @@ export function middleware(request: NextRequest) {
         },
         { status: 503 },
       );
-    let destination: URL;
-    try {
-      destination = new URL(target);
-      if (
-        destination.username ||
-        destination.password ||
-        destination.hash ||
-        destination.search
-      )
-        throw new Error();
-    } catch {
-      return NextResponse.json(
-        { error: "Configure a valid public HTTPS site origin." },
-        { status: 503 },
-      );
     }
-    destination.pathname = request.nextUrl.pathname;
-    destination.search = request.nextUrl.search;
-    return NextResponse.redirect(destination, 308);
   }
-  let response = NextResponse.next();
-  if (!isLoopback(request.nextUrl.hostname) && protocol === "https")
-    response.headers.set("Strict-Transport-Security", "max-age=31536000");
-  if (!api && !action) return response;
-  const origin = request.headers.get("origin");
-  const effectiveOrigin = `${protocol}://${request.nextUrl.host}`;
-  if (
-    !action &&
-    !allowedOrigin(
-      origin,
-      effectiveOrigin,
-      process.env.AROMA_ALLOWED_ORIGINS ?? "",
-      development,
-    )
-  )
-    return NextResponse.json(
-      { error: "This browser origin is not allowed." },
-      { status: 403 },
-    );
-  if (request.method === "OPTIONS")
-    response = new NextResponse(null, { status: 204 });
-  else {
-    const mutation = !["GET", "HEAD"].includes(request.method);
-    // Trust client IP headers only behind a configured proxy that overwrites them.
-    const ip = trustProxy
-      ? (request.headers.get("x-real-ip") ??
-        request.headers.get("x-forwarded-for")?.split(",")[0]?.trim() ??
-        "unknown")
-      : "local";
-    const retry = (mutation ? writes : reads)(ip);
-    if (retry)
-      response = NextResponse.json(
-        action
-          ? { message: "Too many requests. Please wait and try again." }
-          : { error: "Too many requests. Please wait and try again." },
-        {
-          status: 429,
-          headers: {
-            "Retry-After": String(retry),
-            "Cache-Control": "no-store",
-          },
-        },
-      );
-    else if (
-      mutation &&
-      request.headers
-        .get("content-type")
-        ?.split(";")[0]
-        .trim()
-        .toLowerCase() !== "application/json"
-    )
-      response = NextResponse.json(
-        action
-          ? { message: "Send an application/json request." }
-          : { error: "Send an application/json request." },
-        { status: 415 },
-      );
-    else if (
-      mutation &&
-      Number(request.headers.get("content-length") ?? 0) > maxBodyBytes
-    )
-      response = NextResponse.json(
-        action
-          ? { message: "The request body is too large." }
-          : { error: "The request body is too large." },
-        { status: 413 },
-      );
+
+  const v1 = isV1Path(pathname);
+  const api = pathname.startsWith("/api/");
+  const action =
+    pathname.startsWith("/api/actions/") || pathname === "/actions.json";
+
+  // Nonce CSP for v1 pages and APIs; Next reads the nonce from the request's CSP header.
+  const nonce = v1 ? generateNonce() : null;
+  const csp = nonce ? buildCsp({ nonce, env, development }) : null;
+  const requestHeaders = new Headers(request.headers);
+  if (nonce && csp) {
+    requestHeaders.set("x-nonce", nonce);
+    requestHeaders.set("Content-Security-Policy", csp);
   }
-  if (action) {
-    // Public Actions only prepare owner-signed devnet transactions. Credentialed APIs keep their origin allowlist.
-    response.headers.set("Access-Control-Allow-Origin", "*");
+  let response = NextResponse.next({ request: { headers: requestHeaders } });
+
+  if (api || action) {
+    const origin = request.headers.get("origin");
+    const effectiveOrigin = `${protocol}://${request.nextUrl.host}`;
+    if (
+      !action &&
+      !allowedOrigin(
+        origin,
+        effectiveOrigin,
+        env.AROMA_ALLOWED_ORIGINS ?? "",
+        development,
+      )
+    )
+      response = reject(v1, action, "ORIGIN_FORBIDDEN");
+    else if (request.method === "OPTIONS")
+      response = new NextResponse(null, { status: 204 });
+    else {
+      const mutation = !["GET", "HEAD"].includes(request.method);
+      const decision = await limiter(bucketFor(pathname, request.method)).check(
+        clientIp(request.headers, env),
+      );
+      if (!decision.allowed)
+        response = reject(v1, action, "RATE_LIMITED", {
+          "Retry-After": String(decision.retryAfterSeconds),
+        });
+      else if (
+        mutation &&
+        request.headers
+          .get("content-type")
+          ?.split(";")[0]
+          ?.trim()
+          .toLowerCase() !== "application/json"
+      )
+        response = reject(v1, action, "UNSUPPORTED_MEDIA_TYPE");
+      else if (
+        mutation &&
+        Number(request.headers.get("content-length") ?? 0) >
+          maxBodyBytes(pathname)
+      )
+        response = reject(v1, action, "PAYLOAD_TOO_LARGE");
+    }
+    if (action) {
+      // Public Actions only prepare owner-signed transactions. Credentialed APIs keep the allowlist.
+      response.headers.set("Access-Control-Allow-Origin", "*");
+      response.headers.set(
+        "X-Blockchain-Ids",
+        pathname.startsWith("/api/actions/buy-baskets/")
+          ? "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
+          : "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1",
+      );
+      response.headers.set("X-Action-Version", "2.4");
+    } else if (origin) {
+      response.headers.set("Access-Control-Allow-Origin", origin);
+      response.headers.append("Vary", "Origin");
+    }
     response.headers.set(
-      "X-Blockchain-Ids",
-      request.nextUrl.pathname.startsWith("/api/actions/buy-baskets/")
-        ? "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
-        : "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1",
+      "Access-Control-Allow-Methods",
+      action ? "GET,POST,PUT,OPTIONS" : "GET, POST, OPTIONS",
     );
-    response.headers.set("X-Action-Version", "2.4");
-  } else if (origin) {
-    response.headers.set("Access-Control-Allow-Origin", origin);
-    response.headers.append("Vary", "Origin");
+    response.headers.set(
+      "Access-Control-Allow-Headers",
+      "Content-Type, If-None-Match, Authorization, Content-Encoding, Accept-Encoding, X-Accept-Action-Version, X-Accept-Blockchain-Ids",
+    );
+    response.headers.set(
+      "Access-Control-Expose-Headers",
+      "ETag, Retry-After, X-Blockchain-Ids, X-Action-Version",
+    );
+    if (request.method === "OPTIONS")
+      response.headers.set("Access-Control-Max-Age", "600");
   }
-  response.headers.set(
-    "Access-Control-Allow-Methods",
-    action ? "GET,POST,PUT,OPTIONS" : "GET, POST, OPTIONS",
-  );
-  response.headers.set(
-    "Access-Control-Allow-Headers",
-    "Content-Type, If-None-Match, Authorization, Content-Encoding, Accept-Encoding, X-Accept-Action-Version, X-Accept-Blockchain-Ids",
-  );
-  response.headers.set(
-    "Access-Control-Expose-Headers",
-    "ETag, Retry-After, X-Blockchain-Ids, X-Action-Version",
-  );
-  if (request.method === "OPTIONS")
-    response.headers.set("Access-Control-Max-Age", "600");
-  if (!isLoopback(request.nextUrl.hostname) && protocol === "https")
-    response.headers.set("Strict-Transport-Security", "max-age=31536000");
+
+  if (csp) response.headers.set("Content-Security-Policy", csp);
+  if (!local && protocol === "https")
+    response.headers.set("Strict-Transport-Security", HSTS);
   return response;
 }
+
 export const config = {
+  runtime: "nodejs",
   matcher: ["/((?!_next/static|_next/image|icon.svg|favicon.ico).*)"],
 };
