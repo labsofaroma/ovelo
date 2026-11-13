@@ -1,0 +1,173 @@
+import { readFileSync } from "node:fs";
+import { describe, expect, expectTypeOf, it } from "vitest";
+import {
+  assertDevnetRpcUrl,
+  assertMainnetRpcUrl,
+  type Cluster,
+  type ClusterConnection,
+  connectToCluster,
+  GENESIS_HASHES,
+} from "./rpc";
+
+/** A fake JSON-RPC node: answers getGenesisHash with the given value, or fails. */
+function node(genesis: string | "down") {
+  const calls: string[] = [];
+  const fetchImpl = async (
+    _url: string | URL | Request,
+    init?: RequestInit,
+  ) => {
+    const body = JSON.parse(String(init?.body ?? "{}")) as {
+      id: number;
+      method: string;
+    };
+    calls.push(body.method);
+    if (genesis === "down") throw new TypeError("fetch failed");
+    return new Response(
+      JSON.stringify({ jsonrpc: "2.0", id: body.id, result: genesis }),
+      {
+        headers: { "content-type": "application/json" },
+      },
+    );
+  };
+  return { fetchImpl, calls };
+}
+
+describe("genesis guard", () => {
+  it("accepts a mainnet RPC that reports the mainnet genesis hash", async () => {
+    const { fetchImpl, calls } = node(GENESIS_HASHES["mainnet-beta"]);
+    const connection = await connectToCluster(
+      "mainnet-beta",
+      "https://rpc.example.com",
+      { fetch: fetchImpl },
+    );
+    expect(connection.rpcEndpoint).toBe("https://rpc.example.com/");
+    expect(calls).toContain("getGenesisHash");
+  });
+
+  it("accepts a devnet RPC that reports the devnet genesis hash", async () => {
+    const { fetchImpl } = node(GENESIS_HASHES.devnet);
+    await expect(
+      connectToCluster("devnet", "https://devnet.rpc.example.com", {
+        fetch: fetchImpl,
+      }),
+    ).resolves.toBeDefined();
+  });
+
+  it("rejects a devnet connection that reports the MAINNET genesis hash", async () => {
+    const { fetchImpl } = node(GENESIS_HASHES["mainnet-beta"]);
+    await expect(
+      connectToCluster("devnet", "https://devnet.rpc.example.com", {
+        fetch: fetchImpl,
+      }),
+    ).rejects.toMatchObject({ code: "WRONG_CLUSTER" });
+  });
+
+  it("rejects a mainnet connection that reports the DEVNET genesis hash", async () => {
+    const { fetchImpl } = node(GENESIS_HASHES.devnet);
+    await expect(
+      connectToCluster("mainnet-beta", "https://rpc.example.com", {
+        fetch: fetchImpl,
+      }),
+    ).rejects.toMatchObject({ code: "WRONG_CLUSTER" });
+  });
+
+  it("rejects an unknown genesis hash (e.g. testnet or a local validator)", async () => {
+    const { fetchImpl } = node("4uhcVJyU9pJkvQyS88uRDiswHXSCkY3zQawwpjk2NsNY");
+    await expect(
+      connectToCluster("devnet", "https://x.example.com", { fetch: fetchImpl }),
+    ).rejects.toMatchObject({
+      code: "WRONG_CLUSTER",
+    });
+    await expect(
+      connectToCluster("mainnet-beta", "https://x.example.com", {
+        fetch: fetchImpl,
+      }),
+    ).rejects.toMatchObject({
+      code: "WRONG_CLUSTER",
+    });
+  });
+
+  it("reports an unreachable RPC as UPSTREAM_UNAVAILABLE, not as a cluster pass", async () => {
+    const { fetchImpl } = node("down");
+    await expect(
+      connectToCluster("mainnet-beta", "https://rpc.example.com", {
+        fetch: fetchImpl,
+      }),
+    ).rejects.toMatchObject({
+      code: "UPSTREAM_UNAVAILABLE",
+    });
+  });
+
+  it("does not leak the endpoint or error text in the public message", async () => {
+    const { fetchImpl } = node(GENESIS_HASHES.devnet);
+    const error = await connectToCluster(
+      "mainnet-beta",
+      "https://rpc.example.com/?api-key=SECRETKEY",
+      {
+        fetch: fetchImpl,
+      },
+    ).catch((e: unknown) => e);
+    expect(
+      JSON.stringify((error as { publicMessage: string }).publicMessage),
+    ).not.toMatch(/SECRETKEY|rpc\.example/);
+  });
+});
+
+describe("cluster brand", () => {
+  it("is not interchangeable at compile time", () => {
+    expectTypeOf<ClusterConnection<"devnet">>().not.toEqualTypeOf<
+      ClusterConnection<"mainnet-beta">
+    >();
+    expectTypeOf<ClusterConnection<"devnet">>().not.toMatchTypeOf<
+      ClusterConnection<"mainnet-beta">
+    >();
+    expectTypeOf<Cluster>().toEqualTypeOf<"mainnet-beta" | "devnet">();
+  });
+});
+
+describe("endpoint policy", () => {
+  it("mainnet requires dedicated HTTPS and refuses devnet/testnet-looking endpoints", () => {
+    expect(assertMainnetRpcUrl("https://rpc.example.com/key")).toContain(
+      "https://",
+    );
+    expect(() => assertMainnetRpcUrl("http://rpc.example.com")).toThrow();
+    expect(() =>
+      assertMainnetRpcUrl("https://api.devnet.solana.com"),
+    ).toThrow();
+    expect(() =>
+      assertMainnetRpcUrl("https://x.example.com/testnet"),
+    ).toThrow();
+    expect(() =>
+      assertMainnetRpcUrl("https://user:pw@rpc.example.com"),
+    ).toThrow();
+    expect(() => assertMainnetRpcUrl("not a url")).toThrow();
+  });
+
+  it("devnet allows HTTPS, or HTTP only on loopback", () => {
+    expect(assertDevnetRpcUrl("https://api.devnet.solana.com")).toContain(
+      "devnet",
+    );
+    expect(assertDevnetRpcUrl("http://127.0.0.1:8899")).toContain("8899");
+    expect(() => assertDevnetRpcUrl("http://rpc.example.com")).toThrow();
+    expect(() =>
+      assertDevnetRpcUrl("https://user:pw@rpc.example.com"),
+    ).toThrow();
+  });
+});
+
+describe("constants stay in sync with the prototype", () => {
+  const read = (path: string) =>
+    readFileSync(new URL(path, import.meta.url), "utf8");
+
+  it("devnet genesis hash equals DEVNET_GENESIS_HASH in lib/sdk/devnet-xstocks.ts", () => {
+    expect(read("../lib/sdk/devnet-xstocks.ts")).toContain(
+      `"${GENESIS_HASHES.devnet}"`,
+    );
+  });
+
+  it("mainnet genesis hash equals MAINNET_GENESIS in lib/server/mainnet-connection.ts", () => {
+    expect(read("../lib/server/mainnet-connection.ts")).toContain(
+      `"${GENESIS_HASHES["mainnet-beta"]}"`,
+    );
+  });
+});
