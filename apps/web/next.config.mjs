@@ -54,4 +54,10 @@ const config = {
     return config;
   },
 };
-export default config;
+// Sentry's build plugin (source-map upload) is applied only when an auth token is present, so
+// builds without Sentry are unchanged. Runtime error capture is wired in instrumentation.ts and
+// is a no-op without a DSN.
+const sentry = process.env.SENTRY_AUTH_TOKEN ? await import("@sentry/nextjs") : null;
+export default sentry
+  ? sentry.withSentryConfig(config, { silent: true, telemetry: false, disableLogger: true })
+  : config;
