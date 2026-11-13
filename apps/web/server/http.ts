@@ -104,3 +104,26 @@ export function errorResponse(
     headers: { "Cache-Control": "no-store" },
   });
 }
+
+/**
+ * AUDIT M-6: a state-changing /api/v1 request that carries an `Origin` must come from this site
+ * (its own origin, AROMA_SITE_URL, or an exact entry of AROMA_ALLOWED_ORIGINS). A request with
+ * no Origin (a native app, a server) is allowed here only because every such route ALSO needs a
+ * signature, an HMAC token or a bearer secret.
+ */
+export function assertSameOrigin(request: Request): void {
+  const origin = request.headers.get("origin");
+  if (!origin) return;
+  const own = new URL(request.url).origin;
+  const allowed = new Set(
+    [
+      own,
+      process.env.AROMA_SITE_URL,
+      ...(process.env.AROMA_ALLOWED_ORIGINS ?? "").split(","),
+    ]
+      .map((value) => value?.trim().replace(/\/$/, ""))
+      .filter((value): value is string => Boolean(value)),
+  );
+  if (!allowed.has(origin.replace(/\/$/, "")))
+    throw new AppError("ORIGIN_FORBIDDEN", { detail: "cross-origin request" });
+}

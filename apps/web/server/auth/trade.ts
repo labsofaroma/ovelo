@@ -48,8 +48,12 @@ export const tradeReceiptSchema = z
         z
           .object({
             mint: base58,
+            /** The leg's exact input allocation (raw units of inputMint). */
+            inputAmount: rawAmountSchema,
             outAmount: rawAmountSchema,
             minimumAmount: rawAmountSchema,
+            /** Index of the transaction that carries this leg. */
+            tx: z.number().int().min(0).max(4),
           })
           .strict(),
       )

@@ -36,8 +36,10 @@ function payload(overrides: Partial<TradePayload> = {}): TradePayload {
       legs: [
         {
           mint: testKeypair(4).publicKey.toBase58(),
+          inputAmount: "1000000",
           outAmount: "5",
           minimumAmount: "4",
+          tx: 0,
         },
       ],
     },

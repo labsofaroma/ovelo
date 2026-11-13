@@ -1,0 +1,37 @@
+import { submitRequestSchema } from "@/features/trade/schema";
+import {
+  publicRecord,
+  submitSignedTrade,
+} from "@/features/trade/server/service";
+import { isV1Enabled } from "@/server/env";
+import { AppError } from "@/server/errors";
+import { assertSameOrigin, errorResponse, parse } from "@/server/http";
+
+export const dynamic = "force-dynamic";
+export const runtime = "nodejs";
+export const maxDuration = 60;
+
+/**
+ * POST /api/v1/trade/submit: `{ authorization, signedTransactions[] }`. State-changing, so it
+ * requires the HMAC authorization from /quote AND a valid wallet signature on every authorized
+ * message (AGENTS.md rule 2). Idempotent per request id: a replay returns the same trade and is
+ * never broadcast twice. 202 while the outcome is pending or unknown.
+ */
+export async function POST(request: Request): Promise<Response> {
+  try {
+    if (!isV1Enabled()) throw new AppError("NOT_FOUND");
+    assertSameOrigin(request);
+    // Five 4,096-byte V1 transactions are 27,320 base64 characters.
+    const body = await parse(submitRequestSchema, { maxBytes: 32_768 })(
+      request,
+    );
+    const record = await submitSignedTrade(body);
+    return Response.json(publicRecord(record), {
+      status:
+        record.status === "confirmed" || record.status === "failed" ? 200 : 202,
+      headers: { "Cache-Control": "no-store" },
+    });
+  } catch (error) {
+    return errorResponse(error, { route: "v1/trade/submit" });
+  }
+}

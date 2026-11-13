@@ -39,12 +39,8 @@
           "name": "basket_allocations_basket_id_baskets_id_fk",
           "tableFrom": "basket_allocations",
           "tableTo": "baskets",
-          "columnsFrom": [
-            "basket_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["basket_id"],
+          "columnsTo": ["id"],
           "onDelete": "cascade",
           "onUpdate": "no action"
         }
@@ -52,20 +48,14 @@
       "compositePrimaryKeys": {
         "basket_allocations_basket_id_mint_pk": {
           "name": "basket_allocations_basket_id_mint_pk",
-          "columns": [
-            "basket_id",
-            "mint"
-          ]
+          "columns": ["basket_id", "mint"]
         }
       },
       "uniqueConstraints": {
         "basket_allocations_basket_symbol_unique": {
           "name": "basket_allocations_basket_symbol_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "basket_id",
-            "symbol"
-          ]
+          "columns": ["basket_id", "symbol"]
         }
       },
       "policies": {},
@@ -184,12 +174,8 @@
           "name": "baskets_creator_wallet_creators_wallet_fk",
           "tableFrom": "baskets",
           "tableTo": "creators",
-          "columnsFrom": [
-            "creator_wallet"
-          ],
-          "columnsTo": [
-            "wallet"
-          ],
+          "columnsFrom": ["creator_wallet"],
+          "columnsTo": ["wallet"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -199,9 +185,7 @@
         "baskets_ticker_unique": {
           "name": "baskets_ticker_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "ticker"
-          ]
+          "columns": ["ticker"]
         }
       },
       "policies": {},
@@ -264,12 +248,8 @@
           "name": "creators_invite_id_invites_id_fk",
           "tableFrom": "creators",
           "tableTo": "invites",
-          "columnsFrom": [
-            "invite_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["invite_id"],
+          "columnsTo": ["id"],
           "onDelete": "restrict",
           "onUpdate": "no action"
         }
@@ -332,9 +312,7 @@
         "invites_code_hash_unique": {
           "name": "invites_code_hash_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "code_hash"
-          ]
+          "columns": ["code_hash"]
         }
       },
       "policies": {},
@@ -526,11 +504,7 @@
         "plans_index_owner_funding_nonce_unique": {
           "name": "plans_index_owner_funding_nonce_unique",
           "nullsNotDistinct": false,
-          "columns": [
-            "owner",
-            "funding_mint",
-            "nonce"
-          ]
+          "columns": ["owner", "funding_mint", "nonce"]
         }
       },
       "policies": {},
@@ -584,10 +558,7 @@
       "compositePrimaryKeys": {
         "portfolio_snapshots_wallet_taken_at_pk": {
           "name": "portfolio_snapshots_wallet_taken_at_pk",
-          "columns": [
-            "wallet",
-            "taken_at"
-          ]
+          "columns": ["wallet", "taken_at"]
         }
       },
       "uniqueConstraints": {},
@@ -702,12 +673,8 @@
           "name": "receipts_basket_id_baskets_id_fk",
           "tableFrom": "receipts",
           "tableTo": "baskets",
-          "columnsFrom": [
-            "basket_id"
-          ],
-          "columnsTo": [
-            "id"
-          ],
+          "columnsFrom": ["basket_id"],
+          "columnsTo": ["id"],
           "onDelete": "set null",
           "onUpdate": "no action"
         }

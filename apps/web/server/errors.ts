@@ -95,6 +95,11 @@ export const ERROR_CODES = {
     message:
       "A valid wallet signature is required on every reviewed transaction.",
   },
+  TRANSACTION_FAILED: {
+    status: 422,
+    message:
+      "The transaction failed on chain; its asset changes were rolled back. Network fees may still apply.",
+  },
   BUNDLE_UNAVAILABLE: {
     status: 422,
     message:

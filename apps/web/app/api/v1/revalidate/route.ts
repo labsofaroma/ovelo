@@ -1,5 +1,8 @@
 import { revalidateTag } from "next/cache";
-import { assertRevalidateAuthorized, revalidateBodySchema } from "@/features/shared/revalidate";
+import {
+  assertRevalidateAuthorized,
+  revalidateBodySchema,
+} from "@/features/shared/revalidate";
 import { isV1Enabled, tryGetEnv } from "@/server/env";
 import { AppError } from "@/server/errors";
 import { errorResponse, parse } from "@/server/http";
@@ -21,9 +24,14 @@ export async function POST(request: Request): Promise<Response> {
       request.headers.get("authorization"),
       env.ok ? env.env.server.AROMA_REVALIDATE_SECRET : undefined,
     );
-    const { tags } = await parse(revalidateBodySchema, { maxBytes: 4_096 })(request);
+    const { tags } = await parse(revalidateBodySchema, { maxBytes: 4_096 })(
+      request,
+    );
     for (const tag of tags) revalidateTag(tag);
-    return Response.json({ revalidated: tags }, { headers: { "Cache-Control": "no-store" } });
+    return Response.json(
+      { revalidated: tags },
+      { headers: { "Cache-Control": "no-store" } },
+    );
   } catch (error) {
     return errorResponse(error, { route: "v1/revalidate" });
   }

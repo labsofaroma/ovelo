@@ -34,8 +34,10 @@ const receipt = {
   legs: [
     {
       mint: testKeypair(4).publicKey.toBase58(),
+      inputAmount: "12345678901234567",
       outAmount: "100",
       minimumAmount: "99",
+      tx: 0,
     },
   ],
 };

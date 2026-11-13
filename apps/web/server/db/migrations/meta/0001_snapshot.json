@@ -38,13 +38,9 @@
         "basket_allocations_basket_id_baskets_id_fk": {
           "name": "basket_allocations_basket_id_baskets_id_fk",
           "tableFrom": "basket_allocations",
-          "columnsFrom": [
-            "basket_id"
-          ],
+          "columnsFrom": ["basket_id"],
           "tableTo": "baskets",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "cascade"
         }
@@ -52,19 +48,13 @@
       "compositePrimaryKeys": {
         "basket_allocations_basket_id_mint_pk": {
           "name": "basket_allocations_basket_id_mint_pk",
-          "columns": [
-            "basket_id",
-            "mint"
-          ]
+          "columns": ["basket_id", "mint"]
         }
       },
       "uniqueConstraints": {
         "basket_allocations_basket_symbol_unique": {
           "name": "basket_allocations_basket_symbol_unique",
-          "columns": [
-            "basket_id",
-            "symbol"
-          ],
+          "columns": ["basket_id", "symbol"],
           "nullsNotDistinct": false
         }
       },
@@ -183,13 +173,9 @@
         "baskets_creator_wallet_creators_wallet_fk": {
           "name": "baskets_creator_wallet_creators_wallet_fk",
           "tableFrom": "baskets",
-          "columnsFrom": [
-            "creator_wallet"
-          ],
+          "columnsFrom": ["creator_wallet"],
           "tableTo": "creators",
-          "columnsTo": [
-            "wallet"
-          ],
+          "columnsTo": ["wallet"],
           "onUpdate": "no action",
           "onDelete": "restrict"
         }
@@ -198,9 +184,7 @@
       "uniqueConstraints": {
         "baskets_ticker_unique": {
           "name": "baskets_ticker_unique",
-          "columns": [
-            "ticker"
-          ],
+          "columns": ["ticker"],
           "nullsNotDistinct": false
         }
       },
@@ -263,13 +247,9 @@
         "creators_invite_id_invites_id_fk": {
           "name": "creators_invite_id_invites_id_fk",
           "tableFrom": "creators",
-          "columnsFrom": [
-            "invite_id"
-          ],
+          "columnsFrom": ["invite_id"],
           "tableTo": "invites",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "restrict"
         }
@@ -331,9 +311,7 @@
       "uniqueConstraints": {
         "invites_code_hash_unique": {
           "name": "invites_code_hash_unique",
-          "columns": [
-            "code_hash"
-          ],
+          "columns": ["code_hash"],
           "nullsNotDistinct": false
         }
       },
@@ -525,11 +503,7 @@
       "uniqueConstraints": {
         "plans_index_owner_funding_nonce_unique": {
           "name": "plans_index_owner_funding_nonce_unique",
-          "columns": [
-            "owner",
-            "funding_mint",
-            "nonce"
-          ],
+          "columns": ["owner", "funding_mint", "nonce"],
           "nullsNotDistinct": false
         }
       },
@@ -584,10 +558,7 @@
       "compositePrimaryKeys": {
         "portfolio_snapshots_wallet_taken_at_pk": {
           "name": "portfolio_snapshots_wallet_taken_at_pk",
-          "columns": [
-            "wallet",
-            "taken_at"
-          ]
+          "columns": ["wallet", "taken_at"]
         }
       },
       "uniqueConstraints": {},
@@ -701,13 +672,9 @@
         "receipts_basket_id_baskets_id_fk": {
           "name": "receipts_basket_id_baskets_id_fk",
           "tableFrom": "receipts",
-          "columnsFrom": [
-            "basket_id"
-          ],
+          "columnsFrom": ["basket_id"],
           "tableTo": "baskets",
-          "columnsTo": [
-            "id"
-          ],
+          "columnsTo": ["id"],
           "onUpdate": "no action",
           "onDelete": "set null"
         }
