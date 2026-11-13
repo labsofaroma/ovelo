@@ -6,6 +6,8 @@ const here = (path: string) => fileURLToPath(new URL(path, import.meta.url));
 
 export default defineConfig({
   ...preset,
+  // Component tests (features/**/*.test.tsx) need the automatic JSX runtime; tsconfig says "preserve".
+  esbuild: { jsx: "automatic" },
   resolve: {
     alias: {
       // `server-only` throws outside the react-server condition; unit tests run in plain Node.
@@ -20,6 +22,7 @@ export default defineConfig({
       "server/**/*.test.ts",
       "observability/**/*.test.ts",
       "lib/sdk/**/*.test.ts",
+      "features/**/*.test.{ts,tsx}",
     ],
     // PGlite (server/db/schema.test.ts) boots a WASM Postgres in beforeAll; 10s is too tight when
     // the whole suite runs in parallel.

@@ -6,7 +6,13 @@
     "lib": ["dom", "dom.iterable", "esnext"],
     "jsx": "preserve",
     "types": ["node"],
-    "paths": { "@/*": ["./*"] }
+    "paths": {
+      // TEMPORARY (M3-SDK-REQUESTS #1): lib/sdk/research/bars.ts is not strict-clean yet.
+      "@/lib/sdk/research/service": [
+        "./features/stock/research-service.strict.d.ts"
+      ],
+      "@/*": ["./*"]
+    }
   },
   "include": [
     "observability/**/*.ts",
@@ -27,7 +33,9 @@
     "vitest.config.ts",
     "app/api/v1/**/*.ts",
     "app/(app)/**/*.{ts,tsx}",
-    "app/(marketing)/**/*.{ts,tsx}"
+    "app/(marketing)/**/*.{ts,tsx}",
+    "features/**/*.{ts,tsx}",
+    "e2e/**/*.ts"
   ],
   "exclude": ["lib/sdk/**/*.test.ts", "lib/sdk/jupiter/test-fixtures.ts"]
 }

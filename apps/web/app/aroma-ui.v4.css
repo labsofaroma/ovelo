@@ -19,4 +19,5 @@
 
 @source "./(app)";
 @source "./(marketing)";
+@source "../features";
 @source "../../../packages/ui/src";
