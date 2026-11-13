@@ -1,0 +1,94 @@
+name: E2E
+
+# AUTHORED IN M4, NEVER RUN ON GITHUB YET (nothing has been pushed). Both jobs need network access
+# to public read-only providers (xStocks catalog, Jupiter, a public mainnet RPC for cloning). No
+# secret is required and NO mainnet transaction is ever sent: the trade job buys on a LOCAL fork.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "17 3 * * *" # nightly; providers can rate-limit, so not on every PR yet
+  pull_request:
+    paths:
+      - "apps/web/features/trade/**"
+      - "apps/web/features/wallet/**"
+      - "apps/web/server/auth/**"
+      - "apps/web/middleware.ts"
+      - "apps/web/e2e/**"
+
+concurrency:
+  group: e2e-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  NEXT_TELEMETRY_DISABLED: "1"
+  TURBO_TELEMETRY_DISABLED: "1"
+
+jobs:
+  smoke:
+    name: v1 pages, axe light/dark (M3 suite)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.31.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @aroma/web exec playwright install --with-deps chromium
+      - name: Build with v1 on (placeholder env, connects to nothing)
+        run: |
+          set -a; . apps/web/.env.example; set +a
+          AROMA_V1_ENABLED=true pnpm build:web
+      - name: Playwright smoke + axe
+        run: |
+          set -a; . apps/web/.env.example; set +a
+          pnpm --filter @aroma/web test:e2e
+      - if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: smoke-report
+          path: apps/web/test-results
+
+  trade-fork:
+    name: Buy flow on a local mainnet fork (M4)
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.31.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @aroma/web exec playwright install --with-deps chromium
+      - name: Install the Solana CLI (solana-test-validator)
+        run: |
+          sh -c "$(curl -sSfL https://release.anza.xyz/stable/install)"
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> "$GITHUB_PATH"
+      - name: Record routes, clone accounts, build with the E2E wallet, run the trade suite
+        run: pnpm --filter @aroma/web e2e:fork
+      # The recorded fixtures (Jupiter routes, cloned-account list) are kept as files for replay
+      # and diagnosis. They contain public chain data only.
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fork-fixtures
+          path: |
+            .e2e-fork/routes.json
+            .e2e-fork/accounts
+            apps/web/test-results
+          if-no-files-found: ignore
+      - name: The production build must not contain the E2E wallet
+        run: |
+          set -a; . apps/web/.env.example; set +a
+          pnpm build:web

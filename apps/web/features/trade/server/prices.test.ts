@@ -15,6 +15,23 @@ describe("freshPrices", () => {
       prices: [{ mint: mint(1), price: { raw: "10125000000", decimals: 8 } }],
     });
   });
+  it("retries once after a 429, then reports what was observed", async () => {
+    let calls = 0;
+    const out = await freshPrices(
+      [mint(1)],
+      {
+        getPrices: async () => {
+          calls++;
+          if (calls === 1)
+            throw Object.assign(new Error("429"), { statusCode: 429 });
+          return { [mint(1)]: 2 };
+        },
+      },
+      () => 0,
+    );
+    expect(calls).toBe(2);
+    expect(out.prices).toHaveLength(1);
+  });
   it("an upstream failure is UPSTREAM_UNAVAILABLE", async () => {
     await expect(
       freshPrices([mint(1)], {

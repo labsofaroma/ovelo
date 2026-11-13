@@ -1,5 +1,8 @@
 node_modules
 .next
+.next-e2e
+# M4 E2E local fork (solana-test-validator ledger, recorded routes, account dumps, run logs)
+.e2e-fork/
 dist
 target
 .anchor

@@ -115,8 +115,9 @@ function BasketBuy({
   rows: readonly MarketRow[];
 }) {
   const byMint = new Map(rows.map((row) => [row.mint, row]));
+  // A live order needs every constituent listed, verified and unpaused. A missing catalog token
+  // price does not block it: the Jupiter quote and the mainnet simulation price the order.
   const blocked =
-    !basket.available ||
     basket.missingSymbols.length > 0 ||
     basket.members.some((m) => {
       const row = byMint.get(m.mint);

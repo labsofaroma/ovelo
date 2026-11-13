@@ -22,16 +22,29 @@ export const pricesQuerySchema = z
 
 export { pricesResponseSchema, type PricesResponse } from "../prices-schema";
 
+/** api.jup.ag needs a key; without one, Jupiter's keyless host (rate-limited) is used. */
+function defaultPriceClient(): JupiterPriceClient {
+  const apiKey = process.env.JUPITER_API_KEY?.split(",")[0]?.trim();
+  return new JupiterPriceClient(
+    apiKey ? { apiKey } : { baseUrl: "https://lite-api.jup.ag/price/v3" },
+  );
+}
+
 export async function freshPrices(
   mints: readonly string[],
-  client: Pick<JupiterPriceClient, "getPrices"> = new JupiterPriceClient({
-    apiKey: process.env.JUPITER_API_KEY?.split(",")[0]?.trim() || undefined,
-  }),
+  client: Pick<JupiterPriceClient, "getPrices"> = defaultPriceClient(),
   now: () => number = Date.now,
 ): Promise<PricesResponse> {
   let prices: Record<string, number>;
   try {
-    prices = await client.getPrices([...mints]);
+    try {
+      prices = await client.getPrices([...mints]);
+    } catch (first) {
+      // One paced retry when Jupiter rate-limits (keyless deployments share a small quota).
+      if ((first as { statusCode?: unknown }).statusCode !== 429) throw first;
+      await new Promise((resolve) => setTimeout(resolve, 1_500));
+      prices = await client.getPrices([...mints]);
+    }
   } catch (cause) {
     throw new AppError("UPSTREAM_UNAVAILABLE", {
       detail: "Jupiter price request failed",

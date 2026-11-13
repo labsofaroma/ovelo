@@ -16,9 +16,16 @@ type Bridge = {
   sign: (unsigned: string[]) => Promise<string[]>;
 };
 
-export default function E2EStack({ children }: { children: ReactNode }) {
+export default function E2EStack({
+  children,
+  initiallyOpen = false,
+}: {
+  children: ReactNode;
+  initiallyOpen?: boolean;
+}) {
   const [bridge, setBridge] = useState<Bridge | null>(null);
-  const [connected, setConnected] = useState(false);
+  // A connect click made before this chunk loaded still connects.
+  const [connected, setConnected] = useState(initiallyOpen);
   useEffect(() => {
     const found = (window as unknown as { aromaE2EWallet?: Bridge })
       .aromaE2EWallet;

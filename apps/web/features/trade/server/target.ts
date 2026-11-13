@@ -26,7 +26,9 @@ export function resolveTarget(
           const basket = view.baskets.find((b) => b.id === basketId);
           if (!basket)
             throw new AppError("NOT_FOUND", { detail: "unknown basket" });
-          if (!basket.available || basket.missingSymbols.length)
+          // Completeness, not a catalog price, gates a live order: the Jupiter quote and the
+          // mainnet simulation price it (M4 decision). Halts and verification are checked below.
+          if (basket.missingSymbols.length)
             throw new AppError("ASSET_UNAVAILABLE", {
               publicMessage:
                 "This basket is missing issuer-listed assets right now. No partial basket will be purchased.",

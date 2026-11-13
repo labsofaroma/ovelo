@@ -1,7 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { z } from "zod";
 import { AppError } from "./errors";
-import { errorResponse, parse, parseValue, readLimitedJson } from "./http";
+import {
+  assertSameOrigin,
+  errorResponse,
+  parse,
+  parseValue,
+  readLimitedJson,
+} from "./http";
 
 const chunked = (...parts: string[]) =>
   new Request("http://localhost/", {
@@ -113,5 +119,42 @@ describe("errorResponse", () => {
       code: "INTERNAL",
       message: "Something went wrong.",
     });
+  });
+});
+
+describe("assertSameOrigin (AUDIT M-6)", () => {
+  const post = (url: string, headers: Record<string, string>) =>
+    new Request(url, { method: "POST", headers });
+  it("accepts the origin the browser used even when request.url names localhost (next start)", () => {
+    // Found by the M4 fork E2E: Next rewrote the host to localhost and a same-site POST was refused.
+    expect(() =>
+      assertSameOrigin(
+        post("http://localhost:3200/api/v1/trade/quote", {
+          host: "127.0.0.1:3200",
+          origin: "http://127.0.0.1:3200",
+        }),
+      ),
+    ).not.toThrow();
+  });
+  it("accepts no Origin (native clients) and refuses a foreign one", () => {
+    expect(() =>
+      assertSameOrigin(post("https://aroma.example/x", {})),
+    ).not.toThrow();
+    expect(() =>
+      assertSameOrigin(
+        post("https://aroma.example/x", {
+          host: "aroma.example",
+          origin: "https://evil.example",
+        }),
+      ),
+    ).toThrowError(expect.objectContaining({ code: "ORIGIN_FORBIDDEN" }));
+  });
+  it("ignores forwarded host headers unless the proxy is trusted", () => {
+    const spoofed = post("https://aroma.example/x", {
+      host: "aroma.example",
+      "x-forwarded-host": "evil.example",
+      origin: "https://evil.example",
+    });
+    expect(() => assertSameOrigin(spoofed)).toThrow();
   });
 });

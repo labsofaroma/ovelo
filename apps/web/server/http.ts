@@ -114,10 +114,23 @@ export function errorResponse(
 export function assertSameOrigin(request: Request): void {
   const origin = request.headers.get("origin");
   if (!origin) return;
-  const own = new URL(request.url).origin;
+  const url = new URL(request.url);
+  // `request.url` can carry the server's own hostname (e.g. localhost under `next start`), so the
+  // origin the browser actually used is rebuilt from Host (forwarded headers only behind a
+  // trusted proxy), exactly as middleware.ts does.
+  const trustProxy =
+    process.env.VERCEL === "1" || process.env.AROMA_TRUST_PROXY === "true";
+  const host =
+    (trustProxy && request.headers.get("x-forwarded-host")) ||
+    request.headers.get("host");
+  const protocol =
+    (trustProxy &&
+      request.headers.get("x-forwarded-proto")?.split(",")[0]?.trim()) ||
+    url.protocol.replace(":", "");
   const allowed = new Set(
     [
-      own,
+      url.origin,
+      host ? `${protocol}://${host}` : undefined,
       process.env.AROMA_SITE_URL,
       ...(process.env.AROMA_ALLOWED_ORIGINS ?? "").split(","),
     ]

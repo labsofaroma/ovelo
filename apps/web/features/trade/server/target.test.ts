@@ -98,6 +98,28 @@ describe("resolveTarget", () => {
     ).toBe("ASSET_UNAVAILABLE");
   });
 
+  it("an unpriced but complete basket can be quoted (the route prices it)", () => {
+    const unpriced = {
+      ...view,
+      baskets: view.baskets.map((b) => ({
+        ...b,
+        available: false,
+        unpricedSymbols: ["DOWN"],
+      })),
+    };
+    expect(
+      code(() =>
+        resolveTarget(
+          {
+            target: { kind: "basket", basketId: "test-basket" },
+            inputMint: USDC_MINT,
+          },
+          unpriced,
+        ),
+      ),
+    ).toBe("ok");
+  });
+
   it("refuses an incomplete basket instead of buying part of it", () => {
     const incomplete = {
       ...view,

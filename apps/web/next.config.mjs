@@ -1,6 +1,9 @@
 /** @type {import('next').NextConfig} */
 const config = {
   poweredByHeader: false,
+  // E2E builds (with the test wallet bridge) go to their own directory so they can never be
+  // mistaken for, or overwrite, the production build in .next (e2e/fork/run.ts).
+  distDir: process.env.AROMA_NEXT_DIST_DIR || ".next",
   // Always inlined, even when unset, so webpack can drop the E2E test wallet and the Privy stack at
   // compile time (features/wallet/WalletBoundary.tsx). An unset NEXT_PUBLIC_* is otherwise left
   // as a runtime lookup and its dynamic import still emits a chunk. The secret scan checks this.

@@ -74,13 +74,18 @@ test("every price on markets carries a source and a time", async ({ page }) => {
   await expect(firstPriceCell).toContainText(/Jupiter|issuer|No token price/);
 });
 
-test("stock page: no quote, a disabled trade control labelled coming soon", async ({
+test("stock page: a labelled trade ticket and no quote until one is requested (M4)", async ({
   page,
 }) => {
   await page.goto(stockPath);
-  const trade = page.getByRole("button", { name: /Trade \(coming soon\)/ });
-  await expect(trade).toBeDisabled();
-  await expect(page.getByText("no quote is shown")).toBeVisible();
+  await expect(
+    page.getByRole("radio", { name: "Mainnet spot purchase" }),
+  ).toBeChecked();
+  await expect(
+    page.getByRole("radio", { name: "Paper practice" }),
+  ).toBeVisible();
+  await expect(page.getByRole("button", { name: "Get quote" })).toBeDisabled();
+  await expect(page.getByText(/minimum received/i)).toHaveCount(0);
 });
 
 test("stale state appears when the observation ages (forced via the browser clock)", async ({

@@ -72,7 +72,7 @@ The SDK still ships Raydium CPMM helpers (`DEVNET_RAYDIUM_CPMM_PROGRAM`, `decode
 - When the map reaches 10,000 keys, **every new IP is rejected** (`return Math.ceil(windowMs/1000)`). An attacker who rotates source IPs fills the map and blocks all new visitors for a minute, repeatedly.
 - Fix: Upstash Ratelimit (Redis is already a dependency) or Vercel WAF rules, and evict the oldest key instead of failing closed for everyone.
 
-**Status: Partial (groundwork only; still open until M4).** `server/ratelimit.ts` provides an Upstash sliding-window limiter that fails closed on a config error and evicts the oldest key instead of rejecting new ones (tested). `middleware.ts` still uses the old in-memory limiter; M4 rewires it.
+**Status: Addressed in code (M4); Upstash path not verified against a live Redis.** `middleware.ts` now runs on the Node.js runtime and uses `server/ratelimit.ts` (Upstash sliding window, shared across instances and regions) with separate **read** (120/min), **write** (20/min) and **trade** (10/min) buckets per client IP, for prototype and v1 API routes alike. When Redis is unreachable it degrades to a bounded per-process limiter that evicts the oldest key and never rejects every new identifier (tested: `server/ratelimit.test.ts`, `server/middleware.test.ts`). With v1 on in production, a missing Redis fails closed. The old `createRequestLimiter` remains in `lib/server/request-policy.ts` only for its own legacy test, and is deleted at M7. Not verified: 429s from a real Upstash instance (no credentials in M4; the local fallback produced the 429s in tests and E2E).
 
 ### H-5 (High): the devnet faucet can be drained
 `/api/faucet` has no authentication or CAPTCHA. Its only guard is a **15-second, in-memory, per-wallet cooldown** (`lib/server/faucet.ts`). Generating fresh wallets bypasses it completely, and each claim sends up to 1,000 KUSD + 0.1 SOL. The SOL top-up also swallows every error silently.
@@ -81,18 +81,24 @@ The SDK still ships Raydium CPMM helpers (`DEVNET_RAYDIUM_CPMM_PROGRAM`, `decode
 ### H-6 (High): permissive CSP
 `script-src 'self' 'unsafe-inline'` cancels most XSS protection on a page that signs wallet transactions. `connect-src https: wss:` allows exfiltration to any host. `img-src https:` is broad. Move to nonce-based scripts (Next.js middleware nonces) and an explicit list of connect hosts (RPC, Jupiter, Pyth, Privy, Jito, Upstash is server-side only).
 
+**Status: Addressed for v1 (M4); Partial overall.**
+- `/v1/*` and `/api/v1/*` get a per-request nonce CSP from middleware (`server/csp.ts`): `script-src 'self' 'nonce-…' 'strict-dynamic'` with no `'unsafe-inline'`, an explicit `connect-src` derived from configuration (browser RPC and its websocket, Sentry ingest, Plausible) plus the fixed client endpoints (Jupiter, Hermes, Privy, Jito, WalletConnect, Turnstile), no wildcard schemes, and an `img-src` limited to the issuer logo hosts. All v1 pages trade, and they have their own root layouts, so no prototype script runs there.
+- **Still open, M7:** prototype routes keep the old policy. `next.config.mjs` scopes it to non-v1 paths. To tighten them: render the prototype root through a nonce-aware layout (its inline theme script needs the nonce), list the hosts the prototype calls from the browser (its own `/api`, Privy, WalletConnect, Vercel scripts), and drop `'unsafe-inline'`. That is easiest once the prototype pages are deleted at M7.
+
 ### M-5 (Medium): internal error messages reach clients
 19 API handlers return `error.message` directly (for example `faucet`, `recurring/collect`). RPC errors, keypair-parse failures and Redis errors can leak infrastructure details. Map errors to user-safe codes and log the details on the server.
 
-**Status: Partial.** `server/errors.ts` (`mapError`) and `server/http.ts` return only `{ code, message }`; the new `/api/v1/health` uses them. The 19 prototype handlers still return `error.message`; they move to `mapError` as each route is rewritten (M4 to M6).
+**Status: Partial (M4 covered the trade and portfolio routes).** Every `/api/v1` handler (`health`, `revalidate`, `trade/quote`, `trade/submit`, `trade/:id`, `portfolio/:wallet`, `prices`) returns only `{ code, message }` through `mapError`. Upstream, RPC and simulation details go to logs, and the user sees fixed, coded messages (`server/errors.ts` gained trade codes; route-contract tests in `features/trade/routes.test.ts` check that an internal error text never reaches the body). The prototype handlers that M4 replaced (`trade/order`, `trade/execute`, `transaction/execute`, `buy-basket`, `bundles/execute`, `bundles/status`, `portfolio`) still serve the prototype until M7 and still return `error.message`. The remaining prototype handlers (creators, recurring, faucet, …) move in M5/M6.
 
 ### M-6 (Medium): a requirement on a missing `Origin` header
 `allowedOrigin` accepts requests that have no `Origin`, because native apps omit it. That is fine for unauthenticated reads. Make sure every state-changing route also needs a signature or HMAC token, as trade, creator and collector routes already do. **`/api/faucet` does not.**
 
+**Status: Addressed for `/api/v1` (M4); `/api/faucet` still pending (M6).** Every state-changing `/api/v1` route rejects a foreign `Origin` twice: once in middleware (allowlist) and once in the handler (`assertSameOrigin` in `server/http.ts`). `POST /api/v1/trade/submit` also needs the HMAC trade authorization and a valid wallet signature on every authorized message. `POST /api/v1/trade/quote` changes no state and signs nothing. `POST /api/v1/revalidate` needs its bearer secret. A request with no `Origin` is accepted only because of those credentials. Tested in `features/trade/routes.test.ts` and `server/middleware.test.ts`.
+
 ### M-7 (Medium): no real health check or observability
 `/api/health` returns a hard-coded `ok`. There is no RPC, Redis or Jupiter probe, no structured logging, no Sentry or OpenTelemetry, and no alerting on collector failures.
 
-**Status: Partial.** Added: `GET /api/v1/health` (RPC genesis and slot lag, Redis, Postgres, with timeouts), pino JSON logs with redaction, and Sentry (no-op without a DSN). Still pending: Jupiter/Pyth probes, alerting, OpenTelemetry. The old `/api/health` is unchanged.
+**Status: Partial.** Added: `GET /api/v1/health` (RPC genesis and slot lag, Redis, Postgres, with timeouts), pino JSON logs with redaction, and Sentry (no-op without a DSN). **M4:** Jupiter Price v3 and Pyth Hermes probes (`server/health-providers.ts`; keyless or rate-limited Jupiter is `degraded`, and a stale Pyth publish time is `degraded`), plus one structured, redacted log line and a Sentry breadcrumb per trade stage (`server/telemetry.ts`; wallets and signatures become fingerprints). Still pending: alerting (keeper alerts at M6) and OpenTelemetry. The old `/api/health` is unchanged.
 
 ### M-8 (Medium): very large components
 `Details.tsx` (1,362 lines), `Account.tsx` (926), `RecurringInvestingPanel.tsx` (864), `BasketBuilder.tsx` (803), `DevnetPlansList.tsx` (757). There is no data-fetching layer (React Query/SWR), and state lives across `localStorage` in seven components. This makes the UI hard to test and to change.
@@ -111,12 +117,12 @@ The SDK still ships Raydium CPMM helpers (`DEVNET_RAYDIUM_CPMM_PROGRAM`, `decode
 - React 18 with Next 15. Plan the move to React 19.
 
 **Status by item:**
-- HSTS set twice, no `includeSubDomains; preload`: **Pending (M4, with the middleware and CSP rewrite).**
+- HSTS set twice, no `includeSubDomains; preload`: **Addressed (M4).** Middleware sends one `Strict-Transport-Security: max-age=63072000; includeSubDomains; preload` header on every HTTPS response (prototype and v1), never on loopback HTTP. Preload is a domain-wide commitment: see `docs/M4-DEPLOY.md`.
 - No OG image in `lib/metadata.ts`: **Addressed for v1 (M3).** `GET /v1/og.png` is a generated, branded static image (no prices or figures) and every v1 page references it through `features/shared/metadata.ts`, with canonical URLs. The prototype's `lib/metadata.ts` still points at the missing PNG; it is replaced at M7 with the prototype pages.
 - Mixed code style: **Partial.** Prettier is configured and enforced for new code only; prototype files keep their style until they are rewritten.
 - `next lint` with no ESLint config: **Addressed.** ESLint 9 flat config via `packages/config`, run by `pnpm lint` through Turbo (0 errors; 219 warnings in prototype code).
 - `tsconfig.tsbuildinfo` and `.DS_Store` in the tree: **Addressed.** Deleted and ignored (they were never tracked).
-- React 18 with Next 15: **Pending (M1).**
+- React 18 with Next 15: **Addressed (M4).** React 19.2.9 across `apps/web` and `packages/ui`, with peer ranges checked.
 
 ---
 
