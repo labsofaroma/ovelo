@@ -13,6 +13,7 @@ Node 24.12.0, pnpm 10.31.0. Copy `apps/web/.env.example` to `apps/web/.env.local
 - Chain, market and basket helpers → `apps/web/lib/sdk/` (import as `@/lib/sdk`). There is no separate SDK package; no build step.
 - Contract changes → `packages/anchor/programs/aroma_guard/`. Then run `pnpm --filter @aroma/anchor idl:sync` (it writes into `apps/web/lib/sdk/guard/`).
 - Design tokens → `apps/web/styles/foundation.css`. Design context → `.21st/DESIGN.md`.
+- New (v1) code uses `packages/ui/tokens.css` through `@aroma/ui`. `foundation.css` is kept for the prototype only, until M7.
 
 ## Non-negotiables
 1. **Never handle user private keys.** The server prepares transactions; wallets sign them.

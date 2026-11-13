@@ -164,7 +164,9 @@ _Fixed:_ three web tests imported `packages/sdk/node_modules/@solana/kit-v1`. Th
 ### M-12 (Medium): two Solana SDK generations side by side
 `@solana/web3.js` v1, `@solana/kit` 3.x (web) **and** 7.1.1 (sdk) **and** `kit-v1` aliased to 8.3.0. This bloats the bundle and invites type mismatches. Pick one kit version.
 
-**Status: Pending (M2).** No dependency changes in M0.
+**Status: Partial (one kit addressed in M2; web3.js v1 still in server code).** Checked in M4:
+- **One `@solana/kit`:** `apps/web` depends on `@solana/kit` 7.1.1 only, enforced by `lib/sdk/sdk-rules.test.ts`. The lockfile still carries 5.5.1 (transitive, via Privy → `x402` / `@coinbase/cdp-sdk`) and 6.10.0 (dev only, via `litesvm` in `packages/anchor`). Neither is imported by app code. `kit-v1` (8.3.0) is gone.
+- **web3.js v1:** in the v1 client bundle it is confined to the wallet bridge (`features/wallet`, M4). It is **not** yet gone elsewhere. Server-side it is still used by `lib/sdk` (`baskets/mainnet.ts`, `baskets/bundle.ts`, `jupiter/simulate.ts`, `jupiter/route-plan.ts`, `core/mint-precision.ts`, `pyth/solana.ts`, `markets/sources/backpack.ts`, plus the prototype-only `guard/*` and `subscriptions/*`) and by `server/rpc.ts` (`Connection`). The prototype uses it in about 40 files. Moving those server modules to kit is open work; the prototype files go at M7.
 
 ### L-3 (Low)
 - `.gitignore` hides many internal docs (`docs/audits/`, `docs/deployment.md`, `TODO.md`). Fine, but contributors then lack them, so keep public summaries.
