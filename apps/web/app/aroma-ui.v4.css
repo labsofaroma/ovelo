@@ -1,0 +1,22 @@
+/*
+ * Tailwind v4 entry for the NEW route groups ((app), (marketing)). Imported by their layouts.
+ * Compiled by Tailwind v4 only (postcss/tailwind-router.cjs routes `*.v4.css`); the prototype's
+ * globals.css chain stays on v3.
+ *
+ * Differences from a stock v4 entry, all on purpose:
+ *  - No preflight: the prototype's foundation.css (loaded globally by the root layout) already
+ *    resets the page, and a second reset would restyle prototype routes.
+ *  - Utilities are NOT wrapped in a cascade layer. The prototype's global rules are unlayered
+ *    (`button { border: 0 }`, `:focus-visible { outline: ... }`), and unlayered CSS always beats
+ *    layered CSS, so layered utilities would silently lose on these routes. Unlayered utilities
+ *    win by specificity instead.
+ *  - Source detection is off; only the new groups and @aroma/ui are scanned.
+ */
+@import "tailwindcss-v4/theme.css" layer(theme);
+@import "@aroma/ui/tokens.css";
+@import "@aroma/ui/theme.css";
+@import "tailwindcss-v4/utilities.css" source(none);
+
+@source "./(app)";
+@source "./(marketing)";
+@source "../../../packages/ui/src";

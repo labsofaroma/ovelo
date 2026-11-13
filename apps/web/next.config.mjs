@@ -2,6 +2,8 @@
 const config = {
   poweredByHeader: false,
   compress: true,
+  // @aroma/ui ships TypeScript source and CSS Modules; Next compiles it with the app.
+  transpilePackages: ["@aroma/ui"],
   images: {
     formats: ["image/avif", "image/webp"],
     remotePatterns: [

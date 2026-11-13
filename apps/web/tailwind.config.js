@@ -3,6 +3,9 @@ module.exports = {
   content: [
     './app/**/*.{js,ts,jsx,tsx,mdx}',
     './components/**/*.{js,ts,jsx,tsx,mdx}',
+    // New route groups are styled by Tailwind v4 (app/aroma-ui.v4.css); keep v3 out of them.
+    '!./app/(app)/**',
+    '!./app/(marketing)/**',
   ],
   theme: {
     extend: {
