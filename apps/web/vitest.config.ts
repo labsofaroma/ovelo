@@ -44,6 +44,10 @@ export default defineConfig({
         "lib/sdk/baskets/**/*.ts",
         "lib/sdk/paper/**/*.ts",
         "lib/sdk/trade/**/*.ts",
+        // M4 gate (REWRITE-PLAN §8): server infrastructure and feature server modules, 80%.
+        "server/**/*.ts",
+        "features/*/server.ts",
+        "features/*/server/**/*.ts",
       ],
       exclude: [
         "**/*.test.ts",
@@ -51,8 +55,32 @@ export default defineConfig({
         "**/idl/**",
         "**/test-fixtures.ts",
         "**/types.ts",
+        "**/test-*.ts",
+        "server/test/**",
+        // Boot/CLI entry points and generated SQL are exercised by the build, not unit tests.
+        "server/db/migrate.ts",
+        "server/db/migrations/**",
       ],
-      thresholds: { lines: 85, functions: 85, statements: 85, branches: 80 },
+      thresholds: {
+        "lib/sdk/**/*.ts": {
+          lines: 85,
+          functions: 85,
+          statements: 85,
+          branches: 80,
+        },
+        "server/**/*.ts": {
+          lines: 80,
+          functions: 80,
+          statements: 80,
+          branches: 70,
+        },
+        "features/*/server{.ts,/**/*.ts}": {
+          lines: 80,
+          functions: 80,
+          statements: 80,
+          branches: 70,
+        },
+      },
     },
   },
 });

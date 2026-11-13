@@ -46,7 +46,14 @@ const serverShape = {
   LOG_LEVEL: z
     .enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"])
     .default("info"),
-  SOLANA_RPC_URL: httpsUrl.optional(),
+  /** HTTPS mainnet RPC. Loopback http is accepted only for an E2E local fork (see superRefine). */
+  SOLANA_RPC_URL: z
+    .url({ message: "must be a URL" })
+    .refine((value) => {
+      const url = new URL(value);
+      return !url.username && !url.password;
+    }, "must not embed credentials")
+    .optional(),
   DATABASE_URL: postgresUrl.optional(),
   UPSTASH_REDIS_REST_URL: httpsUrl.optional(),
   UPSTASH_REDIS_REST_TOKEN: optionalText,
@@ -149,6 +156,17 @@ const flatSchema = z.object(flatShape).superRefine((env, ctx) => {
           message: "must not be set in a production deployment",
         });
     }
+  }
+  if (env.SOLANA_RPC_URL && !env.SOLANA_RPC_URL.startsWith("https://")) {
+    const loopback = /^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?\/?$/.test(
+      env.SOLANA_RPC_URL,
+    );
+    if (!loopback || !env.AROMA_V1_TEST_FORK_GENESIS)
+      ctx.addIssue({
+        code: "custom",
+        path: ["SOLANA_RPC_URL"],
+        message: "must be an https:// URL",
+      });
   }
   if (
     env.AROMA_TRADE_SECRET_PREVIOUS &&
