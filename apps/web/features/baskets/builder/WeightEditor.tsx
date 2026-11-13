@@ -139,32 +139,34 @@ export function WeightEditor({ rows, onChange, onRemove }: WeightEditorProps) {
               <li key={row.mint} className="flex items-center gap-3 px-3 py-2">
                 <label
                   htmlFor={inputId}
-                  className="min-w-0 flex-1 truncate text-body font-semibold"
+                  className="min-w-20 flex-1 truncate text-body font-semibold"
                 >
                   {row.symbol}
                   <span className="sr-only"> weight, percent</span>
                 </label>
-                <div className="flex items-center gap-1">
-                  <Input
-                    id={inputId}
-                    size="sm"
-                    inputMode="decimal"
-                    autoComplete="off"
-                    className="w-24 text-right tabular-nums"
-                    value={text}
-                    invalid={invalid}
-                    aria-describedby={statusId}
-                    onChange={(event) =>
-                      setEditing({ mint: row.mint, text: event.target.value })
-                    }
-                    onBlur={() => commit(row.mint)}
-                    onKeyDown={(event) => onKeyDown(event, row)}
-                  />
+                <div className="flex shrink-0 items-center gap-1">
+                  <div className="w-20 sm:w-24">
+                    <Input
+                      id={inputId}
+                      size="sm"
+                      inputMode="decimal"
+                      autoComplete="off"
+                      className="text-right tabular-nums"
+                      value={text}
+                      invalid={invalid}
+                      aria-describedby={statusId}
+                      onChange={(event) =>
+                        setEditing({ mint: row.mint, text: event.target.value })
+                      }
+                      onBlur={() => commit(row.mint)}
+                      onKeyDown={(event) => onKeyDown(event, row)}
+                    />
+                  </div>
                   <span aria-hidden="true" className="text-small text-muted">
                     %
                   </span>
                 </div>
-                <span className="w-20 text-right text-caption text-muted tabular-nums">
+                <span className="w-20 text-right text-caption text-muted tabular-nums max-sm:hidden">
                   {row.weightBps.toLocaleString("en-US")} bps
                 </span>
                 <IconButton
