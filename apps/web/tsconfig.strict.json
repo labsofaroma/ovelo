@@ -12,6 +12,7 @@
     "observability/**/*.ts",
     "instrumentation-client.ts",
     "server/**/*.ts",
+    "lib/sdk/core/**/*.ts",
     "instrumentation*.ts",
     "sentry.*.ts",
     "scripts/check-env.ts",

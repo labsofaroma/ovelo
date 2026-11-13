@@ -1,3 +1,4 @@
+import { fromTokenAmount, toTokenAmount } from "./core/amounts";
 import { MAINNET_USDC_MINT, type MarketAsset, type MarketSnapshot } from "./markets";
 
 /** Mainnet swap contracts shared by web and mobile. Amounts are decimal strings. */
@@ -386,35 +387,6 @@ export function holdingToSwapToken(holding: MainnetHolding): SwapToken {
     priceUsd: holding.priceUsd,
     tradingHalted: holding.tradingHalted === true,
   };
-}
-/** Parse without floating point rounding or accepting exponent / negative notation. */
-export function toTokenAmount(amount: string, decimals: number): string {
-  if (!Number.isInteger(decimals) || decimals < 0 || decimals > 18)
-    throw new Error("Unsupported token precision.");
-  if (!/^(0|[1-9]\d*)(\.\d+)?$/.test(amount.trim()))
-    throw new Error("Enter a positive decimal amount.");
-  const [whole, fraction = ""] = amount.trim().split(".");
-  if (fraction.length > decimals)
-    throw new Error(`This token supports up to ${decimals} decimal places.`);
-  const value = BigInt(whole + fraction.padEnd(decimals, "0"));
-  if (value <= BigInt(0) || value > BigInt("18446744073709551615"))
-    throw new Error("Amount is outside the supported range.");
-  return value.toString();
-}
-export function fromTokenAmount(rawAmount: string, decimals: number): string {
-  if (
-    !/^\d+$/.test(rawAmount) ||
-    !Number.isInteger(decimals) ||
-    decimals < 0 ||
-    decimals > 255
-  )
-    throw new Error("Invalid token amount.");
-  if (decimals === 0) return rawAmount;
-  const value = rawAmount.padStart(decimals + 1, "0");
-  return `${value.slice(0, -decimals)}.${value.slice(-decimals)}`.replace(
-    /\.?0+$/,
-    "",
-  );
 }
 export function canApproveTrade(
   order: Pick<MainnetTradeOrder, "taker" | "transaction" | "expiresAt">,

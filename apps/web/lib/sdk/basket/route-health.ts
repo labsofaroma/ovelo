@@ -1,4 +1,4 @@
-import { toTokenAmount } from "../trading";
+import { toTokenAmount } from "../core/amounts";
 
 export const ROUTE_ACCOUNT_TIERS = [32, 40, 48] as const;
 export type RouteHealthStatus =

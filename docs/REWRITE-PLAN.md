@@ -305,6 +305,13 @@ Each milestone is merged to `main` behind feature flags. The prototype stays dep
 8. **`AGENTS.md` still says design tokens live in `apps/web/styles/foundation.css`.** True for the prototype until M7; not edited here (outside M1's docs scope). Suggest one added line pointing new code at `packages/ui/tokens.css`.
 9. **New dependencies** (all dev unless noted): `@base-ui/react` and `lucide-react` (same versions as the prototype) in `packages/ui`; `tailwindcss` 4, `@tailwindcss/vite`, `@ladle/react`, `vite`, `@vitejs/plugin-react`, `jsdom`, Testing Library, `vitest-axe`, `@playwright/test`, `@axe-core/playwright`, `tsx`, `eslint-plugin-react-hooks`; `tailwindcss-v4` (alias) and `@tailwindcss/postcss` in `apps/web`. Playwright's Chromium is downloaded on demand.
 
+### M2 status: in progress on branch `m2-shared-helpers` (not pushed, not merged)
+
+- [x] Baseline: 472 prototype tests (456 pass, 16 skipped), 91.4% lines over the files the tests load, 10 SDK files over 400 lines, 0 exported symbols with `any`, 2 stray `any` keywords (`basket/performance.ts`). `scripts/sdk-inventory.ts` reproduces it.
+- [x] One `@solana/kit` (7.1.1): the aliased 8.3.0 is gone. 7.1.1 builds and encodes v1 messages at runtime (tests unchanged) but its types stop at legacy/0, so `basket/mainnet.ts` has one documented shim. `@solana/subscriptions` requires `^7`. Unused `@solana-program/*` and `@solana/sysvars` removed.
+- [x] `lib/sdk/core/` (amounts, errors, mint-precision) ported with its tests converted to Vitest (98.7% lines), under the strict tsconfig. `scripts/node-test-to-vitest.ts` converts the rest mechanically.
+- [ ] Remaining modules, in order: markets, pyth, jupiter, research, baskets, paper. Convert tests per module; split files over 400 lines; strict tsconfig + coverage per module.
+
 **Critical path:** M0 → M2 → M4 (spot trading is the revenue path). M6 depends on your contract being deployed. Develop it against a local LiteSVM build until then.
 
 ---

@@ -1,7 +1,6 @@
-const { test } = require("node:test");
-const assert = require("node:assert/strict");
-const { PublicKey, SystemProgram } = require("@solana/web3.js");
-const {
+import { expect, test } from "vitest";
+import { PublicKey, SystemProgram } from "@solana/web3.js";
+import {
   MintLayout,
   MINT_SIZE,
   ACCOUNT_SIZE,
@@ -9,10 +8,8 @@ const {
   ExtensionType,
   TOKEN_PROGRAM_ID,
   TOKEN_2022_PROGRAM_ID,
-} = require("@solana/spl-token");
-const {
-  createMainnetMintPrecisionResolver,
-} = require("../../lib/sdk/mint-precision");
+} from "@solana/spl-token";
+import { createMainnetMintPrecisionResolver } from "./mint-precision";
 
 const MAINNET = "5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d";
 const mint = new PublicKey(Buffer.alloc(32, 7));
@@ -56,13 +53,13 @@ test("reads authoritative precision from initialized SPL and extended Token-2022
       const resolve = createMainnetMintPrecisionResolver({
         getGenesisHash: async () => MAINNET,
         getAccountInfo: async (address, commitment) => {
-          assert.equal(address.toBase58(), mint.toBase58());
-          assert.equal(commitment, "confirmed");
+          expect(address.toBase58()).toBe(mint.toBase58());
+          expect(commitment).toBe("confirmed");
           return mintAccount({ token2022, decimals });
         },
       });
-      assert.equal(await resolve(mint.toBase58()), decimals);
-      assert.equal(await resolve(mint), decimals);
+      expect(await resolve(mint.toBase58())).toBe(decimals);
+      expect(await resolve(mint)).toBe(decimals);
     }
   }
 });
@@ -76,8 +73,8 @@ test("rejects wrong networks and malformed, non-mint, uninitialized or unsupport
       return mintAccount();
     },
   });
-  await assert.rejects(wrongNetwork(mint), /not Solana mainnet/);
-  assert.equal(accountReads, 0);
+  await await expect(wrongNetwork(mint)).rejects.toThrow(/not Solana mainnet/);
+  expect(accountReads).toBe(0);
 
   const wrongType = mintAccount({ token2022: true });
   wrongType.data[ACCOUNT_SIZE] = AccountType.Account;
@@ -95,7 +92,7 @@ test("rejects wrong networks and malformed, non-mint, uninitialized or unsupport
       getGenesisHash: async () => MAINNET,
       getAccountInfo: async () => account,
     });
-    await assert.rejects(resolve(mint));
+    await await expect(resolve(mint)).rejects.toThrow();
   }
 });
 
@@ -116,19 +113,18 @@ test("coalesces concurrent reads and refreshes successful precision after its TT
     },
     { cacheTtlMs: 500, now: () => time },
   );
-  assert.deepEqual(
+  expect(
     await Promise.all([resolve(mint), resolve(mint.toBase58()), resolve(mint)]),
-    [8, 8, 8],
-  );
-  assert.equal(genesisReads, 1);
-  assert.equal(mintReads, 1);
+  ).toEqual([8, 8, 8]);
+  expect(genesisReads).toBe(1);
+  expect(mintReads).toBe(1);
   time = 599;
   await resolve(mint);
-  assert.equal(mintReads, 1);
+  expect(mintReads).toBe(1);
   time = 600;
   await resolve(mint);
-  assert.equal(genesisReads, 2);
-  assert.equal(mintReads, 2);
+  expect(genesisReads).toBe(2);
+  expect(mintReads).toBe(2);
 });
 
 test("retries failed genesis or mint reads without retaining a failed in-flight promise", async () => {
@@ -144,20 +140,22 @@ test("retries failed genesis or mint reads without retaining a failed in-flight 
       return mintAccount();
     },
   });
-  await assert.rejects(resolve(mint), /RPC unavailable/);
-  await assert.rejects(resolve(mint), /RPC unavailable/);
-  assert.equal(await resolve(mint), 8);
-  assert.equal(genesisReads, 2);
-  assert.equal(mintReads, 2);
+  await await expect(resolve(mint)).rejects.toThrow(/RPC unavailable/);
+  await await expect(resolve(mint)).rejects.toThrow(/RPC unavailable/);
+  expect(await resolve(mint)).toBe(8);
+  expect(genesisReads).toBe(2);
+  expect(mintReads).toBe(2);
 
   let current = mintAccount({ initialized: false });
   const afterInitialization = createMainnetMintPrecisionResolver({
     getGenesisHash: async () => MAINNET,
     getAccountInfo: async () => current,
   });
-  await assert.rejects(afterInitialization(mint), /not been initialized/);
+  await await expect(afterInitialization(mint)).rejects.toThrow(
+    /not been initialized/,
+  );
   current = mintAccount();
-  assert.equal(await afterInitialization(mint), 8);
+  expect(await afterInitialization(mint)).toBe(8);
 });
 
 test("bounds successful mint caching and coalesces genesis verification across different mints", async () => {
@@ -179,10 +177,10 @@ test("bounds successful mint caching and coalesces genesis verification across d
     return new PublicKey(data);
   });
   await Promise.all(addresses.map(resolve));
-  assert.equal(genesisReads, 1);
-  assert.equal(mintReads, 2049);
-  await resolve(addresses[2048]);
-  assert.equal(mintReads, 2049);
-  await resolve(addresses[0]);
-  assert.equal(mintReads, 2050);
+  expect(genesisReads).toBe(1);
+  expect(mintReads).toBe(2049);
+  await resolve(addresses[2048]!);
+  expect(mintReads).toBe(2049);
+  await resolve(addresses[0]!);
+  expect(mintReads).toBe(2050);
 });

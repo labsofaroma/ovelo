@@ -1,7 +1,7 @@
 import { Buffer } from "buffer";
 import { Connection, PublicKey, VersionedTransaction } from "@solana/web3.js";
 import type { MainnetTradeOrder } from "./trading";
-import { describeSimulationFailure } from "./simulation-errors";
+import { describeSimulationFailure } from "./core/errors";
 
 class SimulationInputError extends Error {}
 

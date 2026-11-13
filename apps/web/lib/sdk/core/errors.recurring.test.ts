@@ -1,6 +1,5 @@
-import assert from "node:assert/strict";
-import test from "node:test";
-import { describeRecurringSimulationFailure } from "../../lib/sdk/simulation-errors";
+import { expect, test } from "vitest";
+import { describeRecurringSimulationFailure } from "./errors";
 
 const guard = "8Fm9HENPAFnyo6L8cHJFx62HHsZ6ez6CPUDuzgKAzrjs";
 const token = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
@@ -16,9 +15,9 @@ test("missing Guard instruction reports the contract mismatch, not insufficient 
     custom(101),
     failed(guard, 101),
   );
-  assert.match(message, /Upgrade the devnet Guard/);
-  assert.match(message, /Adding SOL or KUSD will not fix/);
-  assert.doesNotMatch(message, /pool liquidity/);
+  expect(message).toMatch(/Upgrade the devnet Guard/);
+  expect(message).toMatch(/Adding SOL or KUSD will not fix/);
+  expect(message).not.toMatch(/pool liquidity/);
 });
 
 test("unscoped, earlier, mismatched and downstream error codes cannot diagnose a Guard mismatch", () => {
@@ -34,8 +33,8 @@ test("unscoped, earlier, mismatched and downstream error codes cannot diagnose a
     ],
   ]) {
     const message = describeRecurringSimulationFailure(custom(101), logs);
-    assert.match(message, /instruction 6, program error 101/);
-    assert.doesNotMatch(message, /contract mismatch|Upgrade/);
+    expect(message).toMatch(/instruction 6, program error 101/);
+    expect(message).not.toMatch(/contract mismatch|Upgrade/);
   }
 });
 
@@ -45,18 +44,18 @@ test("devnet failures distinguish SOL rent, test token funds and expired blockha
     [{ InsufficientFundsForRent: { account_index: 1 } }, undefined],
     [custom(1), failed(system, 1)],
   ])
-    assert.match(describeRecurringSimulationFailure(error, logs), /devnet SOL/);
-  assert.match(
+    expect(describeRecurringSimulationFailure(error, logs)).toMatch(
+      /devnet SOL/,
+    );
+  expect(
     describeRecurringSimulationFailure(custom(1), failed(token, 1)),
-    /test KUSD balance and delegated allowance/,
-  );
-  assert.match(
-    describeRecurringSimulationFailure("BlockhashNotFound"),
+  ).toMatch(/test KUSD balance and delegated allowance/);
+  expect(describeRecurringSimulationFailure("BlockhashNotFound")).toMatch(
     /blockhash expired/,
   );
   const unknown = describeRecurringSimulationFailure(
     { endpoint: "provider-secret" },
     ["provider-secret"],
   );
-  assert.doesNotMatch(unknown, /provider-secret|liquidity/);
+  expect(unknown).not.toMatch(/provider-secret|liquidity/);
 });

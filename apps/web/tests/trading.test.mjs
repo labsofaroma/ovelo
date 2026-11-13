@@ -4,15 +4,7 @@ import { Keypair, SystemProgram, TransactionMessage, VersionedTransaction } from
 import tradeAuthorization from '../lib/server/trade-authorization.ts';
 const { authorizeTrade, verifyTradeAuthorization } = tradeAuthorization;
 import sdkTrading from '../lib/sdk/trading.ts';
-const { toTokenAmount, fromTokenAmount, canApproveTrade, classifyTradeExecution, hasCompleteIssuerCatalogs, hasIssuerCatalogsForAssets } = sdkTrading;
-
-test('amount conversion preserves exact token units and rejects invalid precision', () => {
-  assert.equal(toTokenAmount('9007199254.740993', 6), '9007199254740993');
-  assert.equal(fromTokenAmount('9007199254740993', 6), '9007199254.740993');
-  assert.equal(fromTokenAmount('1000000', 6), '1');
-  assert.equal(fromTokenAmount('0', 6), '0');
-  for (const value of ['0', '-1', '1e6', 'NaN', '0.0000001', '18446744073709551616']) assert.throws(() => toTokenAmount(value, 6));
-});
+const { canApproveTrade, classifyTradeExecution, hasCompleteIssuerCatalogs, hasIssuerCatalogsForAssets } = sdkTrading;
 
 function fixture() {
   const wallet = Keypair.generate();

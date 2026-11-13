@@ -30,10 +30,10 @@ import {
   type InvestmentPlanReview,
 } from "../recurring-investing";
 import type { StockResearch } from "../research";
+import { toTokenAmount } from "../core/amounts";
 import {
   classifyTradeExecution,
   MAX_SWAP_SLIPPAGE_BPS,
-  toTokenAmount,
   type MainnetPortfolio,
   type MainnetTradeOrder,
   type MainnetTradeResult,

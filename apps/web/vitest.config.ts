@@ -15,13 +15,21 @@ export default defineConfig({
   },
   test: {
     ...preset.test,
-    // The prototype node:test suites keep running through `test:legacy` until M2 ports them.
-    include: ["server/**/*.test.ts", "observability/**/*.test.ts"],
+    // The prototype node:test suites keep running through `test:legacy` until M2 ports them (ported modules move to lib/sdk/<module>/*.test.ts).
+    include: [
+      "server/**/*.test.ts",
+      "observability/**/*.test.ts",
+      "lib/sdk/core/**/*.test.ts",
+    ],
     env: { LOG_LEVEL: "silent" },
     coverage: {
       provider: "v8",
       reporter: ["text-summary", "lcov"],
-      include: ["server/**/*.ts", "observability/**/*.ts"],
+      include: [
+        "server/**/*.ts",
+        "observability/**/*.ts",
+        "lib/sdk/core/**/*.ts",
+      ],
     },
   },
 });
