@@ -7,7 +7,6 @@ export * from "./core";
 export * from "./research";
 export * from "./research-client";
 export * from "./market-pulse";
-export * from "./simulation";
 export * from "./basket/atomic-swap";
 export * from "./basket/liquidity";
 export * from "./basket/route-health";
@@ -16,7 +15,6 @@ export * from "./basket/liquidity-audit";
 export * from "./basket/performance";
 export * from "./rebalance";
 // Preserve upstream adapter imports; frontend prices use the markets pipeline.
-export * from "./meteora";
 export * from "./jupiter";
 export * from "./pyth";
 export * from "./client/aroma-client";

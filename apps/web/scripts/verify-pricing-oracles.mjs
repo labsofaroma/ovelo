@@ -1,5 +1,4 @@
 import {
-  MeteoraClient,
   JupiterPriceClient,
   PythHermesClient,
   XSTOCKS_PYTH_FEEDS,
@@ -11,31 +10,6 @@ async function main() {
   console.log('================================================================');
   console.log('Aroma SDK Pricing and Oracle Integration Verification');
   console.log('================================================================\n');
-
-  // 1. Meteora DLMM API
-  console.log('1. Testing Meteora DLMM API (https://dlmm.datapi.meteora.ag/pools)');
-  const meteora = new MeteoraClient();
-  try {
-    const poolsRes = await meteora.searchPools({ limit: 3, sort_key: 'tvl' });
-    console.log(`   [PASS] Successfully queried Meteora pools: total ${poolsRes.total} pools indexed.`);
-    if (poolsRes.data.length > 0) {
-      const p = poolsRes.data[0];
-      console.log(`   Sample Pool: ${p.name} (${p.address.slice(0, 8)}...)`);
-      console.log(`      - Price: ${p.current_price}`);
-      console.log(`      - TVL: $${p.tvl?.toLocaleString()}`);
-      console.log(`      - APR: ${p.apr?.toFixed(2)}% | APY: ${p.apy?.toFixed(2)}%`);
-      console.log(`      - 24h Fees: $${p.fees?.['24h']?.toLocaleString()}`);
-      console.log(`      - 24h Volume: $${p.volume?.['24h']?.toLocaleString()}`);
-
-      // Test OHLCV
-      const ohlcv = await meteora.getPoolOhlcv(p.address, 60);
-      console.log(`   OHLCV Candlesticks returned: ${ohlcv.data?.length || 0} bars.`);
-    }
-  } catch (err) {
-    console.error('   [ERROR] Meteora error:', err.message);
-  }
-
-  console.log('\n----------------------------------------------------------------\n');
 
   // 2. Jupiter Price v3 API
   console.log('2. Testing Jupiter Price v3 API (https://api.jup.ag/price/v3?ids={mint})');

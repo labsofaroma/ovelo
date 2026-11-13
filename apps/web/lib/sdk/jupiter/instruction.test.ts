@@ -1,13 +1,18 @@
-const test = require("node:test"),
-  assert = require("node:assert/strict");
-const {
-  validateJupiterExactInInstruction: validate,
+import { expect, test } from "vitest";
+import {
+  validateJupiterExactInInstruction as validate,
   JUPITER_SWAP_PROGRAM,
-} = require("../../lib/sdk/jupiter-instruction");
-const { testJupiterInstruction } = require("./fixtures/jupiter.cjs");
-const live = require("./fixtures/jupiter-mainnet-build.json");
-const { JUPITER_EXACT_IN_IDL: idl } = require("../../lib/sdk/jupiter-idl/exact-in");
-function request(instruction, terms = {}) {
+} from "./instruction";
+import {
+  testJupiterInstruction,
+  type TestApiInstruction,
+} from "./test-fixtures";
+import * as live from "../../../tests/sdk/fixtures/jupiter-mainnet-build.json";
+import { JUPITER_EXACT_IN_IDL as idl } from "./idl/exact-in";
+function request(
+  instruction: TestApiInstruction,
+  terms: Record<string, unknown> = {},
+) {
   return {
     instruction: {
       ...instruction,
@@ -42,8 +47,8 @@ test("decodes a captured mainnet Jupiter build including its ceil-rounded minimu
       },
     }),
   );
-  assert.equal(result.name, "route_v2");
-  assert.equal(result.minimumOutputAmount, 99435n);
+  expect(result.name).toBe("route_v2");
+  expect(result.minimumOutputAmount).toBe(99435n);
 });
 test("all four reviewed ExactIn layouts bind encoded quote fields and settlement accounts", () => {
   for (const kind of [
@@ -53,7 +58,7 @@ test("all four reviewed ExactIn layouts bind encoded quote fields and settlement
     "shared_accounts_route_v2",
   ]) {
     const instruction = testJupiterInstruction({ ...accounts, kind });
-    assert.equal(
+    expect(
       validate(
         request(instruction, {
           settlement: {
@@ -65,8 +70,7 @@ test("all four reviewed ExactIn layouts bind encoded quote fields and settlement
           },
         }),
       ).name,
-      kind,
-    );
+    ).toBe(kind);
     for (const args of [
       { in_amount: 2n },
       { quoted_out_amount: 2n },
@@ -74,13 +78,9 @@ test("all four reviewed ExactIn layouts bind encoded quote fields and settlement
       { platform_fee_bps: 1 },
       ...(kind.endsWith("v2") ? [{ positive_slippage_bps: 1 }] : []),
     ])
-      assert.throws(
-        () =>
-          validate(
-            request(testJupiterInstruction({ ...accounts, kind, args })),
-          ),
-        /Encoded Jupiter/,
-      );
+      expect(() =>
+        validate(request(testJupiterInstruction({ ...accounts, kind, args }))),
+      ).toThrow(/Encoded Jupiter/);
   }
 });
 test("walks all pinned swap variants and nested options rather than guessing footer offsets", () => {
@@ -128,18 +128,14 @@ test("trailing forged footers, truncated fields, unknown enums and noncanonical 
     bytes.subarray(0, bytes.length - 1),
     Buffer.concat([Buffer.alloc(8), bytes.subarray(8)]),
   ])
-    assert.throws(
-      () =>
-        validate(request({ ...instruction, data: data.toString("base64") })),
-      /Trailing|Truncated|Unsupported/,
-    );
+    expect(() =>
+      validate(request({ ...instruction, data: data.toString("base64") })),
+    ).toThrow(/Trailing|Truncated|Unsupported/);
   const unknown = Buffer.from(bytes);
   unknown[12] = 255;
-  assert.throws(
-    () =>
-      validate(request({ ...instruction, data: unknown.toString("base64") })),
-    /Unsupported Jupiter swap/,
-  );
+  expect(() =>
+    validate(request({ ...instruction, data: unknown.toString("base64") })),
+  ).toThrow(/Unsupported Jupiter swap/);
   const bool = testJupiterInstruction({
     ...accounts,
     kind: "route",
@@ -147,41 +143,36 @@ test("trailing forged footers, truncated fields, unknown enums and noncanonical 
   });
   const malformed = Buffer.from(bool.data, "base64");
   malformed[13] = 2;
-  assert.throws(
-    () => validate(request({ ...bool, data: malformed.toString("base64") })),
-    /boolean/,
-  );
+  expect(() =>
+    validate(request({ ...bool, data: malformed.toString("base64") })),
+  ).toThrow(/boolean/);
   const huge = Buffer.from(bytes);
   huge.writeUInt32LE(0xffffffff, 8);
-  assert.throws(
-    () => validate(request({ ...instruction, data: huge.toString("base64") })),
-    /length exceeds/,
-  );
+  expect(() =>
+    validate(request({ ...instruction, data: huge.toString("base64") })),
+  ).toThrow(/length exceeds/);
 });
 test("quote minimum and settlement substitutions cannot be concealed by correct JSON", () => {
   const instruction = testJupiterInstruction(accounts);
-  assert.throws(
-    () => validate(request(instruction, { minimumOutputAmount: 989999n })),
-    /minimum output/,
-  );
+  expect(() =>
+    validate(request(instruction, { minimumOutputAmount: 989999n })),
+  ).toThrow(/minimum output/);
   const wrong = {
     ...instruction,
     accounts: instruction.accounts.map((a) => ({ ...a })),
   };
   wrong.accounts[1].pubkey = JUPITER_SWAP_PROGRAM;
-  assert.throws(
-    () =>
-      validate(
-        request(wrong, {
-          settlement: {
-            signer: accounts.signer,
-            sourceTokenAccount: accounts.source,
-            destinationTokenAccount: accounts.destination,
-            inputMint: accounts.inputMint,
-            outputMint: accounts.outputMint,
-          },
-        }),
-      ),
-    /settlement/,
-  );
+  expect(() =>
+    validate(
+      request(wrong, {
+        settlement: {
+          signer: accounts.signer,
+          sourceTokenAccount: accounts.source,
+          destinationTokenAccount: accounts.destination,
+          inputMint: accounts.inputMint,
+          outputMint: accounts.outputMint,
+        },
+      }),
+    ),
+  ).toThrow(/settlement/);
 });

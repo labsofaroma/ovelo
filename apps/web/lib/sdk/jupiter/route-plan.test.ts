@@ -1,5 +1,4 @@
-import assert from "node:assert/strict";
-import test from "node:test";
+import { expect, test } from "vitest";
 import { PublicKey } from "@solana/web3.js";
 import {
   ACCOUNT_SIZE,
@@ -12,7 +11,7 @@ import {
 import {
   getJupiterIntermediateMints,
   validateJupiterIntermediateMint,
-} from "../../lib/sdk/jupiter-route-plan";
+} from "./route-plan";
 
 const mint = (value: number) =>
   new PublicKey(new Uint8Array(32).fill(value)).toBase58();
@@ -26,25 +25,23 @@ const hop = (inputMint: unknown, outputMint: unknown) => ({
 });
 
 test("direct routes have no intermediate mints", () => {
-  assert.deepEqual(
+  expect(
     getJupiterIntermediateMints([hop(input, output)], input, output),
-    new Set(),
-  );
+  ).toEqual(new Set());
 });
 
 test("multi-hop routes return only the connected intermediate mints", () => {
-  assert.deepEqual(
+  expect(
     getJupiterIntermediateMints(
       [hop(input, bridge), hop(bridge, alternate), hop(alternate, output)],
       input,
       output,
     ),
-    new Set([bridge, alternate]),
-  );
+  ).toEqual(new Set([bridge, alternate]));
 });
 
 test("split routes may merge and list their steps out of order", () => {
-  assert.deepEqual(
+  expect(
     getJupiterIntermediateMints(
       [
         hop(bridge, output),
@@ -56,8 +53,7 @@ test("split routes may merge and list their steps out of order", () => {
       input,
       output,
     ),
-    new Set([alternate, bridge]),
-  );
+  ).toEqual(new Set([alternate, bridge]));
 });
 
 test("missing and oversized route plans fail closed", () => {
@@ -69,16 +65,14 @@ test("missing and oversized route plans fail closed", () => {
     "route",
     Array(65).fill(hop(input, output)),
   ])
-    assert.throws(
-      () => getJupiterIntermediateMints(plan, input, output),
+    expect(() => getJupiterIntermediateMints(plan, input, output)).toThrow(
       /route plan/,
     );
   const path = Array.from({ length: 65 }, (_, index) => mint(index + 1));
   const longestPlan = path
     .slice(1)
     .map((destination, index) => hop(path[index], destination));
-  assert.equal(
-    getJupiterIntermediateMints(longestPlan, path[0], path[64]).size,
+  expect(getJupiterIntermediateMints(longestPlan, path[0], path[64]).size).toBe(
     63,
   );
 });
@@ -97,31 +91,27 @@ test("malformed steps and noncanonical public keys are rejected", () => {
     hop(`${input} `, output),
     hop("1".repeat(33), output),
   ])
-    assert.throws(
-      () => getJupiterIntermediateMints([step], input, output),
+    expect(() => getJupiterIntermediateMints([step], input, output)).toThrow(
       /route plan/,
     );
 });
 
 test("same-mint hops and invalid endpoints are rejected", () => {
-  assert.throws(
-    () => getJupiterIntermediateMints([hop(input, input)], input, output),
-    /same-mint/,
-  );
+  expect(() =>
+    getJupiterIntermediateMints([hop(input, input)], input, output),
+  ).toThrow(/same-mint/);
   for (const endpoints of [
     ["invalid", output],
     [input, "invalid"],
     [input, input],
   ])
-    assert.throws(
-      () =>
-        getJupiterIntermediateMints(
-          [hop(input, output)],
-          endpoints[0],
-          endpoints[1],
-        ),
-      /route plan/,
-    );
+    expect(() =>
+      getJupiterIntermediateMints(
+        [hop(input, output)],
+        endpoints[0],
+        endpoints[1],
+      ),
+    ).toThrow(/route plan/);
 });
 
 test("disconnected metadata cannot authorize an unrelated intermediate mint", () => {
@@ -130,19 +120,16 @@ test("disconnected metadata cannot authorize an unrelated intermediate mint", ()
     [hop(input, output), hop(bridge, unrelated), hop(unrelated, bridge)],
     [hop(input, bridge), hop(alternate, output)],
   ])
-    assert.throws(
-      () => getJupiterIntermediateMints(plan, input, output),
+    expect(() => getJupiterIntermediateMints(plan, input, output)).toThrow(
       /unrelated swap path/,
     );
 });
 
 test("each branch must both originate at input and reach output", () => {
   for (const extra of [hop(input, unrelated), hop(unrelated, output)])
-    assert.throws(
-      () =>
-        getJupiterIntermediateMints([hop(input, output), extra], input, output),
-      /unrelated swap path/,
-    );
+    expect(() =>
+      getJupiterIntermediateMints([hop(input, output), extra], input, output),
+    ).toThrow(/unrelated swap path/);
 });
 
 function mintAccount({
@@ -185,13 +172,12 @@ test("initialized plain legacy and Token-2022 mints return their verified progra
     TOKEN_2022_PROGRAM_ID.toBase58(),
   ])
     for (const decimals of [0, 6, 18])
-      assert.equal(
+      expect(
         validateJupiterIntermediateMint(
           bridge,
           mintAccount({ owner, decimals }),
         ),
-        owner,
-      );
+      ).toBe(owner);
 });
 
 test("Token-2022 intermediate mints may contain inert metadata extensions", () => {
@@ -205,13 +191,12 @@ test("Token-2022 intermediate mints may contain inert metadata extensions", () =
     { type: ExtensionType.TokenMetadata, data: metadata },
   ];
   for (const allowed of [extensions, [extensions[0]], [extensions[1]]])
-    assert.equal(
+    expect(
       validateJupiterIntermediateMint(
         bridge,
         mintAccount({ owner, extensions: allowed }),
       ),
-      owner,
-    );
+    ).toBe(owner);
 });
 
 test("missing, truncated, uninitialized and wrong-owner intermediate mints fail closed", () => {
@@ -223,8 +208,7 @@ test("missing, truncated, uninitialized and wrong-owner intermediate mints fail 
     mintAccount({ owner: input }),
     { ...mintAccount(), executable: true },
   ])
-    assert.throws(
-      () => validateJupiterIntermediateMint(bridge, account),
+    expect(() => validateJupiterIntermediateMint(bridge, account)).toThrow(
       /invalid or unsupported intermediate token mint/,
     );
 });
@@ -240,17 +224,15 @@ test("transfer-affecting, unknown and malformed intermediate mint extensions are
     ExtensionType.ConfidentialTransferMint,
     65535,
   ])
-    assert.throws(
-      () =>
-        validateJupiterIntermediateMint(
-          bridge,
-          mintAccount({
-            owner,
-            extensions: [{ type, data: Buffer.alloc(64) }],
-          }),
-        ),
-      /invalid or unsupported intermediate token mint/,
-    );
+    expect(() =>
+      validateJupiterIntermediateMint(
+        bridge,
+        mintAccount({
+          owner,
+          extensions: [{ type, data: Buffer.alloc(64) }],
+        }),
+      ),
+    ).toThrow(/invalid or unsupported intermediate token mint/);
 
   const pointer = {
     type: ExtensionType.MetadataPointer,
@@ -272,8 +254,7 @@ test("transfer-affecting, unknown and malformed intermediate mint extensions are
     { ...valid, data: Buffer.concat([valid.data, Buffer.from([1])]) },
     oversized,
   ])
-    assert.throws(
-      () => validateJupiterIntermediateMint(bridge, account),
+    expect(() => validateJupiterIntermediateMint(bridge, account)).toThrow(
       /invalid or unsupported intermediate token mint/,
     );
 });

@@ -1,13 +1,7 @@
 const test = require("node:test");
 const assert = require("node:assert/strict");
-const {
-  Keypair,
-  SystemProgram,
-  TransactionMessage,
-  VersionedTransaction,
-} = require("@solana/web3.js");
+const { Keypair } = require("@solana/web3.js");
 const { allocateBasketInput } = require("../../lib/sdk/basket/atomic-swap");
-const { simulateTradeOrder } = require("../../lib/sdk/simulation");
 const {
   calculateBasketRebalance,
   calculateTimeWeightedReturn,
@@ -96,110 +90,5 @@ test("rebalance keeps cash and asset value conserved without token float roundin
         { openingValue: 200, closingValue: 220 },
       ]) - 0.21,
     ) < 1e-10,
-  );
-});
-function order() {
-  const payer = key();
-  const tx = new VersionedTransaction(
-    new TransactionMessage({
-      payerKey: payer,
-      recentBlockhash: key().toBase58(),
-      instructions: [
-        SystemProgram.transfer({
-          fromPubkey: payer,
-          toPubkey: key(),
-          lamports: 1,
-        }),
-      ],
-    }).compileToV0Message(),
-  );
-  return {
-    payer,
-    value: {
-      taker: payer.toBase58(),
-      transaction: Buffer.from(tx.serialize()).toString("base64"),
-    },
-  };
-}
-test("simulation preserves sponsored blockhash and distinguishes failure from unavailability", async () => {
-  const { payer, value } = order();
-  let config;
-  const connection = {
-    simulateTransaction: async (tx, options) => {
-      config = options;
-      return { value: { err: null, unitsConsumed: 321 } };
-    },
-  };
-  const result = await simulateTradeOrder(connection, value, payer);
-  assert.equal(result.status, "passed");
-  assert.equal(result.unitsConsumed, 321);
-  assert.equal(config.sigVerify, false);
-  assert.equal(config.replaceRecentBlockhash, false);
-  assert.equal(
-    (
-      await simulateTradeOrder(
-        {
-          simulateTransaction: async () => ({
-            value: { err: { InstructionError: [0, "Custom"] } },
-          }),
-        },
-        value,
-        payer,
-      )
-    ).status,
-    "failed",
-  );
-  assert.equal(
-    (
-      await simulateTradeOrder(
-        {
-          simulateTransaction: async () => {
-            throw new Error("offline");
-          },
-        },
-        value,
-        payer,
-      )
-    ).status,
-    "unavailable",
-  );
-  assert.equal(
-    (
-      await simulateTradeOrder(
-        { simulateTransaction: async () => new Promise(() => {}) },
-        value,
-        payer,
-        { timeoutMs: 5 },
-      )
-    ).status,
-    "unavailable",
-  );
-  assert.equal(
-    (await simulateTradeOrder(connection, value, key())).status,
-    "unavailable",
-  );
-  assert.doesNotMatch(
-    (
-      await simulateTradeOrder(
-        {
-          simulateTransaction: async () => {
-            throw new Error("https://rpc.test?api-key=private-value");
-          },
-        },
-        value,
-        payer,
-      )
-    ).error,
-    /private-value/,
-  );
-  assert.equal(
-    (
-      await simulateTradeOrder(
-        { simulateTransaction: async () => ({ value: {} }) },
-        value,
-        payer,
-      )
-    ).status,
-    "unavailable",
   );
 });

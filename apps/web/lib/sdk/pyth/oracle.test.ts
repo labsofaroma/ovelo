@@ -9,8 +9,6 @@ import {
   fetchXStocksOracles,
   normalizeSymbol,
 } from "./index";
-import { JupiterPriceClient } from "../jupiter";
-import { MeteoraClient } from "../meteora";
 
 test("token and underlying equity feed identities remain distinct and Amazon is not SOL", () => {
   const feeds = Object.values(XSTOCKS_PYTH_FEEDS);
@@ -100,22 +98,4 @@ test("onchain reads use the push PDA and verify receiver, discriminator, feed, f
     expect(await client.getOnChainPrice(0, feed)).toBe(null);
   }
   expect(() => client.getPriceFeedAccountAddress(0, "abc")).toThrow(/32-byte/);
-});
-test("legacy adapters preserve unknown precision and missing volume without zero defaults", async () => {
-  const original = global.fetch;
-  try {
-    global.fetch = async () =>
-      Response.json({ data: { mint: { price: "1.23" } } });
-    const jupiter = new JupiterPriceClient();
-    const price = await jupiter.getTokenPriceInfo("mint");
-    expect(price!.usdPrice).toBe(1.23);
-    expect(price!.decimals).toBe(undefined);
-    global.fetch = async () =>
-      Response.json({ tvl: 1, apr: 2, apy: 3, current_price: 4 });
-    const metrics = await new MeteoraClient().getPoolMetrics("pool");
-    expect(metrics.volume24h).toBe(null);
-    expect(metrics.fee24h).toBe(null);
-  } finally {
-    global.fetch = original;
-  }
 });

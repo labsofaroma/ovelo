@@ -1,4 +1,4 @@
-import { JUPITER_EXACT_IN_IDL } from "./jupiter-idl/exact-in";
+import { JUPITER_EXACT_IN_IDL } from "./idl/exact-in";
 
 export const JUPITER_SWAP_PROGRAM =
   "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4";
