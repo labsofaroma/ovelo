@@ -6,7 +6,9 @@ import { v1Metadata } from "@/features/shared/metadata";
 import { routes } from "@/features/shared/routes";
 import { assertV1Enabled } from "@/features/shared/v1";
 
-export const dynamic = "force-static";
+// M4: rendered per request, like every v1 page: the strict CSP nonce is per request, and a
+// prerendered page would carry no nonce, so its scripts (theme, Next runtime) would be blocked.
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = v1Metadata({
   title: termsDocument.title,

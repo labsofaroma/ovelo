@@ -18,6 +18,8 @@ const v1Env = { ...process.env, AROMA_V1_ENABLED: "true" } as Record<
 
 export default defineConfig({
   testDir: "./e2e",
+  // The M4 trade suite needs the local fork (pnpm e2e:fork, e2e/trade.config.ts).
+  testIgnore: ["trade/**"],
   fullyParallel: false,
   workers: 2,
   reporter: [["list"]],

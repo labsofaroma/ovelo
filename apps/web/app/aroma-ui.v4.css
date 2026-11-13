@@ -4,8 +4,10 @@
  * globals.css chain stays on v3.
  *
  * Differences from a stock v4 entry, all on purpose:
- *  - No preflight: the prototype's foundation.css (loaded globally by the root layout) already
- *    resets the page, and a second reset would restyle prototype routes.
+ *  - Preflight and the @aroma/ui font faces ARE loaded since M4: (app) and (marketing) are now
+ *    root layouts of their own, so this file never reaches a prototype route, and v1 no longer
+ *    inherits the prototype's resets and fonts (without them, buttons fell back to the browser's
+ *    grey and failed contrast in dark mode). Preflight sits in a layer, so utilities still win.
  *  - Utilities are NOT wrapped in a cascade layer. The prototype's global rules are unlayered
  *    (`button { border: 0 }`, `:focus-visible { outline: ... }`), and unlayered CSS always beats
  *    layered CSS, so layered utilities would silently lose on these routes. Unlayered utilities
@@ -13,6 +15,8 @@
  *  - Source detection is off; only the new groups and @aroma/ui are scanned.
  */
 @import "tailwindcss-v4/theme.css" layer(theme);
+@import "tailwindcss-v4/preflight.css" layer(base);
+@import "@aroma/ui/fonts.css";
 @import "@aroma/ui/tokens.css";
 @import "@aroma/ui/theme.css";
 @import "tailwindcss-v4/utilities.css" source(none);
