@@ -59,6 +59,8 @@ function privacySignal() {
 export function PrivacyChoices() {
   const pathname = usePathname();
   const landing = pathname === "/" || pathname === "/landing";
+  // Like the landing page, v1 routes (M3, /v1/*) render their own footer; consent state stays here.
+  const ownFooter = landing || pathname?.startsWith("/v1") === true;
   const [choice, setChoice] = useState<boolean | null>(null);
   const [visible, setVisible] = useState(false);
   const [saveError, setSaveError] = useState(false);
@@ -154,7 +156,7 @@ export function PrivacyChoices() {
   };
   return (
     <>
-      {!landing && (
+      {!ownFooter && (
         <footer className="site-footer" aria-label="Data and security">
           <div className="footer-security">
             <span className="footer-security-icon">
@@ -189,7 +191,7 @@ export function PrivacyChoices() {
           )}
         </footer>
       )}
-      {landing && saveError && !visible && (
+      {ownFooter && saveError && !visible && (
         <section className="privacy-banner" aria-label="Privacy storage notice">
           <p className="privacy-save-error" role="status">
             Your choice applies for this visit; device storage is unavailable.
