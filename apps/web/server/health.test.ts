@@ -60,6 +60,19 @@ describe("runHealthChecks", () => {
     );
   });
 
+  it("survives probes that throw non-Error values", async () => {
+    const report = await runHealthChecks({
+      a: () => Promise.reject("plain string"),
+      b: () => Promise.reject(undefined),
+      c: () => Promise.reject({ type: "error", target: {} }),
+      d: () =>
+        Promise.reject(Object.assign(new Error("x"), { message: undefined })),
+    });
+    expect(report.status).toBe("down");
+    for (const check of Object.values(report.checks))
+      expect(check.status).toBe("fail");
+  });
+
   it("times a hanging probe out instead of hanging the endpoint", async () => {
     const hang: Probe = () => new Promise(() => undefined);
     const started = Date.now();

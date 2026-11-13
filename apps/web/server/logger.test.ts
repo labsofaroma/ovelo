@@ -80,6 +80,32 @@ describe("logger redaction", () => {
     expect(lines.join("")).not.toMatch(/hunter2|abc123/);
   });
 
+  it("never throws on odd `err` values (non-Error objects, strings, undefined, messageless errors)", () => {
+    const { lines, logger } = capture();
+    const messageless = Object.assign(new Error("x"), { message: undefined });
+    for (const err of [
+      { type: "error", target: {} },
+      "just a string",
+      undefined,
+      null,
+      42,
+      messageless,
+    ]) {
+      expect(() => logger.warn({ err }, "dependency failed")).not.toThrow();
+    }
+    expect(lines).toHaveLength(6);
+    for (const line of lines) expect(() => JSON.parse(line)).not.toThrow();
+  });
+
+  it("scrubs secrets inside a non-Error err object", () => {
+    const { lines, logger } = capture();
+    logger.warn(
+      { err: { detail: "Bearer abc.def", note: "password=hunter2" } },
+      "failed",
+    );
+    expect(lines.join("")).not.toMatch(/abc\.def|hunter2/);
+  });
+
   it("leaves ordinary values alone", () => {
     expect(
       scrub({

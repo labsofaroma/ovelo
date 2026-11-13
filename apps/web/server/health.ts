@@ -58,15 +58,19 @@ export async function runHealthChecks(
           const result = await withTimeout(probe(), timeoutMs);
           return [name, { ...result, latencyMs: now() - started }];
         } catch (error) {
-          // The real cause goes to logs only.
-          logger.warn(
-            {
-              check: name,
-              timedOut: error instanceof ProbeTimeout,
-              err: error,
-            },
-            "health check failed",
-          );
+          // The real cause goes to logs only. Logging must never turn a failed check into a 500.
+          try {
+            logger.warn(
+              {
+                check: name,
+                timedOut: error instanceof ProbeTimeout,
+                err: error,
+              },
+              "health check failed",
+            );
+          } catch {
+            // ignore
+          }
           return [name, { status: "fail", latencyMs: now() - started }];
         }
       },

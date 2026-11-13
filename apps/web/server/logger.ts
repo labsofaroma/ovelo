@@ -38,12 +38,26 @@ export function scrub(value: unknown, depth = 0): unknown {
   return scrubDeep(value, scrubSecretText, depth);
 }
 
-function serializeError(error: Error): Record<string, unknown> {
-  return {
-    type: error.name,
-    message: scrubSecretText(error.message),
-    stack: error.stack ? scrubSecretText(error.stack) : undefined,
-  };
+/**
+ * pino's `err`/`error` serializers receive ANY value (a rejected string, a WebSocket ErrorEvent,
+ * an object without `message`), so this must never assume an Error. A logger that throws turns a
+ * failed dependency into a failed request.
+ */
+function serializeError(value: unknown): unknown {
+  if (value instanceof Error) {
+    return {
+      type: value.name,
+      message:
+        typeof value.message === "string"
+          ? scrubSecretText(value.message)
+          : undefined,
+      stack:
+        typeof value.stack === "string"
+          ? scrubSecretText(value.stack)
+          : undefined,
+    };
+  }
+  return scrub(value);
 }
 
 export function createLogger(
