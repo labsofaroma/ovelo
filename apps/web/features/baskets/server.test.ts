@@ -10,7 +10,7 @@ const markets = vi.hoisted(() => ({ getMarkets: vi.fn() }));
 vi.mock("@/lib/sdk/baskets/performance", () => sdk);
 vi.mock("../markets/server", () => markets);
 vi.mock("next/cache", () => ({ unstable_cache: (fn: () => unknown) => fn }));
-const { getBasketPage } = await import("./server");
+const { getBasketPage, getPerformance } = await import("./server");
 
 const view = toMarketsView(snapshot());
 
@@ -94,12 +94,14 @@ describe("getBasketPage", () => {
   it("happy path with allocations from the snapshot", async () => {
     markets.getMarkets.mockResolvedValue({ state: "ok", data: view });
     sdk.fetchBasketHistoricalPerformance.mockResolvedValue(performance());
-    const page = await getBasketPage("test-basket", "90d");
+    const page = await getBasketPage("test-basket");
     expect(page.state).toBe("ok");
-    if (page.state === "ok") {
-      expect(page.rows.map((r) => r.symbol)).toEqual(["TESTx", "DOWNx"]);
-      expect(page.performance.state).toBe("ok");
-    }
+    if (page.state !== "ok") throw new Error("expected page");
+    expect(page.rows.map((r) => r.symbol)).toEqual(["TESTx", "DOWNx"]);
+    // Allocations never wait on history: it is loaded separately and streamed.
+    expect(sdk.fetchBasketHistoricalPerformance).not.toHaveBeenCalled();
+    const perf = await getPerformance(page.basket, page.view.rows, "90d");
+    expect(perf.state).toBe("ok");
   });
   it("partial history keeps its warnings", async () => {
     markets.getMarkets.mockResolvedValue({ state: "ok", data: view });
@@ -109,9 +111,9 @@ describe("getBasketPage", () => {
         warnings: ["1 of 2 constituents lacked history"],
       }),
     );
-    const page = await getBasketPage("test-basket", "90d");
-    if (page.state === "ok" && page.performance.state === "ok")
-      expect(page.performance.data.warnings).toEqual([
+    const perf = await getPerformance(view.baskets[0]!, view.rows, "90d");
+    if (perf.state === "ok")
+      expect(perf.data.warnings).toEqual([
         "1 of 2 constituents lacked history",
       ]);
     else throw new Error("expected performance");
@@ -121,21 +123,18 @@ describe("getBasketPage", () => {
     sdk.fetchBasketHistoricalPerformance.mockImplementation(async () => {
       throw new Error("yahoo exploded at /internal");
     });
-    const page = await getBasketPage("test-basket", "1y");
-    expect(page.state).toBe("ok");
-    expect(JSON.stringify(page)).not.toContain("/internal");
-    if (page.state === "ok") expect(page.performance.state).toBe("unavailable");
+    const perf = await getPerformance(view.baskets[0]!, view.rows, "1y");
+    expect(perf.state).toBe("unavailable");
+    expect(JSON.stringify(perf)).not.toContain("/internal");
   });
   it("unknown ids and outages", async () => {
     markets.getMarkets.mockResolvedValue({ state: "ok", data: view });
-    expect((await getBasketPage("nope", "90d")).state).toBe("not-found");
-    expect((await getBasketPage("Bad Id!", "90d")).state).toBe("not-found");
+    expect((await getBasketPage("nope")).state).toBe("not-found");
+    expect((await getBasketPage("Bad Id!")).state).toBe("not-found");
     markets.getMarkets.mockResolvedValue({
       state: "unavailable",
       error: { code: "UPSTREAM_UNAVAILABLE", message: "m" },
     });
-    expect((await getBasketPage("test-basket", "90d")).state).toBe(
-      "unavailable",
-    );
+    expect((await getBasketPage("test-basket")).state).toBe("unavailable");
   });
 });

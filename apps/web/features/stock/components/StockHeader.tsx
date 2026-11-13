@@ -45,7 +45,13 @@ export function StockHeader({ row }: { row: MarketRow }) {
         />
         <div className="flex min-w-0 flex-1 flex-col gap-1">
           <h1 className="text-page font-semibold max-md:text-page-mobile">
-            {row.symbol} <span className="text-muted">· {row.name}</span>
+            {row.symbol}{" "}
+            <span className="block text-muted md:inline">
+              <span aria-hidden="true" className="max-md:hidden">
+                ·{" "}
+              </span>
+              {row.name}
+            </span>
           </h1>
           <CatalogSourceBadge row={row} linked />
         </div>
@@ -68,7 +74,9 @@ export function StockHeader({ row }: { row: MarketRow }) {
             {row.price ? (
               formatUsd(row.price)
             ) : (
-              <span className="text-muted">No token price observed</span>
+              <span className="text-title text-muted">
+                No token price observed
+              </span>
             )}
           </p>
           <Change percent={changeProp(row.change24h)} />

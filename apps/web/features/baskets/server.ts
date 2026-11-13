@@ -66,16 +66,16 @@ export type BasketPage =
       basket: BasketSummary;
       rows: MarketRow[];
       view: MarketsView;
-      performance: Loaded<PerformanceView>;
     }
   | { state: "not-found" }
   | Extract<Loaded<MarketsView>, { state: "unavailable" }>;
 
-/** Allocations come from lib/sdk basket definitions via the cached snapshot (PRODUCT.md). */
-export async function getBasketPage(
-  segment: string,
-  range: PerformanceRange,
-): Promise<BasketPage> {
+/**
+ * Allocations come from lib/sdk basket definitions via the cached snapshot (PRODUCT.md).
+ * Performance is NOT awaited here: the page streams it with `getPerformance` behind its own
+ * Suspense boundary, so allocations never wait on daily-close history.
+ */
+export async function getBasketPage(segment: string): Promise<BasketPage> {
   const id = basketIdSchema.safeParse(segment.toLowerCase());
   if (!id.success) return { state: "not-found" };
   const markets = await getMarkets();
@@ -89,6 +89,5 @@ export async function getBasketPage(
     basket,
     rows,
     view: markets.data,
-    performance: await getPerformance(basket, markets.data.rows, range),
   };
 }

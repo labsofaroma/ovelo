@@ -2,7 +2,12 @@ import Link from "next/link";
 import { Change } from "@aroma/ui";
 import { AsOf } from "../../shared/components/AsOf";
 import { DataNotice } from "../../shared/components/DataNotice";
-import { changeProp, formatCompactUsd, formatUsd } from "../../shared/fixed";
+import {
+  changeProp,
+  formatCompactUsd,
+  formatUsd,
+  plural,
+} from "../../shared/fixed";
 import { STALE_AFTER_MS } from "../../shared/freshness";
 import { routes } from "../../shared/routes";
 import { textLink } from "../../shared/styles";
@@ -49,8 +54,8 @@ export function MarketSnapshot({
             </div>
             <div className="rounded-panel border border-line bg-surface p-4">
               <dt className="text-caption text-muted">
-                24h token volume ({snapshot.data.pulse.volumeCoveredAssets}{" "}
-                assets)
+                24h token volume (
+                {plural(snapshot.data.pulse.volumeCoveredAssets, "asset")})
               </dt>
               <dd className="text-title font-semibold tabular-nums">
                 {snapshot.data.pulse.volume24h

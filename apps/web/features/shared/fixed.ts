@@ -101,3 +101,8 @@ export function changeProp(
 ): { value: bigint; decimals: number } | null {
   return value ? { value: toBigInt(value), decimals: value.decimals } : null;
 }
+
+/** "1 asset", "3 assets". */
+export function plural(count: number, one: string, many = `${one}s`): string {
+  return `${count} ${count === 1 ? one : many}`;
+}

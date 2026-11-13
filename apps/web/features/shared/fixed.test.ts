@@ -9,6 +9,7 @@ import {
   formatUnitsText,
   formatUsd,
   isPositive,
+  plural,
 } from "./fixed";
 
 describe("fixedFromNumber", () => {
@@ -71,5 +72,13 @@ describe("formatting (display only, via @aroma/ui/format)", () => {
       decimals: 1,
     });
     expect(changeProp(null)).toBeNull();
+  });
+});
+
+describe("plural", () => {
+  it("picks the singular for exactly one", () => {
+    expect(plural(1, "asset")).toBe("1 asset");
+    expect(plural(0, "asset")).toBe("0 assets");
+    expect(plural(3, "basis point")).toBe("3 basis points");
   });
 });

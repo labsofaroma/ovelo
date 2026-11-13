@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Change } from "@aroma/ui";
 import { AsOf } from "../../shared/components/AsOf";
-import { changeProp, formatCompactUsd } from "../../shared/fixed";
+import { changeProp, formatCompactUsd, plural } from "../../shared/fixed";
 import { STALE_AFTER_MS } from "../../shared/freshness";
 import { routes } from "../../shared/routes";
 import { textLink } from "../../shared/styles";
@@ -53,7 +53,9 @@ export function PulseStrip({ view }: { view: MarketsView }) {
             ? `${pulse.advancing} / ${pulse.declining}`
             : "Unavailable"}
         </Stat>
-        <Stat label={`24h token volume (${pulse.volumeCoveredAssets} assets)`}>
+        <Stat
+          label={`24h token volume (${plural(pulse.volumeCoveredAssets, "asset")})`}
+        >
           {pulse.volume24h ? formatCompactUsd(pulse.volume24h) : "Unavailable"}
         </Stat>
         <Stat label="Tradable listings">{pulse.tradableAssets}</Stat>

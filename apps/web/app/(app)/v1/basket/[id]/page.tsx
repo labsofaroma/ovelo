@@ -1,11 +1,15 @@
 import type { Metadata } from "next";
+import { Suspense } from "react";
+import { Skeleton } from "@aroma/ui";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AllocationTable } from "@/features/baskets/components/AllocationTable";
 import { BasketHeader } from "@/features/baskets/components/BasketHeader";
 import { BasketPerformance } from "@/features/baskets/components/BasketPerformance";
 import { parseRange } from "@/features/baskets/schema";
-import { getBasketPage } from "@/features/baskets/server";
+import { getBasketPage, getPerformance } from "@/features/baskets/server";
+import type { BasketSummary, MarketRow } from "@/features/markets/schema";
+import type { PerformanceRange } from "@/features/baskets/schema";
 import { DataNotice } from "@/features/shared/components/DataNotice";
 import { v1Metadata } from "@/features/shared/metadata";
 import { routes } from "@/features/shared/routes";
@@ -19,7 +23,7 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
-  const page = await getBasketPage(id, "90d");
+  const page = await getBasketPage(id);
   if (page.state !== "ok")
     return { title: "Basket", robots: { index: false, follow: false } };
   return v1Metadata({
@@ -33,7 +37,7 @@ export default async function BasketPage({ params, searchParams }: Props) {
   assertV1Enabled();
   const { id } = await params;
   const range = parseRange((await searchParams).range);
-  const page = await getBasketPage(id, range);
+  const page = await getBasketPage(id);
   if (page.state === "not-found") notFound();
 
   return (
@@ -77,11 +81,22 @@ export default async function BasketPage({ params, searchParams }: Props) {
               asOf={page.view.asOf}
             />
           </section>
-          <BasketPerformance
-            basketId={page.basket.id}
-            range={range}
-            performance={page.performance}
-          />
+          <Suspense
+            fallback={
+              <section aria-busy="true" className="flex flex-col gap-3">
+                <p role="status" className="text-small text-muted">
+                  Loading daily closes for the performance view…
+                </p>
+                <Skeleton className="h-40 w-full" />
+              </section>
+            }
+          >
+            <PerformanceSection
+              basket={page.basket}
+              rows={page.view.rows}
+              range={range}
+            />
+          </Suspense>
           <p className="rounded-panel border border-line bg-surface p-4 text-small text-muted">
             Buying a basket from your wallet arrives with wallet trading.
             Nothing on this page is a quote or an offer.
@@ -89,5 +104,24 @@ export default async function BasketPage({ params, searchParams }: Props) {
         </>
       )}
     </main>
+  );
+}
+
+/** Streams in after the allocation table; history can take seconds on a cold cache. */
+async function PerformanceSection({
+  basket,
+  rows,
+  range,
+}: {
+  basket: BasketSummary;
+  rows: readonly MarketRow[];
+  range: PerformanceRange;
+}) {
+  return (
+    <BasketPerformance
+      basketId={basket.id}
+      range={range}
+      performance={await getPerformance(basket, rows, range)}
+    />
   );
 }
