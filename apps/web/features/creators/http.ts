@@ -159,9 +159,18 @@ export type RouteOptions = {
 };
 
 type Handler<C> = (request: Request, context: C) => Promise<Response>;
+type PlainHandler = (request: Request) => Promise<Response>;
 
 /** Wrap a handler: gate → origin → rate limit → handler; every error becomes `{ code, message }`. */
-export function creatorRoute<C = void>(
+export function creatorRoute(
+  options: RouteOptions,
+  handler: PlainHandler,
+): PlainHandler;
+export function creatorRoute<C>(
+  options: RouteOptions,
+  handler: Handler<C>,
+): Handler<C>;
+export function creatorRoute<C>(
   options: RouteOptions,
   handler: Handler<C>,
 ): Handler<C> {
