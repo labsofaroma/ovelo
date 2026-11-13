@@ -8,9 +8,8 @@ import {
 } from "./schema";
 
 /**
- * The basket handed to lib/sdk for history: identity and weights ONLY. No prices, so the series
- * is built purely from observed share closes; the sdk would otherwise fall back to the token
- * price for a missing last close and mix two different prices (M3-SDK-REQUESTS #2).
+ * The basket handed to lib/sdk for history: identity and weights. The sdk builds the series from
+ * observed share closes only and never substitutes a token price (M3-SDK-REQUESTS #2, resolved).
  */
 export function historyInput(
   basket: BasketSummary,
@@ -32,8 +31,6 @@ export function historyInput(
                 symbol: row.symbol,
                 underlyingSymbol: row.underlyingSymbol,
                 name: row.name,
-                priceUsd: null,
-                underlyingPriceUsd: null,
               },
               weight: member.weightBps,
             },
@@ -71,9 +68,8 @@ export function toPerformanceView(
       change: pct(item.changePct),
       contribution: pct(item.contributionPct),
     })),
-    // lib/sdk lists Pyth whenever a feed EXISTS for a symbol, even if no Pyth price was used.
-    // historyInput passes no prices, so only daily closes feed this view (M3-SDK-REQUESTS #3).
-    sources: performance.sources.filter((source) => !/pyth/i.test(source)),
+    // lib/sdk names only the providers whose observations fed the result (M3-SDK-REQUESTS #3).
+    sources: performance.sources,
     warnings: performance.warnings,
   });
 }

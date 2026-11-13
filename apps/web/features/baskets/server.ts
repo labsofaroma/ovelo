@@ -49,7 +49,7 @@ export async function getPerformance(
         ? await fetchPerformanceView(basket, rows, range, offlineFetch)
         : await unstable_cache(
             () => fetchPerformanceView(basket, rows, range),
-            ["v1-basket-performance", "1", basket.id, range, members],
+            ["v1-basket-performance", "2", basket.id, range, members],
             {
               // Built from daily share closes, so the research tag refreshes it too.
               tags: [RESEARCH_TAG],

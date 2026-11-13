@@ -65,8 +65,12 @@ describe("historyInput", () => {
     const input = historyInput(view.baskets[0]!, view.rows);
     expect(input.assets).toHaveLength(2);
     for (const { asset } of input.assets) {
-      expect(asset.priceUsd).toBeNull();
-      expect(asset.underlyingPriceUsd).toBeNull();
+      expect(Object.keys(asset).sort()).toEqual([
+        "mint",
+        "name",
+        "symbol",
+        "underlyingSymbol",
+      ]);
     }
     expect(input.assets.map((a) => a.weight)).toEqual([5000, 5000]);
   });
@@ -80,13 +84,8 @@ describe("toPerformanceView", () => {
     expect(Object.keys(out)).not.toContain("endValueUsd");
     expect(out.startDate).toBe("2026-08-14");
   });
-  it("lists only sources that fed the calculation", () => {
-    const out = toPerformanceView(
-      performance({
-        sources: ["Yahoo Finance Daily Closes", "Pyth Network Reference Feeds"],
-      }),
-      "90d",
-    );
+  it("passes the sdk's contributing sources through unchanged", () => {
+    const out = toPerformanceView(performance(), "90d");
     expect(out.sources).toEqual(["Yahoo Finance Daily Closes"]);
   });
   it("throws when nothing could be computed", () => {
