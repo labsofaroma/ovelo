@@ -14,10 +14,11 @@ apps/web/styles/
 apps/web/tests/
 apps/web/scripts/
 apps/web/public/
-apps/web/middleware.ts
 apps/web/app/*/
 !apps/web/app/(app)/
 !apps/web/app/(marketing)/
+# M4: v1 API routes are new code (the prototype API under app/api stays ignored).
+!apps/web/app/api/
 apps/web/app/api/*/
 !apps/web/app/api/v1/
 apps/web/app/*.tsx
