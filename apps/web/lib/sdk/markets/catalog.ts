@@ -1,7 +1,7 @@
 import { BACKPACK_ASSETS_URL, getBackpackCatalog } from "./sources/backpack";
 import { hydratePythPrices } from "../pyth";
 import { resolveMarketBaskets } from "./baskets";
-import { request, resolveJupiterApiKey } from "./http";
+import { isRateLimited, request, resolveJupiterApiKey } from "./http";
 import { row } from "./parse";
 import { jupiterPriceSchema, jupiterTokenSchema, precision } from "./schemas";
 import { baseAsset } from "./sources/base";
@@ -108,6 +108,13 @@ export async function getMainnetCatalog(
   };
 }
 
+/**
+ * Distinct from the generic "unavailable" warnings so operators can tell "configure an API key"
+ * (keyless Jupiter rate-limits a full refresh) from "provider down" (M3-SDK-REQUESTS #4).
+ */
+export const JUPITER_RATE_LIMITED_WARNING =
+  "Jupiter rate-limited some price requests (HTTP 429), so some assets are unpriced. Configure a Jupiter API key or retry later.";
+
 /** Prices and metadata are requested only for mints obtained from the issuers themselves. */
 export async function getMainnetMarkets(
   options: MarketOptions = {},
@@ -171,9 +178,11 @@ export async function getMainnetMarkets(
       }
       if (!sources.includes("Jupiter Tokens V2"))
         sources.push("Jupiter Tokens V2");
-    } catch {
+    } catch (error) {
       warnings.push(
-        "Some Jupiter prices and token metadata are unavailable. Unpriced assets cannot be traded in paper mode.",
+        isRateLimited(error)
+          ? JUPITER_RATE_LIMITED_WARNING
+          : "Some Jupiter prices and token metadata are unavailable. Unpriced assets cannot be traded in paper mode.",
       );
     }
   };
@@ -252,9 +261,11 @@ export async function getMainnetMarkets(
       }
       if (!sources.includes("Jupiter Price V3"))
         sources.push("Jupiter Price V3");
-    } catch {
+    } catch (error) {
       warnings.push(
-        "Some Jupiter price and underlying reference quotes are unavailable. Available token metadata is retained.",
+        isRateLimited(error)
+          ? JUPITER_RATE_LIMITED_WARNING
+          : "Some Jupiter price and underlying reference quotes are unavailable. Available token metadata is retained.",
       );
     }
   };

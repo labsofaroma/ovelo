@@ -1,9 +1,10 @@
-import { BASKET_EQUITY_PYTH_FEEDS, XSTOCKS_PYTH_FEEDS } from "../../pyth/feeds";
 import {
   loadConstituentHistoricalBars,
   type ConstituentDailyBar,
 } from "./bars";
 import { calculateBasket24hGrowth, extractBasketMembers } from "./growth";
+
+export const HISTORY_SOURCE = "Yahoo Finance Daily Closes";
 import type {
   BasketConstituentPerformance,
   BasketHistoricalPoint,
@@ -49,6 +50,12 @@ function getTimeframeCutoffDays(
 /**
  * Fetches and builds multi-timeframe historical performance for any basket.
  * Aligns constituent close bars, tracks normalized NAV, and produces attribution.
+ *
+ * History-only: every start AND end price is an observed daily close of the underlying share. A
+ * token price or reference quote is never substituted for a missing close (a different instrument;
+ * M3-SDK-REQUESTS #2), so a constituent without closes is reported without a change, and a range
+ * with too few closes is "unavailable" rather than silently replaced by 24h token data. `sources`
+ * names only the providers whose observations fed the result (#3).
  */
 export async function fetchBasketHistoricalPerformance(params: {
   basket: unknown;
@@ -107,34 +114,37 @@ export async function fetchBasketHistoricalPerformance(params: {
     .slice(0, 10);
 
   const constituentBarsMap = new Map<string, ConstituentDailyBar[]>();
-  const sources = new Set<string>(["Yahoo Finance Daily Closes"]);
   const warnings: string[] = [];
 
   members.forEach(({ asset }, idx) => {
     const res = constituentBarResults[idx];
-    if (!res) return;
-    const upper = (asset.underlyingSymbol || asset.symbol || "").toUpperCase();
-    if (res.status === "fulfilled" && res.value.length > 0) {
+    if (res?.status === "fulfilled" && res.value.length > 0) {
       const assetKey = asset.mint || asset.underlyingSymbol || asset.symbol;
       constituentBarsMap.set(assetKey, res.value);
     }
-    if (BASKET_EQUITY_PYTH_FEEDS[upper] || XSTOCKS_PYTH_FEEDS[upper]) {
-      sources.add("Pyth Network Reference Feeds");
-    }
+  });
+
+  const unavailable = (warning: string): BasketPerformance => ({
+    basketId,
+    timeframe,
+    changePct: null,
+    gainLossUsd: null,
+    endValueUsd: null,
+    baseAmountUsd,
+    asOf,
+    constituents: [],
+    topGainer: null,
+    topLoser: null,
+    history: [],
+    status: "unavailable",
+    sources: [],
+    warnings: [warning],
   });
 
   if (constituentBarsMap.size === 0) {
-    // Graceful fallback to 24h growth calculation if historical bars are completely unreachable
-    const fallback24h = calculateBasket24hGrowth(basket, baseAmountUsd);
-    return {
-      ...fallback24h,
-      timeframe,
-      status: "unavailable",
-      warnings: [
-        `Historical daily bars are temporarily unavailable for timeframe ${timeframe.toUpperCase()}.`,
-        ...fallback24h.warnings,
-      ],
-    };
+    return unavailable(
+      `Historical daily bars are temporarily unavailable for timeframe ${timeframe.toUpperCase()}.`,
+    );
   }
 
   // Find all unique trading dates within the cutoff
@@ -149,15 +159,9 @@ export async function fetchBasketHistoricalPerformance(params: {
 
   const sortedDates = [...allDates].sort();
   if (sortedDates.length < 2) {
-    const fallback24h = calculateBasket24hGrowth(basket, baseAmountUsd);
-    return {
-      ...fallback24h,
-      timeframe,
-      status: "partial",
-      warnings: [
-        `Insufficient historical date observations for ${timeframe}. Showing recent quotes.`,
-      ],
-    };
+    return unavailable(
+      `Insufficient historical date observations for ${timeframe}.`,
+    );
   }
 
   // Build daily forward-filled price map per constituent
@@ -191,11 +195,8 @@ export async function fetchBasketHistoricalPerformance(params: {
       const assetKey = asset.mint || asset.underlyingSymbol || asset.symbol;
       const dateMap = filledPrices.get(assetKey);
       const startPrice = dateMap?.get(startDate) ?? null;
-      const endPrice =
-        dateMap?.get(endDate) ??
-        asset.priceUsd ??
-        asset.underlyingPriceUsd ??
-        null;
+      // History-only: never fall back to a token price or reference quote (#2).
+      const endPrice = dateMap?.get(endDate) ?? null;
 
       let changePct: number | null = null;
       let contributionPct: number | null = null;
@@ -299,7 +300,7 @@ export async function fetchBasketHistoricalPerformance(params: {
         : null,
     history,
     status,
-    sources: [...sources],
+    sources: pricedWeightBps > 0 ? [HISTORY_SOURCE] : [],
     warnings,
   };
 }

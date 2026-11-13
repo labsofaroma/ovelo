@@ -1,4 +1,3 @@
-import { BASKET_EQUITY_PYTH_FEEDS, XSTOCKS_PYTH_FEEDS } from "../../pyth/feeds";
 import type { MarketAsset } from "../../markets";
 import type {
   BasketConstituentPerformance,
@@ -106,16 +105,12 @@ export function calculateBasket24hGrowth(
         contributionPct = Number(((weightBps / 10_000) * changePct).toFixed(4));
       }
 
-      if (asset.priceSource) sources.add("Jupiter Token Observations");
-      if (asset.isRealTimePyth || asset.underlyingPriceSource === "pyth")
-        sources.add("Pyth Network Oracles");
-      const upperSym = (
-        asset.underlyingSymbol ||
-        asset.symbol ||
-        ""
-      ).toUpperCase();
-      if (BASKET_EQUITY_PYTH_FEEDS[upperSym] || XSTOCKS_PYTH_FEEDS[upperSym]) {
-        sources.add("Pyth Network Reference Feeds");
+      // Name a provider only when its observation contributed to this figure (#3): a feed merely
+      // existing for the symbol is not a source.
+      if (changePct !== null) {
+        if (asset.priceSource) sources.add("Jupiter Token Observations");
+        if (asset.isRealTimePyth || asset.underlyingPriceSource === "pyth")
+          sources.add("Pyth Network Oracles");
       }
 
       return {

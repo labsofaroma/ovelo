@@ -290,13 +290,17 @@ describe("fetchBasketHistoricalPerformance", () => {
       timeframe: "7d",
       options: { fetcher, now: nowOption },
     });
-    expect(result.status).toBe("partial");
+    // History-only (M3-SDK-REQUESTS 2): no 24h token data is substituted for the period.
+    expect(result.status).toBe("unavailable");
+    expect(result.history).toEqual([]);
+    expect(result.changePct).toBeNull();
+    expect(result.sources).toEqual([]);
     expect(result.warnings[0]).toMatch(
       /Insufficient historical date observations for 7d/,
     );
   });
 
-  test("lists Pyth reference feeds as a source when a constituent has one", async () => {
+  test("never lists Pyth: only the daily closes that fed the result are sources", async () => {
     const { fetcher } = fetcherFor({
       NVDA: yahoo(series(40, 100, 1)),
       AAA: yahoo(series(40, 100, 1)),
@@ -306,6 +310,37 @@ describe("fetchBasketHistoricalPerformance", () => {
       timeframe: "30d",
       options: { fetcher, now: nowOption },
     });
-    expect(result.sources).toContain("Pyth Network Reference Feeds");
+    // NVDA has a Pyth feed. A feed existing is not a feed contributing (M3-SDK-REQUESTS 3).
+    expect(result.sources).toEqual(["Yahoo Finance Daily Closes"]);
+  });
+
+  test("never substitutes a token price for a missing close", async () => {
+    const { fetcher } = fetcherFor({ AAA: yahoo(series(40, 100, 1)) });
+    const result = await fetchBasketHistoricalPerformance({
+      // BBB has a token price of 250 but no daily closes at all.
+      basket: basket(member("AAA", 5000), member("BBB", 5000, 250)),
+      timeframe: "30d",
+      options: { fetcher, now: nowOption },
+    });
+    const bbb = result.constituents.find((c) => c.mint === "BBB-mint");
+    expect(bbb?.currentPriceUsd).toBeNull();
+    expect(bbb?.changePct).toBeNull();
+    expect(result.status).toBe("partial");
+    const aaa = result.constituents.find((c) => c.mint === "AAA-mint");
+    // AAA's end price is its last observed close (139), not its token price (100).
+    expect(aaa?.currentPriceUsd).toBe(139);
+  });
+
+  test("no bars at all: unavailable, no sources, no 24h substitution", async () => {
+    const { fetcher } = fetcherFor({});
+    const result = await fetchBasketHistoricalPerformance({
+      basket: basket(member("AAA", 10_000)),
+      timeframe: "90d",
+      options: { fetcher, now: nowOption },
+    });
+    expect(result.status).toBe("unavailable");
+    expect(result.sources).toEqual([]);
+    expect(result.constituents).toEqual([]);
+    expect(result.history).toEqual([]);
   });
 });

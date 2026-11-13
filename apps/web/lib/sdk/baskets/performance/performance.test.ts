@@ -208,3 +208,44 @@ test("fetchBasketHistoricalPerformance computes normalized NAV series and attrib
   expect(perf.constituents[1].changePct).toBe(5.0);
   expect(perf.constituents[1].contributionPct).toBe(2.5);
 });
+
+test("calculateBasket24hGrowth names a provider only when its observation contributed", () => {
+  const perf = calculateBasket24hGrowth(
+    {
+      id: "sources",
+      assets: [
+        // NVDA has a Pyth feed and a Jupiter token price but no observed 24h change.
+        {
+          asset: makeAsset("NVDA", null, 120, {
+            priceSource: "jupiter-price-v3",
+          }),
+          weight: 5000,
+        },
+        { asset: makeAsset("MSFT", 1.0, 400), weight: 5000 },
+      ],
+    },
+    1000,
+  );
+  expect(perf.sources).not.toContain("Pyth Network Reference Feeds");
+  expect(perf.sources).not.toContain("Jupiter Token Observations");
+
+  const contributed = calculateBasket24hGrowth(
+    {
+      id: "sources-2",
+      assets: [
+        {
+          asset: makeAsset("NVDA", 2.0, 120, {
+            priceSource: "jupiter-price-v3",
+            isRealTimePyth: true,
+          }),
+          weight: 10_000,
+        },
+      ],
+    },
+    1000,
+  );
+  expect(contributed.sources).toEqual([
+    "Jupiter Token Observations",
+    "Pyth Network Oracles",
+  ]);
+});

@@ -25,6 +25,20 @@ async function waitForRateLimit(
   });
 }
 
+/** A non-2xx provider response. `status` lets callers tell rate limiting (429) from an outage. */
+export class MarketHttpError extends Error {
+  readonly status: number;
+  constructor(status: number) {
+    super(`Market provider returned HTTP ${status}`);
+    this.name = "MarketHttpError";
+    this.status = status;
+  }
+}
+
+export function isRateLimited(error: unknown): boolean {
+  return error instanceof MarketHttpError && error.status === 429;
+}
+
 export function resolveJupiterApiKey(raw?: string): string | undefined {
   if (!raw) return undefined;
   return raw
@@ -69,7 +83,6 @@ export async function request(
       cache: "no-store",
     });
   }
-  if (!response.ok)
-    throw new Error(`Market provider returned HTTP ${response.status}`);
+  if (!response.ok) throw new MarketHttpError(response.status);
   return response.json() as Promise<unknown>;
 }
