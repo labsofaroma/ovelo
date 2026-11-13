@@ -231,7 +231,7 @@ Each milestone is merged to `main` behind feature flags. The prototype stays dep
 | **M2** | Shared helpers cleanup (weeks 1–3, **implemented**, see status below) | in `apps/web/lib/sdk`: `core/`, `pyth/`, `jupiter/`, `markets/`, `research/`, `baskets/`, `paper/` ported with their tests | ≥ 85% coverage; one `@solana/kit` version; no `any` in public types |
 | **M3** | Read-only app (weeks 2–4, **implemented**, see status below) | marketing pages, markets, stock detail, baskets list and detail, watchlist, all as RSC with ISR | Lighthouse ≥ 90 on performance, SEO and accessibility; meets PRODUCT.md data rules (sources, timestamps, stale states) |
 | **M4** | Wallet + spot trading (weeks 3–6, **implemented**, see status below) | `features/wallet`, `features/trade` (single stock + basket, Jito bundles), receipts, portfolio | Playwright test buys on a mainnet fork or simulator; ported authorization tests pass; rate limits and CSP nonces live |
-| **M5** | Creators (weeks 5–6) | publish flow, invites table, dashboard, Solana Actions | creator E2E; single-use invites enforced |
+| **M5** | Creators (weeks 5–6, **M5a implemented**, M5b pending, see status below) | publish flow, invites table, dashboard, Solana Actions | creator E2E; single-use invites enforced |
 | **M6** | Recurring on the v1 contract (weeks 5–9, after your devnet deploy) | Codama client, `features/invest`, `apps/keeper` on QStash, `plans_index`, alerts, faucet | create → 3 installments → close + revoke works end-to-end on devnet; keeper alerting tested; skipped periods shown in the UI |
 | **M7** | Cutover (week 9–10) | point the production domain at v1, retire the prototype routes and the prototype devnet program | prototype plans closed or owners notified; old repo paths deleted; docs updated |
 | **M8** | Launch features | notifications, P&L, compliance gate, onboarding funnel ([ROADMAP.md](./ROADMAP.md) Phase 5) | |
@@ -473,6 +473,42 @@ Part B:
 - Prototype CSP tightening (AUDIT H-6 residue, M7); prototype `/api` routes still return `error.message` (M-5 residue).
 - web3.js v1 server-side in `lib/sdk` and `server/rpc.ts` (AUDIT M-12 residue).
 - Custom and creator baskets (M5): the trade server supports catalog baskets only.
+
+### M5 status: M5a done, M5b pending (branch `m5-creators`, cut from `m3-read-only-app`; not pushed, not merged, nothing deployed)
+
+M5 is split because M4 (wallet + spot trading) was in progress in parallel. **M5a** is everything that does not need a wallet. **M5b** (wallet-signed publish, Solana Actions, receipt-based stats, the creator E2E) starts after rebasing onto M4. What M5a needs from M4 is listed in [M5-NEEDS-FROM-M4.md](./M5-NEEDS-FROM-M4.md).
+
+- [x] Baseline before any change: typecheck clean, lint 0 errors / 143 warnings, format clean; 492 Vitest (web) + 296 node:test (280 pass, 16 skipped), `@aroma/ui` 210, config 2, keeper 1.
+- [x] `server/auth/creator.ts` (port of `creator-auth.ts`; prototype tests ported first). A zod-parsed challenge payload (wallet, purpose, basket id, content hash, nonce, issued-at, expiry) behind a human-readable message. The message embeds SHA-256 of the canonical payload and content. Single-use nonces via Redis `GETDEL`. Ed25519 verification with `@solana/kit` (`verifySignature`), with no new dependency and no key on the server. Property tests (seeded PRNG, 200 cases each) cover tampering, expiry, replay, wrong wallet and wrong purpose.
+- [x] Invites (AUDIT §4.4): hashed codes, always expiring (≤ 90 days), single-use by default. Redemption is one transaction: a conditional `UPDATE … uses < max_uses AND expires_at > now`, then the `creators` row with `invite_id`. `scripts/create-invite.ts` prints a code once.
+- [x] `features/creators/server.ts` on Drizzle: drafts, publish (lib/sdk `validateProgrammableBasket`, then the weights trigger), versioning, archive, ownership, public reads, stats. `schema.ts` (zod) is shared by the API and UI.
+- [x] API `/api/v1/creators/{challenge, invites/redeem, baskets, baskets/:id, :wallet/stats}`: thin `parse → service → mapError` handlers, 404 when the flag is off, same-origin check and rate limits in the handlers (`TODO(M5b)`: M4's middleware).
+- [x] UI: `/v1/basket/new` (`BuilderForm`, `AssetPicker`, `WeightEditor`, `BuilderPreview` reusing `AllocationTable`, browser-only drafts, disabled **Publish (connect wallet)**) and `/v1/creators` (server-rendered directory). `assertV1Enabled()` in every page; the existing `(app)/v1` layout gates too.
+- [x] Tests: web Vitest 492 → **617** (91 files), including PGlite service and route tests (happy path, unauthorized, expired, replay, wrong owner, invalid weights, flag off → 404, cross-origin, rate limited) and component tests for `WeightEditor` and `AssetPicker`. Playwright (local only): **35/35** (M3's 28 + 7 new; both new pages at zero axe violations in light and dark, the builder flow and blocked storage).
+- [x] Coverage: `server/auth/creator.ts` 98.9% lines / 92.3% branches; `features/creators/server.ts` 98.1% / 92.0%; `invites.ts` 95.3% / 84.2%.
+- [x] `pnpm build:web` passes with the flag off (every new page and route is 404; the prototype `/`, `/markets`, `/baskets`, `/basket/builder` and `/creators` are 200) and with `.env.example` placeholders and the flag on.
+- [ ] **Open (M5b):** wallet-signed publish, update and archive in the UI; `features/baskets/actions.ts` (Solana Actions); receipt-based usage and volume; rate limits in M4's middleware; the creator E2E (mocked signer → redeem → build → publish → directory → buy via Action on a simulator).
+
+**Decisions**
+
+1. **Challenge state is a Redis nonce, not an HMAC token.** The prototype signed an HMAC token with `CREATOR_AUTH_SECRET` and claimed the nonce separately. In v1 the payload is stored under the nonce for 5 minutes and consumed with `GETDEL` *before* any check, so a challenge authorizes at most once even under concurrent requests. A refused attempt burns it too. No new secret is needed.
+2. **A fourth purpose, `redeem`.** The plan lists `publish | update | delete`, but redeeming an invite creates a `creators` row for a wallet. It must be signed (AGENTS.md rule 2), or anyone could register someone else's wallet.
+3. **Signed content is canonical JSON of the parsed body.** The wallet prompt lines are derived from that content only, never from the live catalog, so verification rebuilds the exact message.
+4. **Invites without an expiry are refused** (fail closed), even though the column is nullable. All refusals share one public message; the reason (`unknown`, `expired`, `used`, `no-expiry`) goes to logs.
+5. **Assets must be registered at save time.** The server takes symbols from the market snapshot (verified, not halted), never from the client. The builder additionally requires an observed token price to select an asset.
+6. **No migration in M5a.** A new version overwrites the allocations and bumps `version`; earlier versions are not kept. A `basket_versions` table can follow after M4's migrations (M5-NEEDS #5). For the same reason, stats report `lastPublishedAt` but no "first published" date.
+7. **Drafts on the server are private** (`GET` returns 404). The M5a builder keeps drafts in browser storage only.
+8. **Creator routes live in `features/creators/routes.ts`**, and there is no nav link yet, so that `features/shared` stays untouched while M4 is in flight.
+
+**Deviations and findings**
+
+1. **`tsconfig.strict.json` did not cover `features/` or the v1 route groups.** TypeScript's `include` has no brace expansion, so `*.{ts,tsx}` matched nothing, and those files were strictly checked only when imported. Fixed (one pattern per extension); all 100 existing files pass. This is the one shared config edit.
+2. **Found by the gates and fixed before commit:** `next build` rejects `void` as a route handler's second parameter (the wrapper now has overloads). An unreachable Neon database rejected with a DOM `ErrorEvent` wrapped by Drizzle and surfaced as 500; it is now 503 `SERVICE_UNAVAILABLE`. On phones, the weight rows lost their symbol labels and the builder overflowed to 596 px; found in the screenshots, now 0 px of overflow at 390 px and 1440 px.
+3. **`fast-check` is not installed**, so the property tests use a seeded PRNG (M5-NEEDS #1).
+4. **PGlite runs transactions one at a time.** The 25-way parallel redemption test proves the conditional-update logic and the rollback paths. Row-level locking under true parallelism is Postgres's `UPDATE … WHERE` semantics, not exercised locally. The schema's `uses <= max_uses` CHECK is the backstop and is tested.
+5. **Screenshots looked at** (builder and directory, light and dark, desktop and 390 px). The directory shows its unavailable state, because there is no reachable Postgres locally (M5-NEEDS #6). Only 10 to 32 assets were selectable during the session because keyless Jupiter rate-limits token prices (M3 finding 4); the page says how many were left out and why. The prototype root "Skip to content" link appears mid-page in full-page captures; it is fixed-positioned and appears only on pages taller than the viewport (the root layout, not M5).
+6. **Shared files edited:** `apps/web/tsconfig.strict.json`, `docs/REWRITE-PLAN.md`. `docs/M5-NEEDS-FROM-M4.md` is new. Nothing in the do-not-edit list was touched.
+7. **Not verified:** CI (files only, nothing pushed); a real Neon database; true parallel redemption on Postgres; wallet signing in a browser (M5b).
 
 **Critical path:** M0 → M2 → M4 (spot trading is the revenue path). M6 depends on your contract being deployed. Develop it against a local LiteSVM build until then.
 
