@@ -17,11 +17,13 @@ updates:
       # Pinned deliberately; upgrade in a dedicated PR (REWRITE-PLAN §3: one @solana/kit version).
       - dependency-name: "@solana/kit"
         update-types: ["version-update:semver-major"]
-      # The React 19 move is its own milestone task.
+      # React is pinned to 19.2.x (M4). Minors are reviewed by hand with Next.js compatibility.
       - dependency-name: "react"
-        update-types: ["version-update:semver-major"]
+        update-types:
+          ["version-update:semver-major", "version-update:semver-minor"]
       - dependency-name: "react-dom"
-        update-types: ["version-update:semver-major"]
+        update-types:
+          ["version-update:semver-major", "version-update:semver-minor"]
 
   - package-ecosystem: cargo
     directory: /packages/anchor
