@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
-import { resolveReviewedMarketBaskets } from "../markets";
+import { resolveReviewedMarketBaskets, type MarketAsset } from "../markets";
+import { testAsset, testBasket, testSnapshot } from "../markets/test-fixtures";
 import {
   createPaperAccount,
   executePaperOrder,
@@ -12,8 +13,8 @@ import {
 } from "./index";
 
 const now = "2026-09-12T12:00:00.000Z";
-function asset(overrides = {}) {
-  return {
+function asset(overrides: Partial<MarketAsset> = {}): MarketAsset {
+  return testAsset({
     mint: "test-mint",
     symbol: "TEST",
     priceUsd: 50,
@@ -21,7 +22,7 @@ function asset(overrides = {}) {
     verified: true,
     tradingHalted: false,
     ...overrides,
-  };
+  });
 }
 
 test("paper buy and partial sale conserve cash and remaining cost basis without mutating input", () => {
@@ -70,20 +71,21 @@ test("rejects insufficient funds, overselling, missing quotes, stale quotes, hal
   expect(() =>
     executePaperOrder(start, asset({ tradingHalted: true }), "buy", 100, now),
   ).toThrow(/unavailable/);
-  expect(() => executePaperOrder(start, asset(), "hold", 100, now)).toThrow(
-    /side/,
-  );
+  expect(() =>
+    // @ts-expect-error: an invalid side from untyped callers must still be rejected at runtime.
+    executePaperOrder(start, asset(), "hold", 100, now),
+  ).toThrow(/side/);
 });
 
 test("basket is all-or-nothing and requires complete allocations", () => {
   const start = createPaperAccount(1000);
-  const basket = {
+  const basket = testBasket({
     available: true,
     assets: [
       { asset: asset(), weight: 5000 },
       { asset: asset({ mint: "other", priceUsd: null }), weight: 5000 },
     ],
-  };
+  });
   expect(() => executePaperBasket(start, basket, 500, now)).toThrow();
   expect(start.cashUsd).toBe(1000);
   expect(start.orders).toEqual([]);
@@ -126,12 +128,12 @@ test("monthly plans clamp to month-end; app-open execution does not fabricate mi
     },
     "2026-09-01T12:00:00Z",
   );
-  account = runDuePaperPlans(account, { assets: [asset()], baskets: [] }, now);
+  account = runDuePaperPlans(account, testSnapshot({ assets: [asset()] }), now);
   expect(account.orders.length).toBe(1);
   expect(account.cashUsd).toBe(900);
   expect(account.plans[0].nextExecutionAt).toBe("2026-09-13T12:00:00.000Z");
   expect(
-    runDuePaperPlans(account, { assets: [asset()], baskets: [] }, now).orders
+    runDuePaperPlans(account, testSnapshot({ assets: [asset()] }), now).orders
       .length,
   ).toBe(1);
 });
@@ -151,8 +153,8 @@ test("persisted state rejects corruption and migrates a valid version-one accoun
     }),
   ).toBe(null);
   expect(parsePaperAccount({ ...account, orders: [{}] })).toBe(null);
-  const { plans, ...legacy } = account;
-  expect(parsePaperAccount(legacy).plans).toEqual([]);
+  const { plans: _plans, ...legacy } = account;
+  expect(parsePaperAccount(legacy)?.plans).toEqual([]);
 });
 
 test("an existing paper basket plan retains all original members after mainnet publication is narrowed", () => {
@@ -176,7 +178,10 @@ test("an existing paper basket plan retains all original members after mainnet p
     },
     "2026-09-01T12:00:00Z",
   );
-  const snapshot = { assets, baskets: resolveReviewedMarketBaskets(assets) };
+  const snapshot = testSnapshot({
+    assets,
+    baskets: resolveReviewedMarketBaskets(assets),
+  });
   const result = runDuePaperPlans(account, snapshot, now);
   expect(result.plans[0].lastError).toBe(null);
   expect(result.orders.length).toBe(5);
@@ -184,7 +189,7 @@ test("an existing paper basket plan retains all original members after mainnet p
     [...symbols].sort(),
   );
   expect(Math.abs(result.cashUsd - 900) < 1e-8).toBeTruthy();
-  assets[4].priceUsd = null;
+  assets[4]!.priceUsd = null;
   const blocked = runDuePaperPlans(account, snapshot, now);
   expect(
     blocked.orders.length,

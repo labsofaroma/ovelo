@@ -12,7 +12,7 @@ export const BASKET_QUOTE_REVIEW_POLICY = {
 export function assessBasketRoundTrip(
   inputRaw: string,
   returnedRaw: string | null,
-  maxLossBps = BASKET_QUOTE_REVIEW_POLICY.maxRoundTripLossBps,
+  maxLossBps: number = BASKET_QUOTE_REVIEW_POLICY.maxRoundTripLossBps,
 ): { passes: boolean; lossBps: number | null } {
   const valid = (value: string): boolean =>
     /^\d{1,20}$/.test(value) && BigInt(value) > 0n && BigInt(value) < 2n ** 64n;

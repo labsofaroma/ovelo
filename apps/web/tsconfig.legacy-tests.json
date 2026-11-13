@@ -4,9 +4,9 @@
   // off here. Everything else stays on: wrong imports, property names and call signatures still fail.
   // Tests written from scratch are NOT listed here; they are checked by tsconfig.json in full.
   // Shrink this list as fixtures are typed. tsconfig.json excludes the same files.
-  // Converted files whose fixtures still do not type-check (they were untyped .cjs before) are in
-  // tsconfig.json's exclude only: still linted and run by Vitest, just not by tsc. See the M2 status
-  // in docs/REWRITE-PLAN.md for the list.
+  // The 8 converted files that M2 left outside tsc entirely (M2 decision 5) were typed in M4 (Part
+  // A4) with the builders in lib/sdk/markets/test-fixtures.ts and are now checked by tsconfig.json
+  // in full (strict), not by this relaxed project.
   "extends": "./tsconfig.json",
   "compilerOptions": {
     "strictNullChecks": false,

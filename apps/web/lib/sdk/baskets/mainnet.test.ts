@@ -103,7 +103,10 @@ test("even compact orders use V1 with explicit resource budgets", async () => {
   expect(config.computeUnitLimit).toBe(100_000);
   expect(config.loadedAccountsDataSizeLimit).toBe(131072);
   expect(config.priorityFeeLamports).toBe(5000n);
-  expect(message.addressTableLookups).toBe(undefined);
+  // kit 7's published message types stop at legacy/v0 (M2 decision 1), so read the field loosely.
+  expect(
+    (message as { addressTableLookups?: unknown }).addressTableLookups,
+  ).toBe(undefined);
   await await expect(
     sdk.walletTransactionSignature(built.transaction),
   ).rejects.toThrow(/did not sign/);
@@ -209,21 +212,27 @@ test("official recurring setup contains only official instructions and the owner
   ).toBeTruthy();
 });
 test("recurring limits reject infinite, oversized and invalid schedules", () => {
-  for (const [amount, interval, periods] of [
+  const cases: [bigint, number, number][] = [
     [0n, 86400, 3],
     [2n ** 64n, 86400, 3],
     [1n, 3599, 1],
     [1n, 86400, 0],
     [1n, 2592000, 13],
     [1n, NaN, 1],
-  ])
+  ];
+  for (const [amount, interval, periods] of cases)
     expect(() =>
       sdk.validateRecurringTerms(amount, interval, periods),
     ).toThrow();
   sdk.validateRecurringTerms(1n, 86400, 365);
 });
 test("collection does not backfill missed periods or run after hard expiry", () => {
-  const p = {
+  const p: sdk.RecurringPayment = {
+    address: key(),
+    owner: key(),
+    buyer: key(),
+    mint: key(),
+    startsAt: 0,
     amountPerPeriod: "100",
     pulledInPeriod: "60",
     periodSeconds: 3600,

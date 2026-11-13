@@ -5,15 +5,31 @@ import {
   holdingToSwapToken,
   MAINNET_SOL_MINT,
 } from "./index";
+import type { MainnetHolding } from "./types";
 const owner = "11111111111111111111111111111111";
 const mint = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
 const tokenProgram = "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA";
 const token2022 = "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb";
+
+/** A typed holding: identity plus "unknown" valuation; tests state the fields they rely on. */
+function holding(overrides: Partial<MainnetHolding>): MainnetHolding {
+  return {
+    mint,
+    symbol: "TEST",
+    name: "Test token",
+    amount: "0",
+    displayAmount: null,
+    priceUsd: null,
+    valueUsd: null,
+    valuationUnavailableReason: null,
+    ...overrides,
+  };
+}
 function account({
   tokenMint = mint,
   amount = "123456789",
   decimals = 6,
-  uiAmountString = "123.456789",
+  uiAmountString = "123.456789" as string | null,
   state = "initialized",
   program = tokenProgram,
   accountOwner = owner,
@@ -111,48 +127,62 @@ test("tokens beyond swap precision remain visible without offering an unsafe amo
   expect(balance.rawAmount).toBe("1");
   expect(balance.decimals).toBe(19);
   expect(
-    maxSwapAmount({
-      mint,
-      decimals: 19,
-      spendableAmount: "0.0000000000000000001",
-    }),
+    maxSwapAmount(
+      holding({
+        mint,
+        decimals: 19,
+        spendableAmount: "0.0000000000000000001",
+      }),
+    ),
   ).toBe("0");
 });
 test("Max reserves SOL without rounding and never spends frozen or unverified balance units", () => {
   expect(
-    maxSwapAmount({
-      mint: MAINNET_SOL_MINT,
-      decimals: 9,
-      spendableAmount: "1.123456789",
-    }),
+    maxSwapAmount(
+      holding({
+        mint: MAINNET_SOL_MINT,
+        decimals: 9,
+        spendableAmount: "1.123456789",
+      }),
+    ),
   ).toBe("1.113456789");
   expect(
-    maxSwapAmount({
-      mint: MAINNET_SOL_MINT,
-      decimals: 9,
-      spendableAmount: "0.005",
-    }),
+    maxSwapAmount(
+      holding({
+        mint: MAINNET_SOL_MINT,
+        decimals: 9,
+        spendableAmount: "0.005",
+      }),
+    ),
   ).toBe("0");
   expect(
-    maxSwapAmount({ mint, decimals: 6, spendableAmount: "9007199254.740993" }),
+    maxSwapAmount(
+      holding({ mint, decimals: 6, spendableAmount: "9007199254.740993" }),
+    ),
   ).toBe("9007199254.740993");
-  expect(maxSwapAmount({ mint, amount: "100", decimals: 6 })).toBe("0");
+  expect(maxSwapAmount(holding({ mint, amount: "100", decimals: 6 }))).toBe(
+    "0",
+  );
   expect(
-    maxSwapAmount({
-      mint,
-      decimals: 6,
-      spendableAmount: "100",
-      tradingHalted: true,
-    }),
+    maxSwapAmount(
+      holding({
+        mint,
+        decimals: 6,
+        spendableAmount: "100",
+        tradingHalted: true,
+      }),
+    ),
   ).toBe("0");
 });
 test("wallet identity metadata does not imply verification or invent prices", () => {
-  const token = holdingToSwapToken({
-    mint,
-    symbol: "UNKNOWN",
-    name: "Unidentified wallet token",
-    priceUsd: null,
-  });
+  const token = holdingToSwapToken(
+    holding({
+      mint,
+      symbol: "UNKNOWN",
+      name: "Unidentified wallet token",
+      priceUsd: null,
+    }),
+  );
   expect(token.verified).toBe(false);
   expect(token.source).toBe("wallet");
   expect(token.decimals).toBe(null);

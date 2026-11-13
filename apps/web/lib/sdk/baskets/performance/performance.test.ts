@@ -5,17 +5,25 @@ import {
   simulateBasketReturn,
   extractBasketMembers,
 } from "./index";
+import type { MarketAsset } from "../../markets";
+import { testAsset } from "../../markets/test-fixtures";
 
-const makeAsset = (symbol, change24hPct, priceUsd = 100, extra = {}) => ({
-  mint: `${symbol}_MINT_111111111111111111111111111111`,
-  symbol,
-  underlyingSymbol: symbol,
-  name: `${symbol} Inc.`,
-  priceUsd,
-  change24hPct,
-  tradingHalted: false,
-  ...extra,
-});
+const makeAsset = (
+  symbol: string,
+  change24hPct: number | null,
+  priceUsd: number | null = 100,
+  extra: Partial<MarketAsset> = {},
+): MarketAsset =>
+  testAsset({
+    mint: `${symbol}_MINT_111111111111111111111111111111`,
+    symbol,
+    underlyingSymbol: symbol,
+    name: `${symbol} Inc.`,
+    priceUsd,
+    change24hPct,
+    tradingHalted: false,
+    ...extra,
+  });
 
 test("calculateBasket24hGrowth calculates exact weighted return and attribution for a balanced basket", () => {
   const basket = {
@@ -43,8 +51,8 @@ test("calculateBasket24hGrowth calculates exact weighted return and attribution 
   expect(perf.constituents[1].symbol).toBe("MSFT");
   expect(perf.constituents[1].contributionPct).toBe(-0.5);
 
-  expect(perf.topGainer.symbol).toBe("NVDA");
-  expect(perf.topLoser.symbol).toBe("MSFT");
+  expect(perf.topGainer?.symbol).toBe("NVDA");
+  expect(perf.topLoser?.symbol).toBe("MSFT");
 });
 
 test("calculateBasket24hGrowth handles partial pricing without fabricating data", () => {
@@ -129,7 +137,7 @@ test("extractBasketMembers normalizes both raw asset arrays and MarketBasket sch
 });
 
 test("fetchBasketHistoricalPerformance computes normalized NAV series and attribution using mock fetcher", async () => {
-  const mockBars = {
+  const mockBars: Record<string, { date: string; close: number }[]> = {
     AAPL: [
       { date: "2026-09-17", close: 100 },
       { date: "2026-09-18", close: 105 },
@@ -142,27 +150,24 @@ test("fetchBasketHistoricalPerformance computes normalized NAV series and attrib
     ],
   };
 
-  const mockFetcher = async (url) => {
-    const symMatch = url.match(/\/chart\/([A-Za-z]+)\?/);
-    const sym = symMatch ? symMatch[1] : "";
+  const mockFetcher = async (input: RequestInfo | URL) => {
+    const symMatch = String(input).match(/\/chart\/([A-Za-z]+)\?/);
+    const sym = symMatch?.[1] ?? "";
     const bars = mockBars[sym] || [];
-    return {
-      ok: true,
-      json: async () => ({
-        chart: {
-          result: [
-            {
-              timestamp: bars.map((b) =>
-                Math.floor(new Date(`${b.date}T00:00:00Z`).getTime() / 1000),
-              ),
-              indicators: {
-                quote: [{ close: bars.map((b) => b.close) }],
-              },
+    return Response.json({
+      chart: {
+        result: [
+          {
+            timestamp: bars.map((b) =>
+              Math.floor(new Date(`${b.date}T00:00:00Z`).getTime() / 1000),
+            ),
+            indicators: {
+              quote: [{ close: bars.map((b) => b.close) }],
             },
-          ],
-        },
-      }),
-    };
+          },
+        ],
+      },
+    });
   };
 
   const basket = {

@@ -4,7 +4,7 @@ import type { BasketPerformance } from "./types";
  * Simulates portfolio return and exact profit/loss on an arbitrary invested dollar amount.
  */
 export function simulateBasketReturn(
-  performance: BasketPerformance,
+  performance: Pick<BasketPerformance, "changePct">,
   investedAmountUsd: number,
 ): {
   initialUsd: number;

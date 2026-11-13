@@ -1,4 +1,7 @@
 import { expect, test } from "vitest";
+import type { MarketSnapshot } from "../markets";
+
+type CatalogView = Pick<MarketSnapshot, "status" | "sources">;
 import {
   hasCompleteIssuerCatalogs,
   hasIssuerCatalogsForAssets,
@@ -7,30 +10,33 @@ import {
 test("missing issuer catalogs cannot be presented as a complete empty portfolio", () => {
   expect(
     hasCompleteIssuerCatalogs({
-      status: "partial",
+      status: "partial" as const,
       sources: ["PreStocks issuer catalog", "Jupiter Tokens V2"],
     }),
   ).toBe(false);
   expect(
     hasCompleteIssuerCatalogs({
-      status: "partial",
+      status: "partial" as const,
       sources: ["xStocks issuer catalog"],
     }),
   ).toBe(false);
   expect(
-    hasCompleteIssuerCatalogs({ status: "unavailable", sources: [] }),
+    hasCompleteIssuerCatalogs({ status: "unavailable" as const, sources: [] }),
   ).toBe(false);
   // Price outages can remain partial without losing the ability to identify every issuer holding.
   expect(
     hasCompleteIssuerCatalogs({
-      status: "partial",
+      status: "partial" as const,
       sources: ["xStocks issuer catalog", "PreStocks issuer catalog"],
     }),
   ).toBe(true);
 });
 
 test("order issuer requirements follow selected assets rather than the full market universe", () => {
-  const snapshot = { status: "partial", sources: ["xStocks issuer catalog"] };
+  const snapshot: CatalogView = {
+    status: "partial",
+    sources: ["xStocks issuer catalog"],
+  };
   expect(hasIssuerCatalogsForAssets(snapshot, [{ issuer: "xstocks" }])).toBe(
     true,
   );
@@ -53,14 +59,14 @@ test("order issuer requirements follow selected assets rather than the full mark
   );
   expect(
     hasIssuerCatalogsForAssets(
-      { status: "partial", sources: ["Backpack securities catalog"] },
+      { status: "partial" as const, sources: ["Backpack securities catalog"] },
       [{ issuer: "backpack" }],
     ),
   ).toBe(false);
   expect(
     hasIssuerCatalogsForAssets(
       {
-        status: "partial",
+        status: "partial" as const,
         sources: ["Backpack securities catalog", "Backpack Solana mappings"],
       },
       [{ issuer: "backpack" }],

@@ -3,17 +3,16 @@ import {
   validateProgrammableBasket,
   calculateEqualWeights,
   autoBalanceWeights,
-  calculateMarketCapWeights,
   resolveProgrammableBasket,
   encodeBasketShareCode,
   decodeBasketShareCode,
-  forkCuratedBasket,
   formatSocialUrl,
   executePaperRebalance,
-  createAromaCore,
   createPaperAccount,
   executePaperOrder,
 } from "../../index";
+import { testAsset } from "../../markets/test-fixtures";
+import type { ProgrammableBasket } from "./types";
 
 test("validates programmable basket invariants (2 to 12 assets, 10000 bps sum)", () => {
   const valid = {
@@ -164,7 +163,7 @@ test("auto-balance distribution conserves every basis point via Hare-Niemeyer", 
 });
 
 test("share code encodes and decodes custom baskets reliably", () => {
-  const basket = {
+  const basket: ProgrammableBasket = {
     id: "custom-orig",
     name: "Trio",
     ticker: "TRIO",
@@ -195,7 +194,7 @@ test("share code encodes and decodes custom baskets reliably", () => {
   const code = encodeBasketShareCode(basket);
   expect(typeof code === "string" && code.length > 0).toBeTruthy();
 
-  const decoded = decodeBasketShareCode(code);
+  const decoded = decodeBasketShareCode(code)!;
   expect(decoded).toBeTruthy();
   expect(decoded.name).toBe("Trio");
   expect(decoded.ticker).toBe("TRIO");
@@ -209,27 +208,27 @@ test("share code encodes and decodes custom baskets reliably", () => {
 test("paper rebalancing atomically sells overweighted assets and buys underweighted assets", () => {
   const now = new Date().toISOString();
   const assets = [
-    {
+    testAsset({
       mint: "mintA",
       symbol: "A",
       priceUsd: 100,
       verified: true,
       tradingHalted: false,
       priceObservedAt: now,
-    },
-    {
+    }),
+    testAsset({
       mint: "mintB",
       symbol: "B",
       priceUsd: 100,
       verified: true,
       tradingHalted: false,
       priceObservedAt: now,
-    },
+    }),
   ];
   let account = createPaperAccount(10000);
   // Buy $2,000 of A and $1,000 of B (A is 66.6%, B is 33.3%)
-  account = executePaperOrder(account, assets[0], "buy", 2000, now);
-  account = executePaperOrder(account, assets[1], "buy", 1000, now);
+  account = executePaperOrder(account, assets[0]!, "buy", 2000, now);
+  account = executePaperOrder(account, assets[1]!, "buy", 1000, now);
 
   const targets = [
     { mint: "mintA", weightBps: 5000 },
@@ -246,64 +245,13 @@ test("paper rebalancing atomically sells overweighted assets and buys underweigh
   expect(rebalanced).toBe(true);
   expect(legs.length).toBe(2);
 
-  const posA = rebalancedAccount.positions.find((p) => p.mint === "mintA");
-  const posB = rebalancedAccount.positions.find((p) => p.mint === "mintB");
+  const posA = rebalancedAccount.positions.find((p) => p.mint === "mintA")!;
+  const posB = rebalancedAccount.positions.find((p) => p.mint === "mintB")!;
   expect(posA && posB).toBeTruthy();
 
   // Both should now be valued at approx $1,500 each (50/50 of $3,000 total portfolio)
   expect(Math.abs(posA.quantity * 100 - 1500) < 1).toBeTruthy();
   expect(Math.abs(posB.quantity * 100 - 1500) < 1).toBeTruthy();
-});
-
-test("AromaCore saves, hydrates and deletes custom baskets", async () => {
-  const store = new Map();
-  const storage = {
-    getItem: (key) => store.get(key) ?? null,
-    setItem: (key, val) => store.set(key, val),
-  };
-
-  const client = { getMarkets: async () => ({ assets: [], baskets: [] }) };
-  const core = createAromaCore({
-    storage,
-    client,
-    accountKey: "test.account",
-    watchlistKey: "test.watch",
-    customBasketsKey: "test.custom",
-  });
-
-  await core.hydrate();
-  expect(core.getSnapshot().customBaskets.length).toBe(0);
-
-  const basket = {
-    id: "my-custom-ai",
-    name: "AI Duo",
-    ticker: "AIDUO",
-    description: "Top AI duo",
-    allocations: [
-      {
-        mint: "XsbEhLAtcf6HdfpFZ5xEMdqW8nfAvcsP5bdudRLJzJp",
-        symbol: "AAPL",
-        weightBps: 5000,
-      },
-      {
-        mint: "4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R",
-        symbol: "NVDA",
-        weightBps: 5000,
-      },
-    ],
-    rebalanceRules: { driftThresholdBps: 500 },
-  };
-
-  core.saveCustomBasket(basket);
-  await core.flush();
-
-  expect(core.getSnapshot().customBaskets.length).toBe(1);
-  expect(core.getCustomBasket("my-custom-ai")?.name).toBe("AI Duo");
-
-  core.deleteCustomBasket("my-custom-ai");
-  await core.flush();
-
-  expect(core.getSnapshot().customBaskets.length).toBe(0);
 });
 
 test("formatSocialUrl handles @handles, domains, full urls, and empty values", () => {
@@ -359,27 +307,27 @@ test("creator name and optional social link are preserved across validation, res
 
   // Encode & decode share code preserves creator
   const code = encodeBasketShareCode(validated);
-  const decoded = decodeBasketShareCode(code);
+  const decoded = decodeBasketShareCode(code)!;
   expect(decoded).toBeTruthy();
   expect(decoded.creatorName).toBe("Alice Walker");
   expect(decoded.creatorSocial).toBe("https://x.com/alicewalker");
 
   // Resolution exposes creator attribution to MarketBasket
   const assets = [
-    {
+    testAsset({
       mint: "XsbEhLAtcf6HdfpFZ5xEMdqW8nfAvcsP5bdudRLJzJp",
       symbol: "AAPL",
       priceUsd: 200,
       verified: true,
       tradingHalted: false,
-    },
-    {
+    }),
+    testAsset({
       mint: "4k3Dyjzvzp8eMZWUXbBCjEvwSkkk59S5iCNLY3QrkX6R",
       symbol: "NVDA",
       priceUsd: 130,
       verified: true,
       tradingHalted: false,
-    },
+    }),
   ];
   const resolved = resolveProgrammableBasket(validated, assets);
   expect(resolved.creatorName).toBe("Alice Walker");

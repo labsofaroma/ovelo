@@ -1,5 +1,6 @@
 import { expect, test } from "vitest";
 import { assessBasketRoundTrip, BASKET_QUOTE_REVIEW_POLICY } from "./liquidity";
+import { testAsset } from "../markets/test-fixtures";
 import {
   CANONICAL_BASKET_DEFINITIONS,
   resolveMarketBaskets,
@@ -10,7 +11,9 @@ test("roundtrip review uses exact raw units at the permitted loss boundary", () 
   expect(BASKET_QUOTE_REVIEW_POLICY.maxRoundTripLossBps).toBe(200);
   expect(assessBasketRoundTrip("1000000", "980000").passes).toBe(true);
   expect(assessBasketRoundTrip("1000000", "979999").passes).toBe(false);
-  expect(assessBasketRoundTrip("1000000", "979999").lossBps > 200).toBeTruthy();
+  expect(
+    assessBasketRoundTrip("1000000", "979999").lossBps! > 200,
+  ).toBeTruthy();
   expect(assessBasketRoundTrip("1000000", "1000100").passes).toBe(true);
 });
 
@@ -34,14 +37,17 @@ test("published mainnet baskets use reviewed definitions without mutating canoni
     "QQQ",
     "GLD",
   ];
-  const assets = symbols.map((underlyingSymbol) => ({
-    mint: underlyingSymbol,
-    underlyingSymbol,
-    issuer: "xstocks",
-    priceUsd: 10,
-    tradingHalted: false,
-    verified: true,
-  }));
+  const assets = symbols.map((underlyingSymbol) =>
+    testAsset({
+      mint: underlyingSymbol,
+      symbol: `${underlyingSymbol}x`,
+      underlyingSymbol,
+      issuer: "xstocks",
+      priceUsd: 10,
+      tradingHalted: false,
+      verified: true,
+    }),
+  );
   const reviewed = resolveReviewedMarketBaskets(assets);
   expect(reviewed.map((b) => b.id)).toEqual([
     "sol-digital-leaders",
@@ -62,11 +68,11 @@ test("published mainnet baskets use reviewed definitions without mutating canoni
   expect(canonical.map((basket) => basket.id)).toEqual(
     CANONICAL_BASKET_DEFINITIONS.map((definition) => definition.id),
   );
-  expect(canonical.find((b) => b.id === "sol-ai-infra").missingSymbols).toEqual(
-    ["NVDA", "MSFT", "GOOGL", "AMZN", "ORCL"],
-  );
-  assets[0].issuer = "backpack";
-  const missing = resolveReviewedMarketBaskets(assets)[0];
+  expect(
+    canonical.find((b) => b.id === "sol-ai-infra")!.missingSymbols,
+  ).toEqual(["NVDA", "MSFT", "GOOGL", "AMZN", "ORCL"]);
+  assets[0]!.issuer = "backpack";
+  const missing = resolveReviewedMarketBaskets(assets)[0]!;
   expect(missing.available).toBe(false);
   expect(missing.missingSymbols).toEqual(["AAPL"]);
   expect(

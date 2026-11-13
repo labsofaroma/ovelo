@@ -30,14 +30,6 @@
     "lib/sdk/research/service.test.ts",
     "lib/sdk/research/cache.test.ts",
     "lib/sdk/research/enrichment.test.ts",
-    "lib/sdk/baskets/custom/custom.test.ts",
-    "lib/sdk/baskets/liquidity.test.ts",
-    "lib/sdk/baskets/mainnet.test.ts",
-    "lib/sdk/baskets/performance/performance.test.ts",
-    "lib/sdk/baskets/rebalance.test.ts",
-    "lib/sdk/paper/paper.test.ts",
-    "lib/sdk/paper/swap.test.ts",
-    "lib/sdk/trade/catalogs.test.ts",
-    "lib/sdk/trade/holdings.test.ts"
+    "lib/sdk/baskets/rebalance.test.ts"
   ]
 }

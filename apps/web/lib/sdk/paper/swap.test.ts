@@ -7,24 +7,25 @@ import {
   parsePaperAccount,
   valuePaperAccount,
 } from "./index";
+import { testAsset } from "../markets/test-fixtures";
 
 const now = "2026-09-13T00:00:00.000Z";
-const input = {
+const input = testAsset({
   mint: "input-stock",
   symbol: "INPUT",
   priceUsd: 50,
   priceObservedAt: now,
   verified: true,
   tradingHalted: false,
-};
-const output = {
+});
+const output = testAsset({
   mint: "output-stock",
   symbol: "OUTPUT",
   priceUsd: 25,
   priceObservedAt: now,
   verified: true,
   tradingHalted: false,
-};
+});
 
 test("paper stock swap conserves equity and cash while realizing the input cost basis", () => {
   const account = executePaperOrder(
@@ -41,17 +42,17 @@ test("paper stock swap conserves equity and cash while realizing the input cost 
   expect(quote.outputQuantity).toBe(15);
   const swapped = executePaperSwap(account, appreciated, output, 5, now);
   expect(swapped.cashUsd).toBe(account.cashUsd);
-  expect(swapped.positions.find((p) => p.mint === input.mint).quantity).toBe(
+  expect(swapped.positions.find((p) => p.mint === input.mint)!.quantity).toBe(
     15,
   );
   expect(
-    swapped.positions.find((p) => p.mint === input.mint).costBasisUsd,
+    swapped.positions.find((p) => p.mint === input.mint)!.costBasisUsd,
   ).toBe(750);
-  expect(swapped.positions.find((p) => p.mint === output.mint).quantity).toBe(
+  expect(swapped.positions.find((p) => p.mint === output.mint)!.quantity).toBe(
     15,
   );
   expect(
-    swapped.positions.find((p) => p.mint === output.mint).costBasisUsd,
+    swapped.positions.find((p) => p.mint === output.mint)!.costBasisUsd,
   ).toBe(375);
   const [buy, sell] = swapped.orders;
   expect(buy.side).toBe("buy");
@@ -162,7 +163,7 @@ test("cash stays bit-for-bit unchanged and small remaining holdings are not disc
   };
   const swapped = executePaperSwap(account, input, output, 9.9e-10, now);
   expect(swapped.cashUsd).toBe(account.cashUsd);
-  const remaining = swapped.positions.find((p) => p.mint === input.mint);
+  const remaining = swapped.positions.find((p) => p.mint === input.mint)!;
   expect(remaining.quantity > 0 && remaining.quantity < 1e-10).toBeTruthy();
   expect(remaining.costBasisUsd > 0).toBeTruthy();
 });
