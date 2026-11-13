@@ -1,0 +1,5 @@
+{
+  "extends": "@aroma/config/tsconfig.base.json",
+  "compilerOptions": { "types": ["node"] },
+  "include": ["src/**/*.ts", "src/**/*.tsx", "vitest.config.ts"]
+}

@@ -4,16 +4,25 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
+    "prebuild": "tsx scripts/check-env.ts",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "test": "cd ../.. && TSX_TSCONFIG_PATH=apps/web/tsconfig.json node --import tsx --test apps/web/tests/*.test.* apps/web/tests/sdk/*.test.*"
+    "lint": "eslint .",
+    "typecheck": "next typegen && tsc --noEmit && tsc --noEmit -p tsconfig.strict.json",
+    "test": "pnpm run test:legacy && pnpm run test:unit",
+    "test:legacy": "cd ../.. && TSX_TSCONFIG_PATH=apps/web/tsconfig.json node --import tsx --test apps/web/tests/*.test.* apps/web/tests/sdk/*.test.*",
+    "test:unit": "vitest run",
+    "db:generate": "drizzle-kit generate",
+    "db:migrate": "tsx server/db/migrate.ts",
+    "db:check": "drizzle-kit check"
   },
   "dependencies": {
     "@base-ui/react": "1.8.0",
     "@farcaster/mini-app-solana": "^1.0.0",
     "@gsap/react": "2.1.2",
+    "@neondatabase/serverless": "1.2.0",
     "@privy-io/react-auth": "3.42.0",
+    "@sentry/nextjs": "10.78.0",
     "@solana-program/memo": "^0.8.0",
     "@solana-program/system": "^0.8.0",
     "@solana-program/token": "^0.6.0",
@@ -27,24 +36,36 @@
     "@solana/wallet-adapter-react": "^0.15.35",
     "@solana/wallet-adapter-react-ui": "^0.9.35",
     "@solana/web3.js": "^1.98.0",
+    "@upstash/ratelimit": "2.2.1",
+    "@upstash/redis": "1.41.0",
     "@vercel/analytics": "^2.0.1",
     "@vercel/speed-insights": "^2.0.0",
     "buffer": "^6.0.3",
+    "drizzle-orm": "0.45.4",
     "gsap": "3.15.0",
     "lucide-react": "^0.468.0",
     "next": "15.5.24",
+    "pino": "10.4.0",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "server-only": "0.0.1",
+    "zod": "4.6.7"
   },
   "devDependencies": {
+    "@aroma/config": "workspace:*",
+    "@electric-sql/pglite": "0.5.16",
+    "@next/env": "15.5.24",
     "@types/node": "^20.14.0",
     "@types/react": "^18.3.12",
     "@types/react-dom": "^18.3.1",
     "autoprefixer": "^10.4.20",
+    "drizzle-kit": "0.31.11",
+    "eslint": "9.39.5",
     "jsdom": "^26.1.0",
     "postcss": "^8.4.49",
     "tailwindcss": "^3.4.16",
     "tsx": "4.20.6",
-    "typescript": "^5.7.3"
+    "typescript": "^5.7.3",
+    "vitest": "3.2.7"
   }
 }

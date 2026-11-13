@@ -1,0 +1,22 @@
+{
+  "name": "@aroma/ui",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "Design tokens and shared React primitives. Empty placeholder until M1.",
+  "exports": {
+    ".": "./src/index.ts"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run"
+  },
+  "devDependencies": {
+    "@aroma/config": "workspace:*",
+    "@types/node": "^20.14.0",
+    "eslint": "9.39.5",
+    "typescript": "^5.7.3",
+    "vitest": "3.2.7"
+  }
+}

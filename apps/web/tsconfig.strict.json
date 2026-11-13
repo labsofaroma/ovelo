@@ -1,0 +1,22 @@
+{
+  // New-code project: stricter than the prototype config. Legacy files must not be imported here
+  // (tsc would check them under these flags too); use narrow imports or local constants.
+  "extends": "@aroma/config/tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "jsx": "preserve",
+    "types": ["node"],
+    "paths": { "@/*": ["./*"] }
+  },
+  "include": [
+    "server/**/*.ts",
+    "instrumentation*.ts",
+    "sentry.*.ts",
+    "scripts/check-env.ts",
+    "drizzle.config.ts",
+    "vitest.config.ts",
+    "app/api/v1/**/*.ts",
+    "app/(app)/**/*.{ts,tsx}",
+    "app/(marketing)/**/*.{ts,tsx}"
+  ]
+}

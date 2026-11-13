@@ -1,0 +1,37 @@
+# Prototype code keeps its existing style; Prettier applies to new code only.
+# Shrink this list as legacy modules are rewritten (REWRITE-PLAN §5).
+node_modules
+.next
+.turbo
+dist
+target
+coverage
+pnpm-lock.yaml
+*.tsbuildinfo
+apps/web/components/
+apps/web/lib/
+apps/web/styles/
+apps/web/tests/
+apps/web/scripts/
+apps/web/public/
+apps/web/middleware.ts
+apps/web/app/*/
+!apps/web/app/(app)/
+!apps/web/app/(marketing)/
+apps/web/app/api/*/
+!apps/web/app/api/v1/
+apps/web/app/*.tsx
+apps/web/app/*.ts
+apps/web/app/*.css
+apps/web/app/*.svg
+apps/web/app/actions.json
+packages/anchor/
+.21st/
+docs/
+*.md
+apps/web/server/db/migrations/
+apps/web/tailwind.config.js
+apps/web/postcss.config.js
+apps/web/next.config.mjs
+apps/web/vercel.json
+apps/web/next-env.d.ts
