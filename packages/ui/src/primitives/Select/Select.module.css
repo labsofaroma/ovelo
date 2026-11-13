@@ -1,0 +1,19 @@
+/* The sliding option highlight: the one piece of Select that needs real CSS animation.
+   Durations come from tokens, so reduced motion collapses the glide. */
+.highlight {
+  position: absolute;
+  top: 0;
+  inset-inline: var(--aroma-space-1);
+  z-index: -1;
+  border-radius: max(4px, calc(var(--aroma-radius-control) - 4px));
+  background: var(--aroma-raised);
+  pointer-events: none;
+  transition:
+    transform var(--aroma-duration-glide) var(--aroma-ease-ui),
+    height var(--aroma-duration-glide) var(--aroma-ease-ui);
+}
+
+.list {
+  position: relative;
+  isolation: isolate;
+}

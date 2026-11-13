@@ -5,4 +5,5 @@
  */
 export * from "./format";
 export * from "./lib/cn";
+export * from "./primitives";
 export * from "./theme";
