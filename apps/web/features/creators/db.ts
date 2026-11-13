@@ -57,3 +57,37 @@ export function mapDbError(error: unknown): never {
     });
   throw error;
 }
+
+const NETWORK_CODES = new Set([
+  "ENOTFOUND",
+  "EAI_AGAIN",
+  "ECONNREFUSED",
+  "ECONNRESET",
+  "ETIMEDOUT",
+  "EPIPE",
+]);
+
+/**
+ * An unreachable or overloaded database is an outage (503), not a bug (500). The Neon WebSocket
+ * pool rejects with a DOM `ErrorEvent` (not an Error) when it cannot connect; Node drivers use
+ * network error codes; Postgres reports SQLSTATE classes 08 (connection), 53 (resources) and
+ * 57 (operator intervention, e.g. shutdown).
+ */
+export function isDatabaseUnavailable(error: unknown): boolean {
+  let current: unknown = error;
+  for (let depth = 0; depth < 4; depth += 1) {
+    if (typeof current !== "object" || current === null) return false;
+    const record = current as {
+      type?: unknown;
+      code?: unknown;
+      cause?: unknown;
+    };
+    if (!(current instanceof Error) && record.type === "error") return true;
+    if (typeof record.code === "string") {
+      if (NETWORK_CODES.has(record.code)) return true;
+      if (/^(08|53|57)[0-9A-Z]{3}$/.test(record.code)) return true;
+    }
+    current = record.cause;
+  }
+  return false;
+}

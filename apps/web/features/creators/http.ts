@@ -8,7 +8,7 @@ import { AppError } from "@/server/errors";
 import { errorResponse } from "@/server/http";
 import { createRateLimiter, type RateLimiter } from "@/server/ratelimit";
 import { getRedis, requireRedis } from "@/server/redis";
-import type { CreatorsDb } from "./db";
+import { type CreatorsDb, isDatabaseUnavailable } from "./db";
 import type { AssetRegistry } from "./server";
 
 /**
@@ -194,7 +194,15 @@ export function creatorRoute<C>(
       }
       return await handler(request, context);
     } catch (error) {
-      return errorResponse(error, { route: options.route });
+      return errorResponse(
+        isDatabaseUnavailable(error)
+          ? new AppError("SERVICE_UNAVAILABLE", {
+              detail: "database unavailable",
+              cause: error,
+            })
+          : error,
+        { route: options.route },
+      );
     }
   };
 }
