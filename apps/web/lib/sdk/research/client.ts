@@ -1,4 +1,4 @@
-import type { StockResearch } from "./research";
+import type { StockResearch } from "./types";
 
 type CachedResearch = {
   value: StockResearch;

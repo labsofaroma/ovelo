@@ -23,5 +23,12 @@
     }
   },
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
-  "exclude": ["node_modules"]
+  "exclude": [
+    "node_modules",
+    "lib/sdk/research/client.test.ts",
+    "lib/sdk/research/pulse.test.ts",
+    "lib/sdk/research/service.test.ts",
+    "lib/sdk/research/cache.test.ts",
+    "lib/sdk/research/enrichment.test.ts"
+  ]
 }

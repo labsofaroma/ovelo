@@ -4,8 +4,6 @@ export * from "./paper";
 export * from "./trading";
 export * from "./core";
 export * from "./research";
-export * from "./research-client";
-export * from "./market-pulse";
 export * from "./basket/atomic-swap";
 export * from "./basket/liquidity";
 export * from "./basket/route-health";

@@ -69,6 +69,8 @@ function convertAssert(call: ts.CallExpression): string | null {
     case "throws":
       return x ? `expect(${x}).toThrow(${y && /^\//.test(y) ? y : ""})` : null;
     case "rejects":
+      if (x && y && y.startsWith("{"))
+        return `await expect(${x}).rejects.toMatchObject(${y})`;
       return x
         ? `await expect(${x}).rejects.toThrow(${y && /^\//.test(y) ? y : ""})`
         : null;
@@ -77,8 +79,26 @@ function convertAssert(call: ts.CallExpression): string | null {
   }
 }
 
+let usesVi = false;
 function visit(n: ts.Node): void {
   if (ts.isCallExpression(n)) {
+    // t.mock.method(obj, "name", impl) -> vi.spyOn(obj, "name").mockImplementation(impl)
+    const callee = n.expression;
+    if (
+      ts.isPropertyAccessExpression(callee) &&
+      callee.name.text === "method" &&
+      /^\w+\.mock$/.test(text(callee.expression)) &&
+      n.arguments.length === 3
+    ) {
+      const [obj, name, impl] = n.arguments.map(text);
+      usesVi = true;
+      edits.push({
+        start: n.getStart(),
+        end: n.getEnd(),
+        text: `vi.spyOn(${obj}, ${name}).mockImplementation((${impl}) as never)`,
+      });
+      return;
+    }
     const converted = convertAssert(n);
     if (converted) {
       // Extra non-regex validators/messages would change meaning; keep those for manual review.
@@ -89,7 +109,8 @@ function visit(n: ts.Node): void {
       const needsManual =
         (name === "throws" || name === "rejects") &&
         second &&
-        !/^\//.test(text(second));
+        !/^\//.test(text(second)) &&
+        !(name === "rejects" && text(second).startsWith("{"));
       if (needsManual)
         unconverted.push(
           `line ${sf.getLineAndCharacterOfPosition(n.getStart()).line + 1}: ${text(n).slice(0, 80)}`,
@@ -156,8 +177,12 @@ visit(sf);
 edits.sort((a, b) => b.start - a.start);
 let out = source;
 for (const e of edits) out = out.slice(0, e.start) + e.text + out.slice(e.end);
-const header = `import { expect, test } from "vitest";\n`;
-writeFileSync(output, header + out.replace(/^\s+/, ""));
+const header = `import { expect, test${usesVi ? ", vi" : ""} } from "vitest";\n`;
+const withoutContext = out.replace(
+  /(,\s*)(async\s*)?\((?:t|context|ctx)\)\s*=>/g,
+  "$1$2() =>",
+);
+writeFileSync(output, header + withoutContext.replace(/^\s+/, ""));
 console.log(`${input} -> ${output}: ${edits.length} edits`);
 if (unconverted.length) {
   console.log(`NOT CONVERTED (${unconverted.length}), fix by hand:`);

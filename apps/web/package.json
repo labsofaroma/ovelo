@@ -7,7 +7,7 @@
     "build": "tsx scripts/check-env.ts && next build",
     "start": "next start",
     "lint": "eslint .",
-    "typecheck": "next typegen && tsc --noEmit && tsc --noEmit -p tsconfig.strict.json",
+    "typecheck": "next typegen && tsc --noEmit && tsc --noEmit -p tsconfig.strict.json && tsc --noEmit -p tsconfig.legacy-tests.json",
     "test": "pnpm run test:legacy && pnpm run test:unit",
     "test:legacy": "cd ../.. && TSX_TSCONFIG_PATH=apps/web/tsconfig.json node --import tsx --test apps/web/tests/*.test.* apps/web/tests/sdk/*.test.*",
     "test:unit": "vitest run",
