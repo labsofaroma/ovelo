@@ -9,6 +9,8 @@
     "paths": { "@/*": ["./*"] }
   },
   "include": [
+    "observability/**/*.ts",
+    "instrumentation-client.ts",
     "server/**/*.ts",
     "instrumentation*.ts",
     "sentry.*.ts",
