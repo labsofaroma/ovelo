@@ -14,7 +14,7 @@ Reference-led landing page direction, 7 October 2026. The 21st root scanner does
 
 ## Sources
 
-- Tokens: apps/web/styles/foundation.css; apps/web/components/aroma/Landing.module.css.
+- Tokens: packages/ui/tokens.css (the source of truth for v1; old-to-new mapping in packages/ui/README.md); the prototype still reads apps/web/styles/foundation.css until M7; apps/web/components/aroma/Landing.module.css.
 - Components: existing Brand, AssetAvatar, Change, ThemeToggle and SocialLinks.
 - Assets: local Manrope fonts, issuer company logos and the user's DollarAbstract artwork, optimized as dollar-abstract.webp. The Wall Street film poster is a visual reference only.
 - Instructions: PRODUCT.md, AGENTS.md

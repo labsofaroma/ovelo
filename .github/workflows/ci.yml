@@ -69,3 +69,35 @@ jobs:
       - name: Dependency audit (informational)
         run: pnpm audit --prod --audit-level=high
         continue-on-error: true
+
+  ui-a11y:
+    # AUTHORED IN M1, NOT YET RUN ON GITHUB. Real-browser axe over every @aroma/ui story (light and
+    # dark), keyboard flows and reduced-motion checks. See packages/ui/README.md "The accessibility gate".
+    name: UI accessibility (axe, keyboard, reduced motion)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      TURBO_TELEMETRY_DISABLED: "1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.31.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install (frozen lockfile)
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Chromium for Playwright
+        run: pnpm --filter @aroma/ui exec playwright install --with-deps chromium
+
+      - name: Build the workbench
+        run: pnpm --filter @aroma/ui build:stories
+
+      - name: axe, keyboard and reduced-motion suites
+        run: pnpm --filter @aroma/ui test:a11y

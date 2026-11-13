@@ -227,7 +227,7 @@ Each milestone is merged to `main` behind feature flags. The prototype stays dep
 | # | Milestone | Scope | Exit criteria |
 |---|---|---|---|
 | **M0** | Foundation (week 1) | tag `prototype-final`; new layout; `packages/config`; ESLint, Prettier, Vitest; CI; `server/env.ts`; Sentry + logger; Neon + Drizzle + first migration; Upstash | empty app deploys to a preview URL; CI green; env validation fails on a missing secret |
-| **M1** | Design system (week 1–2) | `packages/ui`: tokens from `foundation.css` and `DESIGN.md`, Tailwind v4, shadcn primitives, `Brand`/`AssetAvatar`/`Change`, light and dark, reduced motion | Storybook or Ladle page for every primitive; axe has zero violations |
+| **M1** | Design system (week 1–2, **implemented**, see status below) | `packages/ui`: tokens from `foundation.css` and `DESIGN.md`, Tailwind v4, shadcn primitives, `Brand`/`AssetAvatar`/`Change`, light and dark, reduced motion | Storybook or Ladle page for every primitive; axe has zero violations |
 | **M2** | Shared helpers cleanup (weeks 1–3) | in `apps/web/lib/sdk`: `core/`, `pyth/`, `jupiter/`, `markets/`, `research/`, `baskets/`, `paper/` ported with their tests | ≥ 85% coverage; one `@solana/kit` version; no `any` in public types |
 | **M3** | Read-only app (weeks 2–4) | marketing pages, markets, stock detail, baskets list and detail, watchlist, all as RSC with ISR | Lighthouse ≥ 90 on performance, SEO and accessibility; meets PRODUCT.md data rules (sources, timestamps, stale states) |
 | **M4** | Wallet + spot trading (weeks 3–6) | `features/wallet`, `features/trade` (single stock + basket, Jito bundles), receipts, portfolio | Playwright test buys on a mainnet fork or simulator; ported authorization tests pass; rate limits and CSP nonces live |
@@ -271,6 +271,39 @@ Each milestone is merged to `main` behind feature flags. The prototype stays dep
 9. **`pnpm test` excludes `@aroma/anchor`.** Its LiteSVM runtime tests need SBF fixtures (`target/test-programs/*.so`) and were never part of `pnpm test`. Use `pnpm test:anchor`. The IDL-drift check and `cargo test` pass locally and run in `contracts.yml`.
 10. **Version choices:** ESLint 9.39, Vitest 3.2, zod 4, Sentry 10.78, Drizzle 0.45, Prettier 3. Dependabot is configured; `@solana/kit` majors and React majors are ignored until their planned tasks.
 11. **CODEOWNERS** names `@labsofaroma` (the org's only admin); switch to a team once teams exist.
+
+### M1 status: implemented on branch `m1-design-system` (not pushed, not merged, nothing deployed)
+
+- [x] Baseline recorded before any change (lint 0 errors / 219 warnings, typecheck clean, 94 unit + 472 prototype tests with the 16 M0 skips)
+- [x] `packages/ui/tokens.css`: every `foundation.css` variable mapped (table in `packages/ui/README.md`, enforced by a test), light/dark via `data-theme` with a `prefers-color-scheme` fallback, reduced motion at token level, `themeInitScript` for no flash
+- [x] Tailwind v4 (CSS-first `@theme inline`) in `packages/ui` and `apps/web`, alongside the prototype's v3 (decision 2)
+- [x] 23 primitives, `Brand`/`OrbitArt`, `AssetAvatar`, `Change`, `SocialLinks`; generated `logos.ts` with a staleness test
+- [x] Ladle workbench: 100 stories (93 component, 7 Foundations), light and dark
+- [x] Accessibility gate: token contrast test, axe in jsdom per component, axe over every story in light and dark (Chromium), keyboard and reduced-motion suites
+- [x] `@aroma/ui` wired into `apps/web` (`transpilePackages`, `(app)` layout, gated `/ui-preview` route); ESLint boundary rule
+- [x] Docs: `packages/ui/README.md`, `UI-SOURCES.md`, `.21st/DESIGN.md` token pointer
+- [ ] **Open:** the `ui-a11y` job in `ci.yml` is authored but has never run on GitHub (needs a push). Hover styles are not covered by stories (not statically renderable); they are plain token color changes.
+
+**Decisions**
+
+1. **Ladle, not Storybook.** Vite-native, React 18/19, one small dependency, whole workbench builds in about 2s, so a 100-story axe run stays fast.
+2. **Tailwind v3 and v4 coexist, additively, routed by file.** Next accepts PostCSS plugins only as strings, and `@tailwindcss/postcss` would inline the prototype's `@import` chain and fail on `@tailwind base`, so `apps/web/postcss/tailwind-router.cjs` runs v3 on every stylesheet except `*.v4.css` (v4 only). The v4 entry is `app/aroma-ui.v4.css`, imported only by the `(app)` layout. In the app it skips preflight and uses unlayered utilities, because the prototype's global rules are unlayered and would beat layered utilities. Proof: the four prototype CSS bundles are byte-identical before and after (same content hashes). v3 `content` excludes the new groups. M7: delete the router, use `@tailwindcss/postcss` alone, drop v3. No need to ask: it was achievable additively.
+3. **`@aroma/ui` never imports Next.** `Brand` takes `LinkComponent`, `AssetAvatar` takes `ImageComponent` (the app passes `next/link` and a `next/image` adapter). The boundary lint also forbids `next`, app code, `server-only`, wallet and Solana packages.
+4. **`logos.ts` is generated** from the existing `public/company-logos/manifest.json` (which already holds the mints and provenance) and the generator fails on missing files, orphan files and duplicate mints. The prototype's `lib/company-logos.ts` stays until M7.
+5. **Controls have two line colors.** `--aroma-line` stays decorative (1.2 to 1.6:1); a new `--aroma-border-strong` (3:1+) marks control boundaries. Pairs used by components are contrast-tested in both themes.
+6. **The `/ui-preview` route is gated by `AROMA_V1_ENABLED`** (M0 decision 1) and is `force-dynamic`, so the deployed prototype returns 404 there.
+
+**Deviations and findings**
+
+1. **Real defects found by the gate and fixed**: light `down` on `down-soft` was 4.48:1 (token tint lightened); `SocialLinks` aria-labels did not contain the visible text (WCAG 2.5.3; now visible text plus an `sr-only` suffix); an empty Select produced an empty `listbox` (now an inert option); the searchable Select popup had no accessible name; and **`--aroma-font-sans` referenced `--font-sans`, which `theme.css` maps back, a custom-property cycle that silently dropped Manrope** (caught by looking at a screenshot, now covered by a unit and a browser test).
+2. **Prototype bug noticed, not fixed:** `tailwind.config.js` maps `raised` to `var(--bg-raised)`, which does not exist, so `bg-raised` is transparent in the prototype. The prototype's `#f59e0b` warning color also fails AA on light; the new `--aroma-warning` is darker there.
+3. **jsdom cannot prove everything.** Tab-cycle focus traps and Enter-to-select in Base UI popups are asserted in Chromium (`e2e/keyboard.spec.ts`); jsdom tests cover roles, names, arrow keys and click selection.
+4. **axe rules off, with reasons in the files:** page-level `region`, `landmark-one-main`, `page-has-heading-one` (a story is a fixture, not a page) and, in jsdom only, `color-contrast` (covered by the token test and the browser run). Nothing else is suppressed.
+5. **`LegalPage` deferred to M3**: it reads `lib/site`, links app routes and hard-codes a date. `SocialLinks` and `OrbitArt` were ported.
+6. **Select** drops the per-instance color and duration props (tokens replace them) and has a simplified API; the sliding highlight stays as a CSS Module. Type sizes are rem (the same px at default zoom).
+7. **Base UI quirks accepted:** the toast close button is `aria-hidden` until the toast has focus; the tooltip popup has no `role`, so the wrapper adds `role="tooltip"` and the docs say the trigger needs its own accessible name.
+8. **`AGENTS.md` still says design tokens live in `apps/web/styles/foundation.css`.** True for the prototype until M7; not edited here (outside M1's docs scope). Suggest one added line pointing new code at `packages/ui/tokens.css`.
+9. **New dependencies** (all dev unless noted): `@base-ui/react` and `lucide-react` (same versions as the prototype) in `packages/ui`; `tailwindcss` 4, `@tailwindcss/vite`, `@ladle/react`, `vite`, `@vitejs/plugin-react`, `jsdom`, Testing Library, `vitest-axe`, `@playwright/test`, `@axe-core/playwright`, `tsx`, `eslint-plugin-react-hooks`; `tailwindcss-v4` (alias) and `@tailwindcss/postcss` in `apps/web`. Playwright's Chromium is downloaded on demand.
 
 **Critical path:** M0 → M2 → M4 (spot trading is the revenue path). M6 depends on your contract being deployed. Develop it against a local LiteSVM build until then.
 
