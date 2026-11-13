@@ -35,3 +35,5 @@ apps/web/postcss.config.js
 apps/web/vercel.json
 apps/web/next-env.d.ts
 apps/web/next.config.mjs
+packages/ui/logos.ts
+packages/ui/dist

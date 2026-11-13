@@ -1,5 +1,19 @@
 {
   "extends": "@aroma/config/tsconfig.base.json",
-  "compilerOptions": { "types": ["node"] },
-  "include": ["src/**/*.ts", "src/**/*.tsx", "vitest.config.ts"]
+  "compilerOptions": {
+    "jsx": "react-jsx",
+    "lib": ["dom", "dom.iterable", "esnext"],
+    "types": ["node", "vite/client", "@testing-library/jest-dom"],
+    "paths": {}
+  },
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.tsx",
+    "scripts/**/*.ts",
+    "e2e/**/*.ts",
+    "logos.ts",
+    ".ladle/**/*.tsx",
+    "vitest.config.ts",
+    "playwright.config.ts"
+  ]
 }

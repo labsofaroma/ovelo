@@ -54,3 +54,5 @@ docs/v2-roadmap-and-architecture.md
 **/.DS_Store
 *.tsbuildinfo
 .codex/
+playwright-report
+test-results

@@ -3,20 +3,60 @@
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Design tokens and shared React primitives. Empty placeholder until M1.",
+  "description": "Aroma design tokens, Base UI primitives and domain components. Presentation only.",
+  "sideEffects": [
+    "*.css"
+  ],
   "exports": {
-    ".": "./src/index.ts"
+    ".": "./src/index.ts",
+    "./theme": "./src/theme/index.ts",
+    "./format": "./src/format/index.ts",
+    "./logos": "./logos.ts",
+    "./tokens.css": "./tokens.css",
+    "./theme.css": "./theme.css",
+    "./fonts.css": "./fonts.css"
   },
   "scripts": {
+    "dev": "ladle serve --stories 'src/**/*.stories.tsx' --port 61000",
+    "build:stories": "ladle build --stories 'src/**/*.stories.tsx' -o dist/stories",
+    "preview:stories": "ladle preview -o dist/stories --port 61001",
+    "gen:logos": "tsx scripts/gen-logos.ts",
+    "test:a11y": "playwright test",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "test": "vitest run"
   },
+  "dependencies": {
+    "@base-ui/react": "1.8.0",
+    "lucide-react": "^0.468.0"
+  },
+  "peerDependencies": {
+    "react": "^18.3.0 || ^19.0.0",
+    "react-dom": "^18.3.0 || ^19.0.0"
+  },
   "devDependencies": {
     "@aroma/config": "workspace:*",
+    "@axe-core/playwright": "^4.14.0",
+    "@ladle/react": "^5.1.1",
+    "@playwright/test": "^1.65.0",
+    "@tailwindcss/vite": "^4.3.5",
+    "@testing-library/jest-dom": "^7.0.1",
+    "@testing-library/react": "^16.3.3",
+    "@testing-library/user-event": "^14.6.10",
     "@types/node": "^20.14.0",
+    "@types/react": "^18.3.31",
+    "@types/react-dom": "^18.3.7",
+    "@vitejs/plugin-react": "^6.3.0",
     "eslint": "9.39.5",
+    "eslint-plugin-react-hooks": "7.1.1",
+    "jsdom": "^26.1.0",
+    "react": "^18.3.1",
+    "react-dom": "^18.3.1",
+    "tailwindcss": "^4.3.5",
+    "tsx": "4.20.6",
     "typescript": "^5.7.3",
-    "vitest": "3.2.7"
+    "vite": "^8.3.8",
+    "vitest": "3.2.7",
+    "vitest-axe": "^0.1.0"
   }
 }
