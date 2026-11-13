@@ -9,7 +9,11 @@ import "../../aroma-ui.v4.css";
  * v1 marketing pages (landing, privacy, terms) under the temporary `/v1` prefix. The `(marketing)`
  * group layout is empty, so this layout loads the Tailwind v4 entry and theme script itself.
  */
-export default function V1MarketingLayout({ children }: { children: ReactNode }) {
+export default function V1MarketingLayout({
+  children,
+}: {
+  children: ReactNode;
+}) {
   assertV1Enabled();
   return (
     <>

@@ -43,14 +43,22 @@ export default async function StockPage({ params }: Props) {
   if (page.state === "not-found") notFound();
 
   return (
-    <main id="main-content" className={`${pageContainer} flex flex-col gap-8 py-8`}>
+    <main
+      id="main-content"
+      className={`${pageContainer} flex flex-col gap-8 py-8`}
+    >
       <nav aria-label="Breadcrumb" className="text-caption">
         <Link className={textLink} href={routes.markets}>
           Markets
         </Link>
-        <span aria-hidden="true" className="text-muted"> / </span>
+        <span aria-hidden="true" className="text-muted">
+          {" "}
+          /{" "}
+        </span>
         <span aria-current="page" className="text-muted">
-          {page.state === "ok" ? page.lookup.row.symbol : decodeURIComponentSafe(symbol)}
+          {page.state === "ok"
+            ? page.lookup.row.symbol
+            : decodeURIComponentSafe(symbol)}
         </span>
       </nav>
 
@@ -59,10 +67,14 @@ export default async function StockPage({ params }: Props) {
           <h1 className="text-page font-semibold max-md:text-page-mobile">
             {decodeURIComponentSafe(symbol)}
           </h1>
-          <DataNotice tone="unavailable" title="Market data is unavailable right now">
+          <DataNotice
+            tone="unavailable"
+            title="Market data is unavailable right now"
+          >
             <p>
-              The issuer catalog could not be loaded, so this listing and its price
-              cannot be shown. {page.error.message} Try again in a few minutes.
+              The issuer catalog could not be loaded, so this listing and its
+              price cannot be shown. {page.error.message} Try again in a few
+              minutes.
             </p>
           </DataNotice>
         </>
@@ -95,18 +107,24 @@ function StockBody({
         <TradePlaceholder symbol={row.symbol} />
       </div>
 
-      <section aria-labelledby="research-heading" className="flex flex-col gap-4">
+      <section
+        aria-labelledby="research-heading"
+        className="flex flex-col gap-4"
+      >
         <div className="flex flex-col gap-1">
           <h2 id="research-heading" className="text-section font-semibold">
             Company research: {row.underlyingSymbol}
           </h2>
           <p className="text-small text-muted">
-            About the underlying company. A token’s rights, price and liquidity can
-            differ from the share.
+            About the underlying company. A token’s rights, price and liquidity
+            can differ from the share.
           </p>
         </div>
         {research.state === "unavailable" ? (
-          <DataNotice tone="unavailable" title="Company research is unavailable">
+          <DataNotice
+            tone="unavailable"
+            title="Company research is unavailable"
+          >
             <p>
               Research providers could not be reached. The token data above is
               unaffected. {research.error.message}
@@ -115,20 +133,33 @@ function StockBody({
         ) : (
           <>
             {research.data.warnings.length ? (
-              <DataNotice title="Some research is missing" items={research.data.warnings} />
+              <DataNotice
+                title="Some research is missing"
+                items={research.data.warnings}
+              />
             ) : null}
-            <section aria-labelledby="chart-heading" className="flex flex-col gap-2">
+            <section
+              aria-labelledby="chart-heading"
+              className="flex flex-col gap-2"
+            >
               <h3 id="chart-heading" className="text-title font-semibold">
                 Underlying share, daily close
               </h3>
               {research.data.closes.length ? (
-                <PriceChartLazy closes={research.data.closes} symbol={row.underlyingSymbol} />
+                <PriceChartLazy
+                  closes={research.data.closes}
+                  symbol={row.underlyingSymbol}
+                />
               ) : (
-                <p className="text-small text-muted">No daily closes were observed.</p>
+                <p className="text-small text-muted">
+                  No daily closes were observed.
+                </p>
               )}
               <AsOf
                 observedAt={research.data.asOf}
-                source={research.data.sources.map((s) => s.name).join(", ") || null}
+                source={
+                  research.data.sources.map((s) => s.name).join(", ") || null
+                }
                 staleAfterMs={STALE_AFTER_MS.research}
                 label="Research observed"
               />
@@ -140,7 +171,12 @@ function StockBody({
                 {research.data.sources.map((source, index) => (
                   <span key={source.url}>
                     {index ? ", " : null}
-                    <a className={textLink} href={source.url} rel="noreferrer" target="_blank">
+                    <a
+                      className={textLink}
+                      href={source.url}
+                      rel="noreferrer"
+                      target="_blank"
+                    >
                       {source.name}
                     </a>
                   </span>
