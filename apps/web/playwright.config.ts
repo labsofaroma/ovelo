@@ -36,7 +36,12 @@ export default defineConfig({
     {
       command: `next start -p ${OUTAGE_PORT}`,
       url: `http://localhost:${OUTAGE_PORT}/v1/privacy`,
-      env: { ...v1Env, AROMA_V1_SIMULATE_UPSTREAM_OUTAGE: "true" },
+      env: {
+        ...v1Env,
+        // `next start` runs with NODE_ENV=production, where test switches are off unless opted in.
+        AROMA_V1_ALLOW_TEST_SWITCHES: "true",
+        AROMA_V1_SIMULATE_UPSTREAM_OUTAGE: "true",
+      },
       reuseExistingServer: true,
       timeout: 120_000,
     },

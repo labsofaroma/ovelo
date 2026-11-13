@@ -62,6 +62,13 @@ const serverShape = {
   AROMA_REVALIDATE_SECRET: secret32.optional(),
   SENTRY_DSN: httpsUrl.optional(),
   SENTRY_ENVIRONMENT: optionalText,
+  /** Set by Vercel: "production" | "preview" | "development". */
+  VERCEL_ENV: z.enum(["production", "preview", "development"]).optional(),
+  /**
+   * Lets a local `next start` (NODE_ENV=production) honour test-only switches such as
+   * AROMA_V1_SIMULATE_UPSTREAM_OUTAGE. Rejected outright when VERCEL_ENV=production.
+   */
+  AROMA_V1_ALLOW_TEST_SWITCHES: bool.default(false),
 };
 
 const devnetShape = {
@@ -102,6 +109,13 @@ export const V1_REQUIRED = [
 ] as const;
 
 const flatSchema = z.object(flatShape).superRefine((env, ctx) => {
+  if (env.AROMA_V1_ALLOW_TEST_SWITCHES && env.VERCEL_ENV === "production") {
+    ctx.addIssue({
+      code: "custom",
+      path: ["AROMA_V1_ALLOW_TEST_SWITCHES"],
+      message: "must not be set in a production deployment",
+    });
+  }
   if (!env.AROMA_V1_ENABLED) return;
   for (const key of V1_REQUIRED) {
     if (env[key] === undefined) {
@@ -182,6 +196,19 @@ export function parseEnv(
       keeper: pick(flat, keeperShape),
     },
   };
+}
+
+/**
+ * Whether test-only switches (outage simulation, M3; the E2E wallet, M4) may take effect. Always in
+ * development and test. Under NODE_ENV=production only for a local `next start` that opts in with
+ * AROMA_V1_ALLOW_TEST_SWITCHES=true, and never on a Vercel production deployment.
+ */
+export function testSwitchesAllowed(
+  source: Record<string, string | undefined>,
+): boolean {
+  if (source.VERCEL_ENV?.trim() === "production") return false;
+  if (source.NODE_ENV !== "production") return true;
+  return source.AROMA_V1_ALLOW_TEST_SWITCHES?.trim() === "true";
 }
 
 /** Throws EnvValidationError (a readable list of variable names and problems) when invalid. */
