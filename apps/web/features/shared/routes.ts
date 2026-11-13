@@ -6,6 +6,7 @@ export const routes = {
   markets: `${V1}/markets`,
   baskets: `${V1}/baskets`,
   watchlist: `${V1}/watchlist`,
+  portfolio: `${V1}/portfolio`,
   privacy: `${V1}/privacy`,
   terms: `${V1}/terms`,
   stock: (symbol: string) => `${V1}/stock/${encodeURIComponent(symbol)}`,

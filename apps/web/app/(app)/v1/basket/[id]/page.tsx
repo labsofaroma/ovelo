@@ -15,6 +15,8 @@ import { v1Metadata } from "@/features/shared/metadata";
 import { routes } from "@/features/shared/routes";
 import { pageContainer, textLink } from "@/features/shared/styles";
 import { assertV1Enabled } from "@/features/shared/v1";
+import { TradeUnavailable } from "@/features/stock/components/TradePlaceholder";
+import { TradeIsland } from "@/features/trade/components/TradeIsland";
 
 type Props = {
   params: Promise<{ id: string }>;
@@ -97,13 +99,50 @@ export default async function BasketPage({ params, searchParams }: Props) {
               range={range}
             />
           </Suspense>
-          <p className="rounded-panel border border-line bg-surface p-4 text-small text-muted">
-            Buying a basket from your wallet arrives with wallet trading.
-            Nothing on this page is a quote or an offer.
-          </p>
+          <BasketBuy basket={page.basket} rows={page.rows} />
         </>
       )}
     </main>
+  );
+}
+
+/** Buy the whole basket (one order, every constituent) or show why it cannot be bought. */
+function BasketBuy({
+  basket,
+  rows,
+}: {
+  basket: BasketSummary;
+  rows: readonly MarketRow[];
+}) {
+  const byMint = new Map(rows.map((row) => [row.mint, row]));
+  const blocked =
+    !basket.available ||
+    basket.missingSymbols.length > 0 ||
+    basket.members.some((m) => {
+      const row = byMint.get(m.mint);
+      return !row || row.tradingHalted || !row.verified;
+    });
+  if (blocked)
+    return (
+      <TradeUnavailable
+        name={basket.name}
+        reason="One or more constituents are missing, unverified or paused by their issuer. No partial basket is ever bought."
+      />
+    );
+  return (
+    <TradeIsland
+      title={`Buy the ${basket.name} basket`}
+      target={{
+        kind: "basket",
+        basketId: basket.id,
+        legs: basket.members.map((m) => ({
+          mint: m.mint,
+          symbol: m.symbol,
+          name: byMint.get(m.mint)?.name ?? m.symbol,
+          weightBps: m.weightBps,
+        })),
+      }}
+    />
   );
 }
 

@@ -11,17 +11,16 @@ import { assertV1Enabled } from "@/features/shared/v1";
 import { PriceChartLazy } from "@/features/stock/components/PriceChartLazy";
 import { ResearchTabs } from "@/features/stock/components/ResearchTabs";
 import { StockHeader } from "@/features/stock/components/StockHeader";
-import { TradePlaceholder } from "@/features/stock/components/TradePlaceholder";
+import { TradeUnavailable } from "@/features/stock/components/TradePlaceholder";
+import { TradeIsland } from "@/features/trade/components/TradeIsland";
 import { getStockPage } from "@/features/stock/server";
 
 type Props = { params: Promise<{ symbol: string }> };
 
-/** ISR: rendered on first request per symbol, then refreshed in the background. */
-export const revalidate = 300;
-export const dynamicParams = true;
-export function generateStaticParams(): { symbol: string }[] {
-  return [];
-}
+/**
+ * M4: v1 HTML renders per request (the CSP nonce is per request, see RootDocument); the market
+ * snapshot and research still come from the Next data cache.
+ */
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { symbol } = await params;
@@ -104,7 +103,32 @@ function StockBody({
     <>
       <div className="grid gap-6 lg:grid-cols-[1fr_20rem]">
         <StockHeader row={row} />
-        <TradePlaceholder symbol={row.symbol} />
+        {row.tradingHalted || !row.verified ? (
+          <TradeUnavailable
+            name={row.symbol}
+            reason={
+              row.tradingHalted
+                ? "The issuer has paused trading for this asset."
+                : "This listing is not verified by its issuer, so it cannot be bought here."
+            }
+          />
+        ) : (
+          <TradeIsland
+            title={`Buy ${row.symbol}`}
+            target={{
+              kind: "spot",
+              mint: row.mint,
+              legs: [
+                {
+                  mint: row.mint,
+                  symbol: row.symbol,
+                  name: row.name,
+                  weightBps: 10_000,
+                },
+              ],
+            }}
+          />
+        )}
       </div>
 
       <section

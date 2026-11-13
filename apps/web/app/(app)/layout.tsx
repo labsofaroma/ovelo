@@ -1,23 +1,24 @@
+import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import { themeInitScript } from "@aroma/ui/theme";
+import {
+  RootDocument,
+  v1SiteUrl,
+} from "@/features/shared/components/RootDocument";
 import "../aroma-ui.v4.css";
 
 /**
- * v1 product shell (REWRITE-PLAN §4): markets, stock, baskets, invest, portfolio, activity,
- * watchlist, settings and creators. M0 shipped this empty layout so the route group exists;
- * M1 wires in @aroma/ui (Tailwind v4 entry + the no-flash theme script). M3 adds the Shell
- * and the read-only pages, M4 the wallet providers.
- *
- * Pages here are reachable only when AROMA_V1_ENABLED=true; the prototype keeps serving
- * everything else until M7.
+ * Root layout of the v1 product shell (M4). `(app)`, `(marketing)` and `(prototype)` are separate
+ * root layouts, so v1 pages ship neither the prototype's providers and global CSS nor
+ * `@solana/web3.js`; the wallet stack loads lazily inside the trade islands only (features/wallet).
+ * Navigating between the prototype and v1 is a full page load. M7 makes this the only root.
  */
-export default function AppGroupLayout({ children }: { children: ReactNode }) {
-  return (
-    <>
-      {/* Same key as the prototype's ThemeProvider, so a saved choice carries over. The root
-          layout still carries its own inline copy; M3 swaps it for this one. */}
-      <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
-      {children}
-    </>
-  );
+export const metadata: Metadata = {
+  metadataBase: v1SiteUrl(),
+  title: { default: "Aroma", template: "Aroma | %s" },
+  description:
+    "Research tokenized stocks, buy single names or baskets from your own wallet on Solana.",
+};
+
+export default function AppRootLayout({ children }: { children: ReactNode }) {
+  return <RootDocument>{children}</RootDocument>;
 }

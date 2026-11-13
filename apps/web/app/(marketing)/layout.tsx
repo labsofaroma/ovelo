@@ -1,14 +1,26 @@
+import type { Metadata } from "next";
 import type { ReactNode } from "react";
+import {
+  RootDocument,
+  v1SiteUrl,
+} from "@/features/shared/components/RootDocument";
+import "../aroma-ui.v4.css";
 
 /**
- * v1 marketing surface (REWRITE-PLAN §4): landing, privacy and terms as static/ISR pages.
- * M0 ships only this empty layout. It has no `page.tsx`, so it adds no route and renders
- * nothing; the prototype landing page at `/` keeps serving until M7.
+ * Root layout of the v1 marketing pages (landing, privacy, terms) under `/v1` (M4: its own root,
+ * like `(app)`). The prototype landing at `/` keeps its own root in `(prototype)` until M7.
  */
-export default function MarketingGroupLayout({
+export const metadata: Metadata = {
+  metadataBase: v1SiteUrl(),
+  title: { default: "Aroma", template: "Aroma | %s" },
+  description:
+    "Own real stocks on Solana from your own wallet: research, single names and themed baskets.",
+};
+
+export default function MarketingRootLayout({
   children,
 }: {
   children: ReactNode;
 }) {
-  return <>{children}</>;
+  return <RootDocument>{children}</RootDocument>;
 }

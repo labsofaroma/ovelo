@@ -9,7 +9,7 @@ import { routes } from "@/features/shared/routes";
 import { pageContainer } from "@/features/shared/styles";
 import { assertV1Enabled } from "@/features/shared/v1";
 
-export const revalidate = 300;
+/** M4: rendered per request (per-request CSP nonce); data comes from the Next data cache. */
 
 export const metadata: Metadata = v1Metadata({
   title: "Thematic baskets",

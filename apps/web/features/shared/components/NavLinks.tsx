@@ -17,6 +17,7 @@ const ITEMS = [
     match: ["/v1/baskets", "/v1/basket/"],
   },
   { href: routes.watchlist, label: "Watchlist", match: ["/v1/watchlist"] },
+  { href: routes.portfolio, label: "Portfolio", match: ["/v1/portfolio"] },
 ] as const;
 
 /** Primary nav. Client only for `aria-current`; links work without JavaScript. */

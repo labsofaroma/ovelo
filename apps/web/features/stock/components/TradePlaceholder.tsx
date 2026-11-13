@@ -1,28 +1,24 @@
 /**
- * M3 is read-only: the trade ticket arrives in M4. A disabled control with a visible reason, and
- * deliberately no quote, amount or fee (nothing that could be mistaken for an executable price).
+ * Shown instead of the trade ticket when an asset or basket cannot be bought right now (issuer
+ * pause, unverified listing, incomplete basket). A visible reason, and deliberately no quote,
+ * amount or fee (nothing that could be mistaken for an executable price).
  */
-export function TradePlaceholder({ symbol }: { symbol: string }) {
+export function TradeUnavailable({
+  name,
+  reason,
+}: {
+  name: string;
+  reason: string;
+}) {
   return (
     <section
       aria-labelledby="trade-heading"
       className="flex flex-col gap-2 rounded-panel border border-line bg-surface p-4"
     >
       <h2 id="trade-heading" className="text-small font-semibold">
-        Trade {symbol}
+        Buy {name}
       </h2>
-      <p id="trade-status" className="text-caption text-muted">
-        Coming soon. Wallet trading is not available in this preview, so no
-        quote is shown.
-      </p>
-      <button
-        type="button"
-        disabled
-        aria-describedby="trade-status"
-        className="min-h-(--aroma-control-height) cursor-not-allowed rounded-control border border-border-strong px-4 text-small font-semibold text-muted opacity-70"
-      >
-        Trade (coming soon)
-      </button>
+      <p className="text-caption text-muted">{reason}</p>
     </section>
   );
 }

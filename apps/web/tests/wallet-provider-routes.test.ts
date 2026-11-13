@@ -14,7 +14,10 @@ import {
 import ts from "typescript";
 
 const require = createRequire(import.meta.url);
-const appDirectory = fileURLToPath(new URL("../app/", import.meta.url));
+// M4 moved the prototype routes into the (prototype) route group (URLs unchanged).
+const appDirectory = fileURLToPath(
+  new URL("../app/(prototype)/", import.meta.url),
+);
 let pathname = "/";
 
 // Exercise the real wallet context without loading Privy, discovering browser wallets,
@@ -57,7 +60,7 @@ runInNewContext(
           );
           return WalletBoundary;
         };
-      if (name === "../components/aroma/State")
+      if (name === "../../components/aroma/State")
         return { AromaProvider: React.Fragment };
       return require(name);
     },

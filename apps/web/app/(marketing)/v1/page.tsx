@@ -5,8 +5,7 @@ import { v1Metadata } from "@/features/shared/metadata";
 import { routes } from "@/features/shared/routes";
 import { assertV1Enabled } from "@/features/shared/v1";
 
-/** ISR: static HTML, refreshed in the background so the dated snapshot stays recent. */
-export const revalidate = 600;
+/** M4: rendered per request (per-request CSP nonce); data comes from the Next data cache. */
 
 export const metadata: Metadata = v1Metadata({
   title: "Own real stocks from your own wallet",

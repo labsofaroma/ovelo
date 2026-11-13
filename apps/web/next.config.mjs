@@ -6,7 +6,9 @@ const config = {
   transpilePackages: ["@aroma/ui"],
   // Rewrite `import { X } from "@aroma/ui"` to X's own module, so a page ships only the primitives
   // it renders, not the whole barrel (M3: /v1/markets first-load budget, REWRITE-PLAN §8).
-  experimental: { optimizePackageImports: ["@aroma/ui"] },
+  // globalNotFound (M4): three root layouts ((prototype), (app), (marketing)) mean unmatched URLs
+  // need their own document, app/global-not-found.tsx.
+  experimental: { optimizePackageImports: ["@aroma/ui"], globalNotFound: true },
   images: {
     formats: ["image/avif", "image/webp"],
     remotePatterns: [
