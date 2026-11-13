@@ -1,7 +1,7 @@
 import test from "node:test";
 import { createPrivateKey, createHash, createHmac, sign } from "node:crypto";
 import * as sdk from "@/lib/sdk";
-import * as kit from "@solana/kit-v1";
+import * as kit from "@solana/kit";
 import assert from "node:assert/strict";
 import {
   Keypair,

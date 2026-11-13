@@ -295,7 +295,7 @@ export async function signV1Collection(
   encoded: string,
   secretKey: Uint8Array,
 ): Promise<string> {
-  const kit = await import("@solana/kit-v1");
+  const kit = await import("@solana/kit");
   const { transaction, message } = await inspectWalletTransaction(encoded);
   if (message.version !== 1)
     throw new Error("Buyer collection requires a V1 transaction.");

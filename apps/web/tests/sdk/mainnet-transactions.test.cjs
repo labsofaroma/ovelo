@@ -103,7 +103,7 @@ test("even compact orders use V1 with explicit resource budgets", async () => {
   const { message } = await sdk.inspectWalletTransaction(built.transaction);
   assert.equal(message.version, 1);
   const config =
-    require("@solana/kit-v1").decompileTransactionMessage(message).config;
+    require("@solana/kit").decompileTransactionMessage(message).config;
   assert.equal(config.computeUnitLimit, 100_000);
   assert.equal(config.loadedAccountsDataSizeLimit, 131072);
   assert.equal(config.priorityFeeLamports, 5000n);

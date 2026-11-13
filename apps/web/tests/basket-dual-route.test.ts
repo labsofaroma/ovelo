@@ -5,7 +5,7 @@ import { createRequire } from "node:module";
 import { runInNewContext } from "node:vm";
 import ts from "typescript";
 import * as sdk from "@/lib/sdk";
-import * as kit from "@solana/kit-v1";
+import * as kit from "@solana/kit";
 import {
   Keypair,
   SystemProgram,

@@ -86,7 +86,7 @@ test("V1 partitions when accounts exceed 64 and keeps the tip last without ALTs"
   );
   const chunks = await composeBasketV1Chunks(options);
   assert.equal(chunks.length, 2);
-  const kit = await import("@solana/kit-v1");
+  const kit = await import("@solana/kit");
   for (const [index, chunk] of chunks.entries()) {
     assert.ok(chunk.accountCount <= 64 && chunk.serializedBytes <= 4096);
     const { message } = await inspectWalletTransaction(chunk.transaction);

@@ -17,7 +17,6 @@ updates:
       # Pinned deliberately; upgrade in a dedicated PR (REWRITE-PLAN §3: one @solana/kit version).
       - dependency-name: "@solana/kit"
         update-types: ["version-update:semver-major"]
-      - dependency-name: "@solana/kit-v1"
       # The React 19 move is its own milestone task.
       - dependency-name: "react"
         update-types: ["version-update:semver-major"]

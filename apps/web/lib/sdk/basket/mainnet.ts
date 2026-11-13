@@ -15,6 +15,23 @@ import {
 } from "./transaction-limits";
 
 /** Includes payer and invoked programs; V1 uses only inline static accounts. */
+/**
+ * kit 7.1.1 builds and encodes version-1 messages at runtime (covered by tests/sdk/basket-v1-routing),
+ * but its published types still stop at legacy/0. This is the single place that bridges the gap;
+ * remove it when kit's types catch up. One kit version is the M2 rule (@solana/subscriptions needs ^7).
+ */
+type KitModule = typeof import("@solana/kit");
+/** The shape kit's v1-only setters accept (taken from their own signature, not re-declared). */
+type V1Message = Parameters<
+  KitModule["setTransactionMessageComputeUnitLimit"]
+>[1];
+function createV1Message(kit: KitModule): V1Message {
+  const create = kit.createTransactionMessage as unknown as (config: {
+    version: 1;
+  }) => unknown;
+  return create({ version: 1 }) as V1Message;
+}
+
 export function countTransactionAccounts(
   payer: string,
   instructions: TransactionInstruction[],
@@ -154,7 +171,7 @@ export async function composeV1Transaction(params: {
     params.lastValidBlockHeight <= 0
   )
     throw new Error("Invalid transaction blockheight.");
-  const kit = await import("@solana/kit-v1");
+  const kit = await import("@solana/kit");
   if (!Number.isInteger(units) || units < 1 || units > 1_400_000)
     throw new Error("Invalid compute budget.");
   const dataLimit = params.loadedAccountsDataSizeLimit ?? 64 * 1024 * 1024;
@@ -183,7 +200,7 @@ export async function composeV1Transaction(params: {
       "accounts",
     );
   const message = kit.pipe(
-    kit.createTransactionMessage({ version: 1 }),
+    createV1Message(kit),
     (m) => kit.setTransactionMessageFeePayer(kit.address(params.payer), m),
     (m) =>
       kit.setTransactionMessageLifetimeUsingBlockhash(
@@ -193,9 +210,19 @@ export async function composeV1Transaction(params: {
         },
         m,
       ),
-    (m) => kit.setTransactionMessageComputeUnitLimit(units, m),
-    (m) => kit.setTransactionMessageLoadedAccountsDataSizeLimit(dataLimit, m),
-    (m) => kit.setTransactionMessagePriorityFeeLamports(BigInt(fee), m),
+    (m) => kit.setTransactionMessageComputeUnitLimit(units, m as V1Message),
+    (m) =>
+      kit.setTransactionMessageLoadedAccountsDataSizeLimit(
+        dataLimit,
+        m as V1Message,
+      ),
+    (m) =>
+      kit.setTransactionMessagePriorityFeeLamports(
+        BigInt(fee),
+        m as Parameters<
+          KitModule["setTransactionMessagePriorityFeeLamports"]
+        >[1],
+      ),
     (m) =>
       kit.appendTransactionMessageInstructions(
         params.instructions.map((ix) => ({
@@ -206,12 +233,16 @@ export async function composeV1Transaction(params: {
             role: (key.isSigner ? 2 : 0) + (key.isWritable ? 1 : 0),
           })),
         })),
-        m,
+        m as V1Message,
       ),
   );
   const bytes = kit
     .getTransactionEncoder()
-    .encode(kit.compileTransaction(message));
+    .encode(
+      kit.compileTransaction(
+        message as Parameters<KitModule["compileTransaction"]>[0],
+      ),
+    );
   if (bytes.length > V1_MAX_BYTES)
     throw new TransactionCapacityError(
       "This basket exceeds the V1 transaction size limit. No partial order was created.",
@@ -323,7 +354,7 @@ export async function composeBasketV1Chunks(params: {
 export const composeMainnetTransaction = composeV1Transaction;
 
 export async function inspectWalletTransaction(encoded: string) {
-  const kit = await import("@solana/kit-v1");
+  const kit = await import("@solana/kit");
   if (!/^[A-Za-z0-9+/]+={0,2}$/.test(encoded))
     throw new Error("Invalid transaction encoding.");
   const bytes = Buffer.from(encoded, "base64");
@@ -340,7 +371,7 @@ export async function inspectWalletTransaction(encoded: string) {
 export async function walletTransactionSignature(
   encoded: string,
 ): Promise<string> {
-  const kit = await import("@solana/kit-v1");
+  const kit = await import("@solana/kit");
   const { transaction } = await inspectWalletTransaction(encoded);
   const signature = Object.values(transaction.signatures)[0];
   if (!signature || signature.every((byte) => byte === 0))

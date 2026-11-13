@@ -160,7 +160,7 @@ test("a large current devnet setup stays one atomic instruction set and rejects 
     assert.equal(typeof composed.transaction, "string");
     assert.ok(composed.accountCount <= 64 && composed.serializedBytes <= 4096);
     const inspected = await inspectWalletTransaction(composed.transaction);
-    const kit = await import("@solana/kit-v1");
+    const kit = await import("@solana/kit");
     assert.equal(
       kit.decompileTransactionMessage(inspected.message).instructions.length,
       instructionSet.length,
