@@ -71,7 +71,9 @@ export function toPerformanceView(
       change: pct(item.changePct),
       contribution: pct(item.contributionPct),
     })),
-    sources: performance.sources,
+    // lib/sdk lists Pyth whenever a feed EXISTS for a symbol, even if no Pyth price was used.
+    // historyInput passes no prices, so only daily closes feed this view (M3-SDK-REQUESTS #3).
+    sources: performance.sources.filter((source) => !/pyth/i.test(source)),
     warnings: performance.warnings,
   });
 }

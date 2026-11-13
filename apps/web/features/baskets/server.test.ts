@@ -80,6 +80,15 @@ describe("toPerformanceView", () => {
     expect(Object.keys(out)).not.toContain("endValueUsd");
     expect(out.startDate).toBe("2026-08-14");
   });
+  it("lists only sources that fed the calculation", () => {
+    const out = toPerformanceView(
+      performance({
+        sources: ["Yahoo Finance Daily Closes", "Pyth Network Reference Feeds"],
+      }),
+      "90d",
+    );
+    expect(out.sources).toEqual(["Yahoo Finance Daily Closes"]);
+  });
   it("throws when nothing could be computed", () => {
     expect(() =>
       toPerformanceView(performance({ status: "unavailable" }), "90d"),
