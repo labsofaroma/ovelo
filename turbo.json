@@ -5,7 +5,23 @@
   "tasks": {
     "build": {
       "dependsOn": ["^build"],
-      "env": ["NEXT_PUBLIC_*"],
+      "env": [
+        "NEXT_PUBLIC_*",
+        "AROMA_*",
+        "SOLANA_RPC_URL",
+        "DATABASE_URL",
+        "UPSTASH_*",
+        "QSTASH_*",
+        "SENTRY_*",
+        "LOG_LEVEL",
+        "JUPITER_API_KEY",
+        "PYTH_API_KEY",
+        "PRIVY_APP_SECRET",
+        "CREATOR_*",
+        "KEEPER_*",
+        "JITO_*",
+        "BOT_KEYPAIR"
+      ],
       "inputs": ["$TURBO_DEFAULT$", ".env.example"],
       "outputs": [".next/**", "!.next/cache/**", "dist/**"]
     },

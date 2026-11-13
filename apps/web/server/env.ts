@@ -25,11 +25,18 @@ export function isV1Enabled(): boolean {
 
 /**
  * Boot-time hook, called from instrumentation.ts. When v1 is enabled, an invalid or incomplete
- * environment stops the server from starting. When it is off (the deployed prototype), this does
- * nothing, so the prototype keeps booting without the v1 services configured.
+ * environment stops the process: the variable names and problems go to stderr and the process
+ * exits with code 1, so the platform never routes traffic to a half-configured instance. (Next.js
+ * would otherwise keep serving and fail every request.) When v1 is off (the deployed prototype)
+ * this does nothing, so the prototype keeps booting without the v1 services configured.
  */
 export function assertBootEnv(): void {
-  if (isV1Enabled()) getEnv();
+  if (!isV1Enabled()) return;
+  const result = tryGetEnv();
+  if (!result.ok) {
+    process.stderr.write(`${result.error.message}\n`);
+    process.exit(1);
+  }
 }
 
 /** Test helper: forget the memoised result. */

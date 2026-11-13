@@ -1,4 +1,5 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { assertBootEnv, resetEnvCacheForTests } from "./env";
 import { EnvValidationError, parseEnv, validateEnv } from "./env.schema";
 
 const V1: Record<string, string> = {
@@ -90,5 +91,51 @@ describe("validateEnv", () => {
     expect(parseEnv({ AROMA_RECURRING_AUTH_SECRET: "tooshort" }).ok).toBe(
       false,
     );
+  });
+});
+
+describe("assertBootEnv", () => {
+  const saved = { ...process.env };
+  afterEach(() => {
+    process.env = { ...saved };
+    resetEnvCacheForTests();
+    vi.restoreAllMocks();
+  });
+
+  function boot(env: Record<string, string | undefined>) {
+    process.env = { ...saved, ...env };
+    for (const key of Object.keys(env))
+      if (env[key] === undefined) delete process.env[key];
+    resetEnvCacheForTests();
+    const exit = vi
+      .spyOn(process, "exit")
+      .mockImplementation((() => undefined) as never);
+    const stderr = vi
+      .spyOn(process.stderr, "write")
+      .mockImplementation(() => true);
+    assertBootEnv();
+    return {
+      exit,
+      output: stderr.mock.calls.map((call) => String(call[0])).join(""),
+    };
+  }
+
+  it("exits 1 and names the variable when v1 is on and a required secret is missing", () => {
+    const { exit, output } = boot({ ...V1, AROMA_TRADE_SECRET: undefined });
+    expect(exit).toHaveBeenCalledWith(1);
+    expect(output).toContain("AROMA_TRADE_SECRET");
+  });
+
+  it("does not exit when the environment is valid", () => {
+    expect(boot(V1).exit).not.toHaveBeenCalled();
+  });
+
+  it("does nothing while v1 is off, even with no v1 variables (the prototype)", () => {
+    const { exit } = boot({
+      AROMA_V1_ENABLED: undefined,
+      DATABASE_URL: undefined,
+      AROMA_TRADE_SECRET: undefined,
+    });
+    expect(exit).not.toHaveBeenCalled();
   });
 });
