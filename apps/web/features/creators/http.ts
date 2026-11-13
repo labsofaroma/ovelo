@@ -83,23 +83,55 @@ export function setCreatorDepsForTests(next: Partial<CreatorDeps>): void {
   overrides = next;
 }
 
-/** The site origin the challenge is bound to: AROMA_SITE_URL when set, else the request's. */
+/** Same rule as middleware.ts: client headers are trusted only behind a proxy that sets them. */
+function trustProxy(): boolean {
+  const env = tryGetEnv();
+  return (
+    process.env.VERCEL === "1" ||
+    (env.ok ? env.env.server.AROMA_TRUST_PROXY : false)
+  );
+}
+
+/**
+ * The site origin a challenge is bound to: AROMA_SITE_URL when set, else this request's origin
+ * (scheme from x-forwarded-proto behind a trusted proxy).
+ */
 export function expectedOrigin(request: Request): string {
   const env = tryGetEnv();
   const configured = env.ok ? env.env.server.AROMA_SITE_URL : undefined;
-  return new URL(configured ?? request.url).origin;
+  if (configured) return new URL(configured).origin;
+  const url = new URL(request.url);
+  const forwarded = trustProxy()
+    ? request.headers.get("x-forwarded-proto")?.split(",")[0]?.trim()
+    : undefined;
+  return forwarded === "https" || forwarded === "http"
+    ? `${forwarded}://${url.host}`
+    : url.origin;
+}
+
+function allowedOrigins(request: Request): Set<string> {
+  const env = tryGetEnv();
+  const extra = env.ok ? (env.env.server.AROMA_ALLOWED_ORIGINS ?? "") : "";
+  return new Set([
+    expectedOrigin(request),
+    ...extra
+      .split(",")
+      .map((value) => value.trim())
+      .filter(Boolean),
+  ]);
 }
 
 /**
  * State-changing requests must not come from another site. A browser always sends `Origin` on
  * POST and DELETE; a request without one (curl, a server) is still bound by the wallet signature.
+ * The prototype middleware also checks origins for /api/*; this keeps the rule when it changes.
  * TODO(M5b): move to M4's middleware (docs/M5-NEEDS-FROM-M4.md #2).
  */
 export function assertSameOrigin(request: Request): void {
   const origin = request.headers.get("origin");
   const site = request.headers.get("sec-fetch-site");
   if (
-    (origin !== null && origin !== expectedOrigin(request)) ||
+    (origin !== null && !allowedOrigins(request).has(origin)) ||
     site === "cross-site"
   )
     throw new AppError("FORBIDDEN", {
@@ -108,10 +140,14 @@ export function assertSameOrigin(request: Request): void {
     });
 }
 
-/** First hop of x-forwarded-for (set by the platform), else a shared bucket. */
+/** The client IP behind a trusted proxy, else one shared local bucket (as middleware.ts does). */
 function clientKey(request: Request): string {
-  const forwarded = request.headers.get("x-forwarded-for")?.split(",")[0];
-  const ip = (forwarded ?? request.headers.get("x-real-ip") ?? "").trim();
+  if (!trustProxy()) return "local";
+  const ip = (
+    request.headers.get("x-real-ip") ??
+    request.headers.get("x-forwarded-for")?.split(",")[0] ??
+    ""
+  ).trim();
   return /^[0-9a-fA-F:.]{2,45}$/.test(ip) ? ip : "unknown";
 }
 
