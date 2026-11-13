@@ -4,8 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "prebuild": "tsx scripts/check-env.ts",
-    "build": "next build",
+    "build": "tsx scripts/check-env.ts && next build",
     "start": "next start",
     "lint": "eslint .",
     "typecheck": "next typegen && tsc --noEmit && tsc --noEmit -p tsconfig.strict.json",
@@ -14,7 +13,8 @@
     "test:unit": "vitest run",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx server/db/migrate.ts",
-    "db:check": "drizzle-kit check"
+    "db:check": "drizzle-kit check",
+    "check-env": "tsx scripts/check-env.ts"
   },
   "dependencies": {
     "@base-ui/react": "1.8.0",
