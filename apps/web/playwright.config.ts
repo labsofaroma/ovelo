@@ -1,0 +1,44 @@
+import { defineConfig, devices } from "@playwright/test";
+
+/**
+ * v1 smoke + accessibility suite (M3). LOCAL ONLY for now: it needs network access to the live
+ * market providers and a production build made with AROMA_V1_ENABLED=true.
+ *
+ *   AROMA_V1_ENABLED=true <v1 env> pnpm --filter @aroma/web build
+ *   pnpm --filter @aroma/web test:e2e
+ *
+ * Two servers from the same build: the normal one, and one with the upstream-outage switch on
+ * (AROMA_V1_SIMULATE_UPSTREAM_OUTAGE) to prove the "unavailable" states.
+ */
+import { OUTAGE_PORT, PORT } from "./e2e/ports";
+const v1Env = { ...process.env, AROMA_V1_ENABLED: "true" } as Record<
+  string,
+  string
+>;
+
+export default defineConfig({
+  testDir: "./e2e",
+  fullyParallel: false,
+  workers: 2,
+  reporter: [["list"]],
+  timeout: 90_000,
+  expect: { timeout: 15_000 },
+  use: { baseURL: `http://localhost:${PORT}`, ...devices["Desktop Chrome"] },
+  projects: [{ name: "chromium" }],
+  webServer: [
+    {
+      command: `next start -p ${PORT}`,
+      url: `http://localhost:${PORT}/v1/privacy`,
+      env: v1Env,
+      reuseExistingServer: true,
+      timeout: 120_000,
+    },
+    {
+      command: `next start -p ${OUTAGE_PORT}`,
+      url: `http://localhost:${OUTAGE_PORT}/v1/privacy`,
+      env: { ...v1Env, AROMA_V1_SIMULATE_UPSTREAM_OUTAGE: "true" },
+      reuseExistingServer: true,
+      timeout: 120_000,
+    },
+  ],
+});

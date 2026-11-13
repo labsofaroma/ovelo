@@ -11,6 +11,7 @@
     "test": "pnpm run test:legacy && pnpm run test:unit",
     "test:legacy": "cd ../.. && TSX_TSCONFIG_PATH=apps/web/tsconfig.json node --import tsx --test apps/web/tests/*.test.* apps/web/tests/sdk/*.test.*",
     "test:unit": "vitest run",
+    "test:e2e": "playwright test",
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx server/db/migrate.ts",
     "db:check": "drizzle-kit check",

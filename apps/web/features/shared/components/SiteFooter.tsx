@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { routes } from "../routes";
 import { pageContainer, textLink } from "../styles";
+import { PrivacyChoicesButton } from "./PrivacyChoicesButton";
 
 /** Shared v1 footer: legal links and the standing data and risk disclosure. */
 export function SiteFooter() {
@@ -24,6 +25,9 @@ export function SiteFooter() {
               <Link className={textLink} href={routes.terms}>
                 Terms &amp; conditions
               </Link>
+            </li>
+            <li>
+              <PrivacyChoicesButton />
             </li>
             <li>
               <Link className={textLink} href={routes.home}>
