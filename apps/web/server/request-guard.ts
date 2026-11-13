@@ -91,3 +91,20 @@ export function requestProtocol(
     "http"
   ).toLowerCase();
 }
+
+/** Hostname the client used: x-forwarded-host only behind a trusted proxy, else Host. */
+export function requestHostname(
+  headers: Headers,
+  fallback: string,
+  env: Env,
+): string {
+  const trustProxy = env.VERCEL === "1" || env.AROMA_TRUST_PROXY === "true";
+  const raw =
+    (trustProxy && headers.get("x-forwarded-host")?.split(",")[0]?.trim()) ||
+    headers.get("host") ||
+    fallback;
+  // Strip a port; keep IPv6 brackets ("[::1]:3000" -> "[::1]").
+  return raw.startsWith("[")
+    ? raw.slice(0, raw.indexOf("]") + 1)
+    : (raw.split(":")[0] ?? raw);
+}

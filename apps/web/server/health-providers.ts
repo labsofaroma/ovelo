@@ -39,13 +39,16 @@ export function jupiterProbe(fetcher: Fetcher = fetch): Probe {
   };
 }
 
-/** Pyth Hermes returns a fresh SOL/USD update; an old publish time is "degraded". */
+/** Pyth Hermes (needs PYTH_API_KEY) returns a fresh SOL/USD update; an old one is "degraded". */
 export function pythProbe(
   fetcher: Fetcher = fetch,
   now: () => number = Date.now,
 ): Probe {
   return async () => {
     const key = process.env.PYTH_API_KEY?.trim();
+    // Hermes answers 401 without a key. Pyth is an optional reference source (PYTH_API_KEY is not
+    // required for v1), so an unconfigured Pyth is "skipped", never a reason to report "down".
+    if (!key) return { status: "skipped", keyed: false };
     const response = await fetcher(
       `https://hermes.pyth.network/v2/updates/price/latest?ids[]=${PYTH_SOL_USD}&parsed=true`,
       { headers: key ? { "x-api-key": key } : {}, cache: "no-store" },

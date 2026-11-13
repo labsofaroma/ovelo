@@ -11,6 +11,7 @@ import {
   isLoopback,
   LIMITS,
   maxBodyBytes,
+  requestHostname,
   requestProtocol,
   type Bucket,
 } from "./server/request-guard";
@@ -80,7 +81,10 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
     request.nextUrl.protocol,
     env,
   );
-  const local = isLoopback(request.nextUrl.hostname);
+  // The host the client used (nextUrl can carry the server's own bind address under next start).
+  const local = isLoopback(
+    requestHostname(request.headers, request.nextUrl.hostname, env),
+  );
 
   if (!development && !local && protocol !== "https") {
     const target = env.AROMA_SITE_URL;

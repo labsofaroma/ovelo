@@ -187,6 +187,18 @@ describe("M4 additions", () => {
     ).toBeNull();
   });
 
+  it("the loopback check uses the client's Host, not the server bind address", async () => {
+    vi.stubEnv("AROMA_TRUST_PROXY", "true");
+    const viaProxy = await middleware(
+      req("http://127.0.0.1:3300/v1", {
+        headers: { host: "www.example.com", "x-forwarded-proto": "https" },
+      }),
+    );
+    expect(viaProxy.headers.get("strict-transport-security")).toMatch(
+      /preload/,
+    );
+  });
+
   it("one HSTS header with includeSubDomains and preload over HTTPS, none on loopback HTTP", async () => {
     vi.stubEnv("AROMA_TRUST_PROXY", "true");
     const https = await middleware(

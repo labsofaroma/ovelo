@@ -39,7 +39,20 @@ describe("provider health probes (AUDIT M-7)", () => {
     expect(JSON.stringify(ok)).not.toMatch(/http/);
   });
 
+  it("Pyth without a key is skipped (optional provider), with no request", async () => {
+    vi.stubEnv("PYTH_API_KEY", "");
+    let called = false;
+    expect(
+      await pythProbe(async () => {
+        called = true;
+        return json({});
+      })(),
+    ).toEqual({ status: "skipped", keyed: false });
+    expect(called).toBe(false);
+  });
+
   it("Pyth: fresh is ok, old is degraded, malformed or HTTP errors fail", async () => {
+    vi.stubEnv("PYTH_API_KEY", "test-key");
     const at = (publish_time: unknown) => async (url: RequestInfo | URL) => {
       expect(String(url)).toContain(PYTH_SOL_USD);
       return json({ parsed: [{ price: { publish_time } }] });
