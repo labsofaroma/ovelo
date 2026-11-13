@@ -41,7 +41,7 @@ Every variable is documented inline in `apps/web/.env.example`. The minimum for 
 | `pnpm test:anchor` | Rust unit tests + IDL check + LiteSVM runtime tests |
 | `pnpm build:anchor` | `anchor build` |
 
-Some root scripts (`dev:mobile`, `keeper:trigger`, `dev:api-tunnel`, `devnet:create-xstocks`, `test`) point at files that are not in this repository yet. See [AUDIT §3](docs/AUDIT.md#3-repository-tooling-and-ci).
+The prototype scripts that pointed at files that were never committed (`dev:mobile`, `keeper:trigger`, `dev:api-tunnel`, `devnet:create-xstocks`) were removed in M0. Planned replacements: the keeper trigger moves to `apps/keeper` on QStash (M6); devnet asset provisioning is rewritten against the v1 asset registry (M6); the mobile app and its tunnel are out of v1 scope. Tests that depend on the missing scripts are skipped with `TODO(Mx)` markers. See [AUDIT §3](docs/AUDIT.md#3-repository-tooling-and-ci).
 
 ## Docs
 - [PRODUCT.md](PRODUCT.md): what Aroma is and the product rules

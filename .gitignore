@@ -48,3 +48,9 @@ docs/v2-roadmap-and-architecture.md
 .idea/
 # Local tool config (machine-specific paths)
 .codex/
+
+# Local tool config and OS/build junk
+.DS_Store
+**/.DS_Store
+*.tsbuildinfo
+.codex/
