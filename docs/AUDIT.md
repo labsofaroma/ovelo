@@ -100,7 +100,7 @@ The SDK still ships Raydium CPMM helpers (`DEVNET_RAYDIUM_CPMM_PROGRAM`, `decode
 ### M-9 (Medium): state stored on disk on serverless
 `disk-cache.ts` writes to `.aroma-cache` or `/tmp`. On Vercel this is per instance and temporary, so cache hit rates are unpredictable. Use Redis or the Next Data Cache for everything.
 
-**Status: Pending (M3/M4).** `disk-cache.ts` is untouched; `server/redis.ts` is the replacement.
+**Status: Partial (M3).** Every v1 read path (`apps/web/features/*/server.ts`) uses the Next Data Cache (`unstable_cache` with tags `v1:markets` / `v1:research[:mint]`, refreshed by `revalidate` and by `POST /api/v1/revalidate`) and never imports `disk-cache.ts`. An outage is never cached, so the last good snapshot keeps serving with its original timestamp and is labelled stale. The prototype's `lib/server/disk-cache.ts` still serves the prototype routes and is deleted at M7 with them; `server/redis.ts` remains available for M4 caches that need cross-instance locks.
 
 ### L-2 (Low)
 - HSTS is set twice and has no `includeSubDomains; preload`.
@@ -112,7 +112,7 @@ The SDK still ships Raydium CPMM helpers (`DEVNET_RAYDIUM_CPMM_PROGRAM`, `decode
 
 **Status by item:**
 - HSTS set twice, no `includeSubDomains; preload`: **Pending (M4, with the middleware and CSP rewrite).**
-- No OG image in `lib/metadata.ts`: **Pending (M3).**
+- No OG image in `lib/metadata.ts`: **Addressed for v1 (M3).** `GET /v1/og.png` is a generated, branded static image (no prices or figures) and every v1 page references it through `features/shared/metadata.ts`, with canonical URLs. The prototype's `lib/metadata.ts` still points at the missing PNG; it is replaced at M7 with the prototype pages.
 - Mixed code style: **Partial.** Prettier is configured and enforced for new code only; prototype files keep their style until they are rewritten.
 - `next lint` with no ESLint config: **Addressed.** ESLint 9 flat config via `packages/config`, run by `pnpm lint` through Turbo (0 errors; 219 warnings in prototype code).
 - `tsconfig.tsbuildinfo` and `.DS_Store` in the tree: **Addressed.** Deleted and ignored (they were never tracked).
