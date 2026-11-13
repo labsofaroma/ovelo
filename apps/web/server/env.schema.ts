@@ -58,6 +58,8 @@ const serverShape = {
   PYTH_API_KEY: optionalText,
   PRIVY_APP_SECRET: optionalText,
   CREATOR_AUTH_SECRET: secret32.optional(),
+  /** Bearer secret for POST /api/v1/revalidate (M3). Unset: the route answers 503. */
+  AROMA_REVALIDATE_SECRET: secret32.optional(),
   SENTRY_DSN: httpsUrl.optional(),
   SENTRY_ENVIRONMENT: optionalText,
 };

@@ -11,7 +11,14 @@ export default function robots(): MetadataRoute.Robots {
     rules: {
       userAgent: "*",
       allow: "/",
-      disallow: ["/api/", "/portfolio", "/orders", "/settings"],
+      disallow: [
+        "/api/",
+        "/portfolio",
+        "/orders",
+        "/settings",
+        // v1 (M3): the watchlist is per-device and noindex.
+        ...(process.env.AROMA_V1_ENABLED?.trim() === "true" ? ["/v1/watchlist"] : []),
+      ],
     },
     sitemap: new URL("/sitemap.xml", origin).href,
   };
