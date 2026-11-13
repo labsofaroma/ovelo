@@ -32,7 +32,7 @@ function reachableFrom(
   const reached = new Set([start]);
   const pending = [start];
   for (let index = 0; index < pending.length; index++) {
-    for (const next of graph.get(pending[index]) ?? []) {
+    for (const next of graph.get(pending[index] as string) ?? []) {
       if (reached.has(next)) continue;
       reached.add(next);
       pending.push(next);

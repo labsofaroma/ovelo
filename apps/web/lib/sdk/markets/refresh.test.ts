@@ -1,8 +1,5 @@
 import { expect, test } from "vitest";
-import {
-  getMainnetMarkets,
-  type MarketSnapshot,
-} from "./index";
+import { getMainnetMarkets, type MarketSnapshot } from "./index";
 
 const partialSnapshot = (value: unknown) => value as MarketSnapshot;
 

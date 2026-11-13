@@ -1,4 +1,4 @@
-import { BACKPACK_ASSETS_URL, getBackpackCatalog } from "../backpack";
+import { BACKPACK_ASSETS_URL, getBackpackCatalog } from "./sources/backpack";
 import { hydratePythPrices } from "../pyth";
 import { resolveMarketBaskets } from "./baskets";
 import { request, resolveJupiterApiKey } from "./http";

@@ -240,7 +240,7 @@ export function validateJupiterExactInInstruction(input: JupiterExactInTerms) {
       equal("destination_token_program", settlement.outputTokenProgram);
     equal("program", JUPITER_SWAP_PROGRAM);
     for (const [index, field] of format.accounts.entries())
-      if (field.address && accounts[index].pubkey !== field.address)
+      if (field.address && accounts[index]?.pubkey !== field.address)
         throw new Error("Unexpected Jupiter instruction authority.");
   }
   return {

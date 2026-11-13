@@ -1,5 +1,5 @@
 import type { BasketLiquidityAudit } from "../basket/liquidity-audit";
-import type { BackpackSecurity } from "../backpack";
+import type { BackpackSecurity } from "./sources/backpack";
 
 /** Mainnet issuer catalogs and observed onchain market prices. Unknown values stay null. */
 export const MAINNET_USDC_MINT = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";

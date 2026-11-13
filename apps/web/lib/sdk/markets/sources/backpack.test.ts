@@ -1,11 +1,8 @@
-const test = require("node:test");
-const assert = require("node:assert/strict");
-const {
-  parseBackpackSecurities,
-  getBackpackCatalog,
-} = require("../../lib/sdk/backpack");
-const { getMainnetCatalog, getMainnetMarkets } = require("../../lib/sdk/markets");
-const { hasCompleteIssuerCatalogs } = require("../../lib/sdk/trading");
+import { expect, test } from "vitest";
+import type { BackpackSecurity } from "./backpack";
+import { parseBackpackSecurities, getBackpackCatalog } from "./backpack";
+import { getMainnetCatalog, getMainnetMarkets } from "../index";
+import { hasCompleteIssuerCatalogs } from "../../trading";
 const mint = "SPCXxcqXj6e5dJDVNovHN8744zkbhM2bYudU45BimGb";
 const session = {
   name: "US_EQUITIES_REGULAR",
@@ -31,32 +28,33 @@ const mapping = {
     },
   ],
 };
-const json = (value) =>
+const json = (value: unknown) =>
   new Response(JSON.stringify(value), {
     headers: { "content-type": "application/json" },
   });
 
 test("discovery IDs never become fake mints or pretend prices", () => {
-  const [result] = parseBackpackSecurities([security]);
-  assert.equal(result.id, "backpack:SPCX.US");
-  assert.equal(result.solanaMint, null);
-  assert.equal(result.discoveryOnly, true);
-  assert.equal("mint" in result, false);
-  assert.equal("priceUsd" in result, false);
-  assert.equal(result.underlyingSymbol, "SPCX");
+  const [result] = parseBackpackSecurities([security]) as [BackpackSecurity];
+  expect(result.id).toBe("backpack:SPCX.US");
+  expect(result.solanaMint).toBe(null);
+  expect(result.discoveryOnly).toBe(true);
+  expect("mint" in result).toBe(false);
+  expect("priceUsd" in result).toBe(false);
+  expect(result.underlyingSymbol).toBe("SPCX");
 });
 
 test("only an unambiguous official Solana mapping with enabled transfers is eligible", () => {
-  const parse = (assets) => parseBackpackSecurities([security], assets)[0];
-  assert.equal(parse([mapping]).discoveryOnly, false);
-  assert.equal(parse([mapping]).solanaMint, mint);
+  const parse = (assets?: Parameters<typeof parseBackpackSecurities>[1]) =>
+    parseBackpackSecurities([security], assets)[0];
+  expect(parse([mapping]).discoveryOnly).toBe(false);
+  expect(parse([mapping]).solanaMint).toBe(mint);
   for (const token of [
     { ...mapping.tokens[0], blockchain: "Ethereum" },
     { ...mapping.tokens[0], contractAddress: "backpack:SPCX.US" },
     { ...mapping.tokens[0], withdrawEnabled: false },
     { ...mapping.tokens[0], nativeDecimals: null },
   ])
-    assert.equal(parse([{ ...mapping, tokens: [token] }]).discoveryOnly, true);
+    expect(parse([{ ...mapping, tokens: [token] }]).discoveryOnly).toBe(true);
   const conflict = {
     ...mapping,
     tokens: [
@@ -66,18 +64,17 @@ test("only an unambiguous official Solana mapping with enabled transfers is elig
       },
     ],
   };
-  assert.equal(parse([mapping, conflict]).solanaMint, null);
-  assert.deepEqual(parse([mapping, conflict]).candidateSolanaMints, [
+  expect(parse([mapping, conflict]).solanaMint).toBe(null);
+  expect(parse([mapping, conflict]).candidateSolanaMints).toEqual([
     mint,
     conflict.tokens[0].contractAddress,
   ]);
-  assert.equal(
+  expect(
     parse([
       mapping,
       { ...mapping, tokens: [{ ...mapping.tokens[0], depositEnabled: false }] },
     ]).discoveryOnly,
-    true,
-  );
+  ).toBe(true);
 });
 
 test("exchange perpetuals, hidden books and RFQ symbols are not called spot availability", () => {
@@ -99,7 +96,7 @@ test("exchange perpetuals, hidden books and RFQ symbols are not called spot avai
       { ...market, marketType: "RFQ" },
     ],
   );
-  assert.deepEqual(result.spotMarkets, [
+  expect(result.spotMarkets).toEqual([
     { symbol: "SPCX.US_USDC", state: "Open" },
   ]);
 });
@@ -111,13 +108,12 @@ test("mapping outage preserves real discovery without enabling token orders", as
         ? json([security])
         : new Response("", { status: 503 }),
   });
-  assert.equal(result.securities.length, 1);
-  assert.equal(result.securities[0].discoveryOnly, true);
-  assert.equal(result.warnings.length, 2);
-  await assert.rejects(
+  expect(result.securities.length).toBe(1);
+  expect(result.securities[0].discoveryOnly).toBe(true);
+  expect(result.warnings.length).toBe(2);
+  await await expect(
     getBackpackCatalog({ fetcher: async () => json({ results: [security] }) }),
-    /catalog could not be loaded/,
-  );
+  ).rejects.toThrow(/catalog could not be loaded/);
 });
 
 test("malformed mapping rows and mixed invalid securities cannot claim complete issuer verification", async () => {
@@ -129,48 +125,47 @@ test("malformed mapping rows and mixed invalid securities cannot claim complete 
       return json([]);
     },
   });
-  assert.equal(result.mappingsAvailable, false);
-  assert.equal(result.securities[0].discoveryOnly, true);
-  assert.ok(
+  expect(result.mappingsAvailable).toBe(false);
+  expect(result.securities[0].discoveryOnly).toBe(true);
+  expect(
     result.warnings.some((warning) =>
       warning.includes("mappings could not be verified"),
     ),
-  );
-  assert.throws(
-    () =>
-      parseBackpackSecurities(
-        [security, { ...security, asset: "AAPL.US", sessions: null }],
-        [mapping],
-      ),
-    /invalid listing/,
-  );
-  assert.throws(
-    () => parseBackpackSecurities([security, security], [mapping]),
-    /duplicate listing/,
-  );
+  ).toBeTruthy();
+  expect(() =>
+    parseBackpackSecurities(
+      [security, { ...security, asset: "AAPL.US", sessions: null }],
+      [mapping],
+    ),
+  ).toThrow(/invalid listing/);
+  expect(() =>
+    parseBackpackSecurities([security, security], [mapping]),
+  ).toThrow(/duplicate listing/);
 });
 
 test("new-format snapshots require Backpack mappings before unknown-token trade fallback", () => {
-  const snapshot = {
+  const snapshot: Parameters<typeof hasCompleteIssuerCatalogs>[0] & {
+    sources: string[];
+    backpackSecurities?: BackpackSecurity[];
+  } = {
     status: "live",
     sources: ["xStocks issuer catalog", "PreStocks issuer catalog"],
   };
-  assert.equal(
+  expect(
     hasCompleteIssuerCatalogs(snapshot),
-    true,
     "old persisted snapshots remain readable",
-  );
+  ).toBe(true);
   snapshot.backpackSecurities = [];
-  assert.equal(hasCompleteIssuerCatalogs(snapshot), false);
+  expect(hasCompleteIssuerCatalogs(snapshot)).toBe(false);
   snapshot.sources.push("Backpack securities catalog");
-  assert.equal(hasCompleteIssuerCatalogs(snapshot), false);
+  expect(hasCompleteIssuerCatalogs(snapshot)).toBe(false);
   snapshot.sources.push("Backpack Solana mappings");
-  assert.equal(hasCompleteIssuerCatalogs(snapshot), true);
+  expect(hasCompleteIssuerCatalogs(snapshot)).toBe(true);
 });
 
 test("only transfer-enabled tokens enter issuer pricing and catalog snapshots retain separate discovery", async () => {
-  const requests = [];
-  const fetcher = async (input) => {
+  const requests: string[] = [];
+  const fetcher = async (input: unknown) => {
     const url = String(input);
     requests.push(url);
     if (url.includes("xstocks.fi"))
@@ -186,20 +181,19 @@ test("only transfer-enabled tokens enter issuer pricing and catalog snapshots re
     return json({});
   };
   const catalog = await getMainnetCatalog({ fetcher });
-  assert.equal(catalog.backpackSecurities.length, 2);
-  assert.equal(catalog.assets.length, 1);
-  assert.equal(catalog.assets[0].issuer, "backpack");
-  assert.equal(
+  expect(catalog.backpackSecurities!.length).toBe(2);
+  expect(catalog.assets.length).toBe(1);
+  expect(catalog.assets[0].issuer).toBe("backpack");
+  expect(
     catalog.assets[0].kind,
-    "unknown",
     "security catalog does not classify equities versus ETFs",
-  );
+  ).toBe("unknown");
   const result = await getMainnetMarkets({ catalog, fetcher });
-  assert.equal(result.assets[0].priceUsd, 99);
-  assert.equal(result.backpackSecurities.length, 2);
-  assert.ok(
+  expect(result.assets[0].priceUsd).toBe(99);
+  expect(result.backpackSecurities!.length).toBe(2);
+  expect(
     requests
       .filter((url) => url.includes("jup.ag"))
       .every((url) => !url.includes("backpack:") && !url.includes("AAPL.US")),
-  );
+  ).toBeTruthy();
 });

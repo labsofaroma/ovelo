@@ -233,31 +233,38 @@ export async function getBackpackCatalog(
           const payload: unknown = await response.json();
           if (!Array.isArray(payload))
             throw new Error("Backpack response schema is unavailable.");
-          if (url === BACKPACK_ASSETS_URL && !validAssetMappings(payload))
+          const rows: unknown[] = payload;
+          if (url === BACKPACK_ASSETS_URL && !validAssetMappings(rows))
             throw new Error("Backpack asset mappings schema is unavailable.");
-          return payload;
+          return rows;
         },
       ),
     );
-    if (results[0].status === "rejected")
+    const [securities, mappings, markets] = results;
+    if (
+      !securities ||
+      !mappings ||
+      !markets ||
+      securities.status === "rejected"
+    )
       throw new Error("Backpack securities catalog could not be loaded.");
     const warnings: string[] = [];
-    if (results[1].status === "rejected")
+    if (mappings.status === "rejected")
       warnings.push(
         "Backpack Solana mappings could not be verified. Its securities remain discovery-only.",
       );
-    if (results[2].status === "rejected")
+    if (markets.status === "rejected")
       warnings.push(
         "Backpack exchange session availability could not be verified.",
       );
     const value: BackpackCatalog = {
       securities: parseBackpackSecurities(
-        results[0].value,
-        results[1].status === "fulfilled" ? results[1].value : [],
-        results[2].status === "fulfilled" ? results[2].value : [],
+        securities.value,
+        mappings.status === "fulfilled" ? mappings.value : [],
+        markets.status === "fulfilled" ? markets.value : [],
       ),
       warnings,
-      mappingsAvailable: results[1].status === "fulfilled",
+      mappingsAvailable: mappings.status === "fulfilled",
       observedAt: new Date().toISOString(),
     };
     if (!options.fetcher)

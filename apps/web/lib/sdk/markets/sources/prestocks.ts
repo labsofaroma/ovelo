@@ -103,7 +103,7 @@ function parsePrestockProducts(html: string): Row[] {
     /<script\b[^>]*>self\.__next_f\.push\((.*?)\)<\/script>/gs;
   for (const match of html.matchAll(scriptPattern)) {
     try {
-      const value: unknown = JSON.parse(match[1]);
+      const value: unknown = JSON.parse(match[1] ?? "");
       if (Array.isArray(value) && typeof value[1] === "string")
         chunks.push(value[1]);
     } catch {
