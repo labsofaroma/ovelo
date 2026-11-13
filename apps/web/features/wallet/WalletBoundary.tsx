@@ -22,16 +22,22 @@ type StackProps = {
 };
 
 const E2E = process.env.NEXT_PUBLIC_AROMA_E2E_WALLET === "true";
-const PRIVY = Boolean(process.env.NEXT_PUBLIC_PRIVY_APP_ID);
 
 async function loadStack(): Promise<{
   Stack: ComponentType<StackProps>;
   Embedded?: ComponentType<{ children: ReactNode }>;
 }> {
-  if (E2E) return { Stack: (await import("./stack/E2EStack")).default };
+  // The env comparisons are written inline (not through E2E/PRIVY) on purpose: Next replaces
+  // NEXT_PUBLIC_* with literals, webpack then evaluates the condition at compile time and does
+  // not even parse the dead import, so no E2E or Privy chunk is emitted when they are off. The
+  // client-secret scan (scripts/check-client-secrets.mjs) fails a production build otherwise.
+  if (process.env.NEXT_PUBLIC_AROMA_E2E_WALLET === "true")
+    return { Stack: (await import("./stack/E2EStack")).default };
   const [stack, embedded] = await Promise.all([
     import("./stack/WalletStack"),
-    PRIVY ? import("./stack/PrivyEmbedded") : Promise.resolve(null),
+    process.env.NEXT_PUBLIC_PRIVY_APP_ID
+      ? import("./stack/PrivyEmbedded")
+      : Promise.resolve(null),
   ]);
   return {
     Stack: stack.default as ComponentType<StackProps>,

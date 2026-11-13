@@ -6,8 +6,7 @@ import { join } from "node:path";
 import { gzipSync } from "node:zlib";
 import { existsSync } from "node:fs";
 
-// TODO(M4): scripts/check-client-secrets.mjs was never committed. M4 restores the
-// client-bundle secret scan as a CI step and re-enables this test.
+// M4 restored scripts/check-client-secrets.mjs (run by `pnpm build:web`); this test runs again.
 const subjectPath = "../../../scripts/check-client-secrets.mjs";
 const subject = existsSync(new URL(subjectPath, import.meta.url))
   ? await import(subjectPath)

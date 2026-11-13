@@ -2,8 +2,7 @@ import test from "node:test";
 import assert from "node:assert/strict";
 import { existsSync } from "node:fs";
 
-// TODO(M4): scripts/check-client-secrets.mjs was never committed. M4 restores it
-// with the client-bundle secret scan and re-enables this test.
+// M4 restored scripts/check-client-secrets.mjs (run by `pnpm build:web`); this test runs again.
 const subjectPath = "../../../scripts/check-client-secrets.mjs";
 const subject = existsSync(new URL(subjectPath, import.meta.url))
   ? await import(subjectPath)

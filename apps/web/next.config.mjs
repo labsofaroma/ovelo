@@ -1,6 +1,14 @@
 /** @type {import('next').NextConfig} */
 const config = {
   poweredByHeader: false,
+  // Always inlined, even when unset, so webpack can drop the E2E test wallet and the Privy stack at
+  // compile time (features/wallet/WalletBoundary.tsx). An unset NEXT_PUBLIC_* is otherwise left
+  // as a runtime lookup and its dynamic import still emits a chunk. The secret scan checks this.
+  env: {
+    NEXT_PUBLIC_AROMA_E2E_WALLET:
+      process.env.NEXT_PUBLIC_AROMA_E2E_WALLET === "true" ? "true" : "false",
+    NEXT_PUBLIC_PRIVY_APP_ID: process.env.NEXT_PUBLIC_PRIVY_APP_ID ?? "",
+  },
   compress: true,
   // @aroma/ui ships TypeScript source and CSS Modules; Next compiles it with the app.
   transpilePackages: ["@aroma/ui"],

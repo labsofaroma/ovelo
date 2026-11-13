@@ -36,6 +36,8 @@ const publicShape = {
     .optional(),
   NEXT_PUBLIC_PLAUSIBLE_DOMAIN: optionalText,
   NEXT_PUBLIC_SENTRY_DSN: httpsUrl.optional(),
+  /** E2E builds only: compiles in the test wallet bridge (no key material). Never in production. */
+  NEXT_PUBLIC_AROMA_E2E_WALLET: z.enum(["true", "false"]).optional(),
 };
 
 const serverShape = {
@@ -157,6 +159,15 @@ const flatSchema = z.object(flatShape).superRefine((env, ctx) => {
         });
     }
   }
+  if (
+    env.VERCEL_ENV === "production" &&
+    env.NEXT_PUBLIC_AROMA_E2E_WALLET === "true"
+  )
+    ctx.addIssue({
+      code: "custom",
+      path: ["NEXT_PUBLIC_AROMA_E2E_WALLET"],
+      message: "must not be set in a production deployment",
+    });
   if (env.SOLANA_RPC_URL && !env.SOLANA_RPC_URL.startsWith("https://")) {
     const loopback = /^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?\/?$/.test(
       env.SOLANA_RPC_URL,
