@@ -26,9 +26,14 @@
     "drizzle.config.ts",
     "vitest.config.ts",
     "app/api/v1/**/*.ts",
-    "app/(app)/**/*.{ts,tsx}",
-    "app/(marketing)/**/*.{ts,tsx}",
-    "features/**/*.{ts,tsx}",
+    // TypeScript's `include` has no brace expansion: "*.{ts,tsx}" matched nothing, so these
+    // folders were only checked when imported from elsewhere. One pattern per extension.
+    "app/(app)/**/*.ts",
+    "app/(app)/**/*.tsx",
+    "app/(marketing)/**/*.ts",
+    "app/(marketing)/**/*.tsx",
+    "features/**/*.ts",
+    "features/**/*.tsx",
     "e2e/**/*.ts"
   ],
   "exclude": ["lib/sdk/**/*.test.ts", "lib/sdk/jupiter/test-fixtures.ts"]
