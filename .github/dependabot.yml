@@ -1,0 +1,39 @@
+version: 2
+updates:
+  - package-ecosystem: npm
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 8
+    groups:
+      dev-tooling:
+        dependency-type: development
+        update-types: [minor, patch]
+      production-minor-patch:
+        dependency-type: production
+        update-types: [minor, patch]
+    ignore:
+      # Pinned deliberately; upgrade in a dedicated PR (REWRITE-PLAN §3: one @solana/kit version).
+      - dependency-name: "@solana/kit"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "@solana/kit-v1"
+      # The React 19 move is its own milestone task.
+      - dependency-name: "react"
+        update-types: ["version-update:semver-major"]
+      - dependency-name: "react-dom"
+        update-types: ["version-update:semver-major"]
+
+  - package-ecosystem: cargo
+    directory: /packages/anchor
+    schedule:
+      interval: weekly
+      day: monday
+    open-pull-requests-limit: 3
+    # Contract dependencies change the audited surface: review by hand, never auto-merge.
+
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday

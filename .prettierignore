@@ -32,6 +32,5 @@ docs/
 apps/web/server/db/migrations/
 apps/web/tailwind.config.js
 apps/web/postcss.config.js
-apps/web/next.config.mjs
 apps/web/vercel.json
 apps/web/next-env.d.ts
