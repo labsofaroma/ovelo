@@ -1,0 +1,150 @@
+/*
+ * Tailwind v4 CSS-first theme, fed by tokens.css. `inline` makes utilities reference the
+ * runtime --aroma-* variables, so theme switching needs no rebuild.
+ * Import after tokens.css, in an entry that also imports Tailwind (see README.md).
+ */
+@theme inline {
+  --color-*: initial; /* only semantic roles exist; no raw palette utilities */
+  --color-bg: var(--aroma-bg);
+  --color-surface: var(--aroma-surface);
+  --color-raised: var(--aroma-raised);
+  --color-ink: var(--aroma-ink);
+  --color-muted: var(--aroma-muted);
+  --color-line: var(--aroma-line);
+  --color-border-strong: var(--aroma-border-strong);
+  --color-accent: var(--aroma-accent);
+  --color-accent-hover: var(--aroma-accent-hover);
+  --color-accent-ink: var(--aroma-accent-ink);
+  --color-accent-soft: var(--aroma-accent-soft);
+  --color-up: var(--aroma-up);
+  --color-up-soft: var(--aroma-up-soft);
+  --color-down: var(--aroma-down);
+  --color-down-soft: var(--aroma-down-soft);
+  --color-warning: var(--aroma-warning);
+  --color-warning-soft: var(--aroma-warning-soft);
+  --color-focus: var(--aroma-focus);
+  --color-plate: var(--aroma-plate);
+  --color-scrim: var(--aroma-scrim);
+  --color-transparent: transparent;
+  --color-current: currentColor;
+
+  --font-sans: var(--aroma-font-sans);
+  --font-serif: var(--aroma-font-serif);
+
+  --text-micro: var(--aroma-text-micro);
+  --text-caption: var(--aroma-text-caption);
+  --text-small: var(--aroma-text-small);
+  --text-body: var(--aroma-text-body);
+  --text-title: var(--aroma-text-title);
+  --text-section: var(--aroma-text-section);
+  --text-page-mobile: var(--aroma-text-page-mobile);
+  --text-page: var(--aroma-text-page);
+
+  --spacing: var(--aroma-space-unit);
+
+  --radius-badge: var(--aroma-radius-badge);
+  --radius-control: var(--aroma-radius-control);
+  --radius-panel: var(--aroma-radius-panel);
+  --radius-full: var(--aroma-radius-full);
+
+  --shadow-float: var(--aroma-shadow-float);
+  --shadow-raised: var(--aroma-shadow-raised);
+
+  --ease-ui: var(--aroma-ease-ui);
+  /* Every `transition-*` utility defaults to the token duration, so reduced motion applies
+     even where a component forgot a motion-* class. */
+  --default-transition-duration: var(--aroma-duration-base);
+  --default-transition-timing-function: var(--aroma-ease-ui);
+
+  --breakpoint-*: initial;
+  --breakpoint-sm: 40rem;
+  --breakpoint-md: 47.5rem;
+  --breakpoint-lg: 64rem;
+  --breakpoint-xl: 75rem;
+}
+
+/* Token-backed utilities that Tailwind has no theme namespace for. */
+@utility z-base {
+  z-index: var(--aroma-z-base);
+}
+@utility z-sticky {
+  z-index: var(--aroma-z-sticky);
+}
+@utility z-dropdown {
+  z-index: var(--aroma-z-dropdown);
+}
+@utility z-overlay {
+  z-index: var(--aroma-z-overlay);
+}
+@utility z-modal {
+  z-index: var(--aroma-z-modal);
+}
+@utility z-popover {
+  z-index: var(--aroma-z-popover);
+}
+@utility z-toast {
+  z-index: var(--aroma-z-toast);
+}
+@utility z-tooltip {
+  z-index: var(--aroma-z-tooltip);
+}
+
+@utility motion-instant {
+  transition-duration: var(--aroma-duration-instant);
+  transition-timing-function: var(--aroma-ease-ui);
+}
+@utility motion-fast {
+  transition-duration: var(--aroma-duration-fast);
+  transition-timing-function: var(--aroma-ease-ui);
+}
+@utility motion-base {
+  transition-duration: var(--aroma-duration-base);
+  transition-timing-function: var(--aroma-ease-ui);
+}
+@utility motion-pop {
+  transition-duration: var(--aroma-duration-pop);
+  transition-timing-function: var(--aroma-ease-ui);
+}
+@utility motion-slow {
+  transition-duration: var(--aroma-duration-slow);
+  transition-timing-function: var(--aroma-ease-ui);
+}
+
+/* Keyframes read their duration from tokens, so reduced motion collapses them too. */
+@utility animate-shimmer {
+  animation: aroma-shimmer var(--aroma-duration-shimmer) linear infinite;
+}
+@utility animate-spin-token {
+  animation: aroma-spin var(--aroma-duration-spin) linear infinite;
+}
+@utility animate-indeterminate {
+  animation: aroma-indeterminate var(--aroma-duration-shimmer)
+    var(--aroma-ease-ui) infinite;
+}
+
+@keyframes aroma-shimmer {
+  to {
+    background-position: -200% 0;
+  }
+}
+@keyframes aroma-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes aroma-indeterminate {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(250%);
+  }
+}
+
+/* One focus ring for every interactive primitive. */
+@utility focus-ring {
+  &:focus-visible {
+    outline: 2px solid var(--aroma-focus);
+    outline-offset: 2px;
+  }
+}

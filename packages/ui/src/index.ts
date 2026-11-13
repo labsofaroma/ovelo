@@ -1,2 +1,8 @@
-/** Placeholder export so the workspace builds, lints and tests. M1 fills this package. */
-export const UI_PACKAGE = "@aroma/ui" as const;
+/**
+ * @aroma/ui public API. Presentation only: no app, server, wallet or Solana imports
+ * (enforced by ESLint, see eslint.config.mjs). Styles: import "@aroma/ui/tokens.css" and
+ * "@aroma/ui/theme.css" (README.md explains the Tailwind entry).
+ */
+export * from "./format";
+export * from "./lib/cn";
+export * from "./theme";

@@ -1,0 +1,186 @@
+/*
+ * Aroma design tokens: the single source of truth for @aroma/ui.
+ * Derived from apps/web/styles/foundation.css, theme-surfaces.css and .21st/DESIGN.md.
+ * Plain CSS custom properties, no framework required. Tailwind utilities are generated from
+ * these by theme.css. Mapping from the old variable names: README.md.
+ *
+ * Themes: `data-theme="light|dark"` on <html> wins; otherwise `prefers-color-scheme` decides.
+ * The attribute also works on any element, to scope a theme to a subtree (stories, footers).
+ * Keep the two dark blocks identical (tokens.test.ts enforces it).
+ * Every foreground/background pair that components use is contrast-tested (contrast.test.ts).
+ */
+
+:root,
+[data-theme="light"] {
+  /* ---- Color roles: light (default) ---- */
+  --aroma-bg: #f5f6f2;
+  --aroma-surface: #fdfefb;
+  --aroma-raised: #edf2ea;
+  --aroma-ink: #202722;
+  --aroma-muted: #5e675b;
+  --aroma-line: #d8dfd4; /* decorative dividers only, below 3:1 */
+  --aroma-border-strong: #7a8576; /* control and component boundaries, 3:1 or better */
+  --aroma-accent: #426c2f;
+  --aroma-accent-hover: #365a26;
+  --aroma-accent-ink: #ffffff;
+  --aroma-accent-soft: #e4edd9;
+  --aroma-up: #287448;
+  --aroma-up-soft: #dcefe2;
+  --aroma-down: #b43f3c;
+  --aroma-down-soft: #fbeceb;
+  --aroma-warning: #8a5300;
+  --aroma-warning-soft: #f6e8d0;
+  --aroma-focus: #426c2f;
+  --aroma-scrim: rgb(28 38 29 / 30%);
+  --aroma-shadow-float: 0 16px 48px rgb(28 38 29 / 12%);
+  --aroma-shadow-raised: 0 1px 2px rgb(28 38 29 / 8%);
+  color-scheme: light;
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme]) {
+    --aroma-bg: #101311;
+    --aroma-surface: #181d19;
+    --aroma-raised: #202720;
+    --aroma-ink: #f4f6ef;
+    --aroma-muted: #9aa795;
+    --aroma-line: #30392f;
+    --aroma-border-strong: #6f7d69;
+    --aroma-accent: #d5f478;
+    --aroma-accent-hover: #bbd66b;
+    --aroma-accent-ink: #202917;
+    --aroma-accent-soft: #252e1b;
+    --aroma-up: #b9de83;
+    --aroma-up-soft: #1f2d1c;
+    --aroma-down: #f3a59b;
+    --aroma-down-soft: #351f1d;
+    --aroma-warning: #f5a524;
+    --aroma-warning-soft: #33280f;
+    --aroma-focus: #d5f478;
+    --aroma-scrim: rgb(3 6 3 / 66%);
+    --aroma-shadow-float: 0 16px 48px rgb(3 6 3 / 28%);
+    --aroma-shadow-raised: 0 1px 2px rgb(3 6 3 / 40%);
+    color-scheme: dark;
+  }
+}
+
+[data-theme="dark"] {
+  --aroma-bg: #101311;
+  --aroma-surface: #181d19;
+  --aroma-raised: #202720;
+  --aroma-ink: #f4f6ef;
+  --aroma-muted: #9aa795;
+  --aroma-line: #30392f;
+  --aroma-border-strong: #6f7d69;
+  --aroma-accent: #d5f478;
+  --aroma-accent-hover: #bbd66b;
+  --aroma-accent-ink: #202917;
+  --aroma-accent-soft: #252e1b;
+  --aroma-up: #b9de83;
+  --aroma-up-soft: #1f2d1c;
+  --aroma-down: #f3a59b;
+  --aroma-down-soft: #351f1d;
+  --aroma-warning: #f5a524;
+  --aroma-warning-soft: #33280f;
+  --aroma-focus: #d5f478;
+  --aroma-scrim: rgb(3 6 3 / 66%);
+  --aroma-shadow-float: 0 16px 48px rgb(3 6 3 / 28%);
+  --aroma-shadow-raised: 0 1px 2px rgb(3 6 3 / 40%);
+  color-scheme: dark;
+}
+
+:root {
+  /* ---- Typography ---- */
+  /* Self-contained on purpose: it must NOT reference --font-sans, which theme.css maps back to
+     this token (a cycle makes both invalid and silently drops the font). The app owns font
+     loading (fonts.css or next/font) and may override --aroma-font-sans itself. */
+  --aroma-font-sans:
+    Manrope, Inter, "Avenir Next", "Avenir", "Segoe UI", Helvetica, Arial,
+    sans-serif;
+  --aroma-font-serif: Georgia, "Times New Roman", serif;
+  --aroma-text-micro: 0.6875rem; /* 11px */
+  --aroma-text-caption: 0.75rem; /* 12px */
+  --aroma-text-small: 0.8125rem; /* 13px */
+  --aroma-text-body: 0.875rem; /* 14px */
+  --aroma-text-title: 1.125rem; /* 18px */
+  --aroma-text-section: 1.375rem; /* 22px */
+  --aroma-text-page-mobile: 1.75rem; /* 28px */
+  --aroma-text-page: 2.25rem; /* 36px */
+  --aroma-leading-tight: 1.13;
+  --aroma-leading-snug: 1.25;
+  --aroma-leading-body: 1.52;
+  --aroma-tracking-heading: -0.03em;
+  --aroma-tracking-eyebrow: 0.15em;
+
+  /* ---- Spacing: 4px base; --aroma-space-N equals Tailwind's N-step (p-4 = 16px) ---- */
+  --aroma-space-unit: 0.25rem;
+  --aroma-space-1: 0.25rem;
+  --aroma-space-2: 0.5rem;
+  --aroma-space-3: 0.75rem;
+  --aroma-space-4: 1rem;
+  --aroma-space-5: 1.25rem;
+  --aroma-space-6: 1.5rem;
+  --aroma-space-8: 2rem;
+  --aroma-space-12: 3rem;
+
+  /* ---- Artwork ---- */
+  /* Backing plate for third-party logos: intentionally the same in both themes. */
+  --aroma-plate: #ffffff;
+
+  /* ---- Layout ---- */
+  --aroma-content-max: 82.5rem; /* 1320px */
+  --aroma-gutter: 3.5rem; /* 56px desktop */
+  --aroma-gutter-mobile: 1.5rem; /* 24px */
+  --aroma-control-height: 2.75rem; /* 44px: also the touch target */
+  --aroma-control-height-compact: 2.25rem; /* 36px */
+
+  /* ---- Radius ---- */
+  --aroma-radius-badge: 0.375rem; /* 6px */
+  --aroma-radius-control: 0.625rem; /* 10px */
+  --aroma-radius-panel: 1rem; /* 16px */
+  --aroma-radius-full: 9999px;
+
+  /* ---- Z-index ---- */
+  --aroma-z-base: 0;
+  --aroma-z-sticky: 20;
+  --aroma-z-dropdown: 100;
+  --aroma-z-overlay: 200;
+  --aroma-z-modal: 210;
+  --aroma-z-popover: 300;
+  --aroma-z-toast: 400;
+  --aroma-z-tooltip: 500;
+  --aroma-z-skip-link: 10000;
+
+  /* ---- Motion: the reduced-motion block below collapses every duration ---- */
+  --aroma-ease-ui: cubic-bezier(0.23, 1, 0.32, 1);
+  --aroma-duration-instant: 80ms;
+  --aroma-duration-fast: 120ms;
+  --aroma-duration-base: 160ms;
+  --aroma-duration-pop: 180ms;
+  --aroma-duration-glide: 220ms;
+  --aroma-duration-slow: 320ms;
+  --aroma-duration-shimmer: 1600ms;
+  --aroma-duration-spin: 800ms;
+
+  /* ---- Breakpoints (reference values: CSS custom properties cannot be used in media
+        queries; theme.css feeds the same numbers to Tailwind's screen variants) ---- */
+  --aroma-breakpoint-sm: 40rem; /* 640px */
+  --aroma-breakpoint-md: 47.5rem; /* 760px: the prototype's main mobile break */
+  --aroma-breakpoint-lg: 64rem; /* 1024px */
+  --aroma-breakpoint-xl: 75rem; /* 1200px */
+}
+
+/* Reduced motion: durations collapse to a 0.01ms floor, so transitions still complete
+   (keeping state classes and events correct) but nothing visibly moves. */
+@media (prefers-reduced-motion: reduce) {
+  :root {
+    --aroma-duration-instant: 0.01ms;
+    --aroma-duration-fast: 0.01ms;
+    --aroma-duration-base: 0.01ms;
+    --aroma-duration-pop: 0.01ms;
+    --aroma-duration-glide: 0.01ms;
+    --aroma-duration-slow: 0.01ms;
+    --aroma-duration-shimmer: 0.01ms;
+    --aroma-duration-spin: 0.01ms;
+  }
+}

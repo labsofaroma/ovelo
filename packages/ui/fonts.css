@@ -1,0 +1,19 @@
+/*
+ * Optional @font-face for hosts that do not load Manrope themselves (Ladle, plain Vite).
+ * Next apps should prefer next/font and set --font-sans. The URLs point at the web app's
+ * public/fonts (self-hosted Latin subsets, OFL licences next to them).
+ */
+@font-face {
+  font-family: Manrope;
+  font-style: normal;
+  font-weight: 200 800;
+  font-display: swap;
+  src: url("/fonts/manrope-latin.woff2") format("woff2");
+}
+@font-face {
+  font-family: Inter;
+  font-style: normal;
+  font-weight: 400 700;
+  font-display: swap;
+  src: url("/fonts/inter-latin.woff2") format("woff2");
+}
