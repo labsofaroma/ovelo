@@ -12,7 +12,6 @@ const {
   calculateBasketRebalance,
   calculateTimeWeightedReturn,
 } = require("../../lib/sdk/rebalance");
-const { subscribePythPriceFeeds } = require("../../lib/sdk/pyth-streaming");
 const key = () => Keypair.generate().publicKey;
 
 test("basket allocations conserve every unit with deterministic remainders", () => {
@@ -202,61 +201,5 @@ test("simulation preserves sponsored blockhash and distinguishes failure from un
       )
     ).status,
     "unavailable",
-  );
-});
-test("Pyth stream accepts only requested fresh ordered confidence-bounded real ticks", () => {
-  const id = "a".repeat(64);
-  const other = "b".repeat(64);
-  let source;
-  let url;
-  const ticks = [];
-  const stop = subscribePythPriceFeeds(
-    [id],
-    (p) => ticks.push(p),
-    () => {},
-    {
-      now: () => 1000000,
-      createEventSource: (u) => {
-        url = u;
-        source = {
-          onmessage: null,
-          onerror: null,
-          close() {
-            this.closed = true;
-          },
-        };
-        return source;
-      },
-    },
-  );
-  const send = (publish_time, conf = "1", feed = id) =>
-    source.onmessage({
-      data: JSON.stringify({
-        parsed: [
-          { id: feed, price: { price: "1000", conf, expo: -2, publish_time } },
-        ],
-      }),
-    });
-  send(999);
-  send(998);
-  send(900);
-  send(1000, "500");
-  send(1000, "1", other);
-  send(1011);
-  send(1000);
-  assert.equal(ticks.length, 2);
-  assert.equal(ticks[0].price, 10);
-  assert.equal(ticks[0].status, "unknown");
-  assert.ok(
-    url.startsWith("https://hermes.pyth.network/v2/updates/price/stream?"),
-  );
-  stop();
-  assert.equal(source.onmessage, null);
-  assert.equal(source.closed, true);
-  assert.throws(() => subscribePythPriceFeeds(["invalid"], () => {}));
-  assert.throws(() =>
-    subscribePythPriceFeeds([id], () => {}, undefined, {
-      endpoint: "http://example.com",
-    }),
   );
 });

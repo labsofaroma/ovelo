@@ -1,4 +1,4 @@
-import type { PythPriceData } from "./pyth-oracle";
+import type { PythPriceData } from "./types";
 
 export interface PythEventSource {
   onmessage: ((event: { data: string }) => void) | null;

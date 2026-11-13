@@ -13,7 +13,7 @@
  */
 
 import type { MarketAsset } from "../markets";
-import { BASKET_EQUITY_PYTH_FEEDS, XSTOCKS_PYTH_FEEDS } from "../pyth-oracle";
+import { BASKET_EQUITY_PYTH_FEEDS, XSTOCKS_PYTH_FEEDS } from "../pyth/feeds";
 
 export type BasketTimeframe = "24h" | "7d" | "30d" | "90d" | "1y" | "ytd";
 

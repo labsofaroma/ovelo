@@ -19,7 +19,7 @@ export default defineConfig({
     include: [
       "server/**/*.test.ts",
       "observability/**/*.test.ts",
-      "lib/sdk/core/**/*.test.ts",
+      "lib/sdk/**/*.test.ts",
     ],
     env: { LOG_LEVEL: "silent" },
     coverage: {
@@ -28,7 +28,7 @@ export default defineConfig({
       include: [
         "server/**/*.ts",
         "observability/**/*.ts",
-        "lib/sdk/core/**/*.ts",
+        "lib/sdk/**/*.ts",
       ],
     },
   },

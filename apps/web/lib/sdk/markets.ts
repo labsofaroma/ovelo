@@ -3,7 +3,7 @@ import {
   BACKPACK_ASSETS_URL,
   type BackpackSecurity,
 } from "./backpack";
-import { hydratePythPrices } from "./pyth-oracle";
+import { hydratePythPrices } from "./pyth";
 import { type BasketLiquidityAudit } from "./basket/liquidity-audit";
 
 /** Mainnet issuer catalogs and observed onchain market prices. Unknown values stay null. */

@@ -15,11 +15,10 @@ export * from "./basket/custom";
 export * from "./basket/liquidity-audit";
 export * from "./basket/performance";
 export * from "./rebalance";
-export * from "./pyth-streaming";
 // Preserve upstream adapter imports; frontend prices use the markets pipeline.
 export * from "./meteora";
 export * from "./jupiter";
-export * from "./pyth-oracle";
+export * from "./pyth";
 export * from "./client/aroma-client";
 export * from "./state/aroma-core";
 export * from "./mobile-signer";

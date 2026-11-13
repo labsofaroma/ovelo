@@ -122,7 +122,7 @@ for (const stmt of sf.statements) {
       t,
     ) ||
     /^import\s+\{[^}]*\}\s+from\s+["']node:test["'];?$/.test(t) ||
-    /^const\s+(\{[^}]*\}|assert)\s*=\s*require\(["']node:(assert(\/strict)?|test)["']\);?$/.test(
+    /^const\s+(\{[^}]*\}|assert|test)\s*=\s*require\(["']node:(assert(\/strict)?|test)["']\);?$/.test(
       t,
     )
   ) {
