@@ -6,13 +6,7 @@
     "lib": ["dom", "dom.iterable", "esnext"],
     "jsx": "preserve",
     "types": ["node"],
-    "paths": {
-      // TEMPORARY (M3-SDK-REQUESTS #1): lib/sdk/research/bars.ts is not strict-clean yet.
-      "@/lib/sdk/research/service": [
-        "./features/stock/research-service.strict.d.ts"
-      ],
-      "@/*": ["./*"]
-    }
+    "paths": { "@/*": ["./*"] }
   },
   "include": [
     "observability/**/*.ts",
