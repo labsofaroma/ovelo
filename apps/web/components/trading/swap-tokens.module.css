@@ -1,0 +1,587 @@
+/* Aroma tokens; selection controls use the shared GlideSelect. */
+.swapPanel {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  min-width: 0;
+}
+.selector {
+  min-width: 0;
+  display: grid;
+  gap: 9px;
+}
+.label {
+  color: var(--muted);
+  font-size: var(--text-caption);
+  font-weight: 600;
+}
+.trigger {
+  width: 100%;
+}
+.trigger:disabled,
+.result:disabled,
+.reverse:disabled,
+.amountActions button:disabled,
+.close:disabled {
+  cursor: not-allowed;
+  opacity: 0.5;
+}
+.trigger:focus-visible,
+.result:focus-visible,
+.reverse:focus-visible,
+.tabs button:focus-visible,
+.close:focus-visible,
+.amountActions button:focus-visible,
+.paperDetails summary:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+}
+.monogram {
+  width: 40px;
+  height: 40px;
+  flex-shrink: 0;
+  overflow: hidden;
+  border-radius: 50%;
+  background: var(--accent);
+  display: grid;
+  place-items: center;
+  font-size: 0.8rem;
+  font-weight: 700;
+  color: var(--accent-ink);
+}
+.monogram img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  background: var(--surface);
+}
+.identity {
+  display: grid;
+  gap: 3px;
+  flex: 1;
+  min-width: 0;
+}
+.identity strong {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+  font-size: var(--text-small);
+  overflow-wrap: anywhere;
+}
+.identity small {
+  color: var(--muted);
+  font-size: var(--text-micro);
+  text-overflow: ellipsis;
+  overflow: hidden;
+  white-space: nowrap;
+}
+.chevron {
+  flex-shrink: 0;
+  color: var(--muted);
+}
+.trigger[aria-expanded="true"] .chevron {
+  transform: rotate(180deg);
+}
+.address {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.65rem;
+  color: var(--muted);
+}
+.address a {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.picker {
+  padding: 16px;
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  display: grid;
+  gap: 12px;
+  background: var(--surface);
+  min-width: 0;
+  box-shadow: 0 8px 24px color-mix(in srgb, var(--ink) 6%, transparent);
+}
+.pickerHeading,
+.swapHeading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+.pickerHeading strong {
+  font-size: 0.95rem;
+}
+.picker input {
+  min-width: 0;
+  width: 100%;
+}
+.search {
+  position: relative;
+}
+.search input {
+  padding-left: 36px !important;
+}
+.search > svg {
+  position: absolute;
+  left: 12px;
+  bottom: 15px;
+  color: var(--muted);
+  pointer-events: none;
+}
+.results {
+  display: grid;
+  gap: 4px;
+  max-height: 300px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+}
+.result {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-height: 66px;
+  padding: 10px 8px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.result:hover:not(:disabled),
+.result[aria-pressed="true"] {
+  background: var(--raised);
+}
+.result .monogram {
+  width: 34px;
+  height: 34px;
+}
+.badge {
+  font-size: var(--text-micro);
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 5px 6px;
+  color: var(--muted);
+}
+.reverse,
+.paperArrow {
+  align-self: center;
+  display: grid;
+  place-items: center;
+  width: 42px;
+  height: 42px;
+  padding: 0;
+  margin-block: -27px;
+  position: relative;
+  z-index: 1;
+  border: 5px solid var(--surface);
+  border-radius: 13px;
+  background: var(--raised);
+  color: var(--ink);
+  cursor: pointer;
+  box-sizing: content-box;
+}
+.swapHeading h3 {
+  margin: 0;
+  font-size: 1.6rem;
+  letter-spacing: -0.04em;
+}
+.close {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 40px;
+  min-height: 40px;
+  border: 0;
+  padding: 8px 0;
+  background: transparent;
+  color: var(--ink);
+  font: inherit;
+  font-size: 0.7rem;
+  cursor: pointer;
+}
+.swapSide {
+  background: var(--raised);
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 18px;
+  display: grid;
+  gap: 14px;
+}
+.swapSide .trigger {
+  background: var(--surface);
+}
+.amountField {
+  display: grid;
+  gap: 5px;
+  min-width: 0;
+}
+.swapPanel .amountField input,
+.amountField input {
+  border: 0;
+  background: transparent;
+  width: 100%;
+  min-width: 0;
+  color: var(--ink);
+  padding: 4px 0;
+  font: inherit;
+  font-size: clamp(1.8rem, 5vw, 2.5rem);
+  font-variant-numeric: tabular-nums;
+  letter-spacing: -0.04em;
+  border-radius: 4px;
+}
+.amountField input:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 4px;
+}
+.amountField input::placeholder {
+  color: var(--muted);
+  opacity: 0.7;
+}
+.amountActions {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  font-size: 0.7rem;
+  color: var(--muted);
+}
+.amountActions > span {
+  overflow-wrap: anywhere;
+}
+.amountActions > div {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+.amountActions button {
+  min-width: 40px;
+  min-height: 40px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  padding: 7px 9px;
+  font: inherit;
+  color: var(--ink);
+  background: var(--surface);
+  cursor: pointer;
+}
+.amountSuggestion {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-left: 8px;
+  padding: 3px 5px 3px 8px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 10px;
+  line-height: 1;
+}
+.amountSuggestion button {
+  min-width: 42px;
+  padding: 5px 8px;
+  border: 0;
+  border-radius: 999px;
+  background: var(--accent);
+  color: var(--forest);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+.amountSuggestion button:disabled {
+  opacity: 0.55;
+  cursor: default;
+}
+.receiveAmount {
+  font-size: clamp(1.8rem, 5vw, 2.5rem);
+  letter-spacing: -0.04em;
+  color: var(--ink);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+  line-height: 1.2;
+}
+.balance {
+  display: grid;
+  gap: 4px;
+  text-align: right;
+  min-width: 0;
+  max-width: 38%;
+}
+.balance strong {
+  font-size: var(--text-small);
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+.balance small {
+  color: var(--muted);
+  font-size: var(--text-micro);
+}
+.tabs {
+  display: flex;
+  gap: 4px;
+  background: var(--raised);
+  border-radius: 10px;
+  padding: 4px;
+}
+.tabs button {
+  flex: 1;
+  min-height: var(--control-height);
+  border: 1px solid transparent;
+  border-radius: var(--radius-control);
+  padding: 8px;
+  font: inherit;
+  font-size: var(--text-caption);
+  color: var(--muted);
+  background: transparent;
+  cursor: pointer;
+}
+.tabs button[aria-pressed="true"] {
+  color: var(--ink);
+  border-color: var(--line);
+  background: var(--surface);
+  font-weight: 600;
+}
+.tabs button span {
+  margin-left: 4px;
+  font-size: var(--text-micro);
+}
+.empty {
+  padding: 16px 8px;
+  color: var(--muted);
+  font-size: 0.8rem;
+  line-height: 1.6;
+}
+.paperDetails {
+  margin-top: 22px;
+  border-top: 1px solid var(--line);
+}
+.paperDetails summary {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-height: 56px;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 600;
+  list-style: none;
+}
+.paperDetails summary::-webkit-details-marker {
+  display: none;
+}
+.paperDetails summary > svg:last-child {
+  margin-left: auto;
+}
+.paperDetails[open] summary > svg:last-child {
+  transform: rotate(180deg);
+}
+.paperContent {
+  display: grid;
+  gap: 16px;
+  padding-top: 4px;
+}
+.paperToken {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  min-width: 0;
+}
+.paperToken > div,
+.paperToken > button {
+  flex: 1;
+  min-width: 0;
+}
+.paperToken .monogram {
+  flex: 0 0 40px;
+}
+.paperArrow {
+  justify-self: center;
+  cursor: default;
+}
+.transfer {
+  display: grid;
+  justify-items: center;
+  gap: 16px;
+  border: 1px solid var(--line);
+  border-radius: 18px;
+  padding: 22px 16px;
+  color: var(--ink);
+  background: var(--surface);
+}
+.transferSymbol {
+  width: 76px;
+  height: 76px;
+  display: grid;
+  place-items: center;
+  position: relative;
+}
+.transferOrbit {
+  position: absolute;
+  inset: 0;
+  border: 2px solid var(--line);
+  border-top-color: var(--ink);
+  border-right-color: var(--ink);
+  border-radius: 50%;
+}
+.transferCore {
+  display: grid;
+  place-items: center;
+  width: 60px;
+  height: 60px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: var(--raised);
+}
+.transfer[data-phase="success"] .transferCore {
+  color: var(--accent-ink);
+  background: var(--accent);
+  border-color: var(--accent);
+}
+.transfer[data-phase="error"] .transferCore,
+.transfer[data-phase="unknown"] .transferCore {
+  color: var(--ink);
+}
+.transferHeading {
+  text-align: center;
+}
+.transferHeading strong {
+  font-size: 1.06rem;
+  letter-spacing: -0.025em;
+}
+.transferHeading p {
+  color: var(--muted);
+  font-size: 0.74rem;
+  line-height: 1.6;
+  margin: 6px 0 0;
+}
+.transferPair {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 20px minmax(0, 1fr);
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  padding: 16px 8px;
+  border-block: 1px solid var(--line);
+}
+.transferPair > div {
+  display: grid;
+  justify-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+.transferDirection {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--muted);
+  font-size: 0.68rem;
+}
+.transferPair strong {
+  width: 100%;
+  min-width: 0;
+  text-align: center;
+  font-size: 0.88rem;
+  font-variant-numeric: tabular-nums;
+}
+.transferAmount {
+  display: block;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.transferPair small {
+  display: block;
+  margin-top: 4px;
+  color: var(--muted);
+  font-weight: 400;
+  font-size: 0.68rem;
+}
+.transferBetween {
+  color: var(--muted);
+}
+.transferNote,
+.transferLink {
+  font-size: 0.68rem;
+  color: var(--muted);
+}
+.transferLink {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 4px;
+  min-height: 40px;
+}
+@media (prefers-reduced-motion: no-preference) {
+  .chevron {
+    transition: transform 150ms ease-out;
+  }
+  .trigger,
+  .result,
+  .tabs button {
+    transition: background-color 150ms ease-out;
+  }
+  .transferOrbit {
+    animation: transferSpin 1.3s linear infinite;
+  }
+  .transferCore {
+    animation: transferEnter 250ms ease-out both;
+  }
+  .transfer[data-phase="success"] .transferCore svg {
+    animation: transferCheck 350ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  }
+}
+@keyframes transferSpin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+@keyframes transferEnter {
+  from {
+    transform: scale(0.9);
+    opacity: 0.6;
+  }
+  to {
+    transform: scale(1);
+    opacity: 1;
+  }
+}
+@keyframes transferCheck {
+  from {
+    transform: scale(0.5) rotate(-25deg);
+    opacity: 0;
+  }
+  to {
+    transform: scale(1) rotate(0);
+    opacity: 1;
+  }
+}
+@media (max-width: 420px) {
+  .swapSide {
+    padding: 14px;
+  }
+  .trigger {
+    padding: 10px;
+    gap: 8px;
+  }
+  .trigger .monogram {
+    width: 34px;
+    height: 34px;
+  }
+  .trigger .balance {
+    max-width: 32%;
+  }
+  .picker {
+    padding: 10px;
+  }
+  .result .identity small {
+    max-width: 140px;
+  }
+  .transferPair {
+    gap: 8px;
+    padding-inline: 0;
+  }
+}

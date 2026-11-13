@@ -1,0 +1,573 @@
+/* Navigation inspired by Consensys; menu composition adapted from shadcn/ui. */
+.aroma-workspace {
+  padding-left: 0;
+}
+.aroma-workspace .workspace-main {
+  max-width: 1440px;
+  padding: var(--space-6) var(--space-12) 0;
+  margin: 0 auto;
+}
+.workspace-header {
+  position: sticky;
+  top: 0;
+  z-index: 40;
+  background: color-mix(in srgb, var(--bg) 94%, transparent);
+  backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--line);
+}
+.workspace-header-inner {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: var(--space-3) var(--space-12);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 24px;
+}
+.navigation-core {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.navigation-pill {
+  width: fit-content;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 10px;
+  border-radius: 40px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+}
+.navigation-pill .aroma-brand {
+  display: inline-flex;
+  gap: 7px;
+}
+.navigation-pill .aroma-brand > span {
+  font-size: 20px;
+}
+.navigation-pill .aroma-brand > svg {
+  width: 20px;
+  height: 24px;
+}
+.navigation-core .aroma-brand {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-right: 2px;
+  font-family: var(--font-nav);
+}
+.navigation-core .aroma-brand > span {
+  font-size: 22px;
+  letter-spacing: -0.06em;
+  line-height: 1;
+  font-weight: 700;
+}
+.navigation-core .aroma-brand > svg {
+  width: 18px;
+  height: 21px;
+}
+.primary-navigation {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  font-family: var(--font-nav);
+}
+.primary-nav-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  min-height: var(--control-height-compact);
+  padding: 8px 12px;
+  border-radius: 24px;
+  color: var(--muted);
+  background: transparent;
+  font-size: var(--text-small);
+  font-weight: 500;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+  transition:
+    color 150ms,
+    background 150ms;
+}
+.primary-nav-link:hover,
+.primary-nav-link[data-popup-open] {
+  color: var(--ink);
+  background: var(--raised);
+}
+.primary-nav-link.active {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, transparent);
+}
+.workspace-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+.theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  flex-shrink: 0;
+  padding: 3px;
+  gap: 2px;
+  border: 1px solid var(--line);
+  border-radius: 24px;
+  background: var(--surface);
+}
+.theme-option {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 30px;
+  border-radius: 50%;
+  background: transparent;
+  color: var(--muted);
+  transition:
+    background-color 160ms cubic-bezier(0.23, 1, 0.32, 1),
+    color 160ms cubic-bezier(0.23, 1, 0.32, 1);
+}
+.theme-option:hover {
+  color: var(--ink);
+}
+.theme-option[data-pressed] {
+  color: var(--accent);
+  background: var(--raised);
+}
+.landing-nav-actions {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+.header-search {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  min-height: 32px;
+  font-family: var(--font-nav);
+  background: transparent;
+  color: var(--muted);
+  font-size: var(--text-caption);
+}
+.header-search:hover {
+  color: var(--ink);
+}
+.header-search kbd {
+  font-family: inherit;
+  padding: 3px 5px;
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  font-size: var(--text-caption);
+}
+.account-trigger {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-family: var(--font-nav);
+  background: transparent;
+  border-radius: 28px;
+  min-height: 36px;
+  padding: 3px 8px;
+}
+.account-trigger:hover {
+  background: var(--surface);
+}
+.account-avatar {
+  width: 34px;
+  height: 34px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+  color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, var(--line));
+}
+.account-trigger-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  text-align: left;
+}
+.account-trigger-copy strong {
+  font-weight: 500;
+  font-size: var(--text-micro);
+}
+.account-trigger-copy small {
+  font-size: var(--text-micro);
+  color: var(--muted);
+}
+.workspace-context {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: var(--space-8);
+  gap: 16px;
+}
+.workspace-context .breadcrumb {
+  font-size: var(--text-small);
+}
+.workspace-context .header-mode {
+  margin: 0;
+}
+.aroma-menu-positioner {
+  z-index: 100;
+}
+.aroma-menu {
+  width: 300px;
+  max-width: calc(100vw - 24px);
+  max-height: var(--available-height);
+  overflow-y: auto;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 8px;
+  box-shadow: var(--shadow-float);
+  transform-origin: var(--transform-origin);
+  transition:
+    opacity 160ms,
+    transform 160ms;
+}
+.aroma-menu[data-starting-style],
+.aroma-menu[data-ending-style] {
+  opacity: 0;
+  transform: translateY(-6px) scale(0.98);
+}
+.aroma-menu-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  min-height: 44px;
+  padding: 12px;
+  background: transparent;
+  border-radius: 12px;
+  color: var(--ink);
+  font-size: var(--text-small);
+  text-align: left;
+  cursor: pointer;
+}
+.aroma-menu-item[data-highlighted],
+.aroma-menu-item:hover {
+  background: var(--raised);
+}
+.aroma-menu-item[data-disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.aroma-menu-item > svg:first-child {
+  color: var(--muted);
+}
+.aroma-menu-item > svg:last-child:not(:first-child) {
+  margin-left: auto;
+  color: var(--muted);
+}
+.aroma-menu-item small {
+  display: block;
+  color: var(--muted);
+  font-size: var(--text-caption);
+  margin-top: 4px;
+}
+.aroma-menu-separator {
+  height: 1px;
+  background: var(--line);
+  margin: 8px 12px;
+}
+.aroma-menu-heading {
+  padding: 12px 12px 18px;
+}
+.aroma-menu-heading p {
+  margin-top: 6px;
+  font-size: var(--text-body);
+}
+.account-menu-heading {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 10px 20px;
+}
+.account-menu-heading strong {
+  display: block;
+  font-size: var(--text-body);
+  font-weight: 500;
+}
+.account-menu-heading small {
+  display: block;
+  color: var(--muted);
+  font-size: var(--text-caption);
+  margin-top: 4px;
+}
+.account-signin {
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 7%, transparent);
+}
+.account-signout,
+.account-signout > svg:first-child,
+.account-menu-error {
+  color: var(--down);
+}
+.account-menu-error {
+  padding: 8px 12px;
+  font-size: var(--text-small);
+}
+.portfolio-activity {
+  margin-top: 44px;
+  padding-top: 28px;
+  border-top: 1px solid var(--line);
+}
+.portfolio-activity .empty {
+  min-height: 170px;
+}
+#new-plan {
+  scroll-margin-top: 130px;
+}
+.landing {
+  max-width: 1440px;
+}
+
+.landing-nav-header .primary-navigation {
+  gap: 4px;
+}
+.landing-nav-header .navigation-pill {
+  gap: 32px;
+}
+.landing-open {
+  min-height: 50px;
+  padding: 5px 5px 5px 20px;
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid var(--line);
+  border-radius: 30px;
+  gap: 20px;
+  font-size: var(--text-small);
+}
+.landing-open > span {
+  display: grid;
+  place-items: center;
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: var(--accent-ink);
+}
+@media (max-width: 1200px) {
+  .workspace-header-inner {
+    padding: 10px var(--space-6);
+    gap: 12px;
+  }
+  .navigation-core {
+    gap: 12px;
+  }
+  .navigation-core .aroma-brand > span {
+    font-size: 22px;
+  }
+  .navigation-core .aroma-brand > svg {
+    width: 20px;
+    height: 24px;
+  }
+  .aroma-workspace .workspace-main {
+    padding: var(--space-6) var(--space-6) 0;
+  }
+  .navigation-pill {
+    gap: 8px;
+    padding: 6px 8px;
+  }
+  .primary-nav-link {
+    padding-inline: 10px;
+  }
+  .account-trigger-copy,
+  .header-search span,
+  .header-search kbd {
+    display: none;
+  }
+  .workspace-header-actions {
+    gap: 12px;
+  }
+  .header-search {
+    padding: 10px;
+  }
+  .landing-nav-header .navigation-pill {
+    gap: 16px;
+  }
+}
+/* Keep every navigation and account control visible on narrow tablets. */
+@media (min-width: 761px) and (max-width: 960px) {
+  .aroma-workspace .workspace-header-inner {
+    flex-wrap: wrap;
+    gap: var(--space-3);
+  }
+  .aroma-workspace .navigation-core {
+    display: contents;
+  }
+  .aroma-workspace .workspace-header-actions {
+    margin-left: auto;
+  }
+  .aroma-workspace .navigation-pill {
+    order: 3;
+    width: 100%;
+  }
+  .aroma-workspace .primary-navigation {
+    width: 100%;
+    justify-content: space-between;
+  }
+}
+
+@media (max-width: 760px) {
+  .aroma-workspace .workspace-main {
+    padding: var(--space-6) var(--space-5) 0;
+  }
+  .workspace-header-inner {
+    padding: 10px var(--space-5);
+  }
+  .workspace-header .primary-navigation {
+    display: none;
+  }
+  .workspace-header .navigation-pill {
+    background: transparent;
+    border: 0;
+    padding: 0;
+  }
+  .workspace-context {
+    margin-bottom: var(--space-6);
+  }
+  .workspace-context .breadcrumb {
+    display: flex;
+    font-size: var(--text-caption);
+  }
+  .aroma-workspace .aroma-bottom-nav {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    padding: 8px 8px calc(8px + env(safe-area-inset-bottom));
+  }
+  .aroma-bottom-nav a {
+    min-height: 46px;
+    font-size: var(--text-micro);
+    gap: 5px;
+  }
+  .account-trigger {
+    padding: 0 4px;
+    gap: 6px;
+  }
+  .account-avatar {
+    width: 36px;
+    height: 36px;
+  }
+  .landing-nav-header .workspace-header-inner {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 20px 20px 8px;
+    position: relative;
+  }
+  .landing-nav-header .navigation-core,
+  .landing-nav-header .navigation-pill {
+    display: contents;
+  }
+  .landing-nav-header .primary-navigation {
+    display: flex !important;
+    order: 3;
+    justify-content: space-between;
+    width: 100%;
+    background: var(--surface) !important;
+    border: 1px solid var(--line) !important;
+    border-radius: 30px;
+    padding: 4px !important;
+    margin-top: 10px;
+  }
+  .landing-nav-header .primary-nav-link {
+    font-size: var(--text-small);
+    padding: 10px 12px;
+  }
+  .landing-nav-header .landing-open {
+    margin-left: auto;
+    min-height: 44px;
+    padding-left: 16px;
+  }
+  .landing-open > span {
+    width: 32px;
+    height: 32px;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .aroma-menu,
+  .primary-nav-link {
+    transition: none;
+  }
+}
+
+/* Keep the compact mode control separate from the breadcrumb on phones. */
+@media (max-width: 760px) {
+  .workspace-context .header-mode-caption {
+    display: none;
+  }
+}
+
+@media (max-width: 760px) {
+  .theme-option {
+    width: 30px;
+    height: 32px;
+  }
+  .landing-nav-actions {
+    gap: 10px;
+    margin-left: auto;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .theme-option {
+    transition: none;
+  }
+}
+
+/* Phone controls fit one row; the account mode gets its own labeled row. */
+@media (max-width: 760px) {
+  .aroma-workspace .workspace-header-inner {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 40px 80px 44px;
+    gap: 8px;
+  }
+  .aroma-workspace .workspace-header-actions {
+    display: contents;
+  }
+  .aroma-workspace .navigation-core {
+    grid-column: 1;
+    grid-row: 1;
+    gap: 0;
+  }
+  .aroma-workspace .header-search {
+    grid-column: 2;
+    grid-row: 1;
+    min-height: 40px;
+    justify-content: center;
+  }
+  .aroma-workspace .theme-toggle {
+    grid-column: 3;
+    grid-row: 1;
+  }
+  .aroma-workspace .theme-option {
+    width: 35px;
+    height: 36px;
+  }
+  .aroma-workspace .account-trigger {
+    grid-column: 4;
+    grid-row: 1;
+    min-height: 40px;
+    padding: 0;
+    justify-content: center;
+  }
+  .aroma-workspace .account-trigger > svg {
+    display: none;
+  }
+  .aroma-workspace .header-mode {
+    grid-column: 1 / -1;
+    grid-row: 2;
+    justify-content: space-between;
+    padding-top: 8px;
+    border-top: 1px solid var(--line);
+  }
+  .aroma-workspace .header-mode-caption {
+    display: block;
+  }
+  .aroma-workspace .workspace-main {
+    padding-bottom: 90px;
+  }
+}

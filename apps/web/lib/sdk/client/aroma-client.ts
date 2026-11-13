@@ -1,0 +1,954 @@
+import type {
+  BasketOrderRequest,
+  WalletTransactionOrder,
+  RecurringPayment,
+  RecurringPaymentRequest,
+} from "../basket/mainnet";
+import type { MarketSnapshot } from "../markets";
+import type {
+  BasketRouteHealthRequest,
+  BasketRouteHealth,
+  BasketRouteCoverage,
+} from "../basket/route-health";
+import type {
+  BasketBundleExecution,
+  BasketPurchaseOrder,
+} from "../basket/bundle";
+import {
+  BASKET_MAX_TRANSACTIONS,
+  MAX_BASKET_TRANSACTION_BASE64_LENGTH,
+  V0_MAX_BYTES,
+  V1_MAX_BYTES,
+} from "../basket/transaction-limits";
+import {
+  assertRecurringInvestmentSchedule,
+  deriveRecurringPermissionWindow,
+  type RecurringInvestmentConfig,
+  type RecurringInvestmentPlan,
+  type RecurringInvestmentReceipt,
+  type CreateInvestmentPlanRequest,
+  type InvestmentPlanReview,
+} from "../recurring-investing";
+import type { StockResearch } from "../research";
+import {
+  classifyTradeExecution,
+  MAX_SWAP_SLIPPAGE_BPS,
+  toTokenAmount,
+  type MainnetPortfolio,
+  type MainnetTradeOrder,
+  type MainnetTradeResult,
+  type SwapToken,
+} from "../trading";
+
+export interface TradeOrderRequest {
+  supportedTransactionVersions?: number[];
+  inputMint: string;
+  outputMint: string;
+  amount: string;
+  taker: string;
+}
+export interface ExecuteTradeRequest {
+  investmentSetup?: RecurringInvestmentPlan;
+  signedTransaction: string;
+  authorization: string;
+}
+export type ConditionalResult<T> =
+  | { notModified: true; etag: string | null }
+  | { notModified: false; etag: string | null; data: T };
+export class AromaApiError extends Error {
+  constructor(
+    message: string,
+    readonly status: number | null = null,
+  ) {
+    super(message);
+    this.name = "AromaApiError";
+  }
+}
+const LEGACY_RECURRING_MIGRATION_MESSAGE =
+  "Legacy recurring payments are unavailable. Recurring plans now use the devnet Aroma Guard V2 flow with devnet test tokens. Update this client to use the devnet recurring plan API.";
+export interface AromaClientConfig {
+  baseUrl?: string;
+  fetcher?: typeof fetch;
+  timeoutMs?: number;
+  /** Explicit opt-in for a local development server. Never use in release builds. */
+  allowInsecureHttp?: boolean;
+}
+function record(value: unknown): value is Record<string, unknown> {
+  return Boolean(value && typeof value === "object" && !Array.isArray(value));
+}
+function verified<T>(
+  value: unknown,
+  check: (value: Record<string, unknown>) => boolean,
+): T {
+  if (!record(value) || !check(value))
+    throw new AromaApiError(
+      "The service returned an invalid response. Please retry.",
+    );
+  return value as T;
+}
+function matchesOrder(
+  value: Record<string, unknown>,
+  input: TradeOrderRequest,
+): boolean {
+  const precision = (n: unknown): n is number =>
+    typeof n === "number" && Number.isInteger(n) && n >= 0 && n <= 18;
+  const raw = (n: unknown): n is string =>
+    typeof n === "string" &&
+    /^\d{1,20}$/.test(n) &&
+    BigInt(n) > BigInt(0) &&
+    BigInt(n) <= BigInt("18446744073709551615");
+  const text = (n: unknown, max: number): n is string =>
+    typeof n === "string" && n.length > 0 && n.length <= max;
+  if (
+    value.taker !== input.taker ||
+    (value.transactionVersion !== 0 && value.transactionVersion !== 1) ||
+    value.inputMint !== input.inputMint ||
+    value.outputMint !== input.outputMint ||
+    !precision(value.inputDecimals) ||
+    !precision(value.outputDecimals) ||
+    !raw(value.inAmount) ||
+    !raw(value.outAmount) ||
+    !text(value.transaction, 8_000) ||
+    !text(value.authorization, 4_000) ||
+    !text(value.requestId, 256) ||
+    !text(value.inputSymbol, 40) ||
+    !text(value.outputSymbol, 40) ||
+    !text(value.router, 160) ||
+    typeof value.expiresAt !== "number" ||
+    !Number.isFinite(value.expiresAt) ||
+    value.expiresAt <= 0 ||
+    typeof value.slippageBps !== "number" ||
+    !Number.isInteger(value.slippageBps) ||
+    value.slippageBps < 0 ||
+    value.slippageBps > MAX_SWAP_SLIPPAGE_BPS ||
+    typeof value.feeBps !== "number" ||
+    !Number.isFinite(value.feeBps) ||
+    value.feeBps < 0 ||
+    value.feeBps > 10_000 ||
+    (value.otherAmountThreshold !== undefined &&
+      (!raw(value.otherAmountThreshold) ||
+        BigInt(value.otherAmountThreshold) > BigInt(value.outAmount)))
+  )
+    return false;
+  try {
+    return value.inAmount === toTokenAmount(input.amount, value.inputDecimals);
+  } catch {
+    return false;
+  }
+}
+
+/** One transport for browser, native and workers. Writes are never automatically retried. */
+export class AromaClient {
+  private readonly baseUrl: string;
+  private readonly fetcher: typeof fetch;
+  private readonly timeoutMs: number;
+  constructor(config: AromaClientConfig = {}) {
+    const base = (config.baseUrl ?? "").replace(/\/+$/, "");
+    if (base) {
+      const url = new URL(base);
+      if (
+        url.username ||
+        url.password ||
+        url.search ||
+        url.hash ||
+        (url.protocol !== "https:" &&
+          !(config.allowInsecureHttp && url.protocol === "http:"))
+      )
+        throw new AromaApiError(
+          "Use an HTTPS Aroma API URL without credentials, query parameters or fragments.",
+        );
+    }
+    this.baseUrl = base;
+    this.fetcher = config.fetcher ?? globalThis.fetch.bind(globalThis);
+    this.timeoutMs = config.timeoutMs ?? 60_000;
+    if (
+      !Number.isFinite(this.timeoutMs) ||
+      this.timeoutMs <= 0 ||
+      this.timeoutMs > 120_000
+    )
+      throw new AromaApiError(
+        "Request timeout must be between 1 and 120000 milliseconds.",
+      );
+  }
+  private async request(
+    path: string,
+    options: {
+      signal?: AbortSignal;
+      etag?: string | null;
+      body?: unknown;
+      acceptExecutionResult?: boolean;
+    } = {},
+  ): Promise<{ response: Response; data: unknown }> {
+    if (options.signal?.aborted) throw new AromaApiError("Request cancelled.");
+    const controller = new AbortController();
+    const abort = () => controller.abort();
+    options.signal?.addEventListener("abort", abort, { once: true });
+    const timer = setTimeout(abort, this.timeoutMs);
+    try {
+      const response = await this.fetcher(`${this.baseUrl}${path}`, {
+        method: options.body === undefined ? "GET" : "POST",
+        headers: {
+          Accept: "application/json",
+          ...(options.etag ? { "If-None-Match": options.etag } : {}),
+          ...(options.body === undefined
+            ? {}
+            : { "Content-Type": "application/json" }),
+        },
+        ...(options.body === undefined
+          ? {}
+          : { body: JSON.stringify(options.body) }),
+        signal: controller.signal,
+        cache: "no-store",
+        credentials: "omit",
+      });
+      if (controller.signal.aborted) throw new Error("Request cancelled");
+      if (response.status === 304 && options.etag)
+        return { response, data: null };
+      if (
+        !response.headers
+          .get("content-type")
+          ?.toLowerCase()
+          .includes("application/json")
+      )
+        throw new AromaApiError(
+          "The API returned a web page instead of data. Check the API URL, tunnel and deployment access settings.",
+          response.status,
+        );
+      const data: unknown = await response.json();
+      if (controller.signal.aborted) throw new Error("Request cancelled");
+      if (
+        !response.ok &&
+        !(
+          options.acceptExecutionResult &&
+          record(data) &&
+          ["Pending", "Success", "Failed", "Unknown"].includes(
+            String(data.status),
+          )
+        )
+      )
+        throw new AromaApiError(
+          record(data) && typeof data.error === "string"
+            ? data.error.slice(0, 500)
+            : `The service returned ${response.status}. Please retry.`,
+          response.status,
+        );
+      return { response, data };
+    } catch (error) {
+      if (error instanceof AromaApiError) throw error;
+      throw new AromaApiError(
+        options.signal?.aborted
+          ? "Request cancelled."
+          : controller.signal.aborted
+            ? "The connection timed out. Please retry."
+            : "Unable to reach the Aroma API. Check your connection and server URL.",
+      );
+    } finally {
+      clearTimeout(timer);
+      options.signal?.removeEventListener("abort", abort);
+    }
+  }
+  async getMarkets(
+    options: { etag?: string | null; signal?: AbortSignal } = {},
+  ): Promise<ConditionalResult<MarketSnapshot>> {
+    const { response, data } = await this.request("/api/markets", options);
+    const etag = response.headers.get("etag") ?? options.etag ?? null;
+    if (response.status === 304) return { notModified: true, etag };
+    return {
+      notModified: false,
+      etag,
+      data: verified<MarketSnapshot>(
+        data,
+        (v) =>
+          v.network === "mainnet-beta" &&
+          Array.isArray(v.assets) &&
+          Array.isArray(v.baskets) &&
+          typeof v.asOf === "string" &&
+          Number.isFinite(Date.parse(v.asOf)),
+      ),
+    };
+  }
+  async getResearch(
+    mint: string,
+    signal?: AbortSignal,
+  ): Promise<StockResearch> {
+    const { data } = await this.request(
+      `/api/research?mint=${encodeURIComponent(mint)}`,
+      { signal },
+    );
+    return verified<StockResearch>(
+      data,
+      (v) =>
+        v.mint === mint &&
+        Array.isArray(v.news) &&
+        Array.isArray(v.events) &&
+        typeof v.asOf === "string",
+    );
+  }
+  async getPortfolio(
+    wallet: string,
+    signal?: AbortSignal,
+  ): Promise<MainnetPortfolio> {
+    const { data } = await this.request(
+      `/api/portfolio?wallet=${encodeURIComponent(wallet)}`,
+      { signal },
+    );
+    return verified<MainnetPortfolio>(
+      data,
+      (v) =>
+        v.walletAddress === wallet &&
+        v.network === "mainnet-beta" &&
+        Array.isArray(v.holdings),
+    );
+  }
+  async searchTokens(
+    query: string,
+    signal?: AbortSignal,
+  ): Promise<SwapToken[]> {
+    const { data } = await this.request(
+      `/api/tokens?query=${encodeURIComponent(query)}`,
+      { signal },
+    );
+    return verified<{ tokens: SwapToken[] }>(data, (v) =>
+      Array.isArray(v.tokens),
+    ).tokens;
+  }
+  async requestTradeOrder(
+    input: TradeOrderRequest,
+    signal?: AbortSignal,
+  ): Promise<MainnetTradeOrder> {
+    const request = { ...input };
+    const { data } = await this.request("/api/trade/order", {
+      signal,
+      body: request,
+    });
+    return verified<MainnetTradeOrder>(data, (value) =>
+      matchesOrder(value, request),
+    );
+  }
+  async getBasketRouteCoverage(
+    signal?: AbortSignal,
+  ): Promise<BasketRouteCoverage[]> {
+    const { data } = await this.request("/api/baskets/route-health", {
+      signal,
+    });
+    return verified<{ baskets: BasketRouteCoverage[] }>(
+      data,
+      (v) =>
+        Array.isArray(v.baskets) &&
+        v.baskets.every(
+          (basket) =>
+            record(basket) &&
+            typeof basket.basketId === "string" &&
+            typeof basket.featured === "boolean" &&
+            Array.isArray(basket.funding) &&
+            basket.funding.length === 3 &&
+            basket.funding.every(
+              (funding) =>
+                record(funding) &&
+                typeof funding.inputMint === "string" &&
+                typeof funding.symbol === "string" &&
+                Number.isInteger(funding.routable) &&
+                Number(funding.routable) >= 0 &&
+                Number.isInteger(funding.total) &&
+                Number(funding.total) >= Number(funding.routable) &&
+                (funding.checkedAt === null ||
+                  (typeof funding.checkedAt === "number" &&
+                    Number.isFinite(funding.checkedAt))) &&
+                typeof funding.stale === "boolean" &&
+                typeof funding.consistent === "boolean",
+            ) &&
+            (!basket.featured ||
+              basket.funding.every(
+                (funding) =>
+                  record(funding) &&
+                  funding.consistent === true &&
+                  funding.stale === false,
+              )),
+        ),
+    ).baskets;
+  }
+  async requestBasketRouteHealth(
+    input: BasketRouteHealthRequest,
+    signal?: AbortSignal,
+  ): Promise<BasketRouteHealth> {
+    const { data } = await this.request("/api/baskets/route-health", {
+      body: input,
+      signal,
+    });
+    return verified<BasketRouteHealth>(
+      data,
+      (v) =>
+        v.network === "mainnet-beta" &&
+        v.advisory === true &&
+        v.inputMint === input.inputMint &&
+        v.amount === input.amount &&
+        typeof v.inputSymbol === "string" &&
+        v.inputSymbol.length <= 40 &&
+        Number.isInteger(v.inputDecimals) &&
+        Number(v.inputDecimals) >= 0 &&
+        Number(v.inputDecimals) <= 18 &&
+        v.slippageBps === input.slippageBps &&
+        Array.isArray(v.legs) &&
+        v.legs.length > 0 &&
+        v.legs.length <= 12 &&
+        (!input.allocations || v.legs.length === input.allocations.length) &&
+        v.legs.every(
+          (leg, index) =>
+            record(leg) &&
+            typeof leg.mint === "string" &&
+            typeof leg.detail === "string" &&
+            (!input.allocations ||
+              leg.mint === input.allocations[index].mint) &&
+            typeof leg.symbol === "string" &&
+            leg.symbol.length <= 44 &&
+            typeof leg.consistent === "boolean" &&
+            (leg.maxAccounts === null ||
+              (Number.isInteger(leg.maxAccounts) &&
+                Number(leg.maxAccounts) >= 0 &&
+                Number(leg.maxAccounts) <= 48)) &&
+            (leg.liquidityUsd === null ||
+              (typeof leg.liquidityUsd === "number" &&
+                Number.isFinite(leg.liquidityUsd) &&
+                leg.liquidityUsd >= 0)) &&
+            [
+              "routable",
+              "no-route",
+              "liquidity",
+              "capacity",
+              "unknown",
+              "unavailable",
+            ].includes(String(leg.status)) &&
+            typeof leg.checkedAt === "number" &&
+            Number.isFinite(leg.checkedAt) &&
+            leg.checkedAt >= 0 &&
+            typeof leg.expiresAt === "number" &&
+            Number.isFinite(leg.expiresAt) &&
+            leg.expiresAt > leg.checkedAt &&
+            typeof leg.allocatedAmount === "string" &&
+            /^\d{1,20}$/.test(leg.allocatedAmount) &&
+            BigInt(leg.allocatedAmount) > BigInt(0) &&
+            typeof leg.probeAmount === "string" &&
+            /^\d{1,20}$/.test(leg.probeAmount) &&
+            BigInt(leg.probeAmount) > BigInt(0),
+        ),
+    );
+  }
+  async requestBasketOrder(
+    input: BasketOrderRequest,
+    signal?: AbortSignal,
+  ): Promise<BasketPurchaseOrder> {
+    const { data } = await this.request("/api/buy-basket", {
+      body: input,
+      signal,
+    });
+    return verified<BasketPurchaseOrder>(data, (v) => {
+      try {
+        return (
+          (v.kind === "bundle"
+            ? validBundleOrder(v, input.taker)
+            : v.kind === undefined &&
+              validWalletOrder(v, input.taker) &&
+              validSerializedTransaction(
+                v.transaction,
+                v.transactionVersion,
+                v.serializedBytes,
+              )) &&
+          (input.supportedTransactionVersions ?? [0]).includes(
+            Number(v.transactionVersion),
+          ) &&
+          v.basketId === input.basketId &&
+          v.inputMint === input.inputMint &&
+          Number.isInteger(v.inputDecimals) &&
+          Number(v.inputDecimals) >= 0 &&
+          Number(v.inputDecimals) <= 18 &&
+          v.inAmount ===
+            toTokenAmount(input.amount, v.inputDecimals as number) &&
+          v.slippageBps === input.slippageBps &&
+          validBasketOutputs(v.outputs, v.inAmount as string)
+        );
+      } catch {
+        return false;
+      }
+    });
+  }
+  /** @deprecated Use the devnet Guard V2 plan API; legacy payment schemas are retired. */
+  async getRecurringPayments(
+    wallet: string,
+    signal?: AbortSignal,
+  ): Promise<RecurringPayment[]> {
+    throw new AromaApiError(LEGACY_RECURRING_MIGRATION_MESSAGE, 410);
+  }
+  /** @deprecated Use the devnet Guard V2 plan API; external buyer grants are retired. */
+  async requestRecurringPayment(
+    input: RecurringPaymentRequest,
+  ): Promise<
+    WalletTransactionOrder & { payment: RecurringPayment; decimals: number }
+  > {
+    throw new AromaApiError(LEGACY_RECURRING_MIGRATION_MESSAGE, 410);
+  }
+  /** @deprecated Close the specific devnet Guard V2 plan using its owner-approved flow. */
+  async revokeRecurringPayment(
+    taker: string,
+    delegation: string,
+    supportedTransactionVersions?: number[],
+  ): Promise<WalletTransactionOrder> {
+    throw new AromaApiError(LEGACY_RECURRING_MIGRATION_MESSAGE, 410);
+  }
+  /** @deprecated Collect a devnet Guard V2 plan; keeper/buyer payment schemas are retired. */
+  async collectRecurringPayment(
+    taker: string,
+    delegation: string,
+    supportedTransactionVersions?: number[],
+  ): Promise<
+    WalletTransactionOrder & {
+      amount: string;
+      periodStartedAt: number;
+      mint: string;
+    }
+  > {
+    throw new AromaApiError(LEGACY_RECURRING_MIGRATION_MESSAGE, 410);
+  }
+
+  async getInvestmentConfig(
+    signal?: AbortSignal,
+  ): Promise<RecurringInvestmentConfig> {
+    const { data } = await this.request("/api/investing/config", { signal });
+    return verified(
+      data,
+      (v) =>
+        typeof v.configured === "boolean" &&
+        typeof v.available === "boolean" &&
+        v.transactionVersion === 1 &&
+        (v.executor === null || typeof v.executor === "string") &&
+        (v.reason === null || typeof v.reason === "string"),
+    );
+  }
+  async getInvestmentPlans(
+    wallet: string,
+    signal?: AbortSignal,
+  ): Promise<{
+    plans: RecurringInvestmentPlan[];
+    receipts: RecurringInvestmentReceipt[];
+  }> {
+    const { data } = await this.request(
+      `/api/investing/plans?wallet=${encodeURIComponent(wallet)}`,
+      { signal },
+    );
+    return verified(
+      data,
+      (v) =>
+        Array.isArray(v.plans) &&
+        v.plans.every(
+          (p) => record(p) && p.owner === wallet && validInvestmentPlan(p),
+        ) &&
+        Array.isArray(v.receipts) &&
+        v.receipts.every((r) => validInvestmentReceipt(r)),
+    );
+  }
+  async requestInvestmentPlan(
+    input: CreateInvestmentPlanRequest,
+  ): Promise<InvestmentPlanReview> {
+    const { data } = await this.request("/api/investing/plans", {
+      body: input,
+    });
+    return verified(data, (v) => {
+      if (
+        !record(v.order) ||
+        !validWalletOrder(v.order, input.taker) ||
+        v.order.transactionVersion !== 1 ||
+        !record(v.plan) ||
+        !validInvestmentPlan(v.plan)
+      )
+        return false;
+      const p = v.plan as unknown as RecurringInvestmentPlan;
+      return (
+        JSON.stringify(v.order.investmentSetup) === JSON.stringify(p) &&
+        p.owner === input.taker &&
+        p.fundingMint === input.fundingMint &&
+        p.amountUnits === toTokenAmount(input.amount, p.fundingDecimals) &&
+        p.target.type === input.target.type &&
+        p.target.id === input.target.id &&
+        p.slippageBps === input.slippageBps &&
+        p.schedule.startsAt === input.schedule.startsAt &&
+        p.schedule.unit === input.schedule.unit &&
+        p.schedule.interval === input.schedule.interval &&
+        p.schedule.occurrences === input.schedule.occurrences
+      );
+    });
+  }
+
+  async executeTransaction(
+    input: ExecuteTradeRequest,
+  ): Promise<MainnetTradeResult> {
+    try {
+      const { data } = await this.request("/api/transaction/execute", {
+        body: input,
+        acceptExecutionResult: true,
+      });
+      return classifyTradeExecution(data);
+    } catch {
+      return classifyTradeExecution(null);
+    }
+  }
+  /** Exactly one bundle submission. Never resends a chunk through a single-transaction path. */
+  async executeBundle(input: {
+    signedTransactions: string[];
+    authorization: string;
+  }): Promise<BasketBundleExecution> {
+    if (!validSignedBundleInput(input))
+      throw new AromaApiError("Invalid bundle submission payload.");
+    try {
+      const { data } = await this.request("/api/bundles/execute", {
+        body: input,
+        acceptExecutionResult: true,
+      });
+      return validBundleExecution(data, input.signedTransactions.length);
+    } catch {
+      // The response may be lost after submission. Recovery only queries receipts; it never sends transactions.
+      return this.recoverBundle(input);
+    }
+  }
+  async getBundleStatus(
+    input: { bundleId?: string; authorization: string },
+    signal?: AbortSignal,
+  ): Promise<BasketBundleExecution> {
+    try {
+      const { data } = await this.request("/api/bundles/status", {
+        body: input,
+        signal,
+        acceptExecutionResult: true,
+      });
+      return validBundleExecution(data);
+    } catch {
+      return {
+        status: "Unknown",
+        bundleId: input.bundleId,
+        signatures: [],
+        statusAuthorization: input.authorization,
+        error:
+          "Bundle receipts are temporarily unavailable. Check every transaction before retrying.",
+      };
+    }
+  }
+  async recoverBundle(
+    input: { signedTransactions: string[]; authorization: string },
+    signal?: AbortSignal,
+  ): Promise<BasketBundleExecution> {
+    if (!validSignedBundleInput(input))
+      throw new AromaApiError("Invalid bundle recovery payload.");
+    try {
+      const { data } = await this.request("/api/bundles/status", {
+        body: input,
+        signal,
+        acceptExecutionResult: true,
+      });
+      return validBundleExecution(data, input.signedTransactions.length);
+    } catch {
+      return {
+        status: "Unknown",
+        signatures: [],
+        error:
+          "Bundle submission is unresolved. Recover receipts before making another purchase.",
+      };
+    }
+  }
+  async executeTrade(
+    input: ExecuteTradeRequest,
+    signal?: AbortSignal,
+  ): Promise<MainnetTradeResult> {
+    try {
+      const { data } = await this.request("/api/trade/execute", {
+        signal,
+        body: input,
+        acceptExecutionResult: true,
+      });
+      return classifyTradeExecution(data);
+    } catch {
+      // A dropped response can occur after broadcast. Never invite an automatic second trade.
+      return classifyTradeExecution(null);
+    }
+  }
+}
+
+function validBundleExecution(
+  value: unknown,
+  expectedCount?: number,
+): BasketBundleExecution {
+  return verified<BasketBundleExecution>(value, (v) => {
+    if (
+      !["Pending", "Success", "Failed", "Unknown"].includes(String(v.status)) ||
+      !Array.isArray(v.signatures) ||
+      v.signatures.length > BASKET_MAX_TRANSACTIONS ||
+      v.signatures.some(
+        (signature) =>
+          typeof signature !== "string" ||
+          !/^[1-9A-HJ-NP-Za-km-z]{64,88}$/.test(signature),
+      ) ||
+      (v.bundleId !== undefined &&
+        (typeof v.bundleId !== "string" ||
+          !/^[a-f0-9]{64}$/i.test(v.bundleId))) ||
+      (v.statusAuthorization !== undefined &&
+        (typeof v.statusAuthorization !== "string" ||
+          v.statusAuthorization.length > 5000)) ||
+      (v.error !== undefined &&
+        (typeof v.error !== "string" || v.error.length > 2000))
+    )
+      return false;
+    return (
+      (v.status !== "Success" && v.status !== "Pending") ||
+      (v.signatures.length >= 2 &&
+        (expectedCount === undefined ||
+          v.signatures.length === expectedCount) &&
+        new Set(v.signatures).size === v.signatures.length &&
+        typeof v.statusAuthorization === "string")
+    );
+  });
+}
+
+function validBundleOrder(v: Record<string, unknown>, taker: string): boolean {
+  return (
+    v.taker === taker &&
+    (v.transactionVersion === 0 || v.transactionVersion === 1) &&
+    typeof v.requestId === "string" &&
+    v.requestId.length > 0 &&
+    v.requestId.length <= 256 &&
+    typeof v.authorization === "string" &&
+    v.authorization.length > 0 &&
+    v.authorization.length <= 5000 &&
+    typeof v.expiresAt === "number" &&
+    Number.isFinite(v.expiresAt) &&
+    v.expiresAt > 0 &&
+    Number.isSafeInteger(v.lastValidBlockHeight) &&
+    Number(v.lastValidBlockHeight) > 0 &&
+    Number.isSafeInteger(v.tipLamports) &&
+    Number(v.tipLamports) >= 1000 &&
+    Number(v.tipLamports) <= 100000 &&
+    Number.isSafeInteger(v.priorityFeeLamports) &&
+    Number(v.priorityFeeLamports) >= 0 &&
+    Number(v.priorityFeeLamports) <= 100000 * BASKET_MAX_TRANSACTIONS &&
+    typeof v.atomicityWarning === "string" &&
+    v.atomicityWarning.length > 0 &&
+    v.atomicityWarning.length <= 2000 &&
+    Array.isArray(v.transactions) &&
+    v.transactions.length >= 2 &&
+    v.transactions.length <= BASKET_MAX_TRANSACTIONS &&
+    new Set(v.transactions).size === v.transactions.length &&
+    Array.isArray(v.serializedBytes) &&
+    v.serializedBytes.length === v.transactions.length &&
+    v.transactions.every((transaction, index) =>
+      validSerializedTransaction(
+        transaction,
+        v.transactionVersion,
+        (v.serializedBytes as unknown[])[index],
+      ),
+    )
+  );
+}
+
+/** Read the wire discriminator without Node/kit imports in the native transport. */
+function serializedVersion(transaction: string): 0 | 1 | null {
+  const alphabet =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/";
+  const byteAt = (index: number) => {
+    const offset = Math.floor(index / 3) * 4;
+    const group = [...transaction.slice(offset, offset + 4)].map((c) =>
+      alphabet.indexOf(c),
+    );
+    const shift = index % 3;
+    if (shift === 0) return (group[0] << 2) | (group[1] >> 4);
+    if (shift === 1) return ((group[1] & 15) << 4) | (group[2] >> 2);
+    return ((group[2] & 3) << 6) | group[3];
+  };
+  // V1 puts its discriminator at the front. V0 follows one owner signature.
+  if (byteAt(0) === 0x81) return 1;
+  if (byteAt(0) === 1 && byteAt(65) === 0x80) return 0;
+  return null;
+}
+
+function validSerializedTransaction(
+  transaction: unknown,
+  version: unknown,
+  serializedBytes?: unknown,
+): boolean {
+  if (
+    typeof transaction !== "string" ||
+    (version !== 0 && version !== 1) ||
+    transaction.length > MAX_BASKET_TRANSACTION_BASE64_LENGTH ||
+    transaction.length % 4 !== 0 ||
+    !/^(?:[A-Za-z0-9+/]{4})*(?:[A-Za-z0-9+/]{2}==|[A-Za-z0-9+/]{3}=)?$/.test(
+      transaction,
+    )
+  )
+    return false;
+  const bytes =
+    (transaction.length * 3) / 4 -
+    (transaction.endsWith("==") ? 2 : transaction.endsWith("=") ? 1 : 0);
+  return (
+    bytes >= 100 &&
+    bytes <= (version === 1 ? V1_MAX_BYTES : V0_MAX_BYTES) &&
+    (serializedBytes === undefined || serializedBytes === bytes) &&
+    serializedVersion(transaction) === version
+  );
+}
+
+function validSignedBundleInput(input: {
+  signedTransactions: string[];
+  authorization: string;
+}): boolean {
+  if (
+    !Array.isArray(input.signedTransactions) ||
+    input.signedTransactions.length < 2 ||
+    input.signedTransactions.length > BASKET_MAX_TRANSACTIONS ||
+    typeof input.authorization !== "string" ||
+    !input.authorization ||
+    input.authorization.length > 5000 ||
+    new Set(input.signedTransactions).size !== input.signedTransactions.length
+  )
+    return false;
+  const first = input.signedTransactions[0];
+  const version = typeof first === "string" ? serializedVersion(first) : null;
+  return input.signedTransactions.every((transaction) =>
+    validSerializedTransaction(transaction, version),
+  );
+}
+
+function validWalletOrder(v: Record<string, unknown>, taker: string) {
+  return (
+    v.taker === taker &&
+    typeof v.requestId === "string" &&
+    typeof v.transaction === "string" &&
+    v.transaction.length <= 8000 &&
+    typeof v.authorization === "string" &&
+    v.authorization.length <= 4000 &&
+    typeof v.expiresAt === "number" &&
+    Number.isFinite(v.expiresAt) &&
+    (v.transactionVersion === 0 || v.transactionVersion === 1)
+  );
+}
+
+function validBasketOutputs(outputs: unknown, input: string): boolean {
+  const raw = (v: unknown): v is string =>
+    typeof v === "string" &&
+    /^\d{1,20}$/.test(v) &&
+    BigInt(v) > BigInt(0) &&
+    BigInt(v) < BigInt(2) ** BigInt(64);
+  if (
+    !Array.isArray(outputs) ||
+    !outputs.length ||
+    outputs.length > 12 ||
+    !outputs.every(
+      (o) =>
+        record(o) &&
+        typeof o.mint === "string" &&
+        typeof o.symbol === "string" &&
+        typeof o.decimals === "number" &&
+        Number.isInteger(o.decimals) &&
+        o.decimals >= 0 &&
+        o.decimals <= 18 &&
+        raw(o.inputAmount) &&
+        raw(o.outAmount) &&
+        raw(o.minimumAmount) &&
+        BigInt(o.minimumAmount) <= BigInt(o.outAmount) &&
+        Number.isSafeInteger(o.weightBps) &&
+        Number(o.weightBps) > 0,
+    )
+  )
+    return false;
+  return (
+    new Set(outputs.map((o) => o.mint)).size === outputs.length &&
+    outputs.reduce((s, o) => s + o.weightBps, 0) === 10000 &&
+    outputs.reduce((s, o) => s + BigInt(o.inputAmount), BigInt(0)) ===
+      BigInt(input)
+  );
+}
+
+function validInvestmentPlan(p: Record<string, unknown>): boolean {
+  try {
+    if (
+      typeof p.id !== "string" ||
+      !/^[a-f0-9]{32}$/.test(p.id) ||
+      typeof p.owner !== "string" ||
+      typeof p.buyer !== "string" ||
+      typeof p.delegation !== "string" ||
+      typeof p.fundingMint !== "string" ||
+      typeof p.amountUnits !== "string" ||
+      !/^\d{1,20}$/.test(p.amountUnits) ||
+      !Number.isInteger(p.fundingDecimals) ||
+      Number(p.fundingDecimals) < 0 ||
+      Number(p.fundingDecimals) > 18 ||
+      !record(p.target) ||
+      !["stock", "basket"].includes(String(p.target.type)) ||
+      typeof p.target.id !== "string" ||
+      !record(p.schedule) ||
+      !record(p.permission) ||
+      !Array.isArray(p.allocations) ||
+      !p.allocations.length ||
+      p.allocations.length > 12 ||
+      !["draft", "active", "paused", "revoked", "completed"].includes(
+        String(p.status),
+      )
+    )
+      return false;
+    const plan = p as unknown as RecurringInvestmentPlan;
+    assertRecurringInvestmentSchedule(plan.schedule);
+    const terms = deriveRecurringPermissionWindow(plan.schedule);
+    if (
+      Object.entries(terms).some(
+        ([k, v]) =>
+          p.permission && (p.permission as Record<string, unknown>)[k] !== v,
+      )
+    )
+      return false;
+    return (
+      plan.allocations.every(
+        (a) =>
+          typeof a.mint === "string" &&
+          typeof a.symbol === "string" &&
+          Number.isInteger(a.weightBps) &&
+          a.weightBps > 0,
+      ) &&
+      plan.allocations.reduce((s, a) => s + a.weightBps, 0) === 10000 &&
+      new Set(plan.allocations.map((a) => a.mint)).size ===
+        plan.allocations.length
+    );
+  } catch {
+    return false;
+  }
+}
+
+function validInvestmentReceipt(value: unknown): boolean {
+  const raw = (v: unknown) => typeof v === "string" && /^\d{1,20}$/.test(v);
+  if (
+    !record(value) ||
+    typeof value.planId !== "string" ||
+    typeof value.runId !== "string" ||
+    !["prepared", "pending", "success", "failed", "skipped"].includes(
+      String(value.status),
+    ) ||
+    !Number.isSafeInteger(value.scheduledAt) ||
+    Number(value.scheduledAt) < 0 ||
+    !Number.isSafeInteger(value.updatedAt) ||
+    !raw(value.amountUnits)
+  )
+    return false;
+  if (
+    value.signature !== undefined &&
+    (typeof value.signature !== "string" ||
+      !/^[1-9A-HJ-NP-Za-km-z]{80,90}$/.test(value.signature))
+  )
+    return false;
+  return (
+    value.outputs === undefined ||
+    (Array.isArray(value.outputs) &&
+      value.outputs.every(
+        (o) =>
+          record(o) &&
+          typeof o.mint === "string" &&
+          typeof o.symbol === "string" &&
+          raw(o.amountUnits) &&
+          Number.isInteger(o.decimals) &&
+          Number(o.decimals) >= 0 &&
+          Number(o.decimals) <= 18,
+      ))
+  );
+}

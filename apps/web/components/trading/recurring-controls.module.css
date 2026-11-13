@@ -1,0 +1,357 @@
+.schedule {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  padding: 18px;
+  border: 1px solid var(--line);
+  border-radius: var(--radius-panel);
+  background: var(--raised);
+  min-width: 0;
+}
+.scheduleHeading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  color: var(--ink);
+}
+.scheduleHeading > span:first-child {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--text-small);
+  font-weight: 600;
+}
+.scheduleHeading > span:last-child:not(:first-child) {
+  color: var(--muted);
+  font-size: var(--text-caption);
+}
+.scheduleSummary {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  color: var(--ink);
+  font-size: var(--text-caption);
+  line-height: 1.6;
+}
+.scheduleSummary svg {
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+.schedule select,
+.schedule input {
+  background-color: var(--surface);
+}
+.panel {
+  padding: var(--space-6);
+  border-radius: var(--radius-panel);
+}
+.header {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.header h2 {
+  font: 500 var(--text-section)/1.25 var(--font-sans);
+  letter-spacing: -0.04em;
+}
+.availability {
+  display: grid;
+  gap: 7px;
+  border-left: 3px solid var(--down);
+  padding: 14px 16px;
+  background: var(--raised);
+  border-radius: 0 10px 10px 0;
+  font-size: var(--text-small);
+}
+.availability p {
+  color: var(--muted);
+  line-height: 1.7;
+}
+.availability button {
+  background: transparent;
+  width: fit-content;
+  min-height: 40px;
+  padding: 0;
+}
+.overview {
+  border-top: 1px solid var(--line);
+  padding-top: 18px;
+  display: grid;
+  gap: 13px;
+}
+.overview > div {
+  display: flex;
+  align-items: start;
+  justify-content: space-between;
+  gap: 24px;
+  font-size: var(--text-small);
+}
+.overview span,
+.overview small {
+  color: var(--muted);
+}
+.overview strong {
+  font-weight: 600;
+  text-align: right;
+}
+.overview small {
+  font-size: var(--text-caption);
+  line-height: 1.6;
+}
+.networkChip {
+  margin: 0;
+  width: fit-content;
+  display: inline-flex;
+  align-items: center;
+  gap: 7px;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  padding: 8px 11px;
+  color: var(--muted);
+  font-size: var(--text-caption);
+  line-height: 1.2;
+}
+.networkChip strong {
+  color: var(--ink);
+}
+.grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+@media (max-width: 480px) {
+  .schedule {
+    padding: 14px;
+  }
+  .grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 16px;
+  }
+  .panel {
+    padding: 22px;
+  }
+}
+
+/* Devnet Faucet Card & Quick Action */
+.faucetCard {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 16px 18px;
+  background: var(--raised);
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
+  border-radius: var(--radius-panel);
+
+  transition:
+    border-color 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.faucetCard:hover {
+  border-color: color-mix(in srgb, var(--accent) 35%, transparent);
+  box-shadow: 0 4px 20px color-mix(in srgb, var(--accent) 6%, transparent);
+}
+
+.faucetCardRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.faucetMeta {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+  flex: 1;
+}
+
+.faucetIconWrapper {
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: color-mix(in srgb, var(--accent) 15%, transparent);
+  color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+  flex-shrink: 0;
+}
+
+.faucetText {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  min-width: 0;
+}
+
+.faucetTitleRow {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.faucetTitle {
+  font-size: var(--text-small);
+  font-weight: 600;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+
+.faucetBadge {
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 1px 7px;
+  border-radius: 999px;
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  color: var(--accent);
+  border: 1px solid color-mix(in srgb, var(--accent) 30%, transparent);
+}
+
+.faucetSubtitle {
+  font-size: var(--text-small);
+  color: var(--muted);
+  line-height: 1.4;
+  margin: 0;
+}
+
+.faucetButton {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  background: var(--accent);
+  color: var(--accent-ink);
+  font-weight: 600;
+  font-size: var(--text-small);
+  padding: 10px 16px;
+  min-height: var(--control-height);
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  white-space: nowrap;
+  transition:
+    background-color 160ms var(--ease-ui),
+    transform 160ms var(--ease-ui);
+  box-shadow: 0 2px 10px color-mix(in srgb, var(--accent) 25%, transparent);
+  flex-shrink: 0;
+}
+
+.faucetButton:hover:not(:disabled) {
+  background: var(--ink);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 16px color-mix(in srgb, var(--accent) 40%, transparent);
+}
+
+.faucetButton:active:not(:disabled) {
+  transform: translateY(0);
+}
+
+.faucetButton:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  background: rgba(255, 255, 255, 0.06);
+  color: var(--muted);
+  border: 1px solid var(--line);
+  box-shadow: none;
+}
+
+.faucetSuccess {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--text-small);
+  color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, transparent);
+  padding: 8px 12px;
+  border-radius: var(--radius-control);
+  border: 1px solid color-mix(in srgb, var(--accent) 22%, transparent);
+  flex-wrap: wrap;
+}
+
+.faucetError {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--text-small);
+  color: var(--down);
+  background: color-mix(in srgb, var(--down) 10%, transparent);
+  padding: 8px 12px;
+  border-radius: var(--radius-control);
+  border: 1px solid color-mix(in srgb, var(--down) 22%, transparent);
+}
+
+.faucetExplorerLink {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  font-weight: 500;
+  margin-left: auto;
+}
+
+.faucetExplorerLink:hover {
+  color: var(--ink);
+}
+
+.fieldLabelRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  width: 100%;
+}
+
+.inlineFaucetBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: color-mix(in srgb, var(--accent) 12%, transparent);
+  border: 1px solid color-mix(in srgb, var(--accent) 28%, transparent);
+  color: var(--accent);
+  font-size: var(--text-caption);
+  font-weight: 600;
+  padding: 8px 12px;
+  min-height: var(--control-height-compact);
+  border-radius: 6px;
+  cursor: pointer;
+  transition:
+    background-color 160ms var(--ease-ui),
+    border-color 160ms var(--ease-ui),
+    color 160ms var(--ease-ui);
+  white-space: nowrap;
+}
+
+.inlineFaucetBtn:hover:not(:disabled) {
+  background: color-mix(in srgb, var(--accent) 22%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 45%, transparent);
+  color: var(--ink);
+}
+
+.inlineFaucetBtn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.spin {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}

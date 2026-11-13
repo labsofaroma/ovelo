@@ -1,0 +1,78 @@
+.lp{--lp-font-display:Manrope;--lp-font-body:Inter}
+
+.lp a{color:#f4f4f6;text-decoration:none}.lp a:hover{color:#ffffff}
+.lp-nav-link:hover{opacity:.72}
+.lp-cta:hover{filter:brightness(1.25)}
+.lp-nav-menu{display:none}
+.lp-nav-menu summary{list-style:none}
+.lp-nav-menu summary::-webkit-details-marker{display:none}
+@media (max-width:880px){.lp-nav-pill{display:none !important}.lp-nav-menu{display:block}}
+@media (max-width:1439px){
+.lp-float-c{left:24px !important}
+.lp-float-d{left:auto !important;right:24px !important}
+}
+@media (min-width:1241px) and (max-width:1439px){
+.lp-side-card{scale:.9}
+.lp-side-l{left:calc(50% - 640px) !important}
+.lp-side-lb{left:calc(50% - 612px) !important}
+.lp-side-r{left:calc(50% + 290px) !important}
+.lp-side-rb{left:calc(50% + 268px) !important}
+}
+@media (max-width:1240px){
+.lp-hero{height:1400px !important}
+.lp-side-back{display:none !important}
+.lp-side-l,.lp-side-r{transform:none !important;top:1164px !important;width:350px !important;height:205px !important}
+.lp-side-l{left:calc(50% - 362px) !important}
+.lp-side-r{left:calc(50% + 12px) !important}
+.lp-side-r>span:nth-child(4){left:auto !important;right:50px}
+.lp-side-r>span:nth-child(5){left:auto !important;right:26px}
+.lp-feature-grid,.lp-tool-grid{display:flex !important;flex-wrap:wrap;justify-content:center}
+.lp-feature-grid{gap:40px 32px !important}
+.lp-feature-grid>article{flex:0 1 394px;min-width:0}
+.lp-tool-grid>article{flex:1 1 340px;min-width:0}
+}
+@media (max-width:1180px){
+.lp-hero-title{font-size:clamp(72px,10.8vw,100px) !important;line-height:.93 !important}
+.lp-ticker{top:96px !important;right:auto !important}
+.lp-float-a{left:6% !important}.lp-float-c{left:30% !important}.lp-float-b{left:54% !important}.lp-float-d{left:78% !important}
+}
+@media (max-width:720px){
+.lp-hero{height:1270px !important}
+.lp-ticker{display:none !important}
+.lp-side-l,.lp-side-r{left:16px !important;width:calc(100% - 32px) !important}
+.lp-side-l{top:826px !important}
+.lp-side-r{top:1047px !important}
+.lp-hero-dot{display:none !important}
+.lp-hero-badge{top:96px !important;width:300px !important;margin-left:-150px !important}
+.lp-hero-title{top:160px !important;font-size:37px !important;line-height:42px !important}
+.lp-hero-sub{top:262px !important;font-size:17px !important;line-height:24px !important;white-space:normal !important;left:16px !important;right:16px !important}
+.lp-hero-cta{top:338px !important}
+.lp-main-card{top:430px !important;left:16px !important;width:calc(100% - 32px) !important;margin-left:0 !important}
+.lp-main-chart,.lp-main-slider{display:none !important}
+.lp-main-high{left:auto !important;right:16px !important;width:120px !important;top:290px !important}
+.lp-main-low{top:290px !important;left:16px !important;width:130px !important}
+.lp-main-horizon{display:none !important}
+.lp-logo-row{height:auto !important;gap:14px 28px !important;padding:0 16px;box-sizing:border-box;width:100% !important;flex-wrap:wrap !important;justify-content:center !important;-webkit-mask-image:none !important;mask-image:none !important}
+.lp-section-title{font-size:33px !important;line-height:38px !important}
+.lp-tool-card{height:auto !important}
+}
+@keyframes coin-float{0%,100%{translate:0 0}50%{translate:0 -12px}}
+@keyframes slide-left{from{translate:-160px 0;opacity:0}to{translate:0 0;opacity:1}}
+@keyframes slide-right{from{translate:160px 0;opacity:0}to{translate:0 0;opacity:1}}
+@keyframes rise-up{from{translate:0 70px;opacity:.15}to{translate:0 0;opacity:1}}
+@keyframes fade-rise{from{translate:0 34px;opacity:0}to{translate:0 0;opacity:1}}
+@media (prefers-reduced-motion:no-preference){
+.lp-float-a{animation:coin-float 6s ease-in-out infinite}
+.lp-float-b{animation:coin-float 7s ease-in-out -2.5s infinite}
+.lp-float-c{animation:coin-float 7.5s ease-in-out -4s infinite}
+.lp-float-d{animation:coin-float 6.5s ease-in-out -1.2s infinite}
+@supports (animation-timeline:view()){
+.lp-from-left,.lp-from-right,.lp-rise,.lp-fade-up{animation-timing-function:cubic-bezier(.3,.3,.3,1);animation-fill-mode:both;animation-duration:1ms;animation-timeline:view();animation-range:entry 0% cover 62%}
+.lp-from-left{animation-name:slide-left}
+.lp-from-right{animation-name:slide-right}
+.lp-rise{animation-name:rise-up}
+.lp-fade-up{animation-name:fade-rise;animation-range:entry 0% cover 48%}
+.lp-main-card.lp-rise{animation-name:none}
+}
+}
+@media (max-width:720px){@keyframes slide-left{from{translate:-40px 0;opacity:0}to{translate:0 0;opacity:1}}@keyframes slide-right{from{translate:40px 0;opacity:0}to{translate:0 0;opacity:1}}}

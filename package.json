@@ -1,0 +1,39 @@
+{
+  "name": "aroma-monorepo",
+  "version": "0.1.0",
+  "private": true,
+  "packageManager": "pnpm@10.31.0",
+  "scripts": {
+    "dev:web": "pnpm --filter @aroma/web dev",
+    "dev:mobile": "pnpm --filter @aroma/mobile start",
+    "dev:mobile:tunnel": "pnpm --filter @aroma/mobile tunnel",
+    "build:web": "pnpm --filter @aroma/web build",
+    "build": "turbo run build",
+    "lint": "turbo run lint",
+    "typecheck": "pnpm --filter @aroma/web exec next typegen && pnpm --filter @aroma/web exec tsc --noEmit && pnpm --filter @aroma/mobile exec tsc --noEmit",
+    "test": "pnpm --filter @aroma/web test",
+    "keeper:trigger": "node --import tsx scripts/bot.ts",
+    "dev:api-tunnel": "node scripts/dev-api-tunnel.mjs",
+    "test:anchor": "pnpm --filter @aroma/anchor test",
+    "build:anchor": "cd packages/anchor && anchor build",
+    "devnet:create-xstocks": "node scripts/create-devnet-xstocks.cjs"
+  },
+  "devDependencies": {
+    "prettier": "^3.6.2",
+    "tsx": "4.20.6",
+    "turbo": "^2.4.4",
+    "typescript": "^5.7.3"
+  },
+  "pnpm": {
+    "overrides": {
+      "react-native": "0.76.5",
+      "metro": "0.81.5",
+      "metro-core": "0.81.5",
+      "tar@>=6 <7.5.21": "7.5.21",
+      "@xmldom/xmldom@<0.8.15": "0.8.15",
+      "postcss@>=8 <8.5.23": "8.5.28",
+      "viem@2>ws@>=8 <8.21.0": "8.21.3",
+      "axios@>=1 <1.18.0": "1.18.0"
+    }
+  }
+}

@@ -1,0 +1,713 @@
+{
+  "address": "8Fm9HENPAFnyo6L8cHJFx62HHsZ6ez6CPUDuzgKAzrjs",
+  "metadata": {
+    "name": "aroma_guard",
+    "version": "0.2.0",
+    "spec": "0.1.0",
+    "description": "Aroma Execution Guard: trustless recurring investment execution on Solana"
+  },
+  "instructions": [
+    {
+      "name": "close_plan",
+      "discriminator": [
+        45,
+        137,
+        184,
+        220,
+        162,
+        253,
+        161,
+        8
+      ],
+      "accounts": [
+        {
+          "name": "plan",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  108,
+                  97,
+                  110,
+                  95,
+                  118,
+                  50
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "plan.owner",
+                "account": "Plan"
+              },
+              {
+                "kind": "account",
+                "path": "plan.funding_mint",
+                "account": "Plan"
+              },
+              {
+                "kind": "account",
+                "path": "plan.nonce",
+                "account": "Plan"
+              }
+            ]
+          }
+        },
+        {
+          "name": "funding_mint"
+        },
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "rent_payer",
+          "writable": true
+        },
+        {
+          "name": "owner_funding_token",
+          "writable": true
+        },
+        {
+          "name": "plan_funding_token",
+          "writable": true
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "create_plan",
+      "discriminator": [
+        77,
+        43,
+        141,
+        254,
+        212,
+        118,
+        41,
+        186
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "funding_mint"
+        },
+        {
+          "name": "subscription_authority"
+        },
+        {
+          "name": "recurring_delegation"
+        },
+        {
+          "name": "plan",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  108,
+                  97,
+                  110,
+                  95,
+                  118,
+                  50
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              },
+              {
+                "kind": "account",
+                "path": "funding_mint"
+              },
+              {
+                "kind": "arg",
+                "path": "data.nonce"
+              }
+            ]
+          }
+        },
+        {
+          "name": "plan_funding_token",
+          "writable": true
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": [
+        {
+          "name": "data",
+          "type": {
+            "defined": {
+              "name": "CreatePlanData"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "execute_swap",
+      "discriminator": [
+        56,
+        182,
+        124,
+        215,
+        155,
+        140,
+        157,
+        102
+      ],
+      "accounts": [
+        {
+          "name": "fee_payer",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "plan",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  108,
+                  97,
+                  110,
+                  95,
+                  118,
+                  50
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "plan.owner",
+                "account": "Plan"
+              },
+              {
+                "kind": "account",
+                "path": "plan.funding_mint",
+                "account": "Plan"
+              },
+              {
+                "kind": "account",
+                "path": "plan.nonce",
+                "account": "Plan"
+              }
+            ]
+          }
+        },
+        {
+          "name": "funding_mint",
+          "writable": true
+        },
+        {
+          "name": "subscription_authority"
+        },
+        {
+          "name": "recurring_delegation",
+          "writable": true
+        },
+        {
+          "name": "owner_funding_token",
+          "writable": true
+        },
+        {
+          "name": "plan_funding_token",
+          "writable": true
+        },
+        {
+          "name": "subscriptions_program",
+          "address": "De1egAFMkMWZSN5rYXRj9CAdheBamobVNubTsi9avR44"
+        },
+        {
+          "name": "event_authority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  118,
+                  101,
+                  110,
+                  116,
+                  95,
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                187,
+                199,
+                119,
+                175,
+                186,
+                104,
+                240,
+                18,
+                62,
+                192,
+                196,
+                209,
+                183,
+                238,
+                137,
+                110,
+                147,
+                1,
+                201,
+                41,
+                197,
+                90,
+                6,
+                186,
+                149,
+                24,
+                33,
+                88,
+                37,
+                140,
+                21,
+                169
+              ]
+            }
+          }
+        },
+        {
+          "name": "mock_mint_authority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  109,
+                  111,
+                  99,
+                  107,
+                  95,
+                  109,
+                  105,
+                  110,
+                  116,
+                  95,
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "token_program",
+          "address": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA"
+        }
+      ],
+      "args": [
+        {
+          "name": "expected_period",
+          "type": "u16"
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Plan",
+      "discriminator": [
+        161,
+        231,
+        251,
+        119,
+        2,
+        12,
+        162,
+        2
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "InstallmentExecuted",
+      "discriminator": [
+        99,
+        16,
+        149,
+        43,
+        56,
+        212,
+        224,
+        67
+      ]
+    },
+    {
+      "name": "PlanClosed",
+      "discriminator": [
+        244,
+        135,
+        44,
+        167,
+        104,
+        238,
+        207,
+        12
+      ]
+    },
+    {
+      "name": "PlanCreated",
+      "discriminator": [
+        215,
+        11,
+        135,
+        121,
+        208,
+        119,
+        149,
+        149
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "MockMintAuthorityMismatch",
+      "msg": "Devnet mock mint authority does not match the program PDA."
+    },
+    {
+      "code": 6001,
+      "name": "PeriodTooShort",
+      "msg": "Period interval must be at least 60 seconds."
+    },
+    {
+      "code": 6002,
+      "name": "CalculationOverflow",
+      "msg": "Calculation overflow."
+    },
+    {
+      "code": 6003,
+      "name": "PeriodNotElapsed",
+      "msg": "This period is not due or was already executed."
+    },
+    {
+      "code": 6004,
+      "name": "OutputDidNotIncrease",
+      "msg": "Owner output delivery was not verified."
+    },
+    {
+      "code": 6005,
+      "name": "UnsupportedPlanVersion",
+      "msg": "Unsupported plan version."
+    },
+    {
+      "code": 6006,
+      "name": "InvalidSchedule",
+      "msg": "The schedule must be bounded, aligned, and end within one year."
+    },
+    {
+      "code": 6007,
+      "name": "InvalidOutput",
+      "msg": "Outputs require distinct mints and positive minimum deliveries."
+    },
+    {
+      "code": 6008,
+      "name": "InvalidTokenAccount",
+      "msg": "A canonical unfrozen token account is required."
+    },
+    {
+      "code": 6009,
+      "name": "InvalidDelegation",
+      "msg": "Invalid official recurring delegation or authority."
+    },
+    {
+      "code": 6010,
+      "name": "DelegationTermsMismatch",
+      "msg": "The delegation does not match the owner-approved plan terms."
+    },
+    {
+      "code": 6011,
+      "name": "FundingDelegateMismatch",
+      "msg": "The funding account no longer delegates to Subscriptions."
+    },
+    {
+      "code": 6012,
+      "name": "UnexpectedPeriod",
+      "msg": "The requested period does not match the current schedule window."
+    },
+    {
+      "code": 6013,
+      "name": "FundingBalanceMismatch",
+      "msg": "Funding balance changes do not match the approved allocation."
+    },
+    {
+      "code": 6014,
+      "name": "UnsupportedFreezeAuthority",
+      "msg": "Recurring funding and output mints must have no freeze authority."
+    }
+  ],
+  "types": [
+    {
+      "name": "CreatePlanData",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "nonce",
+            "type": "u64"
+          },
+          {
+            "name": "funding_amount",
+            "type": "u64"
+          },
+          {
+            "name": "period_seconds",
+            "type": "u64"
+          },
+          {
+            "name": "starts_at",
+            "type": "i64"
+          },
+          {
+            "name": "expires_at",
+            "type": "i64"
+          },
+          {
+            "name": "periods",
+            "type": "u16"
+          },
+          {
+            "name": "devnet_mock",
+            "type": "bool"
+          },
+          {
+            "name": "outputs",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "Output"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "InstallmentExecuted",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "plan",
+            "type": "pubkey"
+          },
+          {
+            "name": "period",
+            "type": "u16"
+          },
+          {
+            "name": "funding_amount",
+            "type": "u64"
+          },
+          {
+            "name": "output_amounts",
+            "type": {
+              "vec": "u64"
+            }
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Output",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "weight_bps",
+            "type": "u16"
+          },
+          {
+            "name": "minimum_amount_out",
+            "type": "u64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Plan",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "version",
+            "type": "u8"
+          },
+          {
+            "name": "devnet_mock",
+            "type": "bool"
+          },
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "funding_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "nonce",
+            "type": "u64"
+          },
+          {
+            "name": "funding_amount",
+            "type": "u64"
+          },
+          {
+            "name": "period_seconds",
+            "type": "u64"
+          },
+          {
+            "name": "starts_at",
+            "type": "i64"
+          },
+          {
+            "name": "expires_at",
+            "type": "i64"
+          },
+          {
+            "name": "periods",
+            "type": "u16"
+          },
+          {
+            "name": "executed_periods",
+            "type": "u16"
+          },
+          {
+            "name": "last_executed_period",
+            "type": "u16"
+          },
+          {
+            "name": "last_executed_at",
+            "type": "i64"
+          },
+          {
+            "name": "subscription_authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "recurring_delegation",
+            "type": "pubkey"
+          },
+          {
+            "name": "subscription_init_id",
+            "type": "i64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "outputs",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "Output"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "PlanClosed",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "plan",
+            "type": "pubkey"
+          },
+          {
+            "name": "timestamp",
+            "type": "i64"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PlanCreated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "plan",
+            "type": "pubkey"
+          },
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "nonce",
+            "type": "u64"
+          },
+          {
+            "name": "starts_at",
+            "type": "i64"
+          },
+          {
+            "name": "expires_at",
+            "type": "i64"
+          }
+        ]
+      }
+    }
+  ]
+}
