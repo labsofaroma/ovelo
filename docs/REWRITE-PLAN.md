@@ -239,7 +239,7 @@ From M6 on, each milestone has a contract part and an app part. Steps marked **(
 |---|---|---|---|---|
 | **M6** | Contract v1 core + devnet deploy | `packages/contracts`: config, asset registry, plan; admin and plan instructions; devnet-mock `execute_installment` minting at the oracle price, with funding to a treasury; catch-up and skip; pause; typed Subscriptions layout; security requirements of spec §7 | Codama client and builders in `lib/sdk/guard/v1`; IDL drift test | LiteSVM suite green; local validator end to end (create → 3 periods → close + revoke); deployed to devnet **(owner)**; config initialized; test assets registered |
 | **M7** | Recurring investing on devnet (was M6) | integration fixes only | `features/invest`, `apps/keeper` on QStash (leases, retries, dead-letter queue, alerts), `plans_index`, faucet with Turnstile and Redis limits (AUDIT H-5) | create → 3 installments → close + revoke on devnet; skipped periods shown; keeper alerting tested |
-| **M8** | Contract mainnet path | Jupiter CPI, oracle-bounded `min_out`, owner-ATA delivery check, multi-leg execution; full LiteSVM with pinned Jupiter, Pyth and Subscriptions binaries; proptest/fuzz; verifiable build | keeper Jupiter routes; mainnet build behind a flag | full suite on a mainnet fork; fuzz clean; verifiable build hash recorded |
+| **M8** | Contract mainnet path (**implemented**, see status below) | Jupiter CPI, oracle-bounded `min_out`, owner-ATA delivery check, multi-leg execution; full LiteSVM with pinned Jupiter, Pyth and Subscriptions binaries; proptest/fuzz; verifiable build | keeper Jupiter routes; mainnet build behind a flag | full suite on a mainnet fork; fuzz clean; verifiable build hash recorded |
 | **M9** | Cutover (was M7) | none | v1 on the production domain **(owner: DNS)**, `/v1` prefix and prototype routes removed with their unused code (including `packages/anchor`), prototype CSP and error residue closed; spot and basket trading go live | production serves v1 only; production readiness **P3**, **P4** (spot items), **P5** (spot) and **P6** met (§7.1) |
 | **M10** | Audit + mainnet beta | external audit and fixes (auditor already booked, **P2**); Squads multisig (≥ 2-of-3, timelock) as upgrade authority **(owner)**; mainnet deploy with launch caps **(owner)**; real xStocks registered | mainnet recurring behind caps; monitoring and alerts | audit findings closed; multisig verified on-chain; first mainnet installments monitored; **P4** (contract items) and **P5** (recurring) met |
 | **M11** | Launch features (was M8) | optional protocol fee via config | notifications, P&L, compliance gate implementing counsel's decisions (**P1**), onboarding, creator fee share, creator dashboard | launch checklist complete; ROADMAP success metrics measured; every §7.1 item done |
@@ -736,6 +736,110 @@ Exit criteria (§7): create → 3 installments → close + revoke **on a local v
 - Owner (B10): a Hermes API key, a QStash schedule and signing keys, Turnstile keys, an alert webhook, Upstash and Neon for devnet, and a hosted keeper URL; then the real devnet run (create → 3 installments → close + revoke, keeper included).
 - CI not verified, files only.
 - 2026-11-14 (devnet deploy session): `pnpm typecheck` ✓; `pnpm lint` 0 errors; `pnpm format:check` ✓; `pnpm test` ✓ (web 1,060 + 1 skipped before the test-period fix, then the invest suite 54/54 with 3 new tests; `@aroma/guard` 85; `@aroma/contracts` 30, including the 12-case program ID guard; keeper 29; ui 210; config 2); `idl:check` ✓; Codama drift ✓; `pnpm build:web` flag off ✓ and flag on with `.env.example` ✓, `check-client-secrets: OK` both. Key-material scan: no 64-number array in the tree, the working diff or `git log -p --all`; the only tracked `.env*` is `.env.example`.
+
+### M8 status: implemented on branch `m8-mainnet-path`, cut from `m7-recurring-devnet` (not pushed, not merged, nothing deployed; no mainnet transaction)
+
+Exit criteria (§7): full suite on a mainnet fork ✓ (`e2e:fork`, below); fuzz (proptest) clean ✓; verifiable build hash recorded ✓ (local; the Docker hash is an owner step). The mainnet path is documented in [aroma-guard-v1.md](./aroma-guard-v1.md#mainnet-execution-default-build), the keeper side in [keeper-mainnet.md](./keeper-mainnet.md), the audit package in [audit/](./audit/README.md).
+
+**Checklist**
+- [x] B1: `execute_installment_routed(period, leg_mask, routes)` in the default build (`execute/{mainnet,route,common}.rs`, `integrations/jupiter.rs`, `swap_math.rs`):
+  - the first leg pulls the installment through Subscriptions (exact debit and credit);
+  - per leg: Pyth checks; the oracle floor on the full leg funding; a Jupiter `route_v2` CPI (pinned ID and event authority) with the program-wide swap authority as the only signer;
+  - before the CPI: the destination at route index 7 must be the owner's ATA; the prefix and the forbidden accounts are checked; `in_amount` must equal `amount_in`, with no Jupiter fees;
+  - after the CPI: staging dropped by exactly the leg's funding, the swap accounts are back at their start, and the owner received at least `min_out`;
+  - the Token-2022 policy is re-run (paused mint refused); multi-leg works across transactions with `leg_bitmap`; `InstallmentExecuted` is emitted.
+
+  `execute_installment` stays closed in the default build; the devnet build refuses the routed instruction.
+- [x] B2: protocol fee from the leg's funding to `fee_recipient`, tested at 0 and 25 bps. The floor is computed on the full funding, so a fee never lowers `min_out` (LiteSVM and a proptest).
+- [x] B3: LiteSVM **85/85**:
+  - 62 from M6/M7;
+  - 6 mainnet happy paths (1 leg; 2 legs in one transaction; N legs across transactions; fee on/off; replay; catch-up and skip);
+  - 12 mainnet refusals (slippage failure on a later leg with full rollback; wrong destination owner; a route paying someone else; a route draining staging; the plan's other funds and the owner's funding account; route terms; writable authority and fake program; decision 1 price age; keeper-only; low confidence; paused mint; closed non-routed instruction);
+  - 4 Subscriptions semantics on both binaries;
+  - 1 devnet routed refusal.
+
+  The mainnet cases run the default build with **mainnet's Jupiter v6, Orca Whirlpool, Token and Token-2022 binaries** and recorded pools and xStocks mints (slot 469,359,673; SHA-256 pins in `tests/fixtures/mainnet-programs.json`). Proptests (2,000 cases each): never more than `periods × amount` pulled; total delivered ≥ Σ `min_out`; staging never below its start; the fee never lowers the floor. Trident not used (owner: proptest only).
+- [x] B4: `pnpm --filter @aroma/contracts e2e:fork`. It forks mainnet (Jupiter, Whirlpool, Subscriptions, Pyth receiver, Wormhole, USDC, AAPLx/TSLAx/NVDAx and their pools, `--clone-feature-set`), loads the default build with a local upgrade authority, then runs `initialize_config`, registration, a plan, the **real keeper** (`runOnce`, `mainnet-fork` mode) for 3 one-hour periods, and close + revoke. Run below.
+- [x] B5: keeper mainnet mode (`apps/keeper/src/mainnet/**`), behind `KEEPER_CLUSTER=mainnet` (off everywhere):
+  - a separate `KEEPER_MAINNET_KEYPAIR` (the devnet key is refused on mainnet and vice versa); mainnet genesis only in mainnet mode;
+  - Jupiter v2 build per leg, validated by M4's reviewed validator (moved to `@aroma/guard/jupiter`, the web app re-exports it) and by the program-mirroring checks; direct routes only;
+  - verified lookup tables, simulation before send, priority fees, optional Jito;
+  - ≤ 2 legs per transaction with a size fallback;
+  - the same leases, retries, dead-letter list and alerts.
+
+  Keeper tests 47, coverage 96 % lines.
+- [x] B6: `packages/guard/src/v1/mainnet/**` (swap-authority PDAs, route checks, routed builder, setup), **100 % lines and branches**; the package is at 99.3 % / 95.2 %. Codama was regenerated because the IDL changed (decision 5 below), additively.
+- [x] B7: `scripts/verify-build.sh` and `packages/contracts/verifiable-build.json`. The default build's executable hash is `58f20550182f0c9002526a05269ae9971222f2b1e91d2032b39c593b529fb1f8` (file SHA-256 `f97f32ca…d914`), byte-identical after a forced recompile. The Docker (`solana-verify build`) hash is open: the image was not pulled (owner decision).
+- [x] B8: [docs/audit/](./audit/README.md): scope and commit, build and hash, threat model, invariants, decisions, limitations, test instructions.
+- [x] B9: `contracts.yml`:
+  - the `v1` job adds the mainnet binary pins and the mainnet-Subscriptions LiteSVM run;
+  - a nightly `mainnet-fork` job;
+  - a `verifiable-build` job (Docker image, uploads the binary).
+
+  Files only.
+
+**Decisions**
+1. **Executor price choice: keeper-only on mainnet, plus a 20-second price-age cap** (`MAINNET_MAX_PRICE_AGE_S`, combined with config by `min`). Both live in the program's mainnet build as constants; there is no config or layout change.
+   - Why: with permissionless execution, anyone can pick the highest price in the staleness window (a looser floor) and choose timing and route, extracting value down to the floor.
+   - Keeper-only removes third parties. The 20-second cap limits what even a compromised keeper key can choose.
+   - Costs: liveness depends on one keeper (catch-up window, alerts, key rotation by the admin), and the keeper must post and execute promptly.
+   - Residual: the keeper's own transaction can be sandwiched down to the floor (≤ the output's slippage), mitigated by priority fees and Jito.
+   - Full analysis: [audit/decisions.md](./audit/decisions.md).
+2. **Subscriptions on mainnet: no mismatch.**
+   - Mainnet's binary: SHA-256 `af3cefa5…8d3a`, ProgramData `HaYb5J9…FfMg`, last deployed at slot 438,440,823 (2026-08-10), read at slot 469,358,055. It equals the M6 record and differs from the devnet pin `2675ad1d…fddbf`.
+   - Evidence that behaviour matches: the full LiteSVM suite (62 at the time) passes against it, and 4 direct cases pass on **both** binaries with exact upstream codes (per-period cap 400, no carry-over, expiry 128, delegatee only 130, stale `init_id` 136, same-slot sentinel accepted).
+   - Upstream `program-v0.4.0…v0.5.0`: only comments changed in `state/` and the helpers, plus the `init_id` sentinel (commit `55a3efd1`, 2026-07-15), which mainnet's later deploy has.
+   - M6's "≈ v0.4.0" was a guess from the slot.
+3. **Rust coverage** (cargo-llvm-cov, approved): host lines are 42.9 % for the default build and 38.1 % for devnet-mock. `jupiter.rs` 100 %, `swap_math.rs` 100 %, `math.rs` 95 %. The handlers run only in SBF (LiteSVM), which llvm-cov cannot instrument.
+4. **A program-wide swap authority `["swap_authority"]` signs the Jupiter CPI, not the plan PDA** (deviation from the brief's wording). The plan PDA signs only the transfers out of staging.
+   - The plan PDA is the Subscriptions delegatee, and its signature should not reach AMM code.
+   - Jupiter's `route_v2` needs a signer-owned transit account per output mint. Per plan, that rent would be locked forever once the plan closes.
+   - Shared ATAs must return to their starting balance each leg.
+5. **IDL change (additive): a new instruction instead of changing `execute_installment`.** The route bytes must arrive as an argument, and `execute_installment(period, leg_mask)` is the ABI being deployed to devnet. The change adds one instruction, `RouteLeg`, and seven appended errors; every existing instruction, account, type and code is unchanged; one accounts struct, identical IDLs for both builds. Decision 1 itself needed no IDL change.
+6. **Two routed legs per transaction at most** (M6's batches of 3 were for the devnet build). Three Whirlpool legs need 57 unique accounts, and LiteSVM panics on that transaction. The keeper measures and falls back to one leg per transaction; on the fork every leg ran alone.
+7. **Direct routes only** (found by the fork run). A Jupiter route through an intermediate mint needs a third swap-authority account, which the program refuses by design. The keeper asks for direct routes and refuses others before signing.
+
+**Deviations and findings**
+1. Found by the fork run:
+   - stand-in Hermes prices used the wall clock, while the fork's clock is 18 h ahead after `--warp-slot`; they now follow the fork's clock;
+   - an intermittent two-step NVDAx route failed in Jupiter (`InvalidTokenAccount`), which led to decision 7.
+
+   Found by tests: the routed builder accepted a leg mask beyond the plan's outputs (fixed); three routed legs exceed one transaction (decision 6).
+2. **Prices on the fork** are signed by a runtime test guardian installed as Wormhole's guardian set, at the market price implied by the recorded Jupiter quote plus 0.3 %. Hermes needs the owner's API key. In LiteSVM, `PriceUpdateV2` accounts are written directly, as in M6.
+3. **Fork routes are recorded with `dexes=Whirlpool`**, because proprietary AMMs refuse a stale fork. The keeper itself does not restrict DEXes.
+4. `execute/common.rs` copies the devnet `collect`, so as not to touch `devnet_mock.rs` while the devnet deploy runs. It becomes one function after the M7 rebase.
+5. The default build's `treasury_token` account is required but unused by the routed instruction (one accounts struct). The keeper passes the treasury's ATA.
+6. As in M7, the first `anchor build` in this worktree generated a stray program keypair (`FaUT…`) in git-ignored `target/deploy/`. Source and `declare_id!` are unchanged; it is never used.
+7. `packages/config/max-lines-allowlist.json` loses the moved IDL's old web path (shrink-only). In `@aroma/guard` the pinned IDL is data, excluded from lint and from the 400-line rule like the generated client.
+
+**Evidence (all local; CI not verified, files only; nothing deployed; no mainnet or devnet transaction)**
+- `cargo test`: default build 38/38 (incl. 4 proptests), devnet-mock 25/25. `cargo clippy --all-targets -D warnings` is clean with each feature set. Both builds are SBPF v0. `check-build.mjs`: minting marker and `mock_mint` seed absent from the default binary; the Jupiter CPI marker present only in the default binary; identical IDLs.
+- LiteSVM 85/85, and 85/85 again with mainnet's Subscriptions binary (`test:litesvm:subscriptions-mainnet`).
+- `pnpm test:contracts` ✓: cargo test, clippy, both builds, `idl:check`, unit 18, the devnet and mainnet pins (8 binaries, SHA-256 checked), both LiteSVM runs.
+- `pnpm test` ✓ (6 tasks):
+  - web Vitest 1,060 passed / 1 skipped, and legacy node:test 275 pass / 1 skip (both = M7);
+  - `@aroma/ui` 210, `@aroma/guard` 95 (M7: 81), `@aroma/keeper` 47 (M7: 29), `@aroma/contracts` 18, config 2.
+- Coverage: `@aroma/guard` 99.3 % lines / 95.2 % branches (gate 85; `v1/mainnet` 100 %); `@aroma/keeper` 96.0 % / 84.8 % (gate 80; `mainnet/` 97.2 %).
+- `pnpm typecheck` ✓ (6 packages); `pnpm lint` 0 errors (139 warnings, prototype); `pnpm format:check` ✓.
+- Key material: no 64-byte array, private key or keypair file in tracked files or in `git log -p b5c14ad..HEAD`; the only tracked `.env*` is `.env.example`; no hand-written file over 400 lines.
+
+**Shared files edited:**
+- Program: `lib.rs`, `constants.rs`, `errors.rs` (appended), `execute/mod.rs`, `integrations/mod.rs`, `Cargo.toml` (`sha2` dev-dependency), `Cargo.lock`.
+- Contracts tooling: `packages/contracts/{package.json,.gitignore,scripts/build.sh,scripts/check-build.mjs,tests/litesvm/harness.ts}`.
+- Generated client and IDL: `packages/guard/src/v1/{idl,generated}` (regenerated), `packages/guard/{package.json,eslint.config.mjs,src/rules.test.ts,src/v1/index.ts}`.
+- Web: `apps/web/lib/sdk/jupiter/{instruction.ts,idl/exact-in.ts}` (re-exports; the IDL README moved).
+- Keeper: `apps/keeper/src/{env,rpc,run,send,execute,index}.ts`, `apps/keeper/src/test/world.ts`.
+- Repo: root `package.json` (`test:contracts`), `pnpm-lock.yaml` (workspace link only), `scripts/check-client-secrets.mjs`, `packages/config/max-lines-allowlist.json`, `.github/workflows/contracts.yml`.
+- Docs: `docs/{aroma-guard-v1,CONTRACT-V1-SPEC,REWRITE-PLAN}.md` (§7 M8 row and this section).
+
+Not touched: `apps/web/features/{invest,compliance}/**`, `middleware.ts`, `packages/guard/src/v1/deployments.ts`, the M6 and M7 status sections, `docs/M6-DEVNET-DEPLOY.md`, `docs/keeper-operations.md`.
+
+**Open items**
+- Owner: pull the `solana-verify` image, run `verify-build.sh --docker`, and record and publish the Docker hash (B7). Name the audit commit at merge (P6).
+- Owner (M10): mainnet deploy and config (keeper-only, USDC, issuer keys), Squads multisig, mainnet keeper key in a secret store, Jupiter and Hermes API keys, xStocks registration, the swap-authority ATAs, and capped real installments (P5).
+- Before M10: re-run `test:fixtures:mainnet` and `test:litesvm:subscriptions-mainnet` on the binaries then live. Confirm a direct USDC route exists for each catalog xStock.
+- After the M7 rebase: one `collect` (deviation 4).
+- CI not verified, files only.
 
 **Critical path:** M0 → M2 → M4 (spot trading, shipped) → M6 (contract core and its devnet deploy, done 2026-11-14) → M7 (recurring on devnet) → M8 (mainnet contract path) → M10 (audit, multisig, mainnet beta) → M11 (launch). M9 (cutover) can run any time after M7 and must finish before M10. M7 develops against a local LiteSVM build and the generated client until the owner's devnet deploy lands.
 
