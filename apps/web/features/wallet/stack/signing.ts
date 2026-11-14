@@ -95,3 +95,75 @@ export function assertCanSign(
       `This wallet has not advertised v${version} transaction signing.`,
     );
 }
+
+/* ------------------------------------------------------------ message signing (M5b B1) */
+
+export const MESSAGE_SIGNING_UNSUPPORTED =
+  "This wallet cannot sign messages, so it cannot be used to publish creator baskets. Connect a wallet that supports message signing.";
+
+/** Wallet Standard `solana:signMessage` (raw bytes in, raw Ed25519 signature out). */
+export type StandardMessageFeature = {
+  signMessage?: (
+    ...inputs: { account: unknown; message: Uint8Array }[]
+  ) => Promise<
+    readonly { signedMessage?: Uint8Array; signature: Uint8Array }[]
+  >;
+};
+
+function sameBytes(a: Uint8Array, b: Uint8Array): boolean {
+  return a.length === b.length && a.every((byte, i) => byte === b[i]);
+}
+
+/**
+ * A wallet's answer is untrusted: the signature must be exactly 64 bytes, and if the wallet
+ * reports what it signed, it must be the exact message (some wallets wrap or prefix messages,
+ * and the server verifies over the raw bytes, so a wrapped signature would never verify).
+ */
+export function checkedMessageSignature(
+  message: Uint8Array,
+  output: { signedMessage?: Uint8Array; signature?: Uint8Array } | undefined,
+): Uint8Array {
+  const signature = output?.signature;
+  if (!(signature instanceof Uint8Array) || signature.length !== 64)
+    throw new Error("The wallet returned an invalid signature.");
+  if (
+    output?.signedMessage instanceof Uint8Array &&
+    !sameBytes(output.signedMessage, message)
+  )
+    throw new Error(
+      "The wallet changed the message before signing it, so the signature cannot be used.",
+    );
+  return signature;
+}
+
+export async function signMessageWithStandard(
+  feature: StandardMessageFeature,
+  account: unknown,
+  message: Uint8Array,
+): Promise<Uint8Array> {
+  if (!feature.signMessage) throw new Error(MESSAGE_SIGNING_UNSUPPORTED);
+  const [output] = await feature.signMessage({ account, message });
+  return checkedMessageSignature(message, output);
+}
+
+/**
+ * Pick the message signer for a connected wallet: Wallet Standard `solana:signMessage` when the
+ * account declares it, else a legacy adapter's `signMessage`, else null (the wallet cannot
+ * publish; callers show MESSAGE_SIGNING_UNSUPPORTED).
+ */
+export function messageSigner(input: {
+  standard?: StandardMessageFeature;
+  account?: { features?: readonly string[] };
+  legacy?: (message: Uint8Array) => Promise<Uint8Array>;
+}): ((message: Uint8Array) => Promise<Uint8Array>) | null {
+  const { standard, account, legacy } = input;
+  if (
+    standard?.signMessage &&
+    account?.features?.includes("solana:signMessage")
+  )
+    return (message) => signMessageWithStandard(standard, account, message);
+  if (legacy)
+    return async (message) =>
+      checkedMessageSignature(message, { signature: await legacy(message) });
+  return null;
+}

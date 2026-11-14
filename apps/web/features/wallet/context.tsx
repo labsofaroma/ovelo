@@ -7,8 +7,9 @@ import { createContext, useContext } from "react";
  * free of Solana libraries, so pages import it without shipping the wallet stack. The stack
  * (wallet-adapter, Privy, web3.js) lives in ./stack and is loaded on demand by WalletBoundary.
  *
- * A Signer turns UNSIGNED base64 transactions into SIGNED base64 transactions through the user's
- * wallet. It never sees, holds or exposes a private key (AGENTS.md rule 1).
+ * A Signer turns UNSIGNED base64 transactions into SIGNED base64 transactions, and message bytes
+ * into a signature, through the user's wallet. It never sees, holds or exposes a private key
+ * (AGENTS.md rule 1).
  */
 export type TransactionVersion = 0 | 1;
 
@@ -21,6 +22,11 @@ export type Signer = {
     unsigned: readonly string[],
     version: TransactionVersion,
   ): Promise<string[]>;
+  /**
+   * Sign raw message bytes (creator challenges, M5b B1) and return the 64-byte Ed25519 signature.
+   * Null when the wallet cannot sign messages; callers explain that it cannot publish.
+   */
+  signMessage: ((message: Uint8Array) => Promise<Uint8Array>) | null;
 };
 
 export type WalletOption = {

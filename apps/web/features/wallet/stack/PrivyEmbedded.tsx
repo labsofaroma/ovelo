@@ -1,11 +1,21 @@
 "use client";
 
 import { PrivyProvider, usePrivy } from "@privy-io/react-auth";
-import { useSignTransaction, useWallets } from "@privy-io/react-auth/solana";
+import {
+  useSignMessage,
+  useSignTransaction,
+  useWallets,
+} from "@privy-io/react-auth/solana";
 import { useMemo, type ReactNode } from "react";
 import type { Signer } from "../context";
 import { EmbeddedContext } from "./WalletStack";
-import { advertisedVersions, assertCanSign, decode, encode } from "./signing";
+import {
+  advertisedVersions,
+  assertCanSign,
+  checkedMessageSignature,
+  decode,
+  encode,
+} from "./signing";
 
 /**
  * Privy embedded (email) wallets, mainnet only. Loaded only when NEXT_PUBLIC_PRIVY_APP_ID is set.
@@ -17,6 +27,7 @@ function Session({ children }: { children: ReactNode }) {
   const { ready, authenticated, login, logout } = usePrivy();
   const { wallets, ready: walletsReady } = useWallets();
   const { signTransaction } = useSignTransaction();
+  const { signMessage } = useSignMessage();
   const wallet = wallets.find((w) => w.standardWallet.name === "Privy");
 
   const signer = useMemo((): Signer | null => {
@@ -32,6 +43,15 @@ function Session({ children }: { children: ReactNode }) {
       address: wallet.address,
       kind: "privy",
       supportedTransactionVersions: versions,
+      // Privy embedded wallets sign raw message bytes (Ed25519), shown in Privy's own prompt.
+      async signMessage(message) {
+        const result = await signMessage({
+          message,
+          wallet,
+          options: { uiOptions: { showWalletUIs: true } },
+        });
+        return checkedMessageSignature(message, result);
+      },
       async signTransactions(unsigned, version) {
         assertCanSign(versions, version, unsigned.length);
         const signed: string[] = [];
@@ -47,7 +67,14 @@ function Session({ children }: { children: ReactNode }) {
         return signed;
       },
     };
-  }, [ready, authenticated, walletsReady, wallet, signTransaction]);
+  }, [
+    ready,
+    authenticated,
+    walletsReady,
+    wallet,
+    signTransaction,
+    signMessage,
+  ]);
 
   const session = useMemo(
     () => ({ ready, authenticated, signer, login, logout }),

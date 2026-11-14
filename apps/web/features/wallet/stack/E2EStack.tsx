@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState, type ReactNode } from "react";
 import { WalletContext, type Signer, type WalletState } from "../context";
+import { decode, encode } from "./signing";
 
 /**
  * E2E-ONLY wallet (M4 B11). Compiled into a build only when NEXT_PUBLIC_AROMA_E2E_WALLET=true at
@@ -14,6 +15,8 @@ import { WalletContext, type Signer, type WalletState } from "../context";
 type Bridge = {
   address: string;
   sign: (unsigned: string[]) => Promise<string[]>;
+  /** Base64 message bytes in, base64 64-byte Ed25519 signature out (M5b B1). */
+  signMessage?: (message: string) => Promise<string>;
 };
 
 export default function E2EStack({
@@ -39,6 +42,10 @@ export default function E2EStack({
             kind: "e2e",
             supportedTransactionVersions: [0, 1],
             signTransactions: (unsigned) => bridge.sign([...unsigned]),
+            signMessage: bridge.signMessage
+              ? async (message) =>
+                  decode(await bridge.signMessage!(encode(message)))
+              : null,
           }
         : null;
     return {

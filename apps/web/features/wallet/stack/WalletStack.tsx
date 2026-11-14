@@ -29,8 +29,10 @@ import {
   assertCanSign,
   decode,
   encode,
+  messageSigner,
   rpcIsMainnet,
   signWithStandard,
+  type StandardMessageFeature,
   type StandardSignFeature,
 } from "./signing";
 
@@ -96,6 +98,8 @@ function Bridge({
   const feature = standard?.features["solana:signTransaction"] as
     StandardSignFeature | undefined;
   const account = standard?.accounts.find((item) => item.address === address);
+  const messageFeature = standard?.features["solana:signMessage"] as
+    StandardMessageFeature | undefined;
 
   const adapterSigner = useMemo((): Signer | null => {
     if (!adapter.connected || !address) return null;
@@ -119,6 +123,11 @@ function Bridge({
       address,
       kind: standardVersions.length ? "standard" : "adapter",
       supportedTransactionVersions: versions,
+      signMessage: messageSigner({
+        standard: messageFeature,
+        account,
+        legacy: adapter.signMessage,
+      }),
       async signTransactions(unsigned, version) {
         assertCanSign(versions, version, unsigned.length);
         if (standardVersions.includes(version) && feature)
@@ -137,7 +146,7 @@ function Bridge({
         return signed;
       },
     };
-  }, [adapter, address, account, feature]);
+  }, [adapter, address, account, feature, messageFeature]);
 
   const wrongAccount = Boolean(account && !accountOnMainnet(account.chains));
   const signer = adapterSigner ?? embedded?.signer ?? null;

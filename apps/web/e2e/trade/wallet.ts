@@ -8,22 +8,36 @@ import { e2eWallet } from "../fork/accounts";
  * only `window.aromaE2EWallet = { address, sign }`, whose `sign` calls back into this process
  * with base64 bytes. The app's E2E bridge (compiled only into E2E builds) uses it. No key material
  * ever enters the page or any app bundle. Signing is Ed25519 over the raw message bytes, so V0
- * and V1 transactions are both supported.
+ * and V1 transactions are both supported, and so are creator challenge messages (M5b B1).
  */
+function testKey() {
+  return createPrivateKey({
+    key: Buffer.concat([
+      Buffer.from("302e020100300506032b657004220420", "hex"),
+      Buffer.from(e2eWallet().secretKey.subarray(0, 32)),
+    ]),
+    type: "pkcs8",
+    format: "der",
+  });
+}
+
+/** Ed25519 over raw message bytes (creator challenges), base64 in and out. */
+export function signMessageBase64(message: string): string {
+  return sign(null, Buffer.from(message, "base64"), testKey()).toString(
+    "base64",
+  );
+}
+
 function signOne(encoded: string): string {
   const keypair = e2eWallet();
   const transaction = kit
     .getTransactionDecoder()
     .decode(Buffer.from(encoded, "base64"));
-  const key = createPrivateKey({
-    key: Buffer.concat([
-      Buffer.from("302e020100300506032b657004220420", "hex"),
-      Buffer.from(keypair.secretKey.subarray(0, 32)),
-    ]),
-    type: "pkcs8",
-    format: "der",
-  });
-  const signature = sign(null, Buffer.from(transaction.messageBytes), key);
+  const signature = sign(
+    null,
+    Buffer.from(transaction.messageBytes),
+    testKey(),
+  );
   return Buffer.from(
     kit.getTransactionEncoder().encode({
       ...transaction,
@@ -41,6 +55,7 @@ export async function installTestWallet(page: Page): Promise<string> {
   await page.exposeFunction("aromaE2ESign", (unsigned: string[]) =>
     unsigned.map(signOne),
   );
+  await page.exposeFunction("aromaE2ESignMessage", signMessageBase64);
   await page.addInitScript((wallet) => {
     (window as unknown as { aromaE2EWallet: unknown }).aromaE2EWallet = {
       address: wallet,
@@ -50,6 +65,12 @@ export async function installTestWallet(page: Page): Promise<string> {
             aromaE2ESign: (u: string[]) => Promise<string[]>;
           }
         ).aromaE2ESign(unsigned),
+      signMessage: (message: string) =>
+        (
+          window as unknown as {
+            aromaE2ESignMessage: (m: string) => Promise<string>;
+          }
+        ).aromaE2ESignMessage(message),
     };
   }, address);
   return address;
