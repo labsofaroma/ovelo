@@ -67,33 +67,39 @@ async function resolveTargets() {
   const stock = bySymbol(STOCK_SYMBOL);
   // Issuers pause listings (e.g. XOMx in November 2026); a paused constituent makes a basket
   // unbuyable, so pick one whose constituents are all listed, verified and unpaused today.
-  const definition = [...CANONICAL_BASKET_DEFINITIONS]
+  const candidates = [...CANONICAL_BASKET_DEFINITIONS]
     .filter(
       (d) =>
         d.issuer === "xstocks" && (!PINNED_BASKET || d.id === PINNED_BASKET),
     )
     .sort((a, b) => a.symbols.length - b.symbols.length)
-    .find((d) => d.symbols.length >= 2 && d.symbols.every((s) => bySymbol(s)));
-  const members = definition?.symbols.map(bySymbol) ?? [];
-  if (!stock || !definition || members.some((m) => !m))
+    .filter((d) => d.symbols.length >= 2 && d.symbols.every((s) => bySymbol(s)))
+    .map((definition) => {
+      const members = definition.symbols.map((s) => bySymbol(s)!);
+      const count = members.length;
+      const allocations = allocateBasketInput(
+        BASKET_USDC,
+        members.map((m, i) => ({
+          mint: m.mint,
+          weightBps: Math.floor(10_000 / count) + (i < 10_000 % count ? 1 : 0),
+        })),
+      );
+      return {
+        basketId: definition.id,
+        legs: allocations.map((a) => ({
+          outputMint: a.mint,
+          amount: a.amount,
+        })) as Leg[],
+      };
+    });
+  if (!stock || !candidates.length)
     throw new Error(
       "E2E targets are not all listed and tradable in the xStocks catalog right now",
     );
-  const count = members.length;
-  const allocations = allocateBasketInput(
-    BASKET_USDC,
-    members.map((m, i) => ({
-      mint: m!.mint,
-      weightBps: Math.floor(10_000 / count) + (i < 10_000 % count ? 1 : 0),
-    })),
-  );
   return {
-    basketId: definition.id,
     stock: { mint: stock.mint, symbol: stock.symbol },
-    legs: [
-      { outputMint: stock.mint, amount: STOCK_USDC },
-      ...allocations.map((a) => ({ outputMint: a.mint, amount: a.amount })),
-    ] as Leg[],
+    stockLeg: { outputMint: stock.mint, amount: STOCK_USDC } as Leg,
+    candidates,
   };
 }
 
@@ -124,11 +130,17 @@ async function recordRoutes(legs: Leg[], taker: PublicKey) {
         programOf.get(leg.outputMint),
       ).toBase58(),
       wrapAndUnwrapSol: "false",
-      // Recording only (the server never sends this): the local validator cannot execute
-      // Manifest's program binary ("Program is not deployed"), so record routes that avoid it.
+      // Recording only (the server never sends this): the local solana-test-validator (Agave
+      // 3.1.10) cannot execute Manifest's current program binary even with mainnet's feature
+      // set ("Program is not deployed"). A basket with a Manifest-only leg is skipped instead.
       excludeDexes: "Manifest",
     });
-    const response = await fetch(`https://api.jup.ag/swap/v2/build?${params}`);
+    let response = await fetch(`https://api.jup.ag/swap/v2/build?${params}`);
+    // Keyless Jupiter rate-limits quickly: back off and retry instead of skipping the basket.
+    for (let attempt = 1; response.status === 429 && attempt <= 6; attempt++) {
+      await new Promise((r) => setTimeout(r, 4000 * attempt));
+      response = await fetch(`https://api.jup.ag/swap/v2/build?${params}`);
+    }
     if (!response.ok)
       throw new Error(`Jupiter build ${response.status} for ${leg.outputMint}`);
     routes[`${leg.outputMint}:${leg.amount}`] = await response.json();
@@ -202,6 +214,9 @@ async function startFork(routes: Record<string, unknown>) {
     String(RPC_PORT),
     "--url",
     MAINNET_RPC,
+    // Mainnet's feature set, so the fork runs every program the routes use exactly as mainnet
+    // does (without it, newer program binaries such as Manifest's report "not deployed").
+    "--clone-feature-set",
     "--warp-slot",
     String(slot + 64),
     "--account",
@@ -278,11 +293,26 @@ async function main() {
   rmSync(WORK, { recursive: true, force: true });
   mkdirSync(WORK, { recursive: true });
   const taker = e2eWallet().publicKey;
-  const { stock, legs, basketId } = await resolveTargets();
+  const { stock, stockLeg, candidates } = await resolveTargets();
+  const routes = await recordRoutes([stockLeg], taker);
+  // The first candidate basket whose every leg has a route the local fork can execute.
+  let basketId = "";
+  let legs: Leg[] = [stockLeg];
+  for (const candidate of candidates) {
+    try {
+      Object.assign(routes, await recordRoutes(candidate.legs, taker));
+      basketId = candidate.basketId;
+      legs = [stockLeg, ...candidate.legs];
+      break;
+    } catch (error) {
+      log(`basket ${candidate.basketId} skipped: ${(error as Error).message}`);
+    }
+  }
+  if (!basketId)
+    throw new Error("no basket has fork-executable routes right now");
   log(
     `targets: ${stock.symbol} and basket ${basketId} (${legs.length - 1} legs); test wallet ${taker.toBase58()}`,
   );
-  const routes = await recordRoutes(legs, taker);
   writeFileSync(join(WORK, "routes.json"), JSON.stringify(routes, null, 2));
   const genesis = await startFork(routes);
   log(`fork genesis ${genesis}`);
