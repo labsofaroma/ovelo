@@ -49,6 +49,7 @@ import {
   getClosePlanInstructionAsync,
   getCreatePlanInstructionAsync,
   getExecuteInstallmentInstructionAsync,
+  getExecuteInstallmentRoutedInstructionAsync,
   getInitializeConfigInstructionAsync,
   getPausePlanInstruction,
   getRegisterAssetInstructionAsync,
@@ -59,6 +60,7 @@ import {
   parseClosePlanInstruction,
   parseCreatePlanInstruction,
   parseExecuteInstallmentInstruction,
+  parseExecuteInstallmentRoutedInstruction,
   parseInitializeConfigInstruction,
   parsePausePlanInstruction,
   parseRegisterAssetInstruction,
@@ -69,10 +71,12 @@ import {
   type ClosePlanAsyncInput,
   type CreatePlanAsyncInput,
   type ExecuteInstallmentAsyncInput,
+  type ExecuteInstallmentRoutedAsyncInput,
   type InitializeConfigAsyncInput,
   type ParsedClosePlanInstruction,
   type ParsedCreatePlanInstruction,
   type ParsedExecuteInstallmentInstruction,
+  type ParsedExecuteInstallmentRoutedInstruction,
   type ParsedInitializeConfigInstruction,
   type ParsedPausePlanInstruction,
   type ParsedRegisterAssetInstruction,
@@ -265,6 +269,7 @@ export enum AromaGuardInstruction {
   ClosePlan,
   CreatePlan,
   ExecuteInstallment,
+  ExecuteInstallmentRouted,
   InitializeConfig,
   PausePlan,
   RegisterAsset,
@@ -310,6 +315,17 @@ export function identifyAromaGuardInstruction(
     )
   ) {
     return AromaGuardInstruction.ExecuteInstallment;
+  }
+  if (
+    containsBytes(
+      data,
+      fixEncoderSize(getBytesEncoder(), 8).encode(
+        new Uint8Array([160, 79, 195, 3, 234, 216, 76, 43]),
+      ),
+      0,
+    )
+  ) {
+    return AromaGuardInstruction.ExecuteInstallmentRouted;
   }
   if (
     containsBytes(
@@ -407,6 +423,9 @@ export type ParsedAromaGuardInstruction<
       instructionType: AromaGuardInstruction.ExecuteInstallment;
     } & ParsedExecuteInstallmentInstruction<TProgram>)
   | ({
+      instructionType: AromaGuardInstruction.ExecuteInstallmentRouted;
+    } & ParsedExecuteInstallmentRoutedInstruction<TProgram>)
+  | ({
       instructionType: AromaGuardInstruction.InitializeConfig;
     } & ParsedInitializeConfigInstruction<TProgram>)
   | ({
@@ -452,6 +471,13 @@ export function parseAromaGuardInstruction<TProgram extends string>(
       return {
         instructionType: AromaGuardInstruction.ExecuteInstallment,
         ...parseExecuteInstallmentInstruction(instruction),
+      };
+    }
+    case AromaGuardInstruction.ExecuteInstallmentRouted: {
+      assertIsInstructionWithAccounts(instruction);
+      return {
+        instructionType: AromaGuardInstruction.ExecuteInstallmentRouted,
+        ...parseExecuteInstallmentRoutedInstruction(instruction),
       };
     }
     case AromaGuardInstruction.InitializeConfig: {
@@ -544,6 +570,10 @@ export type AromaGuardPluginInstructions = {
     input: ExecuteInstallmentAsyncInput,
   ) => ReturnType<typeof getExecuteInstallmentInstructionAsync> &
     SelfPlanAndSendFunctions;
+  executeInstallmentRouted: (
+    input: ExecuteInstallmentRoutedAsyncInput,
+  ) => ReturnType<typeof getExecuteInstallmentRoutedInstructionAsync> &
+    SelfPlanAndSendFunctions;
   initializeConfig: (
     input: InitializeConfigAsyncInput,
   ) => ReturnType<typeof getInitializeConfigInstructionAsync> &
@@ -609,6 +639,11 @@ export function aromaGuardProgram() {
             addSelfPlanAndSendFunctions(
               client,
               getExecuteInstallmentInstructionAsync(input),
+            ),
+          executeInstallmentRouted: (input) =>
+            addSelfPlanAndSendFunctions(
+              client,
+              getExecuteInstallmentRoutedInstructionAsync(input),
             ),
           initializeConfig: (input) =>
             addSelfPlanAndSendFunctions(

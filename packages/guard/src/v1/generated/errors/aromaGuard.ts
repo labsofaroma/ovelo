@@ -107,8 +107,22 @@ export const AROMA_GUARD_ERROR__CONFIDENCE_TOO_WIDE = 0x179b; // 6043
 export const AROMA_GUARD_ERROR__ZERO_OUTPUT = 0x179c; // 6044
 /** MathOverflow: Arithmetic overflow */
 export const AROMA_GUARD_ERROR__MATH_OVERFLOW = 0x179d; // 6045
-/** MainnetExecutionUnavailable: Mainnet execution is not available until the Jupiter path ships (M8) */
+/** MainnetExecutionUnavailable: This build executes installments through execute_installment_routed */
 export const AROMA_GUARD_ERROR__MAINNET_EXECUTION_UNAVAILABLE = 0x179e; // 6046
+/** KeeperRequired: This build requires a configured keeper_authority */
+export const AROMA_GUARD_ERROR__KEEPER_REQUIRED = 0x179f; // 6047
+/** RoutedExecutionUnavailable: This build has no swap path; installments execute through execute_installment */
+export const AROMA_GUARD_ERROR__ROUTED_EXECUTION_UNAVAILABLE = 0x17a0; // 6048
+/** UnsupportedRoute: Route is not a supported Jupiter route_v2 instruction */
+export const AROMA_GUARD_ERROR__UNSUPPORTED_ROUTE = 0x17a1; // 6049
+/** RouteTermsMismatch: Route amount, fee or positive-slippage terms differ from the leg */
+export const AROMA_GUARD_ERROR__ROUTE_TERMS_MISMATCH = 0x17a2; // 6050
+/** RouteAccountMismatch: Route account does not match the leg (authority, accounts, mints, programs) */
+export const AROMA_GUARD_ERROR__ROUTE_ACCOUNT_MISMATCH = 0x17a3; // 6051
+/** RouteAccountForbidden: Route includes an account it must not touch */
+export const AROMA_GUARD_ERROR__ROUTE_ACCOUNT_FORBIDDEN = 0x17a4; // 6052
+/** SwapBalanceMismatch: Swap accounts did not return to their starting balances */
+export const AROMA_GUARD_ERROR__SWAP_BALANCE_MISMATCH = 0x17a5; // 6053
 
 export type AromaGuardError =
   | typeof AROMA_GUARD_ERROR__AMOUNT_ABOVE_CAP
@@ -131,6 +145,7 @@ export type AromaGuardError =
   | typeof AROMA_GUARD_ERROR__INVALID_SUBSCRIPTION_ACCOUNT
   | typeof AROMA_GUARD_ERROR__INVALID_TOKEN_ACCOUNT
   | typeof AROMA_GUARD_ERROR__INVALID_WEIGHTS
+  | typeof AROMA_GUARD_ERROR__KEEPER_REQUIRED
   | typeof AROMA_GUARD_ERROR__MAINNET_EXECUTION_UNAVAILABLE
   | typeof AROMA_GUARD_ERROR__MATH_OVERFLOW
   | typeof AROMA_GUARD_ERROR__MINT_PAUSED
@@ -148,12 +163,18 @@ export type AromaGuardError =
   | typeof AROMA_GUARD_ERROR__PRICE_FEED_MISMATCH
   | typeof AROMA_GUARD_ERROR__PRICE_NOT_FULLY_VERIFIED
   | typeof AROMA_GUARD_ERROR__PROTOCOL_PAUSED
+  | typeof AROMA_GUARD_ERROR__ROUTE_ACCOUNT_FORBIDDEN
+  | typeof AROMA_GUARD_ERROR__ROUTE_ACCOUNT_MISMATCH
+  | typeof AROMA_GUARD_ERROR__ROUTED_EXECUTION_UNAVAILABLE
+  | typeof AROMA_GUARD_ERROR__ROUTE_TERMS_MISMATCH
   | typeof AROMA_GUARD_ERROR__SLIPPAGE_ABOVE_CAP
   | typeof AROMA_GUARD_ERROR__STAGING_NOT_RESTORED
   | typeof AROMA_GUARD_ERROR__STALE_PRICE
+  | typeof AROMA_GUARD_ERROR__SWAP_BALANCE_MISMATCH
   | typeof AROMA_GUARD_ERROR__TRANSFER_HOOK_NOT_ALLOWED
   | typeof AROMA_GUARD_ERROR__UNEXPECTED_PERIOD
   | typeof AROMA_GUARD_ERROR__UNSUPPORTED_EXTENSION
+  | typeof AROMA_GUARD_ERROR__UNSUPPORTED_ROUTE
   | typeof AROMA_GUARD_ERROR__UNSUPPORTED_TOKEN_PROGRAM
   | typeof AROMA_GUARD_ERROR__UNSUPPORTED_VERSION
   | typeof AROMA_GUARD_ERROR__WRONG_DESTINATION
@@ -182,7 +203,8 @@ if (process.env["NODE_ENV"] !== "production") {
     [AROMA_GUARD_ERROR__INVALID_SUBSCRIPTION_ACCOUNT]: `Subscriptions account has the wrong owner, address, length, discriminator or version`,
     [AROMA_GUARD_ERROR__INVALID_TOKEN_ACCOUNT]: `Invalid token account`,
     [AROMA_GUARD_ERROR__INVALID_WEIGHTS]: `Output weights must sum to 10,000 bps and each leg must receive funds`,
-    [AROMA_GUARD_ERROR__MAINNET_EXECUTION_UNAVAILABLE]: `Mainnet execution is not available until the Jupiter path ships (M8)`,
+    [AROMA_GUARD_ERROR__KEEPER_REQUIRED]: `This build requires a configured keeper_authority`,
+    [AROMA_GUARD_ERROR__MAINNET_EXECUTION_UNAVAILABLE]: `This build executes installments through execute_installment_routed`,
     [AROMA_GUARD_ERROR__MATH_OVERFLOW]: `Arithmetic overflow`,
     [AROMA_GUARD_ERROR__MINT_PAUSED]: `Mint is paused`,
     [AROMA_GUARD_ERROR__MOCK_MINT_AUTHORITY_MISMATCH]: `Mint authority is not this asset's mock mint PDA`,
@@ -199,12 +221,18 @@ if (process.env["NODE_ENV"] !== "production") {
     [AROMA_GUARD_ERROR__PRICE_FEED_MISMATCH]: `Price feed id does not match the asset`,
     [AROMA_GUARD_ERROR__PRICE_NOT_FULLY_VERIFIED]: `Price update is not fully verified`,
     [AROMA_GUARD_ERROR__PROTOCOL_PAUSED]: `The protocol is paused`,
+    [AROMA_GUARD_ERROR__ROUTE_ACCOUNT_FORBIDDEN]: `Route includes an account it must not touch`,
+    [AROMA_GUARD_ERROR__ROUTE_ACCOUNT_MISMATCH]: `Route account does not match the leg (authority, accounts, mints, programs)`,
+    [AROMA_GUARD_ERROR__ROUTED_EXECUTION_UNAVAILABLE]: `This build has no swap path; installments execute through execute_installment`,
+    [AROMA_GUARD_ERROR__ROUTE_TERMS_MISMATCH]: `Route amount, fee or positive-slippage terms differ from the leg`,
     [AROMA_GUARD_ERROR__SLIPPAGE_ABOVE_CAP]: `Slippage is above the configured cap`,
     [AROMA_GUARD_ERROR__STAGING_NOT_RESTORED]: `Staging balance is not back at its starting balance`,
     [AROMA_GUARD_ERROR__STALE_PRICE]: `Price is older than the configured maximum`,
+    [AROMA_GUARD_ERROR__SWAP_BALANCE_MISMATCH]: `Swap accounts did not return to their starting balances`,
     [AROMA_GUARD_ERROR__TRANSFER_HOOK_NOT_ALLOWED]: `Mint has a transfer hook program that is not allow-listed`,
     [AROMA_GUARD_ERROR__UNEXPECTED_PERIOD]: `Not the period that can run now`,
     [AROMA_GUARD_ERROR__UNSUPPORTED_EXTENSION]: `Mint has an unsupported Token-2022 extension`,
+    [AROMA_GUARD_ERROR__UNSUPPORTED_ROUTE]: `Route is not a supported Jupiter route_v2 instruction`,
     [AROMA_GUARD_ERROR__UNSUPPORTED_TOKEN_PROGRAM]: `Mint is not owned by a supported token program`,
     [AROMA_GUARD_ERROR__UNSUPPORTED_VERSION]: `Unsupported account version`,
     [AROMA_GUARD_ERROR__WRONG_DESTINATION]: `Destination is not the owner's associated token account for the output mint`,

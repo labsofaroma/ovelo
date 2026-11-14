@@ -539,6 +539,265 @@
       ]
     },
     {
+      "name": "execute_installment_routed",
+      "docs": [
+        "Mainnet build: one Jupiter `route_v2` swap per leg, keeper-only (M8). Devnet-mock build:",
+        "refused (`RoutedExecutionUnavailable`)."
+      ],
+      "discriminator": [
+        160,
+        79,
+        195,
+        3,
+        234,
+        216,
+        76,
+        43
+      ],
+      "accounts": [
+        {
+          "name": "keeper",
+          "docs": [
+            "The keeper (or anyone when `config.keeper_authority` is `None`); pays fees only."
+          ],
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "plan",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  108,
+                  97,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "plan.owner",
+                "account": "Plan"
+              },
+              {
+                "kind": "account",
+                "path": "plan.funding_mint",
+                "account": "Plan"
+              },
+              {
+                "kind": "account",
+                "path": "plan.nonce",
+                "account": "Plan"
+              }
+            ]
+          }
+        },
+        {
+          "name": "funding_mint",
+          "relations": [
+            "plan"
+          ]
+        },
+        {
+          "name": "funding_token_program",
+          "relations": [
+            "plan"
+          ]
+        },
+        {
+          "name": "owner_funding_token",
+          "writable": true
+        },
+        {
+          "name": "staging",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "plan"
+              },
+              {
+                "kind": "account",
+                "path": "funding_token_program"
+              },
+              {
+                "kind": "account",
+                "path": "funding_mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "treasury_token",
+          "docs": [
+            "Receives the spent funding in the devnet build (never burned)."
+          ],
+          "writable": true
+        },
+        {
+          "name": "fee_token",
+          "docs": [
+            "Required when `config.protocol_fee_bps > 0`."
+          ],
+          "writable": true,
+          "optional": true
+        },
+        {
+          "name": "subscription_authority"
+        },
+        {
+          "name": "recurring_delegation",
+          "writable": true
+        },
+        {
+          "name": "subscriptions_event_authority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  118,
+                  101,
+                  110,
+                  116,
+                  95,
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                187,
+                199,
+                119,
+                175,
+                186,
+                104,
+                240,
+                18,
+                62,
+                192,
+                196,
+                209,
+                183,
+                238,
+                137,
+                110,
+                147,
+                1,
+                201,
+                41,
+                197,
+                90,
+                6,
+                186,
+                149,
+                24,
+                33,
+                88,
+                37,
+                140,
+                21,
+                169
+              ]
+            }
+          }
+        },
+        {
+          "name": "subscriptions_program",
+          "address": "De1egAFMkMWZSN5rYXRj9CAdheBamobVNubTsi9avR44"
+        }
+      ],
+      "args": [
+        {
+          "name": "period",
+          "type": "u16"
+        },
+        {
+          "name": "leg_mask",
+          "type": "u32"
+        },
+        {
+          "name": "routes",
+          "type": {
+            "vec": {
+              "defined": {
+                "name": "RouteLeg"
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
       "name": "initialize_config",
       "docs": [
         "Once, signed by the program's upgrade authority."
@@ -1357,7 +1616,42 @@
     {
       "code": 6046,
       "name": "MainnetExecutionUnavailable",
-      "msg": "Mainnet execution is not available until the Jupiter path ships (M8)"
+      "msg": "This build executes installments through execute_installment_routed"
+    },
+    {
+      "code": 6047,
+      "name": "KeeperRequired",
+      "msg": "This build requires a configured keeper_authority"
+    },
+    {
+      "code": 6048,
+      "name": "RoutedExecutionUnavailable",
+      "msg": "This build has no swap path; installments execute through execute_installment"
+    },
+    {
+      "code": 6049,
+      "name": "UnsupportedRoute",
+      "msg": "Route is not a supported Jupiter route_v2 instruction"
+    },
+    {
+      "code": 6050,
+      "name": "RouteTermsMismatch",
+      "msg": "Route amount, fee or positive-slippage terms differ from the leg"
+    },
+    {
+      "code": 6051,
+      "name": "RouteAccountMismatch",
+      "msg": "Route account does not match the leg (authority, accounts, mints, programs)"
+    },
+    {
+      "code": 6052,
+      "name": "RouteAccountForbidden",
+      "msg": "Route includes an account it must not touch"
+    },
+    {
+      "code": 6053,
+      "name": "SwapBalanceMismatch",
+      "msg": "Swap accounts did not return to their starting balances"
     }
   ],
   "types": [
@@ -2176,6 +2470,27 @@
           {
             "name": "paused",
             "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "RouteLeg",
+      "docs": [
+        "One leg's Jupiter instruction for `execute_installment_routed`: its accounts are the next",
+        "`account_count` remaining accounts after the leg's `[asset, price_update]`, and `data` is the",
+        "Jupiter `route_v2` instruction data, forwarded unchanged after the program's checks."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "account_count",
+            "type": "u8"
+          },
+          {
+            "name": "data",
+            "type": "bytes"
           }
         ]
       }

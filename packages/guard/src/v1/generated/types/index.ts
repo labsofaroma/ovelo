@@ -10,3 +10,4 @@
 export * from "./configParams";
 export * from "./legExecuted";
 export * from "./output";
+export * from "./routeLeg";

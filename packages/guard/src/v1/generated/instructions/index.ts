@@ -10,6 +10,7 @@
 export * from "./closePlan";
 export * from "./createPlan";
 export * from "./executeInstallment";
+export * from "./executeInstallmentRouted";
 export * from "./initializeConfig";
 export * from "./pausePlan";
 export * from "./registerAsset";

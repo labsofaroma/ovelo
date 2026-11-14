@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Builds both variants of Aroma Guard v1 with the pinned toolchain (Anchor.toml):
-#   target/build/mainnet/      default features: no minting code, execute fails closed (M8)
+#   target/build/mainnet/      default features: no minting code, Jupiter route_v2 path (M8)
 #   target/build/devnet-mock/  --features devnet-mock: mints at the oracle price (devnet, localnet)
 # SBPF v0: anchor-cli 1.2.1 defaults to --arch v3, but SBPFv3 deployment is inactive on devnet
 # and mainnet (feature BUwGLeF3…, checked 2026-11-14), so a v3 binary cannot be deployed there.
