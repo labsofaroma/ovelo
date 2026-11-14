@@ -34,6 +34,9 @@ export const WEB_PRODUCTION: readonly {
   { name: "UPSTASH_REDIS_REST_TOKEN", level: "required", milestone: "M9" },
   { name: "AROMA_TRADE_SECRET", level: "required", milestone: "M9" },
   { name: "JUPITER_API_KEY", level: "required", milestone: "M9" },
+  // Phase A caps (W3): boot refuses them unset or 0 in production.
+  { name: "AROMA_MAX_TRADE_USDC_RAW", level: "required", milestone: "Phase A" },
+  { name: "AROMA_MAX_DAILY_USDC_RAW", level: "required", milestone: "Phase A" },
   { name: "SENTRY_DSN", level: "required", milestone: "M9" },
   { name: "NEXT_PUBLIC_SENTRY_DSN", level: "required", milestone: "M9" },
   { name: "SENTRY_ENVIRONMENT", level: "recommended", milestone: "M9" },

@@ -113,8 +113,21 @@ export const quoteResponseSchema = z.object({
     unitsConsumed: z.number().int(),
     atomicityWarning: z.string().nullable(),
   }),
+  /** Phase A caps (W3); absent when a server predates them. */
+  limits: z.lazy(() => quoteLimitsSchema).optional(),
 });
 export type QuoteResponse = z.infer<typeof quoteResponseSchema>;
+
+/** Phase A caps (W3): the server's figures for this wallet, raw USDC units (6 decimals). */
+export const quoteLimitsSchema = z.object({
+  perTradeRaw: raw,
+  dailyRaw: raw,
+  usedTodayRaw: raw,
+  remainingTodayRaw: raw,
+  notionalRaw: raw,
+  day: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+});
+export type QuoteLimits = z.infer<typeof quoteLimitsSchema>;
 
 export const tradeRecordSchema = z.object({
   id: z.string(),

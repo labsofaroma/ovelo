@@ -30,7 +30,22 @@ vi.mock("@/server/auth/trade", async (importOriginal) => ({
   }),
   openAuthorization: () => ({
     taker: "4Nd1mYQzvgp7uVDYiHn9wrpTkMtZpZyV9pR9ZJ2q5vPz",
+    requestId: "00000000-0000-4000-8000-000000000001",
+    expiresAt: Date.now() + 60_000,
+    receipt: {
+      inputMint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      inAmount: "10",
+    },
   }),
+}));
+// Phase A caps (W3) have their own route tests (features/caps/routes.test.ts).
+vi.mock("@/features/caps/server/caps", () => ({
+  checkQuoteCaps: vi.fn(async () => ({})),
+  requestedRaw: () => null,
+  reserveForSubmit: vi.fn(async () => "reserved"),
+  reserveActionQuote: vi.fn(async () => {}),
+  settleReservation: vi.fn(async () => {}),
+  settleAfterThrow: vi.fn(async () => {}),
 }));
 vi.mock("@/features/trade/server/service", () => service);
 vi.mock("@/features/portfolio/service", () => ({ loadPortfolio: vi.fn() }));
@@ -109,7 +124,13 @@ describe("v1 trade routes", () => {
     const failed = await quote.POST(post("/api/v1/trade/quote", quoteBody));
     expect(failed.status).toBe(500);
     expect(JSON.stringify(await failed.json())).not.toMatch(/secret/);
-    service.quoteTrade.mockResolvedValue({ requestId: "r" });
+    service.quoteTrade.mockResolvedValue({
+      requestId: "r",
+      quote: {
+        inputMint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+        maxDebit: "10",
+      },
+    });
     const ok = await quote.POST(post("/api/v1/trade/quote", quoteBody));
     expect(ok.status).toBe(200);
     expect(ok.headers.get("cache-control")).toBe("no-store");

@@ -1,3 +1,5 @@
+import { settleReservation } from "@/features/caps/server/caps";
+import { capsDeps } from "@/features/caps/server/deps";
 import { tradeIdSchema } from "@/features/trade/schema";
 import { publicRecord, tradeStatus } from "@/features/trade/server/service";
 import { isV1Enabled } from "@/server/env";
@@ -19,6 +21,8 @@ export async function GET(
     if (!isV1Enabled()) throw new AppError("NOT_FOUND");
     const id = parseValue(tradeIdSchema, (await params).id);
     const record = await tradeStatus(id);
+    // Phase A caps (W3): a final status settles the trade's cap reservation (idempotent).
+    await settleReservation(capsDeps(), id, record.status);
     return Response.json(publicRecord(record), {
       headers: { "Cache-Control": "no-store" },
     });

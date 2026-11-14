@@ -313,3 +313,5 @@ export const termsAcceptances = pgTable(
 
 // Phase A private beta (REWRITE-PLAN §7.3 W2): beta_invites, beta_access (migration 0005).
 export * from "./schema.beta";
+// Phase A per-day caps (REWRITE-PLAN §7.3 W3): trade_cap_days, trade_cap_reservations (0006).
+export * from "./schema.caps";

@@ -18,6 +18,15 @@ const service = vi.hoisted(() => ({
   tradeStatus: vi.fn(),
   publicRecord: (r: unknown) => r,
 }));
+// Phase A caps (W3) have their own route tests (features/caps/routes.test.ts).
+vi.mock("@/features/caps/server/caps", () => ({
+  checkQuoteCaps: vi.fn(async () => ({})),
+  requestedRaw: () => null,
+  reserveForSubmit: vi.fn(async () => "reserved"),
+  reserveActionQuote: vi.fn(async () => {}),
+  settleReservation: vi.fn(async () => {}),
+  settleAfterThrow: vi.fn(async () => {}),
+}));
 vi.mock("@/features/trade/server/service", () => service);
 vi.mock("@/features/markets/server", () => ({
   getMarkets: async () => ({ state: "ok", data: toMarketsView(snapshot()) }),
@@ -69,6 +78,10 @@ beforeEach(() => {
   service.quoteTrade.mockResolvedValue({
     requestId: "r",
     transactions: ["AA"],
+    quote: {
+      inputMint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
+      maxDebit: "10000000",
+    },
   });
 });
 afterEach(() => {

@@ -147,6 +147,22 @@ export const ERROR_CODES = {
     message:
       "Beta access could not be checked right now, so trading is paused. Nothing was quoted or sent.",
   },
+  // Phase A per-trade and per-day caps (W3, additive). Raw USDC units; the messages carry figures.
+  TRADE_CAP_EXCEEDED: {
+    status: 422,
+    message:
+      "This trade is above the private-beta limit per trade. Lower the amount. Nothing was quoted or sent.",
+  },
+  DAILY_CAP_EXCEEDED: {
+    status: 422,
+    message:
+      "This wallet has reached the private-beta daily limit. Try a smaller amount or come back tomorrow (UTC). Nothing was quoted or sent.",
+  },
+  TRADE_CAP_UNAVAILABLE: {
+    status: 503,
+    message:
+      "The beta trading limits could not be checked right now, so trading is paused. Nothing was quoted or sent.",
+  },
   BETA_INVITE_INVALID: {
     status: 403,
     message:

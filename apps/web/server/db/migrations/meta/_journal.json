@@ -43,6 +43,13 @@
       "when": 1794675591034,
       "tag": "0005_beta_access",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1794677796811,
+      "tag": "0006_trade_caps",
+      "breakpoints": true
     }
   ]
 }

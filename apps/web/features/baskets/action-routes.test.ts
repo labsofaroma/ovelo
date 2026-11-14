@@ -20,6 +20,15 @@ vi.mock("@/features/beta/server/gate", () => ({
 vi.mock("@/features/compliance/server/deps", () => ({
   complianceDeps: () => ({ policy: () => ({}) }),
 }));
+// Phase A caps (W3) have their own route tests (features/caps/routes.test.ts).
+vi.mock("@/features/caps/server/caps", () => ({
+  checkQuoteCaps: vi.fn(async () => ({})),
+  requestedRaw: () => null,
+  reserveForSubmit: vi.fn(async () => "reserved"),
+  reserveActionQuote: vi.fn(async () => {}),
+  settleReservation: vi.fn(async () => {}),
+  settleAfterThrow: vi.fn(async () => {}),
+}));
 vi.mock("@/features/markets/server", () => ({
   getMarkets: async () => ({ state: "ok", data: toMarketsView(snapshot()) }),
 }));

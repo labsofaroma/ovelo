@@ -52,7 +52,7 @@ afterAll(async () => {
 });
 
 describe("migrations", () => {
-  it("create the eight tables from REWRITE-PLAN §6, plus basket_versions (M5b, 0002), terms_acceptances (M9, 0004) and the beta tables (Phase A, 0005)", async () => {
+  it("create the eight tables from REWRITE-PLAN §6, plus basket_versions (M5b, 0002), terms_acceptances (M9, 0004) the beta tables (Phase A, 0005) and the cap tables (Phase A, 0006)", async () => {
     const { rows } = await db.query<{ table_name: string }>(
       `SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name NOT LIKE '\\_\\_%' ORDER BY 1`,
     );
@@ -71,6 +71,9 @@ describe("migrations", () => {
       "receipts",
       // M9 compliance gate (0004).
       "terms_acceptances",
+      // Phase A caps (0006).
+      "trade_cap_days",
+      "trade_cap_reservations",
     ]);
   });
 });

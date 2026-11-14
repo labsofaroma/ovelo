@@ -15,12 +15,24 @@ export function creatorEnabled(): boolean {
 
 /**
  * The env both the app and Playwright get: the local Postgres when the creator suite runs, and
- * (Phase A) the private-beta gate, on exactly when that database is there (beta-gate.spec.ts).
+ * Phase A's settings: the private-beta gate, on exactly when that database is there
+ * (beta-gate.spec.ts), and the W3 caps at the beta defaults ($50 per trade, $200 per day). `next
+ * start` is production, where unset caps are refused. The caps live in Postgres, so from Phase A
+ * on the purchase specs need the local database (E2E_CREATOR=0 leaves trading failing closed).
  */
 export function localDbEnv(web: string): Record<string, string> {
+  const caps = {
+    AROMA_MAX_TRADE_USDC_RAW: "50000000",
+    AROMA_MAX_DAILY_USDC_RAW: "200000000",
+  };
   if (!creatorEnabled())
-    return { AROMA_BETA_GATE: "off", E2E_BETA_GATE: "off" };
-  return { ...startLocalDb(web), AROMA_BETA_GATE: "on", E2E_BETA_GATE: "on" };
+    return { ...caps, AROMA_BETA_GATE: "off", E2E_BETA_GATE: "off" };
+  return {
+    ...startLocalDb(web),
+    ...caps,
+    AROMA_BETA_GATE: "on",
+    E2E_BETA_GATE: "on",
+  };
 }
 
 export function startLocalDb(web: string): Record<string, string> {

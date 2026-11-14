@@ -1,5 +1,11 @@
 import { betaDeps } from "@/features/beta/server/deps";
 import { assertBetaAccess } from "@/features/beta/server/gate";
+import {
+  reserveForSubmit,
+  settleAfterThrow,
+  settleReservation,
+} from "@/features/caps/server/caps";
+import { capsDeps } from "@/features/caps/server/deps";
 import { complianceDeps } from "@/features/compliance/server/deps";
 import { assertJurisdiction } from "@/features/compliance/server/gate";
 import { submitRequestSchema } from "@/features/trade/schema";
@@ -34,11 +40,28 @@ export async function POST(request: Request): Promise<Response> {
     );
     // Phase A beta gate (again, after middleware): the wallet named by the VERIFIED
     // authorization. Expiry and the signed bytes are checked by submitSignedTrade.
-    const { taker } = openAuthorization(body.authorization, keyringFromEnv(), {
+    const payload = openAuthorization(body.authorization, keyringFromEnv(), {
       allowExpired: true,
     });
-    await assertBetaAccess(betaDeps(), taker);
-    const record = await submitSignedTrade(body);
+    await assertBetaAccess(betaDeps(), payload.taker);
+    // Phase A caps (W3): re-check, then reserve atomically for this authorization (a replay
+    // counts once). Released if the trade fails or never lands; kept once it confirms.
+    const caps = capsDeps();
+    await reserveForSubmit(caps, {
+      requestId: payload.requestId,
+      wallet: payload.taker,
+      inputMint: payload.receipt.inputMint,
+      amountRaw: BigInt(payload.receipt.inAmount),
+      expiresAt: payload.expiresAt,
+    });
+    let record: Awaited<ReturnType<typeof submitSignedTrade>>;
+    try {
+      record = await submitSignedTrade(body);
+    } catch (error) {
+      await settleAfterThrow(caps, payload.requestId);
+      throw error;
+    }
+    await settleReservation(caps, payload.requestId, record.status);
     return Response.json(publicRecord(record), {
       status:
         record.status === "confirmed" || record.status === "failed" ? 200 : 202,

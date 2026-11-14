@@ -11,6 +11,8 @@ import {
   resolveActionBasket,
 } from "@/features/baskets/actions";
 import { betaDeps } from "@/features/beta/server/deps";
+import { reserveActionQuote } from "@/features/caps/server/caps";
+import { capsDeps } from "@/features/caps/server/deps";
 import { assertTradeAccess } from "@/features/beta/server/gate";
 import { complianceDeps } from "@/features/compliance/server/deps";
 import { requestJurisdiction } from "@/features/compliance/server/gate";
@@ -83,6 +85,15 @@ export const POST = actionRoute<Context>(
       },
     );
     const prepared = await quoteTrade(actionQuoteRequest(basket.id, input));
+    // Phase A caps (W3): the same per-trade and daily checks as the ticket. The Blink client
+    // sends the transaction itself, so the amount is reserved now and kept for the day.
+    await reserveActionQuote(capsDeps(), {
+      requestId: prepared.requestId,
+      wallet: input.account,
+      inputMint: prepared.quote.inputMint,
+      amountRaw: BigInt(prepared.quote.maxDebit),
+      expiresAt: prepared.expiresAt,
+    });
     return Response.json(
       actionTransaction(prepared, basket, actionOrigin(request)),
     );

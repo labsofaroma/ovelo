@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { betaShape } from "./env.beta";
+import { betaShape, capRules } from "./env.beta";
 import { complianceShape } from "./env.compliance";
 import { localnetRules } from "./env.rules";
 import { sentryDsn } from "./env.sentry";
@@ -234,6 +234,7 @@ const flatSchema = z.object(flatShape).superRefine((env, ctx) => {
       message: "must not be set in a production deployment",
     });
   localnetRules(env, ctx);
+  capRules(env, ctx);
   if (env.SOLANA_RPC_URL && !env.SOLANA_RPC_URL.startsWith("https://")) {
     const loopback = /^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?\/?$/.test(
       env.SOLANA_RPC_URL,

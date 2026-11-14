@@ -2,6 +2,7 @@ import { Badge, Button } from "@aroma/ui";
 import { formatUnits } from "@aroma/ui/format";
 import { Fragment, useEffect, useState } from "react";
 import { quoteClock, type AnyQuote } from "../flow";
+import { usd } from "../../caps/config";
 // --- M9 compliance gate (additive) ---
 import { RiskDisclosure } from "../../compliance/components/RiskDisclosure";
 import type { DisclosureSurface } from "../../compliance/disclosures";
@@ -148,6 +149,13 @@ export function ReviewPanel({
               label="Transactions to sign"
               value={String(quote.transactions.length)}
             />
+            {/* Phase A caps (W3): the server's own figures for this wallet. */}
+            {quote.limits ? (
+              <Row
+                label="Beta limits"
+                value={`max ${usd(BigInt(quote.limits.perTradeRaw))} per trade, ${usd(BigInt(quote.limits.remainingTodayRaw))} left today (UTC, before this trade)`}
+              />
+            ) : null}
           </>
         ) : (
           <>

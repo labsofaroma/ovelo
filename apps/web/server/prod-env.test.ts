@@ -20,6 +20,8 @@ const GOOD = {
   UPSTASH_REDIS_REST_TOKEN: "AXXXtoken",
   AROMA_TRADE_SECRET: secret("t"),
   JUPITER_API_KEY: "jup-key",
+  AROMA_MAX_TRADE_USDC_RAW: "50000000",
+  AROMA_MAX_DAILY_USDC_RAW: "200000000",
   // A real-shaped DSN: the public key is URL userinfo (W4, server/env.sentry.ts).
   SENTRY_DSN: `https://${"a1".repeat(16)}@o4507.ingest.us.sentry.io/4508`,
   NEXT_PUBLIC_SENTRY_DSN: `https://${"b2".repeat(16)}@o4507.ingest.sentry.io/4509`,
