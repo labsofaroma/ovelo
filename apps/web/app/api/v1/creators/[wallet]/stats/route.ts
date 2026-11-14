@@ -16,7 +16,6 @@ export const GET = creatorRoute<Context>(
   {
     route: "v1/creators/:wallet/stats",
     mutation: false,
-    limit: { name: "read", limit: 120, windowSeconds: 60 },
   },
   async (_request, context) => {
     const wallet = walletSchema.safeParse((await context.params).wallet);

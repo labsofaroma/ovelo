@@ -86,3 +86,47 @@ describe("creator routes: origin (A2)", () => {
     expect(response.status).toBe(200);
   });
 });
+
+describe("creator routes: rate limits in middleware (A3)", () => {
+  const ip = (n: number) => `198.51.100.${n}`;
+  const challenge = (address: string) =>
+    middleware(
+      post("http://localhost:3000/api/v1/creators/challenge", {
+        "x-real-ip": address,
+      }),
+    );
+
+  it("challenge issuance is limited per client with Retry-After, without blocking other clients or writes", async () => {
+    vi.stubEnv("AROMA_TRUST_PROXY", "true");
+    for (let i = 0; i < 10; i++)
+      expect((await challenge(ip(1))).status).toBe(200);
+    const limited = await challenge(ip(1));
+    expect(limited.status).toBe(429);
+    expect(Number(limited.headers.get("retry-after"))).toBeGreaterThan(0);
+    expect(await limited.json()).toEqual({
+      code: "RATE_LIMITED",
+      message: expect.any(String),
+    });
+    // Another creator is not blocked by the first one's bucket.
+    expect((await challenge(ip(2))).status).toBe(200);
+    // Publishing (write bucket) is a separate budget for the same client.
+    const publish = await middleware(
+      post("http://localhost:3000/api/v1/creators/baskets", {
+        "x-real-ip": ip(1),
+      }),
+    );
+    expect(publish.status).toBe(200);
+  });
+
+  it("invite redemption shares the creator bucket (code guessing is bounded)", async () => {
+    vi.stubEnv("AROMA_TRUST_PROXY", "true");
+    const redeem = () =>
+      middleware(
+        post("http://localhost:3000/api/v1/creators/invites/redeem", {
+          "x-real-ip": ip(3),
+        }),
+      );
+    for (let i = 0; i < 10; i++) expect((await redeem()).status).toBe(200);
+    expect((await redeem()).status).toBe(429);
+  });
+});

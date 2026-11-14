@@ -45,7 +45,6 @@ afterAll(async () => {
 beforeEach(() => {
   vi.stubEnv("AROMA_V1_ENABLED", "true");
   h.state.now = NOW;
-  h.state.limit = { allowed: true };
   h.state.registry = new Map([
     [MINT_A, { symbol: "AAPLx" }],
     [MINT_B, { symbol: "NVDAx" }],

@@ -19,7 +19,6 @@ export const POST = creatorRoute(
   {
     route: "v1/creators/baskets",
     mutation: true,
-    limit: { name: "baskets", limit: 20, windowSeconds: 600 },
   },
   async (request) => {
     const body = await parse(basketBodySchema, { maxBytes: 16_384 })(request);

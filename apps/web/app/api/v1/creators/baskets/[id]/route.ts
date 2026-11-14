@@ -26,7 +26,6 @@ export const GET = creatorRoute<Context>(
   {
     route: "v1/creators/baskets/:id",
     mutation: false,
-    limit: { name: "read", limit: 120, windowSeconds: 60 },
   },
   async (_request, context) => {
     const basket = await getCreatorBasket(
@@ -47,7 +46,6 @@ export const DELETE = creatorRoute<Context>(
   {
     route: "v1/creators/baskets/:id",
     mutation: true,
-    limit: { name: "baskets", limit: 20, windowSeconds: 600 },
   },
   async (request, context) => {
     const id = await basketId(context);

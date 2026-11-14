@@ -35,7 +35,6 @@ afterAll(async () => {
 beforeEach(() => {
   vi.stubEnv("AROMA_V1_ENABLED", "true");
   h.state.now = NOW;
-  h.state.limit = { allowed: true };
 });
 
 async function newInvite() {
@@ -134,15 +133,6 @@ describe("POST /api/v1/creators/challenge", () => {
         "message",
       ]);
     }
-  });
-
-  it("is rate limited (429 with Retry-After)", async () => {
-    h.state.limit = { allowed: false };
-    const response = await challenge(
-      jsonRequest("/api/v1/creators/challenge", "POST", { purpose: "delete" }),
-    );
-    expect(response.status).toBe(429);
-    expect(response.headers.get("retry-after")).toBe("42");
   });
 });
 

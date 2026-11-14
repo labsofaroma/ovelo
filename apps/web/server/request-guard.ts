@@ -45,7 +45,7 @@ export function clientIp(headers: Headers, env: Env): string {
   );
 }
 
-export type Bucket = "read" | "write" | "trade";
+export type Bucket = "read" | "write" | "trade" | "creator";
 
 const TRADE_PATHS = [
   /^\/api\/v1\/trade(\/|$)/,
@@ -55,11 +55,22 @@ const TRADE_PATHS = [
   /^\/api\/buy-basket$/,
 ];
 
-/** Reads, writes and trades are limited separately (AUDIT H-4, M4 B8). */
+/**
+ * Creator calls that are cheap to spam and costly to serve or guess at: issuing a challenge (a
+ * Redis write per call) and redeeming an invite (a code guess). Saving, publishing and archiving
+ * a basket stay in the write bucket; each also consumes a challenge (M5b A3).
+ */
+const CREATOR_PATHS = [
+  /^\/api\/v1\/creators\/challenge$/,
+  /^\/api\/v1\/creators\/invites\/redeem$/,
+];
+
+/** Reads, writes, trades and creator auth are limited separately (AUDIT H-4, M4 B8, M5b A3). */
 export function bucketFor(pathname: string, method: string): Bucket {
   if (method === "GET" || method === "HEAD") return "read";
-  return TRADE_PATHS.some((pattern) => pattern.test(pathname))
-    ? "trade"
+  if (TRADE_PATHS.some((pattern) => pattern.test(pathname))) return "trade";
+  return CREATOR_PATHS.some((pattern) => pattern.test(pathname))
+    ? "creator"
     : "write";
 }
 
@@ -68,6 +79,7 @@ export const LIMITS: Record<Bucket, { limit: number; windowSeconds: number }> =
     read: { limit: 120, windowSeconds: 60 },
     write: { limit: 20, windowSeconds: 60 },
     trade: { limit: 10, windowSeconds: 60 },
+    creator: { limit: 10, windowSeconds: 60 },
   };
 
 /** Request body cap, enforced on Content-Length before the route reads the stream. */

@@ -15,7 +15,6 @@ export const POST = creatorRoute(
   {
     route: "v1/creators/invites/redeem",
     mutation: true,
-    limit: { name: "redeem", limit: 10, windowSeconds: 600 },
   },
   async (request) => {
     const body = await parse(redeemBodySchema, { maxBytes: 4_096 })(request);

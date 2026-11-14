@@ -24,7 +24,6 @@ export const POST = creatorRoute(
   {
     route: "v1/creators/challenge",
     mutation: true,
-    limit: { name: "challenge", limit: 30, windowSeconds: 60 },
   },
   async (request) => {
     const body = await parse(challengeBodySchema, { maxBytes: 16_384 })(

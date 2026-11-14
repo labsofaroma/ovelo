@@ -24,7 +24,7 @@ import {
  * - /v1/* and /api/v1/*: a per-request nonce CSP (no 'unsafe-inline' scripts), the nonce passed to
  *   Next via the request headers.
  * - /api/*: origin allowlist, JSON-only mutations, body cap, and Upstash rate limits split into
- *   read, write and trade buckets (a bounded local fallback evicts the oldest key and never
+ *   read, write, trade and creator buckets (a bounded local fallback evicts the oldest key and never
  *   locks everyone out). The prototype keeps its `{ error }` bodies; v1 gets `{ code, message }`.
  * Runs on the Node.js runtime so it can use the server modules (pino, Upstash).
  */
@@ -50,6 +50,12 @@ function limiter(bucket: Bucket): RateLimiter {
     trade: createRateLimiter({
       name: "api:trade",
       ...LIMITS.trade,
+      redis: getRedis(),
+      required,
+    }),
+    creator: createRateLimiter({
+      name: "api:creator",
+      ...LIMITS.creator,
       redis: getRedis(),
       required,
     }),

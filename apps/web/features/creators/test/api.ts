@@ -1,6 +1,5 @@
 import type { PGlite } from "@electric-sql/pglite";
 import { makeSigner, memoryStore } from "@/server/test/creator-fixtures";
-import type { LimitDecision } from "@/server/ratelimit";
 import type { CreatorsDb } from "../db";
 import { type CreatorDeps, setCreatorDepsForTests } from "../http";
 import { createInvite } from "../invites";
@@ -10,14 +9,13 @@ import { NOW, registry as defaultRegistry } from "./fixtures";
 
 export const SITE = "https://aroma.test";
 
-/** Route-test harness: PGlite, an in-memory nonce store, a settable clock and limiter. */
+/** Route-test harness: PGlite, an in-memory nonce store and a settable clock. */
 export async function apiHarness() {
   const { db, client } = await createTestDb();
   const store = memoryStore();
   const state = {
     now: NOW,
     registry: defaultRegistry as AssetRegistry | Error,
-    limit: { allowed: true } as Pick<LimitDecision, "allowed">,
   };
   const deps: CreatorDeps = {
     db: () => db,
@@ -27,16 +25,6 @@ export async function apiHarness() {
       return state.registry;
     },
     now: () => state.now,
-    limiter: (name, limit) => ({
-      name,
-      check: async () => ({
-        allowed: state.limit.allowed,
-        limit,
-        remaining: 0,
-        retryAfterSeconds: state.limit.allowed ? 0 : 42,
-        source: "local",
-      }),
-    }),
   };
   setCreatorDepsForTests(deps);
   return { db, client, store, state };
