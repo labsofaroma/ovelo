@@ -1,0 +1,61 @@
+name: Lighthouse
+
+# M9 Step 8. AUTHORED ONLY, NEVER RUN ON GITHUB YET (CI not verified). Builds the app with the
+# placeholder env (connects to nothing; market data comes from public read-only providers), starts
+# it, and asserts the budgets on every public page with Lighthouse CI (mobile profile):
+# performance, accessibility and SEO >= 90, and first-load JS on /markets <= 180 kB.
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: "41 4 * * *" # nightly: live providers make single runs noisy
+  pull_request:
+    paths:
+      - "apps/web/app/**"
+      - "apps/web/features/**"
+      - "packages/ui/**"
+      - "apps/web/next.config.mjs"
+      - ".github/workflows/lighthouse.yml"
+      - "apps/web/lighthouserc.json"
+
+concurrency:
+  group: lighthouse-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+env:
+  NEXT_TELEMETRY_DISABLED: "1"
+
+jobs:
+  lighthouse:
+    name: Lighthouse budgets (performance, accessibility, SEO >= 90; /markets JS <= 180 kB)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.31.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - name: Build (placeholder env; a public site URL so robots allows indexing)
+        run: |
+          set -a; . apps/web/.env.example; set +a
+          export AROMA_SITE_URL=https://www.example.com
+          pnpm build:web | tee build.log
+      - name: First-load JS on /markets must stay at or under 180 kB
+        run: |
+          size=$(grep -E '^[├└┌] [ƒ○●] /markets ' build.log | awk '{print $(NF-1), $NF}')
+          echo "/markets first-load JS: $size"
+          kb=$(echo "$size" | awk '{ if ($2=="MB") print $1*1024; else print $1 }')
+          awk -v kb="$kb" 'BEGIN { exit (kb > 180) ? 1 : 0 }'
+      - name: Lighthouse CI
+        working-directory: apps/web
+        run: |
+          set -a; . ./.env.example; set +a
+          export AROMA_SITE_URL=https://www.example.com
+          npx --yes @lhci/cli@0.14.0 autorun --config=lighthouserc.json

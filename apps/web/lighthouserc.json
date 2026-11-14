@@ -1,0 +1,69 @@
+{
+  "ci": {
+    "collect": {
+      "startServerCommand": "pnpm exec next start -p 3400",
+      "startServerReadyPattern": "Ready",
+      "url": [
+        "http://localhost:3400/",
+        "http://localhost:3400/markets",
+        "http://localhost:3400/stock/AAPLx",
+        "http://localhost:3400/baskets",
+        "http://localhost:3400/basket/sol-core",
+        "http://localhost:3400/basket/new",
+        "http://localhost:3400/creators",
+        "http://localhost:3400/invest",
+        "http://localhost:3400/watchlist",
+        "http://localhost:3400/portfolio",
+        "http://localhost:3400/settings",
+        "http://localhost:3400/privacy",
+        "http://localhost:3400/terms"
+      ],
+      "numberOfRuns": 1,
+      "settings": {
+        "onlyCategories": [
+          "performance",
+          "accessibility",
+          "seo",
+          "best-practices"
+        ]
+      }
+    },
+    "assert": {
+      "assertMatrix": [
+        {
+          "matchingUrlPattern": ".*",
+          "assertions": {
+            "categories:performance": [
+              "error",
+              {
+                "minScore": 0.9
+              }
+            ],
+            "categories:accessibility": [
+              "error",
+              {
+                "minScore": 0.9
+              }
+            ]
+          }
+        },
+        {
+          "matchingUrlPattern": "^http://localhost:3400/(markets|stock/.*|baskets|basket/sol-core|creators|privacy|terms)?$",
+          "assertions": {
+            "categories:seo": [
+              "error",
+              {
+                "minScore": 0.9
+              }
+            ]
+          }
+        }
+      ]
+    },
+    "upload": {
+      "target": "filesystem",
+      "outputDir": ".lighthouseci-reports"
+    },
+    "_comment": "SEO >= 90 is asserted on the indexable pages; /basket/new, /invest, /watchlist, /portfolio and /settings are noindex on purpose (is-crawlable fails by design)."
+  }
+}

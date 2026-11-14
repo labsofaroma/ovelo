@@ -8,13 +8,18 @@ on:
   schedule:
     - cron: "17 3 * * *" # nightly; providers can rate-limit, so not on every PR yet
   pull_request:
+    # M9: the pages live at the root; any change to routes, features, the middleware, the redirect
+    # table or the server runs the suites (they cover the root paths, the 410 answers, the
+    # redirects and the RPC failover).
     paths:
-      - "apps/web/features/trade/**"
-      - "apps/web/features/wallet/**"
-      - "apps/web/server/auth/**"
+      - "apps/web/app/**"
+      - "apps/web/features/**"
+      - "apps/web/server/**"
       - "apps/web/middleware.ts"
+      - "apps/web/next.config.mjs"
+      - "apps/web/redirects.mjs"
       - "apps/web/e2e/**"
-      - "apps/web/features/invest/**"
+      - "apps/web/playwright.config.ts"
       - "apps/keeper/**"
       - "packages/guard/**"
 
@@ -31,7 +36,7 @@ env:
 
 jobs:
   smoke:
-    name: v1 pages, axe light/dark (M3 suite)
+    name: Pages, redirects and axe light/dark (smoke suite)
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -79,6 +84,10 @@ jobs:
           sh -c "$(curl -sSfL https://release.anza.xyz/stable/install)"
           echo "$HOME/.local/share/solana/install/active_release/bin" >> "$GITHUB_PATH"
       - name: Record routes, clone accounts, build with the E2E wallet, run the trade suite
+        # TSLAx: the live Jupiter route for the AAPLx default goes through a swap variant the
+        # reviewed schema does not know, which the server refuses (fail closed; Phase A finding).
+        env:
+          E2E_STOCK: TSLA
         run: pnpm --filter @aroma/web e2e:fork
       # The recorded fixtures (Jupiter routes, cloned-account list) are kept as files for replay
       # and diagnosis. They contain public chain data only.
