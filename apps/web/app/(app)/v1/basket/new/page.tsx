@@ -12,7 +12,9 @@ import { v1Metadata } from "@/features/shared/metadata";
 import { pageContainer, textLink } from "@/features/shared/styles";
 import { assertV1Enabled } from "@/features/shared/v1";
 
-export const revalidate = 120;
+// Dynamic, never ISR: M4's nonce CSP needs a fresh nonce per request, and a prerendered page
+// would carry none, so the browser would block the builder's scripts (M4 decision 2).
+export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = v1Metadata({
   title: "Build a basket",

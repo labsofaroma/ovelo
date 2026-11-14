@@ -39,6 +39,41 @@ for (const theme of THEMES) {
   });
 }
 
+test("builder is dynamic: nonce CSP header, nonced scripts, and the island hydrates", async ({
+  page,
+}) => {
+  const errors: string[] = [];
+  page.on("console", (message) => {
+    if (/Content Security Policy|Refused to/i.test(message.text()))
+      errors.push(message.text());
+  });
+  const response = await page.goto("/v1/basket/new");
+  const csp = response?.headers()["content-security-policy"] ?? "";
+  const nonce = /'nonce-([A-Za-z0-9+/=_-]+)'/.exec(csp)?.[1];
+  expect(nonce, "per-request nonce in script-src").toBeTruthy();
+  expect(csp).toContain("'strict-dynamic'");
+  expect(csp).not.toMatch(/script-src[^;]*'unsafe-inline'/);
+  // Every server-rendered script carries this response's nonce (an ISR page would carry none).
+  const scripts = await page
+    .locator("script")
+    .evaluateAll((nodes) =>
+      nodes.map((node) => (node as HTMLScriptElement).nonce),
+    );
+  expect(scripts.length).toBeGreaterThan(0);
+  for (const value of scripts) expect(value).toBe(nonce);
+  // A second request gets a different nonce.
+  const again = await page.request.get("/v1/basket/new");
+  expect(again.headers()["content-security-policy"]).not.toContain(
+    `'nonce-${nonce}'`,
+  );
+  // Hydrated: typing re-renders the client-side preview.
+  await page.getByLabel("Basket name").fill("Hydration check");
+  await expect(page.getByRole("region", { name: "Preview" })).toContainText(
+    "Hydration check",
+  );
+  expect(errors).toEqual([]);
+});
+
 test("builder: pick assets, weights reach 100%, preview renders, draft survives a reload, publish stays disabled", async ({
   page,
 }) => {
