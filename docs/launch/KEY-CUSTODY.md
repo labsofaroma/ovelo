@@ -20,7 +20,7 @@ _Runbook prepared on `launch-prep`. **The owner holds every key**; sessions neve
 | **`AROMA_REVALIDATE_SECRET`** | operator | Vercel env | regenerate | replace and redeploy | can force cache revalidation (load, not data) | replace; rate limits cap abuse |
 | **Turnstile secret** (`TURNSTILE_SECRET_KEY`) | operator | Vercel env | Cloudflare dashboard | rotate in Cloudflare, redeploy | bypass the faucet's human check (devnet test tokens) | rotate in Cloudflare |
 | **QStash signing keys** (current/next) and `QSTASH_TOKEN` | operator | keeper host / Vercel env | Upstash console | Upstash "roll signing key": deploy current+next, then promote | forge keeper runs (the keeper only executes what is due on-chain) / schedule spam | roll keys in Upstash |
-| **Privy** app secret / app ID | operator | Vercel env (ID is public) | Privy dashboard | rotate secret in Privy | v1 code does not use the secret | rotate in Privy; check allowed origins |
+| ~~Privy~~ | none: **removed** (REWRITE-PLAN §7.3 W1, wallet-only login); no Privy keys exist | | | | | |
 | **Provider keys** (Jupiter, RPC, Hermes, Upstash, Neon, Sentry) | operator | Vercel / keeper env | provider dashboards | rotate in the dashboard, redeploy | quota abuse, data access (Neon: receipts, creators, terms acceptances) | rotate; Neon: rotate the role password, review access logs |
 
 ## 2. M12: moving the upgrade authority to Squads, and verifying it

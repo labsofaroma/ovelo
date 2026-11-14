@@ -33,7 +33,7 @@ Milestone = when it is needed: **M9** spot and baskets live; **M10** mainnet rec
 | Neon Postgres | `DATABASE_URL` | receipts, creators, baskets, `terms_acceptances`; run `pnpm db:migrate` (now through `0004`) | console.neon.tech; pooled connection string, `sslmode=require` | **Launch** (point-in-time restore, no autosuspend on the production branch) | M9 |
 | Trade HMAC | `AROMA_TRADE_SECRET`, `AROMA_TRADE_SECRET_PREVIOUS` | HMAC key for trade authorizations (32+ random chars); previous only during a rotation ([KEY-CUSTODY.md §3](./KEY-CUSTODY.md#3-aroma_trade_secret-rotation)) | generate: `openssl rand -base64 48` | — | M9 |
 | Sentry | `SENTRY_DSN`, `NEXT_PUBLIC_SENTRY_DSN`, `SENTRY_ENVIRONMENT`, `SENTRY_AUTH_TOKEN` (build only) | errors and trade breadcrumbs (scrubbed); the auth token uploads source maps | sentry.io project; the auth token is a Vercel build-time secret | **Team** | M9 (see the DSN blocker above) |
-| Privy | `NEXT_PUBLIC_PRIVY_APP_ID` (build-time), `PRIVY_APP_SECRET` (unused by v1 code today) | embedded email wallets (Solana enabled in the dashboard) | dashboard.privy.io; restrict allowed origins to the domain | plan sized for MAU | M9 (recommended) |
+| ~~Privy~~ | none: **removed** (REWRITE-PLAN §7.3 W1, wallet-only login). Do not create a Privy app. | | | | |
 | Revalidate | `AROMA_REVALIDATE_SECRET` | bearer for `POST /api/v1/revalidate`; unset = 503 | `openssl rand -base64 48` | — | M9 (recommended) |
 | Pyth | `PYTH_API_KEY` | Hermes (prices, health probe); Hermes answers 401 without a key | Pyth Pro / Hermes access | per provider | M12 (web: recommended at M9) |
 | Analytics | `NEXT_PUBLIC_PLAUSIBLE_DOMAIN` | consent-gated analytics | plausible.io | — | optional |
@@ -82,6 +82,6 @@ Estimate: one focused session with tests (unit tests for each rule, plus the for
 3. Upstash Redis (eviction off).
 4. Helius or Triton: two keys (server, browser origin-locked); a second provider account for failover.
 5. Jupiter API key; Jito URL.
-6. Sentry project (after the DSN schema fix), Privy app, operator contact.
+6. Sentry project (after the DSN schema fix), operator contact. (No Privy app: wallet-only login, REWRITE-PLAN §7.3 W1.)
 7. Generate `AROMA_TRADE_SECRET` and `AROMA_REVALIDATE_SECRET` directly into Vercel's env UI (never in a file in the repo).
 8. `pnpm check:prod-env` against the Vercel production env (`vercel env pull` into a file **outside** the repo, run the check, delete the file).

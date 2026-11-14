@@ -92,7 +92,7 @@ _Done in place, with no separate package._
 2. **Notifications**: email (Resend), web push and Telegram for executed, failed and low-balance installments.
 3. **Portfolio analytics**: cost basis from on-chain history, P&L per holding and per basket, CSV export.
 4. **Compliance**: geo-blocking (xStocks are not offered to US persons and some other jurisdictions), a terms gate before the first trade, a risk disclosure on every trade review.
-5. **Onboarding**: Privy email → embedded wallet → card on-ramp → first basket in under 2 minutes, with a consent-gated funnel.
+5. **Onboarding**: for standard Solana wallets (no Privy or email wallets, REWRITE-PLAN §7.3 W1): install or connect a wallet → get a little SOL and USDC (on-ramp links) → first basket in under 2 minutes, with a consent-gated funnel.
 6. **Creators**: single-use or expiring invites, profile pages, Blink share buttons, optional fee share from the protocol fee.
 
 ### Phase 6: Scale and trust (after launch)
