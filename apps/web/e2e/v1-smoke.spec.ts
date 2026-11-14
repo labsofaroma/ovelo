@@ -26,24 +26,24 @@ let basketPath = "";
 
 test.beforeAll(async ({ browser }) => {
   const page = await browser.newPage();
-  stockPath = await firstHref(page, "/v1/markets?priced=1", "/v1/stock/");
-  basketPath = await firstHref(page, "/v1/baskets", "/v1/basket/");
+  stockPath = await firstHref(page, "/markets?priced=1", "/stock/");
+  basketPath = await firstHref(page, "/baskets", "/basket/");
   await page.close();
 });
 
 const PAGES = [
-  { name: "landing", path: () => "/v1" },
-  { name: "markets", path: () => "/v1/markets" },
+  { name: "landing", path: () => "/" },
+  { name: "markets", path: () => "/markets" },
   {
     name: "markets (filtered)",
-    path: () => "/v1/markets?issuer=xstocks&sort=change",
+    path: () => "/markets?issuer=xstocks&sort=change",
   },
   { name: "stock", path: () => stockPath },
-  { name: "baskets", path: () => "/v1/baskets" },
+  { name: "baskets", path: () => "/baskets" },
   { name: "basket", path: () => basketPath },
-  { name: "watchlist", path: () => "/v1/watchlist" },
-  { name: "privacy", path: () => "/v1/privacy" },
-  { name: "terms", path: () => "/v1/terms" },
+  { name: "watchlist", path: () => "/watchlist" },
+  { name: "privacy", path: () => "/privacy" },
+  { name: "terms", path: () => "/terms" },
 ];
 
 for (const theme of THEMES) {
@@ -63,7 +63,7 @@ for (const theme of THEMES) {
 }
 
 test("every price on markets carries a source and a time", async ({ page }) => {
-  await page.goto("/v1/markets?priced=1");
+  await page.goto("/markets?priced=1");
   await expect(
     page.getByText(/^As of \d{1,2} \w+ \d{4}, \d{2}:\d{2} UTC$/).first(),
   ).toBeVisible();
@@ -74,7 +74,7 @@ test("every price on markets carries a source and a time", async ({ page }) => {
   await expect(firstPriceCell).toContainText(/Jupiter|issuer|No token price/);
 });
 
-test("stock page: a labelled trade ticket and no quote until one is requested (M4)", async ({
+test("stock page: a labelled trade ticket, and no quote without a confirmed location (M4, M9)", async ({
   page,
 }) => {
   await page.goto(stockPath);
@@ -84,7 +84,12 @@ test("stock page: a labelled trade ticket and no quote until one is requested (M
   await expect(
     page.getByRole("radio", { name: "Paper practice" }),
   ).toBeVisible();
-  await expect(page.getByRole("button", { name: "Get quote" })).toBeDisabled();
+  // M9 compliance gate: this server trusts no proxy, so the location is unknown and mainnet
+  // purchases are honestly turned off (fail closed): no quote button, nothing quoted.
+  await expect(
+    page.getByText(/Your location could not be confirmed/),
+  ).toBeVisible();
+  await expect(page.getByRole("button", { name: "Get quote" })).toHaveCount(0);
   await expect(page.getByText(/minimum received/i)).toHaveCount(0);
 });
 
@@ -92,7 +97,7 @@ test("stale state appears when the observation ages (forced via the browser cloc
   page,
 }) => {
   await page.clock.install({ time: Date.now() + 2 * 60 * 60_000 });
-  await page.goto("/v1/markets");
+  await page.goto("/markets");
   await expect(page.locator('[data-freshness="stale"]').first()).toHaveText(
     "Stale",
   );
@@ -101,7 +106,7 @@ test("stale state appears when the observation ages (forced via the browser cloc
 test("watchlist: star on markets, row appears on the watchlist page", async ({
   page,
 }) => {
-  await page.goto("/v1/markets?priced=1");
+  await page.goto("/markets?priced=1");
   const star = page
     .locator("tbody tr")
     .first()
@@ -110,13 +115,13 @@ test("watchlist: star on markets, row appears on the watchlist page", async ({
   const name = (await star.getAttribute("aria-label"))!.replace("Watch ", "");
   await star.click();
   await expect(star).toHaveAttribute("aria-pressed", "true");
-  await page.goto("/v1/watchlist");
+  await page.goto("/watchlist");
   await expect(page).toHaveURL(/\?m=/);
   await expect(page.locator("tbody")).toContainText(name);
 });
 
 test("unknown stock is a 404 with a helpful page", async ({ page }) => {
-  const response = await page.goto("/v1/stock/NOTAREALSYMBOLx");
+  const response = await page.goto("/stock/NOTAREALSYMBOLx");
   expect(response?.status()).toBe(404);
   await expect(
     page.getByRole("heading", { name: "Stock not found" }),
@@ -125,7 +130,7 @@ test("unknown stock is a 404 with a helpful page", async ({ page }) => {
 });
 
 test("unknown basket is a 404 with a helpful page", async ({ page }) => {
-  const response = await page.goto("/v1/basket/not-a-basket");
+  const response = await page.goto("/basket/not-a-basket");
   expect(response?.status()).toBe(404);
   await expect(
     page.getByRole("heading", { name: "Basket not found" }),
@@ -134,9 +139,9 @@ test("unknown basket is a 404 with a helpful page", async ({ page }) => {
 });
 
 test("OG image and sitemap entries exist", async ({ request }) => {
-  const og = await request.get("/v1/og.png");
+  const og = await request.get("/og.png");
   expect(og.status()).toBe(200);
   expect(og.headers()["content-type"]).toContain("image/png");
   const sitemap = await (await request.get("/sitemap.xml")).text();
-  expect(sitemap).toContain("/v1/markets");
+  expect(sitemap).toContain("/markets");
 });

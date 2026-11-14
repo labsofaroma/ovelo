@@ -18,8 +18,9 @@ const v1Env = { ...process.env, AROMA_V1_ENABLED: "true" } as Record<
 
 export default defineConfig({
   testDir: "./e2e",
-  // The M4 trade suite needs the local fork (pnpm e2e:fork, e2e/trade.config.ts).
-  testIgnore: ["trade/**"],
+  // The trade suite needs the local fork (pnpm e2e:fork, e2e/trade.config.ts) and the invest
+  // suite the local validator and keeper (pnpm e2e:invest, e2e/invest.config.ts).
+  testIgnore: ["trade/**", "invest/**"],
   fullyParallel: false,
   workers: 2,
   reporter: [["list"]],
@@ -30,14 +31,14 @@ export default defineConfig({
   webServer: [
     {
       command: `next start -p ${PORT}`,
-      url: `http://localhost:${PORT}/v1/privacy`,
+      url: `http://localhost:${PORT}/privacy`,
       env: v1Env,
       reuseExistingServer: true,
       timeout: 120_000,
     },
     {
       command: `next start -p ${OUTAGE_PORT}`,
-      url: `http://localhost:${OUTAGE_PORT}/v1/privacy`,
+      url: `http://localhost:${OUTAGE_PORT}/privacy`,
       env: {
         ...v1Env,
         // `next start` runs with NODE_ENV=production, where test switches are off unless opted in.
