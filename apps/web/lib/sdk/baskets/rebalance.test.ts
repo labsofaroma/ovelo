@@ -1,11 +1,9 @@
 import { expect, test } from "vitest";
-import { Keypair } from "@solana/web3.js";
 import { allocateBasketInput } from "./atomic-swap";
 import {
   calculateBasketRebalance,
   calculateTimeWeightedReturn,
 } from "./rebalance";
-const key = () => Keypair.generate().publicKey;
 
 test("basket allocations conserve every unit with deterministic remainders", () => {
   const targets = [

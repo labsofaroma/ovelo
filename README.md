@@ -8,14 +8,19 @@ A self-custody interface for tokenized securities on Solana. You can research st
 
 ```
 apps/
-  web/              Next.js 15 App Router: UI + API routes (/api/*)
-    app/            pages and route handlers
-    components/     aroma/ (product UI), trading/, ui/, auth/
-    lib/server/     server-only logic: trading, baskets, recurring keeper, creators, caching
-    tests/          node:test suites
+  web/              Next.js 15 App Router: pages, /api/v1 route handlers, middleware
+    app/            route groups (app), (marketing); api/v1; actions.json
+    features/       product code by feature (markets, stock, baskets, trade, invest, …)
+    server/         server-only infrastructure (env, rpc, auth, db, http, telemetry)
+    lib/sdk/        chain, market and basket helpers
+    e2e/            Playwright suites (smoke, local mainnet fork, local validator)
+  keeper/           QStash-triggered recurring-plan keeper (devnet today)
 packages/
-  anchor/           aroma_guard Anchor program (Rust) + LiteSVM tests
-docs/               protocol, operations, audit and roadmap
+  contracts/        Aroma Guard v1 Anchor program (Rust) + LiteSVM tests
+  guard/            @aroma/guard: Codama client, builders, Pyth and Jupiter helpers
+  ui/               @aroma/ui: tokens.css, primitives, Brand, AssetAvatar
+  config/           shared tsconfig, ESLint, Prettier and Vitest presets
+docs/               architecture, protocol, operations, audit, launch runbooks
 ```
 
 See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for how the pieces fit together.
@@ -30,7 +35,7 @@ pnpm install
 cp apps/web/.env.example apps/web/.env.local   # fill in what you need
 pnpm dev:web                                   # http://localhost:3000
 ```
-Every variable is documented inline in `apps/web/.env.example`. The minimum for local browsing is none; public RPC defaults apply. Trading needs `JUPITER_API_KEY` and `AROMA_TRADE_SECRET`. The v1 foundation (`AROMA_V1_ENABLED=true`) also requires `DATABASE_URL`, `UPSTASH_REDIS_REST_URL`/`_TOKEN` and `SOLANA_RPC_URL`; it is off by default so the prototype boots without them.
+Every variable is documented inline in `apps/web/.env.example`; copy it to `apps/web/.env.local` (its placeholders boot the app and connect to nothing). Boot and build always require `SOLANA_RPC_URL`, `DATABASE_URL`, `UPSTASH_REDIS_REST_URL`/`_TOKEN` and `AROMA_TRADE_SECRET`; real trading also needs `JUPITER_API_KEY`. `AROMA_TRADING=off` pauses trading.
 
 ## Scripts
 | Command | What it does |

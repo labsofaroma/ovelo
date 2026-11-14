@@ -1,5 +1,5 @@
 /**
- * Pure request-policy decisions for middleware (ported from lib/server/request-policy.ts and the
+ * Pure request-policy decisions for middleware (ported from the prototype's request-policy.ts and the
  * prototype middleware). No I/O and no `server-only`, so they are unit-tested directly.
  */
 

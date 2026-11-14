@@ -1,4 +1,3 @@
-import type { MarketAsset } from "../markets";
 
 /** Mainnet swap contracts shared by web and mobile. Amounts are decimal strings. */
 export interface TradableAsset {

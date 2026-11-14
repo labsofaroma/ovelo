@@ -19,7 +19,7 @@ import {
 } from "./schema";
 
 /**
- * Creator baskets on Postgres (REWRITE-PLAN §5.2: replaces lib/server/creator-store.ts, which
+ * Creator baskets on Postgres (REWRITE-PLAN §5.2: replaces the prototype's creator-store.ts, which
  * used Redis as a database, and the reconciliation helper, which only batched RPC reads for
  * subscription stats that are not part of v1 creators).
  *

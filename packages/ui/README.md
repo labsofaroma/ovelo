@@ -96,10 +96,7 @@ Deliberately _not_ tokens: the landing page's editorial display sizes, serif acc
 
 The prototype is on Tailwind v3 and must keep building until M7. v4 is added without touching it:
 
-- **v4 for new code only.** `apps/web/app/aroma-ui.v4.css` is the v4 entry, imported by the `(app)` layout. Ladle uses `.ladle/styles.css` (full v4 with preflight).
-- **Routed by file.** Next only accepts PostCSS plugins as strings, and `@tailwindcss/postcss` would inline the prototype's `@import` chain and choke on `@tailwind base`. `apps/web/postcss/tailwind-router.cjs` runs v3 on every stylesheet except `*.v4.css`, which go to v4 only. Neither version sees the other's input. Proof: the compiled prototype CSS is byte-identical before and after (same content hashes).
-- **No preflight, no cascade layer in the app.** The prototype's global rules are unlayered (`button { border: 0 }`, `:focus-visible { ... }`), and unlayered CSS beats layered CSS, so layered v4 utilities would silently lose. The app entry imports utilities without `layer()` and skips preflight (the prototype's `foundation.css` already resets the page). Consequence: components must not depend on preflight rules that `foundation.css` lacks. The workbench uses full preflight and the app does not, so check a new primitive in both: Ladle, and the `ui-preview` route (`AROMA_V1_ENABLED=true`).
-- **Cleanup.** At M7 delete the router, point `postcss.config.js` at `@tailwindcss/postcss`, drop Tailwind v3, and switch the entry to `@import "tailwindcss"`.
+- **Tailwind v4 only (M9).** `apps/web/app/aroma-ui.css` is the app's single entry, imported by the root layouts: theme, preflight and utilities in declared cascade layers (`theme, base, components, utilities`), then `fonts.css`, `tokens.css` and `theme.css`. Ladle uses `.ladle/styles.css` (the same layers). The prototype's Tailwind v3 chain, its PostCSS router and `foundation.css` were removed in M9.
 
 ## Adding a primitive
 
@@ -131,9 +128,8 @@ Fix violations at the token or component, not by suppressing a rule. An unavoida
 
 ## Boundary
 
-`eslint.config.mjs` forbids, in every file of this package: `@aroma/web|keeper|anchor`, any path under `apps/`, `server-only` and server folders, `@solana/*`, `@solana-program/*`, `@coral-xyz/*`, `@privy-io/*`, `@farcaster/*`, `@wallet-standard/*`, `@reown/*`, `@walletconnect/*`, `viem`, `wagmi`, `ethers`, and `next`/`next/*`. Behaviour comes in through props: `Brand` takes a `LinkComponent`, `AssetAvatar` takes an `ImageComponent` (see `apps/web/app/(app)/ui-preview/NextAvatarImage.tsx`).
+`eslint.config.mjs` forbids, in every file of this package: `@aroma/web|keeper`, any path under `apps/`, `server-only` and server folders, `@solana/*`, `@solana-program/*`, `@coral-xyz/*`, `@farcaster/*`, `@wallet-standard/*`, `@reown/*`, `@walletconnect/*`, `viem`, `wagmi`, `ethers`, and `next`/`next/*`. Behaviour comes in through props: `Brand` takes a `LinkComponent`, `AssetAvatar` takes an `ImageComponent` (see `apps/web/app/(app)/ui-preview/NextAvatarImage.tsx`).
 
 ## Deferred
 
-- **`LegalPage`** is not ported: it reads the app's `lib/site` (support email, issues URL), links to app routes and hard-codes an update date, so it is not presentational. It moves in M3 as a feature component that composes `Brand` and these primitives.
-- The prototype's other `components/aroma/*` (Shell, Landing, ThemeMode, ...) move with their pages in M3 to M7.
+- **`LegalPage`** stays an app feature component (`features/marketing`), since it reads app configuration and links app routes; it composes `Brand` and these primitives.

@@ -11,7 +11,7 @@ const U64_MAX = BigInt("18446744073709551615");
 const bad = (detail: string) => new AppError("ROUTE_UNAVAILABLE", { detail });
 
 /**
- * Ported from lib/server/jupiter-lookup-tables.ts. Only tables named by Jupiter are loaded, and
+ * Ported from the prototype's jupiter-lookup-tables.ts. Only tables named by Jupiter are loaded, and
  * the RPC's real table contents are authoritative: owner, activation and every address Jupiter
  * relied on must match, or the route is refused.
  */

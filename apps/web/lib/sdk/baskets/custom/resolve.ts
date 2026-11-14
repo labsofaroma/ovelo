@@ -1,10 +1,5 @@
 import type { MarketAsset, MarketBasket } from "../../markets";
-import {
-  MAX_CUSTOM_BASKET_LEGS,
-  MIN_CUSTOM_BASKET_LEGS,
-  type BasketAllocation,
-  type ProgrammableBasket,
-} from "./types";
+import { MIN_CUSTOM_BASKET_LEGS, type ProgrammableBasket } from "./types";
 
 /** Resolves a ProgrammableBasket into an executable MarketBasket against the live catalog. */
 export function resolveProgrammableBasket(

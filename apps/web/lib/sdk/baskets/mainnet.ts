@@ -1,8 +1,9 @@
+import type * as Kit from "@solana/kit";
 import { Buffer } from "buffer";
 import {
   PublicKey,
   TransactionInstruction,
-  AddressLookupTableAccount,
+  type AddressLookupTableAccount,
 } from "@solana/web3.js";
 import type { BasketSwapLeg } from "./bundle";
 import {
@@ -20,7 +21,7 @@ import {
  * but its published types still stop at legacy/0. This is the single place that bridges the gap;
  * remove it when kit's types catch up. One kit version is the M2 rule (@solana/subscriptions needs ^7).
  */
-type KitModule = typeof import("@solana/kit");
+type KitModule = typeof Kit;
 /** The shape kit's v1-only setters accept (taken from their own signature, not re-declared). */
 type V1Message = Parameters<
   KitModule["setTransactionMessageComputeUnitLimit"]

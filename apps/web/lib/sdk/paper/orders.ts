@@ -1,5 +1,5 @@
 import type { MarketAsset } from "../markets";
-import type { PaperAccount, PaperOrder, PaperPosition } from "./types";
+import type { PaperAccount, PaperOrder } from "./types";
 
 export function paperAssetPrice(asset: MarketAsset, now: string): number {
   if (!asset.verified || asset.tradingHalted)

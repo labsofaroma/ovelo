@@ -10,7 +10,7 @@ import { AppError } from "@/server/errors";
 import { assertMainnet, type MainnetRpc } from "./rpc";
 
 /**
- * Jito bundles for multi-transaction baskets (ported from lib/server/jito-bundles.ts). Bundles are
+ * Jito bundles for multi-transaction baskets (ported from the prototype's jito-bundles.ts). Bundles are
  * used only when JITO_BLOCK_ENGINE_URL is configured. A rejected or uncertain bundle is NEVER
  * retried as individual transactions (that would be a partial basket). Status comes from chain
  * signatures; a Jito "landed" or a bundle id alone is never reported as confirmed.

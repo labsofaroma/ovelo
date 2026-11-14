@@ -7,7 +7,7 @@ Carried over from `apps/web/components/ui/UI-SOURCES.md` for the components that
 - [shadcn/ui Dropdown Menu](https://ui.shadcn.com/docs/components/dropdown-menu): grouped, portaled menu composition on Base UI Menu. MIT.
 - [shadcn/ui Dialog](https://ui.shadcn.com/docs/components/base/dialog) (Dialog, Sheet): title, description, portal, backdrop and close composition on Base UI Dialog. MIT.
 - shadcn-style composition for Button, Input, Field, Checkbox, Switch, Radio Group, Tabs, Popover, Tooltip, Progress, Toast, Badge, Card, Separator, Skeleton and Spinner: written for Aroma on Base UI parts and tokens; no shadcn source was copied beyond the composition pattern. Base UI is MIT.
-- Brand glyph, wordmark and `AssetAvatar` logic: ported from the prototype's `components/aroma/Brand.tsx` and `AssetAvatar.tsx`. Issuer artwork provenance: `apps/web/public/company-logos/manifest.json`.
+- Brand glyph, wordmark and `AssetAvatar` logic: ported from the prototype's `Brand.tsx` and `AssetAvatar.tsx` (removed in M9). Issuer artwork provenance: `apps/web/public/company-logos/manifest.json`.
 - `Change`: new; the prototype's `Change` (in `MarketUI.tsx`) took a float and relied on color alone.
 
 Not carried over: the Consensys, Kokonut UI and GrowwUI references in the prototype's file describe the Shell and trading screens, which move in M3 and M4.

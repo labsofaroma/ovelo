@@ -10,7 +10,7 @@ export { TURNSTILE_TEST_SECRETS } from "./env.rules";
  * the build-time check script and unit tests. Values are NEVER included in error output.
  *
  * Variables are grouped as public, server, devnet and keeper. The REQUIRED variables always apply
- * (M9: the AROMA_V1_ENABLED flag is gone); format rules apply to any variable that is set.
+ * (M9: the old v1 feature flag is gone); format rules apply to any variable that is set.
  */
 
 const optionalText = z.string().min(1).optional();

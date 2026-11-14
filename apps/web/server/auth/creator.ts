@@ -11,7 +11,7 @@ import { z } from "zod";
 import { AppError } from "../errors";
 
 /**
- * Creator authorization (ported from the prototype's lib/server/creator-auth.ts, REWRITE-PLAN
+ * Creator authorization (ported from the prototype's creator-auth.ts, REWRITE-PLAN
  * §5.2). The server never sees a key: it issues a challenge, the creator's wallet signs the
  * human-readable message, and the server verifies the Ed25519 signature against the wallet address.
  *

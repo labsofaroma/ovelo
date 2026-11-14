@@ -10,7 +10,7 @@ describe("@aroma/config", () => {
     expect(base.compilerOptions.noUncheckedIndexedAccess).toBe(true);
   });
 
-  it("keeps the max-lines allowlist as a list of repo-relative source paths", () => {
+  it("keeps the max-lines allowlist empty (M9: no source file is over 400 lines)", () => {
     const list = JSON.parse(
       readFileSync(
         new URL("../max-lines-allowlist.json", import.meta.url),
@@ -18,7 +18,7 @@ describe("@aroma/config", () => {
       ),
     ) as { max: number; files: string[] };
     expect(list.max).toBe(400);
-    expect(list.files.length).toBeGreaterThan(0);
-    for (const file of list.files) expect(file.startsWith("/")).toBe(false);
+    // Only generated files may ever be listed, and none is today.
+    expect(list.files).toEqual([]);
   });
 });

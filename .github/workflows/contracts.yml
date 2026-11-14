@@ -10,14 +10,12 @@ on:
   push:
     branches: [main]
     paths:
-      - "packages/anchor/**"
       - "packages/contracts/**"
       - "apps/web/lib/sdk/guard/**"
       - "packages/guard/**"
       - ".github/workflows/contracts.yml"
   pull_request:
     paths:
-      - "packages/anchor/**"
       - "packages/contracts/**"
       - "apps/web/lib/sdk/guard/**"
       - "packages/guard/**"
@@ -31,51 +29,6 @@ permissions:
   contents: read
 
 jobs:
-  contracts:
-    name: packages/anchor - cargo test and IDL drift
-    if: github.event_name != 'schedule'
-    runs-on: ubuntu-latest
-    timeout-minutes: 30
-    steps:
-      - uses: actions/checkout@v4
-
-      - uses: dtolnay/rust-toolchain@stable
-
-      - uses: Swatinem/rust-cache@v2
-        with:
-          workspaces: packages/anchor
-
-      - uses: pnpm/action-setup@v4
-        with:
-          version: 10.31.0
-
-      - uses: actions/setup-node@v4
-        with:
-          node-version-file: .nvmrc
-          cache: pnpm
-
-      - name: Install (frozen lockfile)
-        run: pnpm install --frozen-lockfile
-
-      - name: cargo test
-        working-directory: packages/anchor
-        run: cargo test -p aroma_guard
-
-      - name: Regenerate the IDL from the Rust program
-        run: pnpm --filter @aroma/anchor idl:sync
-
-      - name: Fail on IDL drift (AGENTS.md rule 6)
-        run: |
-          if ! git diff --exit-code -- apps/web/lib/sdk/guard/; then
-            echo "::error::apps/web/lib/sdk/guard/ is out of sync with the Rust program. Run 'pnpm --filter @aroma/anchor idl:sync' and commit the result."
-            exit 1
-          fi
-          # A newly generated file that was never committed is drift too.
-          if [ -n "$(git ls-files --others --exclude-standard -- apps/web/lib/sdk/guard/)" ]; then
-            echo "::error::idl:sync produced files that are not committed."
-            exit 1
-          fi
-
   v1:
     name: packages/contracts - cargo test, clippy, both builds, LiteSVM, IDL and Codama drift
     if: github.event_name != 'schedule'

@@ -1,9 +1,9 @@
 import { Buffer } from "buffer";
 import {
-  AddressLookupTableAccount,
+  type AddressLookupTableAccount,
   ComputeBudgetProgram,
   PublicKey,
-  TransactionInstruction,
+  type TransactionInstruction,
   TransactionMessage,
   VersionedTransaction,
 } from "@solana/web3.js";

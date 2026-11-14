@@ -1,4 +1,4 @@
-import type { MarketAsset, MarketSnapshot } from "../markets";
+import type { MarketSnapshot } from "../markets";
 import { resolveMarketBaskets } from "../markets";
 import { executePaperBasket } from "./basket";
 import { executePaperOrder } from "./orders";

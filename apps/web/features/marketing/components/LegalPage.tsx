@@ -4,7 +4,7 @@ import type { LegalDocument } from "../schema";
 import type { SiteContact } from "../site";
 
 /**
- * Port of components/aroma/LegalPage.tsx (deferred from M1). Presentation of a validated
+ * Port of the prototype's LegalPage.tsx (deferred from M1). Presentation of a validated
  * LegalDocument; the shared v1 header/footer come from the layout. RSC, no client code.
  */
 export function LegalPage({

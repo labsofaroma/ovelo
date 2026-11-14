@@ -1,6 +1,6 @@
 /** On-chain Pyth price account reader. */
 
-import { Connection, PublicKey } from "@solana/web3.js";
+import { type Connection, PublicKey } from "@solana/web3.js";
 import { Buffer } from "buffer";
 import { PythOracleError, type PythPriceData } from "./types";
 

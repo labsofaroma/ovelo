@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { RootDocument } from "@/features/shared/components/RootDocument";
 import { siteUrl } from "@/features/shared/site";
-import "../aroma-ui.v4.css";
+import "../aroma-ui.css";
 
 /**
  * Root layout of the v1 marketing pages (landing, privacy, terms) at the root (M4: its own root,

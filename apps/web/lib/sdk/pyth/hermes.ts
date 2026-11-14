@@ -1,8 +1,7 @@
 /** Off-chain Pyth Hermes client and market-asset price hydration. */
 
-import { Buffer } from "buffer";
 import type { MarketAsset } from "../markets";
-import { getEquityFeedId, normalizeSymbol, XSTOCKS_PYTH_FEEDS } from "./feeds";
+import { getEquityFeedId, normalizeSymbol } from "./feeds";
 import {
   PythOracleError,
   type PythFeedInfo,

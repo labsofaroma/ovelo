@@ -1,7 +1,5 @@
 /** Issuer oracle metadata adapter. */
 
-import type { MarketAsset } from "../markets";
-import { XSTOCKS_PYTH_FEEDS } from "./feeds";
 import type { XStocksOracleInfo } from "./types";
 
 /**

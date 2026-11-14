@@ -1,9 +1,5 @@
 import type { MarketAsset } from "../../markets";
-import {
-  MAX_CUSTOM_BASKET_LEGS,
-  MIN_CUSTOM_BASKET_LEGS,
-  type BasketAllocation,
-} from "./types";
+import { MAX_CUSTOM_BASKET_LEGS, type BasketAllocation } from "./types";
 
 /** Calculate equal-weight basis points conserving every indivisible unit via Hare-Niemeyer. */
 export function calculateEqualWeights(
@@ -101,7 +97,7 @@ export function autoBalanceWeights(
   }));
 
   // Re-verify exact 10,000 sum conservation
-  let sumBps = result.reduce((sum, a) => sum + a.weightBps, 0);
+  const sumBps = result.reduce((sum, a) => sum + a.weightBps, 0);
   let diff = 10_000 - sumBps;
   while (diff !== 0) {
     if (diff > 0) {

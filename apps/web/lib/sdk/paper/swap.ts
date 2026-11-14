@@ -1,5 +1,5 @@
 import type { MarketAsset } from "../markets";
-import { executePaperOrder, paperAssetPrice } from "./orders";
+import { paperAssetPrice } from "./orders";
 import type { PaperAccount, PaperOrder, PaperSwapQuote } from "./types";
 
 /** A paper quote uses observed prices on both sides and only units already held. */

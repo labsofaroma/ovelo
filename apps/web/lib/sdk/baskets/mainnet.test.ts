@@ -8,6 +8,7 @@ import {
   TransactionMessage,
   ComputeBudgetProgram,
 } from "@solana/web3.js";
+import { decompileTransactionMessage } from "@solana/kit";
 import * as sdk from "./mainnet";
 const key = () => Keypair.generate().publicKey.toBase58();
 
@@ -98,8 +99,12 @@ test("even compact orders use V1 with explicit resource budgets", async () => {
   expect(built.transactionVersion).toBe(1);
   const { message } = await sdk.inspectWalletTransaction(built.transaction);
   expect(message.version).toBe(1);
-  const config =
-    require("@solana/kit").decompileTransactionMessage(message).config;
+  // kit 7's message types stop at v0 (M2 decision 1); read the v1 config field through a cast.
+  const config = (
+    decompileTransactionMessage(message) as unknown as {
+      config: Record<string, unknown>;
+    }
+  ).config;
   expect(config.computeUnitLimit).toBe(100_000);
   expect(config.loadedAccountsDataSizeLimit).toBe(131072);
   expect(config.priorityFeeLamports).toBe(5000n);

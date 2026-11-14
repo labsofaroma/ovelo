@@ -2,7 +2,7 @@ import { vi } from "vitest";
 
 /**
  * The always-required variables (server/env.schema.ts REQUIRED), with test placeholders. M9: the
- * AROMA_V1_ENABLED flag is gone, so every environment a test parses or boots needs them.
+ * old v1 feature flag is gone, so every environment a test parses or boots needs them.
  */
 export const BASE_ENV = {
   SOLANA_RPC_URL: "https://mainnet.example-rpc.test/k",

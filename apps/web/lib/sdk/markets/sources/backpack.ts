@@ -117,7 +117,7 @@ export function parseBackpackSecurities(
     const symbol = str(value.asset);
     const name = str(value.name);
     if (
-      !/^[A-Z0-9][A-Z0-9.\-]{0,24}\.US$/.test(symbol) ||
+      !/^[A-Z0-9][A-Z0-9.-]{0,24}\.US$/.test(symbol) ||
       !name ||
       !Array.isArray(value.sessions)
     )

@@ -8,19 +8,12 @@ const boundaryMessage =
 const forbidden = [
   // Apps and server code.
   {
-    group: [
-      "@aroma/web",
-      "@aroma/web/*",
-      "@aroma/keeper",
-      "@aroma/keeper/*",
-      "@aroma/anchor",
-      "@aroma/anchor/*",
-    ],
+    group: ["@aroma/web", "@aroma/web/*", "@aroma/keeper", "@aroma/keeper/*"],
     message: boundaryMessage,
   },
   { group: ["**/apps/*", "**/apps/**"], message: boundaryMessage },
   {
-    group: ["server-only", "**/server/**", "**/lib/server/**"],
+    group: ["server-only", "**/server/**"],
     message: boundaryMessage,
   },
   // Wallets and chains.
@@ -29,7 +22,6 @@ const forbidden = [
       "@solana/*",
       "@solana-program/*",
       "@coral-xyz/*",
-      "@privy-io/*",
       "@farcaster/*",
       "@wallet-standard/*",
       "@reown/*",

@@ -8,7 +8,7 @@ import { AppError } from "@/server/errors";
 import { logger } from "@/server/logger";
 
 /**
- * Jupiter Swap API v2 `/build` (ported from lib/server/jupiter-build.ts): a per-process key pool
+ * Jupiter Swap API v2 `/build` (ported from the prototype's jupiter-build.ts): a per-process key pool
  * with pacing and 429 cooldowns, and account-tier widening ONLY when Jupiter says "no route".
  * Auth failures, rate limits and malformed instructions never widen routing.
  *

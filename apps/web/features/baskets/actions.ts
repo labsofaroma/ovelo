@@ -28,7 +28,7 @@ import { routes } from "@/features/shared/routes";
 import { disclosureSentence } from "@/features/compliance/disclosures";
 
 /**
- * Solana Actions for v1 baskets (M5b B4, port of lib/server/basket-buy-actions.ts). There is no
+ * Solana Actions for v1 baskets (M5b B4, port of the prototype's basket-buy-actions.ts). There is no
  * separate trade logic: POST quotes through M4's quoteTrade (the same target rules, routes,
  * simulation and HMAC authorization as the trade ticket) and returns the unsigned transaction
  * for the `account` in the body. The wallet signs and sends it; Aroma never holds a key.

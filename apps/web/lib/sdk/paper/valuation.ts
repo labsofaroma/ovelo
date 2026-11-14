@@ -1,5 +1,4 @@
 import type { MarketAsset } from "../markets";
-import { paperAssetPrice } from "./orders";
 import type { PaperAccount, PaperValuation } from "./types";
 
 export function valuePaperAccount(

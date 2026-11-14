@@ -15,7 +15,7 @@ import { sumFixed, valueOf } from "./valuation";
 
 /**
  * Wallet holdings from mainnet (balances) valued with the cached issuer snapshot (prices with
- * source and as-of). Ported in spirit from lib/server/holdings.ts on lib/sdk. The RPC must
+ * source and as-of). Ported in spirit from the prototype's holdings.ts on lib/sdk. The RPC must
  * report the mainnet genesis first; nothing here writes anything.
  */
 

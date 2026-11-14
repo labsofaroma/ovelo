@@ -44,7 +44,8 @@ describe("SDK rules", () => {
     expect(kits.map(([name]) => name)).toEqual(["@solana/kit"]);
     const offenders = [
       ...sources(join(WEB, "lib")),
-      ...sources(join(WEB, "tests")),
+      ...sources(join(WEB, "features")),
+      ...sources(join(WEB, "server")),
     ].filter(
       (file) =>
         !file.endsWith("sdk-rules.test.ts") &&

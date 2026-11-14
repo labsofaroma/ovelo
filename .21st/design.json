@@ -14,14 +14,13 @@
   },
   "sources": {
     "tokens": [
-      "apps/web/styles/foundation.css",
-      "apps/web/components/aroma/Landing.module.css"
+      "packages/ui/tokens.css",
+      "packages/ui/theme.css"
     ],
     "components": [
-      "apps/web/components/aroma/Brand.tsx",
-      "apps/web/components/aroma/AssetAvatar.tsx",
-      "apps/web/components/aroma/ThemeMode.tsx",
-      "apps/web/components/aroma/MarketUI.tsx"
+      "packages/ui/src",
+      "apps/web/features/shared/components",
+      "apps/web/features/marketing/components"
     ],
     "assets": [
       "apps/web/public/fonts",
@@ -37,7 +36,7 @@
       "forest": "#193c2b",
       "cream": "#f6f5ef",
       "lime": "#d5f478",
-      "source": "Landing.module.css; inherited forest/cream/lime identity"
+      "source": "packages/ui/tokens.css; inherited forest/cream/lime identity"
     },
     "typography": {
       "body": "Local Manrope",

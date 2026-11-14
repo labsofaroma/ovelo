@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { RootDocument } from "@/features/shared/components/RootDocument";
 import { siteUrl } from "@/features/shared/site";
-import "../aroma-ui.v4.css";
+import "../aroma-ui.css";
 
 /**
  * Root layout of the v1 product shell (M4). `(app)`, `(marketing)` and `(prototype)` are separate

@@ -22,7 +22,7 @@ export function tryGetEnv(): EnvResult {
  * Boot-time hook, called from instrumentation.ts. An invalid or incomplete environment stops the
  * process: the variable names and problems go to stderr and the process exits with code 1, so the
  * platform never routes traffic to a half-configured instance. (Next.js would otherwise keep
- * serving and fail every request.) M9: always on; the AROMA_V1_ENABLED flag is gone.
+ * serving and fail every request.) M9: always on; the old v1 feature flag is gone.
  */
 export function assertBootEnv(): void {
   const result = tryGetEnv();

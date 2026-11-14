@@ -59,7 +59,7 @@ const chart = (symbol = "NVDA") => ({
 
 test("coalesces cold loads and serves dated cache immediately while one refresh reuses slow-changing facts", async () => {
   let clock = now;
-  let gate;
+  let gate: Promise<unknown> | undefined = undefined;
   const calls = [];
   const symbol = "CACHEFLOW";
   const cachedAsset = {

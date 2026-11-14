@@ -4,7 +4,6 @@ import {
   type MainnetHolding,
   type OnChainTokenBalance,
 } from "./types";
-import type { MarketAsset } from "../markets";
 
 /** Aggregate every owner account, including Token-2022 and non-associated accounts.
  * Frozen funds remain visible but cannot be offered by Max. Invalid RPC rows fail

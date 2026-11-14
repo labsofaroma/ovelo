@@ -9,9 +9,9 @@ import { betaFindings } from "../server/prod-env.beta";
 import { BETA_GOOD } from "../server/test/beta-env";
 
 /**
- * Phase A W1 + beta profile: the prototype's embedded-wallet (Privy) variables must stay off the
- * wallet-only beta deployment. Kept outside the v1 paths on purpose: `grep -ri privy` over them
- * stays empty (REWRITE-PLAN §7.3 W1).
+ * Phase A W1 + beta profile: a browser-visible variable v1 does not read (for example a leftover
+ * embedded-wallet login id) must stay off the wallet-only beta deployment. The check is generic:
+ * any NEXT_PUBLIC_* outside the v1 schema is refused (REWRITE-PLAN §7.3 W1).
  */
 const findings = (env: Record<string, string>) => [
   ...staticFindings(env),
@@ -19,15 +19,15 @@ const findings = (env: Record<string, string>) => [
 ];
 
 describe("check:prod-env --profile beta", () => {
-  it("refuses the prototype's Privy app id", () => {
-    const env = { ...BETA_GOOD, NEXT_PUBLIC_PRIVY_APP_ID: "privy-app" };
+  it("refuses a browser variable v1 does not read", () => {
+    const env = { ...BETA_GOOD, NEXT_PUBLIC_LEGACY_LOGIN_APP_ID: "legacy-login-app" };
     expect(
-      findings(env).find((f) => f.name === "NEXT_PUBLIC_PRIVY_APP_ID")?.status,
+      findings(env).find((f) => f.name === "NEXT_PUBLIC_LEGACY_LOGIN_APP_ID")?.status,
     ).toBe("forbidden");
     expect(failed(findings(env))).toBe(true);
   });
 
-  it("the CLI exits 0 on a complete beta file (offline) and 1 with Privy set; values never printed", () => {
+  it("the CLI exits 0 on a complete beta file (offline) and 1 with an unknown browser variable set; values never printed", () => {
     const dir = mkdtempSync(join(tmpdir(), "aroma-beta-env-"));
     const file = join(dir, "beta.env");
     const run = (env: Record<string, string>) => {
@@ -72,11 +72,11 @@ describe("check:prod-env --profile beta", () => {
       expect(ok.out).toMatch(/check:prod-env: OK/);
       const bad = run({
         ...BETA_GOOD,
-        NEXT_PUBLIC_PRIVY_APP_ID: "privy-app-id-value",
+        NEXT_PUBLIC_LEGACY_LOGIN_APP_ID: "legacy-login-id-value",
       });
       expect(bad.code).toBe(1);
-      expect(bad.out).toMatch(/FORBIDDEN +NEXT_PUBLIC_PRIVY_APP_ID/);
-      expect(bad.out).not.toContain("privy-app-id-value");
+      expect(bad.out).toMatch(/FORBIDDEN +NEXT_PUBLIC_LEGACY_LOGIN_APP_ID/);
+      expect(bad.out).not.toContain("legacy-login-id-value");
       expect(bad.out).not.toContain(BETA_GOOD.AROMA_TRADE_SECRET);
     } finally {
       rmSync(dir, { recursive: true, force: true });

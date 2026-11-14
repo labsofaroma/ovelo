@@ -26,7 +26,7 @@ updates:
           ["version-update:semver-major", "version-update:semver-minor"]
 
   - package-ecosystem: cargo
-    directory: /packages/anchor
+    directory: /packages/contracts
     schedule:
       interval: weekly
       day: monday

@@ -8,7 +8,6 @@ target
 coverage
 pnpm-lock.yaml
 *.tsbuildinfo
-apps/web/components/
 apps/web/lib/*
 # The v1 contract client (packages/guard) is new code; its generated output and IDL are not.
 !apps/web/lib/sdk/
@@ -19,7 +18,6 @@ apps/web/lib/sdk/guard/*
 packages/guard/src/v1/generated/
 packages/guard/src/v1/idl/
 apps/web/styles/
-apps/web/tests/
 apps/web/scripts/
 apps/web/public/
 apps/web/app/*/
@@ -34,12 +32,10 @@ apps/web/app/*.ts
 apps/web/app/*.css
 apps/web/app/*.svg
 apps/web/app/actions.json
-packages/anchor/
 .21st/
 docs/
 *.md
 apps/web/server/db/migrations/
-apps/web/tailwind.config.js
 apps/web/postcss.config.js
 apps/web/vercel.json
 apps/web/next-env.d.ts
