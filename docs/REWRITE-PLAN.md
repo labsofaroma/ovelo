@@ -698,7 +698,11 @@ Exit criteria (§7): create → 3 installments → close + revoke **on a local v
 - [x] B7: `/v1/invest`: `PlanWizard`, `PlanCard`, `PlanTimeline` (executed with signature, oracle price and amounts; skipped visible, recorded on chain or not yet; pending, due, in progress, being indexed), `ClosePlanDialog`, faucet panel with Turnstile; unavailable state while the devnet record is null; nav link.
 - [x] B8: Vitest for every server, route and keeper module, property tests (timeline vs. a model of the program's bookkeeping, 500 runs; authorization and QStash tampering), LiteSVM for verified posting through the real Wormhole, receiver and v1 binaries (6 cases), coverage gates.
 - [x] B9: `pnpm --filter @aroma/web e2e:invest`, 12/12 (below).
-- [ ] B10: **pending owner** (list in the M7 summary and below).
+- [ ] B10: **pending owner.** The program is on devnet (B0) and a devnet test build now offers a 15-minute period (found while preparing B10: devnet accepted only the presets, so the run would have taken a week of trading days; fixed in `features/invest`, test builds only, with tests). Still needed, exactly:
+  1. Env values, set by the owner (names: `apps/web/server/env.schema.ts`, `apps/keeper/src/env.ts`): `PYTH_API_KEY` (keeper; Hermes returns 401 without it); `UPSTASH_REDIS_REST_URL` and `UPSTASH_REDIS_REST_TOKEN` and `DATABASE_URL` (web and keeper, the same devnet Redis and Neon database, then `pnpm db:migrate`); `QSTASH_CURRENT_SIGNING_KEY` and `QSTASH_NEXT_SIGNING_KEY` (keeper), plus `QSTASH_TOKEN` and a schedule only when the keeper is hosted; `NEXT_PUBLIC_TURNSTILE_SITE_KEY` and `TURNSTILE_SECRET_KEY` (web); `KEEPER_ALERT_WEBHOOK_URL` and `KEEPER_ALERT_FORMAT` (keeper); web `AROMA_V1_ENABLED=true`, `SOLANA_RPC_URL`, `AROMA_TRADE_SECRET`, `AROMA_V1_ALLOW_TEST_SWITCHES=true` (test build only); `KEEPER_KEYPAIR` and `AROMA_V1_FAUCET_KEYPAIR` from the devnet key files (never printed).
+  2. A hosted keeper URL (`KEEPER_PUBLIC_URL`) is optional: without one the keeper runs locally against devnet and is triggered by signed direct calls (`pnpm cli run`), [keeper-operations.md](./keeper-operations.md#local-run-against-devnet).
+  3. The run itself must happen in **US market hours** (equity feeds publish only then; Hermes updates older than 50 s are refused and the installment deferred). Plan: 4 periods of 15 minutes; periods 0 and 1 executed, keeper paused past period 2's window (≈ 30 min) so it is skipped and shown as skipped, period 3 executed; close + revoke; a forced failure into the dead-letter list; the skip and failure alerts.
+  Evidence to collect then: signatures and devnet explorer links, redacted keeper logs, timeline screenshots.
 - [x] B11: `ci.yml` coverage gates for `@aroma/guard` and `@aroma/keeper`; `e2e.yml` job `e2e-invest`. Files only.
 
 **Decisions**
@@ -731,8 +735,9 @@ Exit criteria (§7): create → 3 installments → close + revoke **on a local v
 - Owner (B0): devnet deploy, init (now with the faucet key), register, audit; paste the output; then `V1_DEPLOYMENTS.devnet`, drift and build checks, M6 done.
 - Owner (B10): a Hermes API key, a QStash schedule and signing keys, Turnstile keys, an alert webhook, Upstash and Neon for devnet, and a hosted keeper URL; then the real devnet run (create → 3 installments → close + revoke, keeper included).
 - CI not verified, files only.
+- 2026-11-14 (devnet deploy session): `pnpm typecheck` ✓; `pnpm lint` 0 errors; `pnpm format:check` ✓; `pnpm test` ✓ (web 1,060 + 1 skipped before the test-period fix, then the invest suite 54/54 with 3 new tests; `@aroma/guard` 85; `@aroma/contracts` 30, including the 12-case program ID guard; keeper 29; ui 210; config 2); `idl:check` ✓; Codama drift ✓; `pnpm build:web` flag off ✓ and flag on with `.env.example` ✓, `check-client-secrets: OK` both. Key-material scan: no 64-number array in the tree, the working diff or `git log -p --all`; the only tracked `.env*` is `.env.example`.
 
-**Critical path:** M0 → M2 → M4 (spot trading, shipped) → M6 (contract core and its devnet deploy, owner) → M7 (recurring on devnet) → M8 (mainnet contract path) → M10 (audit, multisig, mainnet beta) → M11 (launch). M9 (cutover) can run any time after M7 and must finish before M10. M7 develops against a local LiteSVM build and the generated client until the owner's devnet deploy lands.
+**Critical path:** M0 → M2 → M4 (spot trading, shipped) → M6 (contract core and its devnet deploy, done 2026-11-14) → M7 (recurring on devnet) → M8 (mainnet contract path) → M10 (audit, multisig, mainnet beta) → M11 (launch). M9 (cutover) can run any time after M7 and must finish before M10. M7 develops against a local LiteSVM build and the generated client until the owner's devnet deploy lands.
 
 ---
 

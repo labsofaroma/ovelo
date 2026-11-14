@@ -68,6 +68,17 @@ The CLI reads the same environment as the server.
 - **QStash signing keys.** QStash rotates current → next. Deploy with both; the keeper accepts either, so a rotation never drops a run. After QStash promotes `next`, set the new pair.
 - **Hermes key, webhook URL, Upstash token, database URL.** Replace the secret and redeploy; no state depends on them.
 
+## Local run against devnet
+
+Without a hosted URL (`KEEPER_PUBLIC_URL` unset), run the keeper on this machine against devnet; QStash cloud cannot reach it, so trigger it with signed direct calls. The CLI signs exactly like QStash (HS256 with `QSTASH_CURRENT_SIGNING_KEY`), so the signature path is the same one production uses.
+
+```bash
+cd apps/keeper
+node --env-file=.env --import tsx src/server.ts            # boot checks devnet genesis and the keeper key, then listens on :8787
+while true; do node --env-file=.env --import tsx src/cli.ts run http://127.0.0.1:8787/run; sleep 60; done   # one signed run per minute
+```
+Equity feeds publish only in US market hours (Mon–Fri 9:30–16:00 ET): outside them every installment is deferred with `hermes_unavailable: stale`, as designed. To make a period skip on purpose, stop the trigger loop for longer than one period plus the catch-up window (window 1: two periods).
+
 ## Environment
 
 See `apps/keeper/src/env.ts` (validated at boot; values never logged) and [M4-DEPLOY.md §6](./M4-DEPLOY.md). Logs are JSON (pino) with secret-named fields and any 64-byte key shape redacted.
