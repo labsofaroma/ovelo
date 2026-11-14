@@ -654,6 +654,59 @@ Exit criteria (§7): LiteSVM suite green ✓; local validator end to end ✓; **
 - M8: Jupiter path, verifiable build hash, Rust coverage.
 - CI not verified, files only.
 
+### M7 status: implemented on branch `m7-recurring-devnet`, cut from `m6-contract-core` (not pushed, not merged; real devnet run pending: owner)
+
+Exit criteria (§7): create → 3 installments → close + revoke **on a local validator ✓** (on devnet: pending the owner's deploy and accounts, B10); skipped periods shown ✓; keeper alerting tested ✓.
+
+**Part A**
+- [x] A1: AUDIT §1 is only the historical record of the prototype contract (no pointer to v1, no milestone tags). ROADMAP, the spec and §7 onward no longer relate v1 to the earlier program (grep in the M7 summary).
+- [x] A2: three M8 plan notes under the §7 table (executor choice of price update when `keeper_authority` is `None`; the older mainnet Subscriptions build; `cargo-llvm-cov`).
+
+**Part B**
+- [ ] B0: **not done: the deploy output was not pasted during M7.** `V1_DEPLOYMENTS.devnet` stays `null`, so `/v1/invest` and every `/api/v1/plans*` and `/api/v1/faucet` route say "not available on devnet yet" (`INVEST_UNAVAILABLE`); nothing is faked. M6 stays open.
+- [x] B1: `packages/guard` (`@aroma/guard`): the Codama client, hand-written builders, decoders, schedule, PDAs, deployments, the Pyth feed registry; re-exported by the web app at `@/lib/sdk/guard/v1` and `@/lib/sdk/pyth/feeds`. One `@solana/kit` (7.1.1). The Codama renderer and the drift test moved with it (contracts' `sync-idl` renders into the package). Its own rules test (no `any`, 400 lines, no `apps/*`, server-only or app aliases) and an 85% gate (99.7% lines, 97.6% branches).
+- [x] B2: cluster-scoped wallet boundary (`features/wallet/cluster.ts`): mainnet by default (unchanged), devnet for `/v1/invest` only (browser RPC must report devnet's genesis, accounts declaring only other chains refused, own storage key, Privy off), and a `localnet` cluster compiled in only by `NEXT_PUBLIC_AROMA_LOCALNET=true` (env schema and secret scan refuse it in production). Every Signer carries its cluster; `ClusterLabel` shows "Devnet: test tokens, no real value".
+- [x] B3: `features/invest/server`: prepare-create (one simulated transaction: Subscriptions authority when missing, the recurring delegation, `create_plan`; a plain-words summary of the `(1 + window) ×` approval and of "at most one installment per period"), prepare-close (close + revoke, and the authority for the last plan of a mint), submit (pa1 authorization + signed bytes, send, confirm, v1 event check, receipts and index; idempotent), `GET /plans?owner=`. Validation mirrors `create_plan`.
+- [x] B4: `plans_index` from chain (`getProgramAccounts` with memcmp on the discriminator and owner), from submit and from the keeper; reconciled on read and by the keeper's reconcile step every run (drift logged and repaired); missing installment receipts backfilled from chain history; settled periods without records are shown as "being indexed", never guessed. Migration `0003_plan_receipts`.
+- [x] B5: `apps/keeper` (closes AUDIT C-4 for devnet in code): QStash-verified `POST /run`, leases, oldest runnable period, leg batches ≤ 3, fully verified Pyth posts (Wormhole VAA verification + receiver `post_update`), simulate/send/confirm, receipts and index, exponential backoff, dead-letter list with a CLI, de-duplicated and rate-limited Slack/Discord alerts, redacted JSON logs, genesis checks at boot and per client. [keeper-operations.md](./keeper-operations.md).
+- [x] B6: `POST /api/v1/faucet` (closes AUDIT H-5 for v1): wallet-signed claim, Turnstile server-side, Redis limits per wallet and per IP, daily budget, 100 test USD + 0.05 SOL for a low wallet, every error logged and surfaced. Owner decision: the test USD mint authority is a dedicated devnet-only faucet key created by `init-devnet` (never the deployer); the audit checks it.
+- [x] B7: `/v1/invest`: `PlanWizard`, `PlanCard`, `PlanTimeline` (executed with signature, oracle price and amounts; skipped visible, recorded on chain or not yet; pending, due, in progress, being indexed), `ClosePlanDialog`, faucet panel with Turnstile; unavailable state while the devnet record is null; nav link.
+- [x] B8: Vitest for every server, route and keeper module, property tests (timeline vs. a model of the program's bookkeeping, 500 runs; authorization and QStash tampering), LiteSVM for verified posting through the real Wormhole, receiver and v1 binaries (6 cases), coverage gates.
+- [x] B9: `pnpm --filter @aroma/web e2e:invest`, 12/12 (below).
+- [ ] B10: **pending owner** (list in the M7 summary and below).
+- [x] B11: `ci.yml` coverage gates for `@aroma/guard` and `@aroma/keeper`; `e2e.yml` job `e2e-invest`. Files only.
+
+**Decisions**
+1. **Price posts are separate transactions, not in the execute transaction.** Measured: one `post_update` is ~580 bytes and a 1-leg `execute_installment` 800 bytes (1,377 together, limit 1,232), so a 3-leg period is 7 transactions (2 VAA, 3 posts, execute, cleanup). The keeper alone writes those accounts and the program re-checks verification level, feed, staleness and confidence, so this costs fees, not safety.
+2. **Faucet mint authority** (owner decision): a devnet-only faucet key (`.keys/devnet-faucet.json`); `init-devnet` refuses the deployer and stops with the `spl-token authorize` command for a test USD created earlier.
+3. **The faucet also needs a wallet signature** (AGENTS.md rule 2; Turnstile alone is not a signature, HMAC or bearer secret). The wallet signs a short claim message naming the cluster.
+4. **Plan authorizations (`pa1`)** reuse M4's keyring with a key derived for this purpose and a different prefix, so trade and plan tokens never cross; no new secret.
+5. **Plans are offered from the on-chain asset registry**; a symbol comes from the asset's registered Pyth feed id. A basket is offered only when every constituent is registered, at its own weights.
+6. **Local infra:** M5's Docker Postgres + Neon proxy, and a Docker Redis behind an Upstash-compatible REST proxy, so web and keeper use the production clients locally. A loopback Redis URL is accepted only with test switches, never in production.
+7. **The local E2E loads Aroma Guard at its program ID with `--upgradeable-program`** and a runtime upgrade authority; no program keypair is read. Every key (deployer, keeper, faucet, wallets, test guardian) is generated at runtime into git-ignored `.e2e-invest/`.
+8. **Hermes stand-in** serves the recorded real devnet AAPL and TSLA prices, freshly timestamped and signed by the test guardian, so the E2E plan is xAAPL 60% / xTSLA 40% (MSFT and NVDA have no recorded price).
+
+**Deviations and findings**
+1. Found and fixed by the new checks: `JSON.stringify` on RPC errors (kit returns bigint) threw in submit; the localnet marker reached a production build through `storageKey()`; the key-material scan flagged a BLAKE2b zero buffer (now 16+ distinct values required); the connected `ConnectButton`'s accessible name did not contain its visible text (axe, an M4 component); `prepare-create` loaded the mainnet market catalog for single-asset plans (30 s cold), which let a period pass before signing; the runner read a stale state file; the UI fork found `parseDecimalToRaw` refused values above 15 digits.
+2. This worktree's first `anchor build` generated a program keypair (`9Z5d…`) because the owner's `FYrr…` keypair lives only in the M6 checkout. Source, `declare_id!` and the IDL are unchanged (`idl:check` passes). **Never deploy with this worktree's `target/deploy/aroma_guard-keypair.json`**; `deploy-devnet.sh` would refuse it (it checks the pubkey).
+3. One `pnpm test` run failed one web test while the cargo build ran alongside; it was not identified and did not recur in two reruns.
+4. Hermes requires an API key (401 without one), so real guardian-signed updates were not exercised; LiteSVM and the E2E use a runtime test guardian with the real Pythnet data source.
+
+**Evidence (all local; CI not verified, files only; nothing deployed; no devnet or mainnet transaction)**
+- `pnpm typecheck` ✓ (6 packages); `pnpm lint` 0 errors (140 warnings, prototype); `pnpm format:check` ✓.
+- `pnpm test`: web Vitest 1,060 passed / 1 skipped (baseline 995 / 1; 24 v1-client tests moved to `@aroma/guard`), legacy 275 pass / 1 skip, `@aroma/ui` 210, `@aroma/guard` 81, `@aroma/contracts` 18, `@aroma/keeper` 29, config 2.
+- Coverage: web 95.65% lines / 88.9% branches, all gates hold (invest server 96% / 81%); `@aroma/guard` 99.7% / 97.6% (gate 85); `@aroma/keeper` 95.5% / 82.5% (gate 80).
+- `pnpm test:contracts` ✓: `cargo test` 25/25 both builds, clippy, both SBPF v0 builds, IDL and Codama drift from `packages/guard`, unit 18, pinned binaries (Subscriptions, receiver, Wormhole), LiteSVM 62/62.
+- `pnpm build:web` flag off ✓ (every new page and route 404; `/`, `/markets`, `/sip` 200) and flag on with `.env.example` ✓; secret scan OK both. On the localnet E2E build without the allow flags the scan fails on the E2E and localnet markers.
+- Local E2E 12/12 and the keeper log (lease, execute, receipt, skip alert, a dead-lettered forced failure with its alerts).
+
+**Shared and prototype files edited:** `AGENTS.md`, `.gitignore`, `.prettierignore`, `.github/{CODEOWNERS,workflows/*}`, `scripts/check-client-secrets.mjs`, `packages/config/eslint/index.js`, `packages/contracts/{package.json,scripts/*,tests/*,programs/…/close_plan.rs (comment)}`, `apps/web/{package.json,next.config.mjs,middleware.ts,eslint.config.mjs,tsconfig.strict.json,vitest.config.ts,.env.example}`, `apps/web/server/{env.schema,errors,request-guard,csp,db/schema}.ts`, `apps/web/features/wallet/*`, `apps/web/features/shared/{routes.ts,components/NavLinks.tsx}`, `apps/web/lib/sdk/{sdk-rules.test.ts,guard/v1/index.ts,pyth/feeds.ts}` (re-exports), docs. No prototype page, the earlier guard client, `packages/anchor` or `/sip` code was changed.
+
+**Open items**
+- Owner (B0): devnet deploy, init (now with the faucet key), register, audit; paste the output; then `V1_DEPLOYMENTS.devnet`, drift and build checks, M6 done.
+- Owner (B10): a Hermes API key, a QStash schedule and signing keys, Turnstile keys, an alert webhook, Upstash and Neon for devnet, and a hosted keeper URL; then the real devnet run (create → 3 installments → close + revoke, keeper included).
+- CI not verified, files only.
+
 **Critical path:** M0 → M2 → M4 (spot trading, shipped) → M6 (contract core and its devnet deploy, owner) → M7 (recurring on devnet) → M8 (mainnet contract path) → M10 (audit, multisig, mainnet beta) → M11 (launch). M9 (cutover) can run any time after M7 and must finish before M10. M7 develops against a local LiteSVM build and the generated client until the owner's devnet deploy lands.
 
 ---
