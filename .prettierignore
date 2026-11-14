@@ -50,3 +50,5 @@ packages/ui/dist
 packages/contracts/.e2e-local/
 packages/contracts/.keys/
 packages/contracts/.devnet/
+.e2e-invest
+.next-e2e-invest

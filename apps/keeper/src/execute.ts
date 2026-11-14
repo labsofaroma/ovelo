@@ -122,6 +122,7 @@ export async function executePlan(
   );
   if (!lease) return { status: "lease_held", plan: address, period };
   const log = deps.log.child({ plan: address, period });
+  log.info({ lease: lease.key }, "lease acquired");
   try {
     if (view.due.newlySkipped > 0)
       await skipAlert(

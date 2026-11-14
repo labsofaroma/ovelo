@@ -1,6 +1,7 @@
 node_modules
 .next
 .next-e2e
+.next-e2e-invest
 # M4 E2E local fork (solana-test-validator ledger, recorded routes, account dumps, run logs)
 .e2e-fork/
 dist
@@ -60,3 +61,4 @@ docs/v2-roadmap-and-architecture.md
 playwright-report
 test-results
 coverage/
+.e2e-invest/

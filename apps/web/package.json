@@ -17,7 +17,8 @@
     "db:check": "drizzle-kit check",
     "db:local": "scripts/local-db.sh",
     "check-env": "tsx scripts/check-env.ts",
-    "e2e:fork": "tsx e2e/fork/run.ts"
+    "e2e:fork": "tsx e2e/fork/run.ts",
+    "e2e:invest": "tsx e2e/invest/run.ts"
   },
   "dependencies": {
     "@aroma/guard": "workspace:*",

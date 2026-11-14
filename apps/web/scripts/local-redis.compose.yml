@@ -1,0 +1,23 @@
+# Local Redis behind an Upstash-compatible REST proxy (serverless-redis-http), for development
+# and the M7 invest E2E. LOCAL ONLY: a fixed test token, bound to 127.0.0.1. The web app and the
+# keeper use the same @upstash/redis client as in production. Started by scripts/local-redis.sh.
+name: aroma-local-redis
+services:
+  redis:
+    image: redis:7.4-alpine
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 1s
+      timeout: 3s
+      retries: 30
+  rest:
+    image: hiett/serverless-redis-http:0.0.10
+    environment:
+      SRH_MODE: env
+      SRH_TOKEN: aroma-local-redis-token
+      SRH_CONNECTION_STRING: redis://redis:6379
+    ports:
+      - "127.0.0.1:8079:80"
+    depends_on:
+      redis:
+        condition: service_healthy
