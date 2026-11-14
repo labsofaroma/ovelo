@@ -56,10 +56,6 @@ export type Bucket = "read" | "write" | "trade" | "creator" | "faucet";
 
 const TRADE_PATHS = [
   /^\/api\/v1\/trade(\/|$)/,
-  /^\/api\/trade\//,
-  /^\/api\/transaction\/execute$/,
-  /^\/api\/bundles\//,
-  /^\/api\/buy-basket$/,
   // v1 Actions quote, build and simulate a basket order (M5b B4); the confirm callback reads
   // a transaction back from mainnet.
   /^\/api\/v1\/actions\//,
@@ -103,9 +99,7 @@ export const LIMITS: Record<Bucket, { limit: number; windowSeconds: number }> =
 /** Request body cap, enforced on Content-Length before the route reads the stream. */
 export function maxBodyBytes(pathname: string): number {
   // Five 4,096-byte transactions are 27,320 base64 bytes before authorization and JSON.
-  return /^\/api\/(bundles\/(execute|status)|v1\/trade\/submit)$/.test(pathname)
-    ? 32_768
-    : 16_384;
+  return /^\/api\/v1\/trade\/submit$/.test(pathname) ? 32_768 : 16_384;
 }
 
 /** The scheme the client used, trusting x-forwarded-proto only behind a trusted proxy. */

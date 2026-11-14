@@ -84,17 +84,18 @@ describe("v1 Action paths in middleware", () => {
     expect(limited.headers.get("access-control-allow-origin")).toBe("*");
   });
 
-  it("prototype Action headers are unchanged (devnet recurring, mainnet buy-baskets)", async () => {
-    const devnet = await middleware(
-      req("/api/actions/recurring/x", {
-        headers: { origin: "https://dial.to" },
-      }),
-    );
-    expect(devnet.headers.get("x-blockchain-ids")).toBe(
-      "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1",
-    );
-    const buy = await middleware(req("/api/actions/buy-baskets/sol-core"));
-    expect(buy.headers.get("x-blockchain-ids")).toBe(MAINNET);
+  it("the removed prototype Action paths answer 410 GONE with mainnet Action headers (M9)", async () => {
+    for (const path of [
+      "/api/actions/recurring/x",
+      "/api/actions/buy-baskets/sol-core",
+    ]) {
+      const gone = await middleware(
+        req(path, { headers: { origin: "https://dial.to" } }),
+      );
+      expect(gone.status).toBe(410);
+      expect(gone.headers.get("x-blockchain-ids")).toBe(MAINNET);
+      expect(gone.headers.get("access-control-allow-origin")).toBe("*");
+    }
   });
 
   it("credentialed v1 APIs still enforce the origin allowlist", async () => {

@@ -14,6 +14,12 @@ export const ERROR_CODES = {
   UNAUTHORIZED: { status: 401, message: "Authentication is required." },
   FORBIDDEN: { status: 403, message: "This action is not allowed." },
   NOT_FOUND: { status: 404, message: "The resource was not found." },
+  // M9: the prototype's API routes were removed; old clients and Blinks get a clear answer.
+  GONE: {
+    status: 410,
+    message:
+      "This endpoint was removed. Use the current Aroma app or its /api/v1 API.",
+  },
   CONFLICT: {
     status: 409,
     message: "The request conflicts with the current state.",

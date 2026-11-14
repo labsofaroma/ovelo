@@ -2,10 +2,10 @@ import { NextRequest } from "next/server";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 /**
- * middleware.ts (M4). The first block is PORTED from the prototype suites that loaded the old
+ * middleware.ts (M4). The first block was PORTED from the prototype suites that loaded the old
  * synchronous middleware in a VM (tests/request-policy.test.mjs, tests/bundle-api.test.ts,
- * tests/basket-buy-actions.test.ts); the same behaviour must hold for prototype routes. The second
- * block covers what M4 adds: nonce CSP on /v1, one HSTS header, split rate-limit buckets.
+ * tests/basket-buy-actions.test.ts); since M9 it runs on v1 paths (the prototype APIs are gone).
+ * The second block covers what M4 adds: nonce CSP on /v1, one HSTS header, split buckets.
  */
 const { middleware } = await import("@/middleware");
 
@@ -22,10 +22,10 @@ const req = (
   init: ConstructorParameters<typeof NextRequest>[1] = {},
 ) => new NextRequest(url, init);
 
-describe("ported prototype middleware behaviour", () => {
+describe("request guards (ported from the prototype suites; v1 paths since M9)", () => {
   it("CORS allows configured browser origins and native requests, never wildcard origins", async () => {
     const response = await middleware(
-      req("http://localhost:3000/api/markets", {
+      req("http://localhost:3000/api/v1/health", {
         method: "OPTIONS",
         headers: { origin: "http://localhost:8081" },
       }),
@@ -40,14 +40,14 @@ describe("ported prototype middleware behaviour", () => {
     expect(
       (
         await middleware(
-          req("http://localhost:3000/api/markets", {
+          req("http://localhost:3000/api/v1/health", {
             headers: { origin: "https://unknown.example" },
           }),
         )
       ).status,
     ).toBe(403);
     expect(
-      (await middleware(req("http://localhost:3000/api/markets"))).status,
+      (await middleware(req("http://localhost:3000/api/v1/health"))).status,
     ).toBe(200);
   });
 
@@ -64,15 +64,15 @@ describe("ported prototype middleware behaviour", () => {
       "https://aroma.example/markets?q=a",
     );
     expect(
-      (await middleware(req("http://127.0.0.1:3000/api/health"))).status,
+      (await middleware(req("http://127.0.0.1:3000/api/v1/health"))).status,
     ).toBe(200);
   });
 
-  it("write endpoints require JSON and limit declared payloads (32 KiB only for bundles and v1 submit)", async () => {
+  it("write endpoints require JSON and limit declared payloads (32 KiB only for v1 submit)", async () => {
     expect(
       (
         await middleware(
-          req("http://localhost:3000/api/trade/order", {
+          req("http://localhost:3000/api/v1/trade/quote", {
             method: "POST",
             body: "amount=1",
           }),
@@ -88,21 +88,19 @@ describe("ported prototype middleware behaviour", () => {
         },
         body: "{}",
       });
-    for (const path of [
-      "/api/bundles/execute",
-      "/api/bundles/status",
-      "/api/v1/trade/submit",
-    ]) {
-      expect((await middleware(post(path, 32_768))).status).toBe(200);
-      expect((await middleware(post(path, 32_769))).status).toBe(413);
-    }
-    expect((await middleware(post("/api/trade/execute", 16_385))).status).toBe(
+    expect(
+      (await middleware(post("/api/v1/trade/submit", 32_768))).status,
+    ).not.toBe(413);
+    expect(
+      (await middleware(post("/api/v1/trade/submit", 32_769))).status,
+    ).toBe(413);
+    expect((await middleware(post("/api/v1/trade/quote", 16_385))).status).toBe(
       413,
     );
     expect(
       (
         await middleware(
-          req("http://localhost:3000/api/trade/order", {
+          req("http://localhost:3000/api/v1/trade/quote", {
             method: "POST",
             headers: { "content-type": "application/jsonp" },
           }),
@@ -115,7 +113,7 @@ describe("ported prototype middleware behaviour", () => {
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("AROMA_TRUST_PROXY", "true");
     const response = await middleware(
-      req("http://aroma.example/api/markets", {
+      req("http://aroma.example/api/v1/health", {
         headers: {
           origin: "https://aroma.example",
           "x-forwarded-proto": "https",
@@ -128,7 +126,7 @@ describe("ported prototype middleware behaviour", () => {
       "https://aroma.example",
     );
     const preflight = await middleware(
-      req("http://aroma.example/api/trade/order", {
+      req("http://aroma.example/api/v1/trade/quote", {
         method: "OPTIONS",
         headers: {
           origin: "https://aroma.example",
@@ -142,30 +140,33 @@ describe("ported prototype middleware behaviour", () => {
     );
   });
 
-  it("invalid canonical URLs fail closed", async () => {
+  it("invalid canonical URLs fail closed with { code, message }", async () => {
     vi.stubEnv("NODE_ENV", "production");
     for (const url of ["https://", "https://user:password@aroma.example"]) {
       vi.stubEnv("AROMA_SITE_URL", url);
-      expect(
-        (await middleware(req("http://aroma.example/api/health"))).status,
-      ).toBe(503);
+      const response = await middleware(
+        req("http://aroma.example/api/v1/health"),
+      );
+      expect(response.status).toBe(503);
+      expect(await response.json()).toEqual({
+        code: "SERVICE_UNAVAILABLE",
+        message: "This service is temporarily unavailable.",
+      });
     }
   });
 
-  it("Action error and OPTIONS headers follow the Action network", async () => {
-    for (const [path, chain] of [
-      ["buy-baskets", "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"],
-      ["baskets", "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1"],
-    ] as const)
-      for (const method of ["OPTIONS", "POST"]) {
-        const response = await middleware(
-          req(`http://localhost:3000/api/actions/${path}/sol-chips`, {
-            method,
-          }),
-        );
-        expect(response.status).toBe(method === "OPTIONS" ? 204 : 415);
-        expect(response.headers.get("X-Blockchain-Ids")).toBe(chain);
-      }
+  it("v1 Action error and OPTIONS responses carry the mainnet Action headers", async () => {
+    for (const method of ["OPTIONS", "POST"]) {
+      const response = await middleware(
+        req("http://localhost:3000/api/v1/actions/baskets/sol-chips", {
+          method,
+        }),
+      );
+      expect(response.status).toBe(method === "OPTIONS" ? 204 : 415);
+      expect(response.headers.get("X-Blockchain-Ids")).toBe(
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
+      );
+    }
   });
 });
 

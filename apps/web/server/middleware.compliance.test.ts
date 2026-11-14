@@ -113,10 +113,10 @@ describe("geo gate in middleware", () => {
     ).toBe(200);
   });
 
-  it("the prototype trade paths answer with the prototype's { error } body", async () => {
+  it("the removed prototype trade paths are gone (410), whatever the country (M9)", async () => {
     const response = await post("/api/trade/execute", country("US"));
-    expect(response.status).toBe(451);
-    expect(await response.json()).toEqual({ error: expect.any(String) });
+    expect(response.status).toBe(410);
+    expect(await response.json()).toMatchObject({ code: "GONE" });
   });
 
   it("an invalid policy fails closed on gated paths", async () => {

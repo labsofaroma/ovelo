@@ -16,7 +16,8 @@ describe("bucketFor", () => {
   it("trades keep their own bucket", () => {
     expect(bucketFor("/api/v1/trade/quote", "POST")).toBe("trade");
     expect(bucketFor("/api/v1/trade/submit", "POST")).toBe("trade");
-    expect(bucketFor("/api/buy-basket", "POST")).toBe("trade");
+    // M9: the prototype trade paths are gone (410 before any bucket), so they have no bucket.
+    expect(bucketFor("/api/buy-basket", "POST")).toBe("write");
   });
 
   it("challenge issuance and invite redemption use the tighter creator bucket", () => {

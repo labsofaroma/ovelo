@@ -89,11 +89,6 @@ describe("gatedSurface: every trading entry point", () => {
     ["/api/v1/trade/submit", "trade"],
     ["/api/v1/actions/baskets/sol-core", "trade"],
     ["/api/v1/actions/baskets/8b2e1c4a-6f0d-4c1e-9a3b-2d5f7e9c1a20", "trade"],
-    ["/api/actions/buy-baskets/x", "trade"],
-    ["/api/trade/execute", "trade"],
-    ["/api/transaction/execute", "trade"],
-    ["/api/bundles/execute", "trade"],
-    ["/api/buy-basket", "trade"],
     ["/api/v1/plans/prepare-create", "devnet"],
     ["/api/v1/faucet", "devnet"],
   ])("POST %s → %s", (path, surface) => {

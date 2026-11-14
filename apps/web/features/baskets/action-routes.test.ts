@@ -53,7 +53,7 @@ afterEach(() => {
 });
 
 describe("flag off", () => {
-  it("every v1 Action route is 404 with Action headers; actions.json has only the prototype rules", async () => {
+  it("every v1 Action route is 404 with Action headers; actions.json lists no rule", async () => {
     flag(false);
     const get = await actions.GET(
       new Request("https://aroma.example/api/v1/actions/baskets/test-basket"),
@@ -69,26 +69,16 @@ describe("flag off", () => {
       params("test-basket"),
     );
     expect(post.status).toBe(404);
-    expect(actionsJsonRules(isV1Enabled()).map((r) => r.pathPattern)).toEqual([
-      "/api/actions/**",
-      "/basket/*",
-      "/baskets/*",
-    ]);
+    // M9 Step 3: the prototype rules went with the prototype's Action routes (410).
+    expect(actionsJsonRules(isV1Enabled())).toEqual([]);
   });
 });
 
 describe("flag on", () => {
-  it("actions.json maps /v1/basket/* to the v1 Action, keeping the prototype rules", async () => {
+  it("actions.json maps /v1/basket/* to the v1 Action, and nothing to a removed route", async () => {
     flag(true);
-    const rules = { rules: actionsJsonRules(isV1Enabled()) };
-    expect(rules.rules[0]).toEqual({
-      pathPattern: "/v1/basket/*",
-      apiPath: "/api/v1/actions/baskets/*",
-    });
-    expect(rules.rules.slice(1).map((r) => r.pathPattern)).toEqual([
-      "/api/actions/**",
-      "/basket/*",
-      "/baskets/*",
+    expect(actionsJsonRules(isV1Enabled())).toEqual([
+      { pathPattern: "/v1/basket/*", apiPath: "/api/v1/actions/baskets/*" },
     ]);
   });
 

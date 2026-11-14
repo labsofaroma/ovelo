@@ -150,15 +150,18 @@ describe("beta gate in middleware", () => {
     ).toBe("pass");
   });
 
-  it("prototype trading routes are closed while the gate is on ({ error } body)", async () => {
-    for (const path of [
-      "/api/trade/execute",
-      "/api/buy-basket",
-      "/api/bundles/execute",
-    ]) {
-      const response = await post(path, { wallet: ALLOWED });
-      expect(response.status).toBe(403);
-      expect(Object.keys(await response.json())).toEqual(["error"]);
+  it("the removed prototype trading routes answer 410 GONE, gate on or off (M9)", async () => {
+    for (const gate of ["on", "off"]) {
+      vi.stubEnv("AROMA_BETA_GATE", gate);
+      for (const path of [
+        "/api/trade/execute",
+        "/api/buy-basket",
+        "/api/bundles/execute",
+      ]) {
+        const response = await post(path, { wallet: ALLOWED });
+        expect(response.status).toBe(410);
+        expect(await code(response)).toBe("GONE");
+      }
     }
   });
 
@@ -190,7 +193,6 @@ describe("beta gate in middleware", () => {
     expect(
       await code(await post("/api/v1/trade/quote", { taker: OTHER })),
     ).toBe("pass");
-    expect(await code(await post("/api/trade/execute", {}))).toBe("pass");
   });
 
   it("no path spelling of quote or submit reaches the handler without the check (property)", async () => {

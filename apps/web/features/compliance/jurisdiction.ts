@@ -68,12 +68,6 @@ const GATED: readonly {
   // The Action POST that builds a transaction. Its `/confirm` callback only records a receipt
   // for a transaction already sent, so it stays open (a receipt is never lost to the gate).
   { pattern: /^\/api\/v1\/actions\/baskets\/[^/]+$/, surface: "trade" },
-  // Prototype trade paths, until M9 removes them.
-  { pattern: /^\/api\/actions\//, surface: "trade" },
-  { pattern: /^\/api\/trade\//, surface: "trade" },
-  { pattern: /^\/api\/transaction\/execute$/, surface: "trade" },
-  { pattern: /^\/api\/bundles\/execute$/, surface: "trade" },
-  { pattern: /^\/api\/buy-basket$/, surface: "trade" },
   // Devnet: creating a plan and claiming test tokens. Closing a plan (prepare-close, and the
   // submit that sends it) is never blocked: a user can always exit.
   { pattern: /^\/api\/v1\/plans\/prepare-create$/, surface: "devnet" },

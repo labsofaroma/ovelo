@@ -10,6 +10,7 @@ import { normalizePath } from "./features/beta/paths";
 import { buildCsp, generateNonce, HSTS, isV1Path } from "./server/csp";
 import { testSwitchesAllowed } from "./server/env.schema";
 import { ERROR_CODES, type ErrorCode } from "./server/errors";
+import { goneResponse, isGonePath } from "./server/gone";
 import { createRateLimiter, type RateLimiter } from "./server/ratelimit";
 import { getRedis } from "./server/redis";
 import {
@@ -33,7 +34,8 @@ import {
  *   Next via the request headers.
  * - /api/*: origin allowlist, JSON-only mutations, body cap, and Upstash rate limits split into
  *   read, write, trade and creator buckets (a bounded local fallback evicts the oldest key and never
- *   locks everyone out). The prototype keeps its `{ error }` bodies; v1 gets `{ code, message }`.
+ *   locks everyone out). Every refusal is `{ code, message }`.
+ * - M9: the removed prototype APIs answer 410 GONE (server/gone.ts) before any other guard.
  * Runs on the Node.js runtime so it can use the server modules (pino, Upstash).
  */
 
@@ -78,18 +80,13 @@ function limiter(bucket: Bucket): RateLimiter {
 }
 
 function reject(
-  v1: boolean,
-  action: boolean,
   code: ErrorCode,
   headers: Record<string, string> = {},
 ): NextResponse {
-  const message = ERROR_CODES[code].message;
+  const { message, status } = ERROR_CODES[code];
   return NextResponse.json(
-    v1 ? { code, message } : action ? { message } : { error: message },
-    {
-      status: ERROR_CODES[code].status,
-      headers: { "Cache-Control": "no-store", ...headers },
-    },
+    { code, message },
+    { status, headers: { "Cache-Control": "no-store", ...headers } },
   );
 }
 
@@ -121,27 +118,26 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
       destination.search = request.nextUrl.search;
       return NextResponse.redirect(destination, 308);
     } catch {
-      return NextResponse.json(
-        {
-          error:
-            "HTTPS is required. Configure the public site URL and trusted reverse proxy.",
-        },
-        { status: 503 },
-      );
+      // The public site URL is not configured: fail closed.
+      return reject("SERVICE_UNAVAILABLE");
     }
   }
 
   // Phase A: the API guards (origin, limits, geo, beta) match a NORMALISED spelling too, so a
   // variant such as `//api/v1/trade/quote` or `/api/v1/trade/%71uote` cannot skip them.
   const gatePath = normalizePath(pathname);
+  // M9: the removed prototype APIs are gone for good (410), whatever else the request carries.
+  if (isGonePath(gatePath)) {
+    const gone = goneResponse(gatePath);
+    if (!local && protocol === "https")
+      gone.headers.set("Strict-Transport-Security", HSTS);
+    return gone;
+  }
   const v1 = isV1Path(pathname) || isV1Path(gatePath);
   const api = pathname.startsWith("/api/") || gatePath.startsWith("/api/");
-  // Solana Actions: the prototype's /api/actions/* (until M7) and v1's /api/v1/actions/* (M5b).
-  const v1Action = gatePath.startsWith("/api/v1/actions/");
+  // Solana Actions (M5b): /api/v1/actions/* and the actions.json rules file.
   const action =
-    gatePath.startsWith("/api/actions/") ||
-    v1Action ||
-    pathname === "/actions.json";
+    gatePath.startsWith("/api/v1/actions/") || pathname === "/actions.json";
 
   // Nonce CSP for v1 pages and APIs; Next reads the nonce from the request's CSP header.
   const nonce = v1 ? generateNonce() : null;
@@ -173,7 +169,7 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
         development,
       )
     )
-      response = reject(v1, action, "ORIGIN_FORBIDDEN");
+      response = reject("ORIGIN_FORBIDDEN");
     else if (request.method === "OPTIONS")
       response = new NextResponse(null, { status: 204 });
     else {
@@ -182,7 +178,7 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
         clientIp(request.headers, env),
       );
       if (!decision.allowed)
-        response = reject(v1, action, "RATE_LIMITED", {
+        response = reject("RATE_LIMITED", {
           "Retry-After": String(decision.retryAfterSeconds),
         });
       else if (
@@ -193,13 +189,13 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
           ?.trim()
           .toLowerCase() !== "application/json"
       )
-        response = reject(v1, action, "UNSUPPORTED_MEDIA_TYPE");
+        response = reject("UNSUPPORTED_MEDIA_TYPE");
       else if (
         mutation &&
         Number(request.headers.get("content-length") ?? 0) >
           maxBodyBytes(pathname)
       )
-        response = reject(v1, action, "PAYLOAD_TOO_LARGE");
+        response = reject("PAYLOAD_TOO_LARGE");
       // --- M9 compliance gate (additive): geo-blocking on every trading entry point. ---
       else {
         const refusal = edgeRefusal(
@@ -219,24 +215,20 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
             );
         const refused = refusal ?? beta;
         if (refused)
-          response = NextResponse.json(
-            v1 || action ? refused.body : { error: refused.body.message },
-            {
-              status: refused.status,
-              headers: { "Cache-Control": "no-store" },
-            },
-          );
+          response = NextResponse.json(refused.body, {
+            status: refused.status,
+            headers: { "Cache-Control": "no-store" },
+          });
       }
       // --- end M9 compliance gate ---
     }
     if (action) {
       // Public Actions only prepare owner-signed transactions. Credentialed APIs keep the allowlist.
       response.headers.set("Access-Control-Allow-Origin", "*");
+      // v1 Actions are mainnet spot purchases only.
       response.headers.set(
         "X-Blockchain-Ids",
-        pathname.startsWith("/api/actions/buy-baskets/") || v1Action
-          ? "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
-          : "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1",
+        "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp",
       );
       response.headers.set("X-Action-Version", "2.4");
     } else if (origin) {
