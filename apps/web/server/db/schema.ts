@@ -114,6 +114,31 @@ export const basketAllocations = pgTable(
   ],
 );
 
+/**
+ * Every published version of a creator basket, insert-only (migration 0002; triggers refuse UPDATE
+ * and DELETE). `baskets` + `basket_allocations` hold the current version; a receipt leg records
+ * the version it bought (`basketVersion`), which points here for the exact weights (M5b B3).
+ */
+export const basketVersions = pgTable(
+  "basket_versions",
+  {
+    basketId: uuid("basket_id")
+      .notNull()
+      .references(() => baskets.id, { onDelete: "restrict" }),
+    version: integer("version").notNull(),
+    name: text("name").notNull(),
+    ticker: text("ticker").notNull(),
+    allocations: jsonb("allocations")
+      .$type<{ mint: string; symbol: string; weightBps: number }[]>()
+      .notNull(),
+    publishedAt: timestamptz("published_at").notNull(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.basketId, t.version] }),
+    check("basket_versions_version_positive", sql`${t.version} >= 1`),
+  ],
+);
+
 export const RECEIPT_KINDS = [
   "spot",
   "basket",
@@ -153,6 +178,7 @@ export const receipts = pgTable(
     ),
     check("receipts_amount_in_raw", rawAmount("amount_in")),
     index("receipts_wallet_time_idx").on(t.wallet, t.blockTime),
+    index("receipts_basket_idx").on(t.basketId),
   ],
 );
 

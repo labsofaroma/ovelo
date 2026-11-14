@@ -52,12 +52,13 @@ afterAll(async () => {
 });
 
 describe("migrations", () => {
-  it("create all eight tables from REWRITE-PLAN §6", async () => {
+  it("create the eight tables from REWRITE-PLAN §6, plus basket_versions (M5b, 0002)", async () => {
     const { rows } = await db.query<{ table_name: string }>(
       `SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name NOT LIKE '\\_\\_%' ORDER BY 1`,
     );
     expect(rows.map((r) => r.table_name)).toEqual([
       "basket_allocations",
+      "basket_versions",
       "baskets",
       "creators",
       "invites",

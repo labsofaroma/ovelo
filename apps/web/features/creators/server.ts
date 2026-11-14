@@ -1,7 +1,12 @@
 import "server-only";
 import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
 import { validateProgrammableBasket } from "@/lib/sdk/baskets/custom";
-import { basketAllocations, baskets, creators } from "@/server/db/schema";
+import {
+  basketAllocations,
+  baskets,
+  basketVersions,
+  creators,
+} from "@/server/db/schema";
 import { AppError } from "@/server/errors";
 import { type CreatorsDb, mapDbError } from "./db";
 import {
@@ -144,7 +149,8 @@ export async function saveDraft(
 /**
  * Publish a draft, a new basket, or a new version of a published basket. Versioning: the first
  * publish is version 1; each later publish of the same basket increments `version` and replaces
- * the allocations. Archived baskets cannot be republished.
+ * the allocations. Every published version is also kept in `basket_versions` (insert-only).
+ * Archived baskets cannot be republished.
  */
 export async function publishBasket(
   db: CreatorsDb,
@@ -193,24 +199,39 @@ export async function publishBasket(
         status: "published" as const,
         publishedAt: now,
       };
+      const version = row
+        ? row.publishedAt
+          ? row.version + 1
+          : row.version
+        : 1;
       if (row)
         await tx
           .update(baskets)
-          .set({
-            ...fields,
-            version: row.publishedAt ? row.version + 1 : row.version,
-          })
+          .set({ ...fields, version })
           .where(eq(baskets.id, input.basketId));
       else
         await tx.insert(baskets).values({
           id: input.basketId,
           creatorWallet: input.wallet,
           category: CATEGORY,
-          version: 1,
+          version,
           createdAt: now,
           ...fields,
         });
       await replaceAllocations(tx, input.basketId, allocations);
+      // Insert-only history: receipts point at (basket, version) for the exact weights bought.
+      await tx.insert(basketVersions).values({
+        basketId: input.basketId,
+        version,
+        name: content.name,
+        ticker: content.ticker,
+        allocations: allocations.map(({ mint, symbol, weightBps }) => ({
+          mint,
+          symbol,
+          weightBps,
+        })),
+        publishedAt: now,
+      });
     });
   } catch (error) {
     mapDbError(error);
