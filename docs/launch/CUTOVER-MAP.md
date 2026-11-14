@@ -505,7 +505,9 @@ Local, macOS, Node 24.21.0, pnpm 10.31.0, tree at `64c3a17`. Matches Phase A's f
 
 Visual baseline: 13 v1 pages × 390 px and 1440 px × light and dark, full page, from a local `next start` (flag on, `.env.example` placeholders, public mainnet RPC read-only), in the git-ignored `internal-docs/visual-baseline/` with an `index.json` (status, horizontal overflow, applied theme per shot).
 
-## 7. Open questions found by the inventory (for the owner, before the step that needs them)
+## 7. Open questions (all resolved in Phase B)
+
+Resolved by the owner's approval or the session's decisions; see the M9 / Phase B status in [REWRITE-PLAN.md](../REWRITE-PLAN.md): 1–2 approved (Step 1); 3 deleted; 4 kept for development, never served in production; 5 `AROMA_TRADING=off`; 6 fixed (the nav wraps on phones). The list as written at Step 0:
 
 1. **`lib/sdk/baskets/mainnet.ts:65`** (frozen path, rule 7): its only prototype link is the type-only optional field `investmentSetup?: RecurringInvestmentPlan` on the prototype order shape. Deleting `recurring-investing.ts` needs that field removed (no v1 code sets or reads it: `git grep -n investmentSetup -- apps/web ':!apps/web/components' ':!apps/web/lib/server' ':!apps/web/tests'`). Not an import-path move, so it needs approval.
 2. **Frozen-path test edits** (rule 7): deleting the prototype cases from `lib/sdk/baskets/{mainnet,bundle-client,route-health,custom/custom-core}.test.ts` and moving the Jupiter fixture next to `lib/sdk/jupiter/instruction.test.ts` are removals and a path move, no behaviour change. Confirm they count as "import paths moved by the cutover".

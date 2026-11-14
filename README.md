@@ -56,8 +56,9 @@ The prototype scripts that pointed at files that were never committed (`dev:mobi
 - [PRODUCT.md](PRODUCT.md): what Aroma is and the product rules
 - [AGENTS.md](AGENTS.md): conventions for contributors and AI agents
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
-- [docs/aroma-guard-protocol.md](docs/aroma-guard-protocol.md): the on-chain program as deployed
-- [docs/actions-and-collector.md](docs/actions-and-collector.md): Blinks + recurring keeper operations
+- [docs/aroma-guard-v1.md](docs/aroma-guard-v1.md): the Aroma Guard v1 program (devnet until M12)
+- [docs/keeper-operations.md](docs/keeper-operations.md): the recurring keeper, operations and alerts
+- [docs/launch/CUTOVER-RUNBOOK.md](docs/launch/CUTOVER-RUNBOOK.md): the public spot launch, step by step (owner)
 - [docs/AUDIT.md](docs/AUDIT.md): known flaws, ranked
 - [docs/CONTRACT-V1-SPEC.md](docs/CONTRACT-V1-SPEC.md): Aroma Guard v1 contract spec (ground-up rebuild)
 - [docs/ROADMAP.md](docs/ROADMAP.md): v1 rebuild plan (phases and launch scope)

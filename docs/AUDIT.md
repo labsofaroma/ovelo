@@ -156,7 +156,7 @@ The SDK still ships Raydium CPMM helpers (`DEVNET_RAYDIUM_CPMM_PROGRAM`, `decode
 | `scripts/bot.ts` | `keeper:trigger`, `.github/workflows/*` | yes |
 | `scripts/dev-api-tunnel.mjs`, `create-devnet-xstocks.cjs`, `check-client-secrets.mjs`, `audit-devnet-recurring.mjs` | scripts and tests | yes |
 | `tests/` (root) | `pnpm test` | yes |
-| `docs/actions-and-collector.md`, `docs/aroma-guard-protocol.md`, `PRODUCT.md`, `AGENTS.md` | `.env.example`, anchor README, `.21st/DESIGN.md` | **now created** |
+| `docs/actions-and-collector.md`, `docs/aroma-guard-protocol.md`, `PRODUCT.md`, `AGENTS.md` | `.env.example`, anchor README, `.21st/DESIGN.md` | **now created** (the two prototype docs were removed again in M9 with the prototype) |
 
 As a result `pnpm typecheck`, `pnpm test`, `pnpm test:upgrade` and the cron workflow all fail.
 
