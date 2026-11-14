@@ -596,9 +596,9 @@ M5 is split because M4 (wallet + spot trading) was in progress in parallel. **M5
 6. **Shared files edited:** `apps/web/tsconfig.strict.json`, `docs/REWRITE-PLAN.md`. `docs/M5-NEEDS-FROM-M4.md` is new. Nothing in the do-not-edit list was touched.
 7. **Not verified:** CI (files only, nothing pushed); a real Neon database; true parallel redemption on Postgres; wallet signing in a browser (M5b).
 
-### M6 status: implemented on branch `m6-contract-core`, cut from `m5-creators` (not pushed, not merged, devnet deploy pending: owner)
+### M6 status: done. Implemented on branch `m6-contract-core`, cut from `m5-creators` (not pushed, not merged); **deployed to devnet by the owner on 2026-11-14** (recorded on `m7-recurring-devnet`)
 
-Exit criteria (§7): LiteSVM suite green ✓; local validator end to end ✓; **deployed to devnet by the owner: pending**; config initialized and test assets registered: pending (scripts ready, [M6-DEVNET-DEPLOY.md](./M6-DEVNET-DEPLOY.md)). The program is documented in [aroma-guard-v1.md](./aroma-guard-v1.md).
+Exit criteria (§7): LiteSVM suite green ✓; local validator end to end ✓; **deployed to devnet by the owner ✓**; config initialized and test assets registered ✓; `devnet:audit` clean ✓ (addresses, signatures and links in [M6-DEVNET-DEPLOY.md](./M6-DEVNET-DEPLOY.md#deployed-devnet-2026-11-14)). The program is documented in [aroma-guard-v1.md](./aroma-guard-v1.md).
 
 **Part 0 and Part A**
 - [x] Part 0: §7 rewritten through M11 (launch), critical path, §9/§10, ROADMAP phase mapping, spec §9 note, AUDIT milestone tags. Reworded afterwards so v1 stands alone (owner decision during M6).
@@ -625,7 +625,12 @@ Exit criteria (§7): LiteSVM suite green ✓; local validator end to end ✓; **
 - [x] B8: `pnpm --filter @aroma/contracts e2e:local` passes.
 - [x] B9: `deploy-devnet.sh`, `init-devnet.ts`, `register-devnet-assets.ts`, `audit-devnet.ts`, all refusing non-devnet genesis; the runbook; `deployments.ts` holds `null` until the owner's deploy.
 - [x] B10: `contracts.yml` v1 job (files only).
-- [ ] **Open (owner):** devnet deploy, init, register, audit; then the paste-back step.
+- [x] **Devnet deploy (owner, 2026-11-14).** The owner signed every step with their deployer; the agent verified each one read-only.
+  - Program [`FYrrfhrysaGUwCNyTggqyKmTWqpg3vph8gzmSWt7QtTU`](https://explorer.solana.com/address/FYrrfhrysaGUwCNyTggqyKmTWqpg3vph8gzmSWt7QtTU?cluster=devnet), deploy [`2BrA49su…gGvwqeaM`](https://explorer.solana.com/tx/2BrA49sugG85LQDE8oyTMzsSfSZttcvgFv1uKiv8ercRDAk1QDXppZHxvJRwCRe55VowgJdXax2eQJqwgGvwqeaM?cluster=devnet) (slot 522,224,536). Upgrade authority = the owner's devnet deployer `4xAGiZM4st6S94f9sEHzLdyQ8k9Wj71rPrtcj8kGgoha`. On-chain bytecode SHA-256 = the local devnet-mock build (`20f629220437…31293`, 479,312 bytes, SBPF v0). No leftover buffers.
+  - `initialize_config` [`2xsXwoD6…f8RjrJ`](https://explorer.solana.com/tx/2xsXwoD6NcV177QSppSqMJWvcfCcphQrGAYph72Ggaz5SQAzrQ1QHaiM61AK8jLPhJ8yJhhBAkakiH6eo9f8RjrJ?cluster=devnet): config `4RkxYfgq7vFE1BNt4b2DYy27kqh9M9eQpbEYeBx4uzox`, decoded from chain: admin and treasury = deployer, keeper `Some(7qMWtAz…oio2j)`, not paused, fee 0, window 1, slippage 300 bps, staleness 60 s, confidence 200 bps, 500 tUSD cap, funding mints = tUSD only, Token-2022 allow-lists empty. tUSD `2s5AcNQaXiC3GNCqK8Wh7XK8hE3pzB22KtQbMn8DZEZu` (classic SPL, 6 dp, no freeze, mint authority = the devnet faucet key `JBfNfBJc…nrG`).
+  - `register_asset` ×3: xAAPL `3cc8Puuq…Adpc` ([`21c5jVUT…`](https://explorer.solana.com/tx/21c5jVUTb6ykKcEYFkqzcDRCtE2Ca3ZGD1RGKM2mc62qFXw5BXaALYkJ83sTQ69tjw4i3ZZNhCW43ug2VsnYJkpd?cluster=devnet)), xMSFT `3atQKQbc…Hjga` ([`8Xg2NV1N…`](https://explorer.solana.com/tx/8Xg2NV1NCWeLBmBa3S4DCUCD1dDZbfy2jMGHq9rNWQqJfwHJ92qX1YNdPtpM3ixUtjaXg5jRdb5ypzpcTa3HoQY?cluster=devnet)), xNVDA `BM4ccDkz…TAy` ([`8VzxnRCL…`](https://explorer.solana.com/tx/8VzxnRCL3dqo61quqPZ5uYwsAGbnh1asA1aMbfhuwK5aA3UKSYFUZ6NDT8K3fB1w8wwEX6Z26tJ23SSB1SdaDZM?cluster=devnet)). Decoded: Token-2022, 8 dp, ScaledUiAmount, no freeze, mint authority = each `mock_mint` PDA; each asset enabled with the real Pyth equity feed id.
+  - `devnet:audit`: `"passed": true`, 11/11 checks, no issues, `"transactionsSubmitted": 0`.
+  - `V1_DEPLOYMENTS.devnet` filled (`packages/guard/src/v1/deployments.ts`, with config, treasury, keeper, faucet and assets; a test re-derives every PDA and checks the feeds). `/v1/invest` and the plan and faucet routes are now live against devnet when the env is configured.
 
 **Decisions**
 1. **Product decisions applied:** keeper = a devnet-only keeper `7qMWtAz…oio2j` (`update_config` can set `None`); protocol fee 0 bps (path tested at 25 bps); catch-up window 1; test USD only on devnet (4 slots).
@@ -647,6 +652,11 @@ Exit criteria (§7): LiteSVM suite green ✓; local validator end to end ✓; **
 5. **Rust coverage** is not measured: `cargo-llvm-cov` is not installed and installing it was out of bounds.
 6. **Toolchain download:** the first `anchor build` made `cargo-build-sbf` (Agave 3.1.10) download platform-tools v1.57 into `~/.cache/solana` (the install's symlink already pointed there but the folder was missing), and Criterion, and re-register its rustup link. No installed version changed.
 
+**Findings during the devnet deploy (2026-11-14)**
+- A new worktree had a stray program keypair (`9Z5d…`, generated by `anchor build` there); it was renamed to `aroma_guard-keypair.STRAY-9Z5do.json` and the real `FYrr…` key restored. Fixed for good: `check-program-id.mjs` runs in `build.sh` (before `anchor build`, so a missing keypair fails instead of being regenerated, and after) and in `deploy-devnet.sh` (before and after the build), and refuses unless the keypair, `declare_id!`, every `Anchor.toml` entry and the built IDLs agree (`scripts/program-id.test.ts`, 12 cases running the real scripts with stubbed `anchor`/`solana`).
+- A private key string was pasted into the agent session before any deployer existed. The agent did not use it; the owner created a fresh deployer in their own terminal, which is the one deployed with. The runbook now says to create keys outside the agent session and never paste one.
+- Devnet airdrops were rate-limited; funding went to the keeper in one transfer and was split by keeper-signed transfers ([faucet 1 SOL](https://explorer.solana.com/tx/62EJGEDwN1keEy4EsyJQwpirU5EqTLTtSvwQG74RiZrRXwTpSPiWqQ8yXLRYRk8KhutESNKHEibRvJPcPY2ZXFJh?cluster=devnet), [deployer 6 SOL](https://explorer.solana.com/tx/5wBrVwUvSLmyF48EqfWznwqsyEfNSzst2kQDv7hj8r8bACsL4mjnXJv7na9DcwH3ZAn9GNy6pd86LRUkzoEtYwFX?cluster=devnet)). The deploy used 2.44 SOL net.
+
 **Findings fixed during M6**
 - The SBPF v3 default (decision 8); a Prettier run from `apps/web` reformatted the committed IDL (the IDL check now compares parsed JSON); a `tsc` run before the package config resolved emitted 54 `.js` files next to the sources (all removed; none committed); a LiteSVM case that only asserted a constant (removed).
 
@@ -663,8 +673,8 @@ Exit criteria (§7): LiteSVM suite green ✓; local validator end to end ✓; **
 **Shared files edited:** `AGENTS.md`, `.prettierignore`, `.github/workflows/contracts.yml`, `.github/CODEOWNERS`, root `package.json`, `pnpm-lock.yaml` (contracts dev dependencies only), `apps/web/{eslint.config.mjs,tsconfig.strict.json,vitest.config.ts}`, `apps/web/lib/sdk/sdk-rules.test.ts`, `apps/web/tests/sdk/devnet-xstocks.test.ts` (A2), docs. The earlier guard client, `packages/anchor` and the prototype UI are untouched.
 
 **Open items**
-- Owner: devnet deploy, init, register, audit ([M6-DEVNET-DEPLOY.md](./M6-DEVNET-DEPLOY.md)); back up the program keypair and the devnet keeper key.
-- Owner (M7): a Hermes API key so the keeper can post fully verified prices.
+- ~~Owner: devnet deploy, init, register, audit~~ done 2026-11-14. Owner: back up the program keypair, the devnet deployer, keeper and faucet keys (paths in M6-DEVNET-DEPLOY.md).
+- Owner (M7 B10): a Hermes API key so the keeper can post fully verified prices.
 - M7: keeper (post prices, execute oldest-first in leg batches of ≤ 3, alerts), UI (skipped periods; the delegation approval shows `(1 + window) ×` the installment per period, which needs plain wording).
 - M8: Jupiter path, verifiable build hash, Rust coverage.
 - CI not verified, files only.
@@ -678,7 +688,7 @@ Exit criteria (§7): create → 3 installments → close + revoke **on a local v
 - [x] A2: three M8 plan notes under the §7 table (executor choice of price update when `keeper_authority` is `None`; the older mainnet Subscriptions build; `cargo-llvm-cov`).
 
 **Part B**
-- [ ] B0: **not done: the deploy output was not pasted during M7.** `V1_DEPLOYMENTS.devnet` stays `null`, so `/v1/invest` and every `/api/v1/plans*` and `/api/v1/faucet` route say "not available on devnet yet" (`INVEST_UNAVAILABLE`); nothing is faked. M6 stays open.
+- [x] B0: **done 2026-11-14.** The owner deployed, initialized and registered on devnet; the agent verified each step from chain and `devnet:audit` passed (M6 status). `V1_DEPLOYMENTS.devnet` holds the program, config, treasury, keeper, test USD, faucet authority and the three assets, with their signatures. Drift, typecheck, tests and both web builds re-run (evidence below). With `V1_DEPLOYMENTS.devnet` null the routes still answer `INVEST_UNAVAILABLE` (`cluster.test.ts`).
 - [x] B1: `packages/guard` (`@aroma/guard`): the Codama client, hand-written builders, decoders, schedule, PDAs, deployments, the Pyth feed registry; re-exported by the web app at `@/lib/sdk/guard/v1` and `@/lib/sdk/pyth/feeds`. One `@solana/kit` (7.1.1). The Codama renderer and the drift test moved with it (contracts' `sync-idl` renders into the package). Its own rules test (no `any`, 400 lines, no `apps/*`, server-only or app aliases) and an 85% gate (99.7% lines, 97.6% branches).
 - [x] B2: cluster-scoped wallet boundary (`features/wallet/cluster.ts`): mainnet by default (unchanged), devnet for `/v1/invest` only (browser RPC must report devnet's genesis, accounts declaring only other chains refused, own storage key, Privy off), and a `localnet` cluster compiled in only by `NEXT_PUBLIC_AROMA_LOCALNET=true` (env schema and secret scan refuse it in production). Every Signer carries its cluster; `ClusterLabel` shows "Devnet: test tokens, no real value".
 - [x] B3: `features/invest/server`: prepare-create (one simulated transaction: Subscriptions authority when missing, the recurring delegation, `create_plan`; a plain-words summary of the `(1 + window) ×` approval and of "at most one installment per period"), prepare-close (close + revoke, and the authority for the last plan of a mint), submit (pa1 authorization + signed bytes, send, confirm, v1 event check, receipts and index; idempotent), `GET /plans?owner=`. Validation mirrors `create_plan`.
@@ -703,7 +713,7 @@ Exit criteria (§7): create → 3 installments → close + revoke **on a local v
 
 **Deviations and findings**
 1. Found and fixed by the new checks: `JSON.stringify` on RPC errors (kit returns bigint) threw in submit; the localnet marker reached a production build through `storageKey()`; the key-material scan flagged a BLAKE2b zero buffer (now 16+ distinct values required); the connected `ConnectButton`'s accessible name did not contain its visible text (axe, an M4 component); `prepare-create` loaded the mainnet market catalog for single-asset plans (30 s cold), which let a period pass before signing; the runner read a stale state file; the UI fork found `parseDecimalToRaw` refused values above 15 digits.
-2. This worktree's first `anchor build` generated a program keypair (`9Z5d…`) because the owner's `FYrr…` keypair lives only in the M6 checkout. Source, `declare_id!` and the IDL are unchanged (`idl:check` passes). **Never deploy with this worktree's `target/deploy/aroma_guard-keypair.json`**; `deploy-devnet.sh` would refuse it (it checks the pubkey).
+2. This worktree's first `anchor build` generated a program keypair (`9Z5d…`) because the owner's `FYrr…` keypair lived only in the M6 checkout. Source, `declare_id!` and the IDL were unchanged. Resolved before the devnet deploy: the stray file is kept as `target/deploy/aroma_guard-keypair.STRAY-9Z5do.json`, the real keypair is in place, and `build.sh`/`deploy-devnet.sh` now refuse a missing or mismatched program keypair (M6 findings).
 3. One `pnpm test` run failed one web test while the cargo build ran alongside; it was not identified and did not recur in two reruns.
 4. Hermes requires an API key (401 without one), so real guardian-signed updates were not exercised; LiteSVM and the E2E use a runtime test guardian with the real Pythnet data source.
 

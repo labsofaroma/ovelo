@@ -133,7 +133,8 @@ describe("plan view", () => {
   });
 });
 
-test("no deployment is recorded until the owner deploys", () => {
-  expect(V1_DEPLOYMENTS).toEqual({ devnet: null, mainnet: null });
+test("devnet is recorded (M6); mainnet is not deployed until M10", () => {
+  expect(V1_DEPLOYMENTS.devnet?.programId).toBe(V1_PROGRAM_ID);
+  expect(V1_DEPLOYMENTS.mainnet).toBeNull();
   expect(V1_PROGRAM_ID).toBe(AROMA_GUARD_V1_PROGRAM_ID);
 });

@@ -83,10 +83,19 @@ describe("invest production wiring", () => {
     expect(fakeRedis.expire).toHaveBeenCalledWith("n", 1);
   });
 
-  it("devnet without a deployment is INVEST_UNAVAILABLE; the faucet needs its key and the Turnstile secret", async () => {
+  it("devnet uses the recorded deployment (a null record is covered in cluster.test.ts); the faucet needs its key and the Turnstile secret", async () => {
     const { productionServices } = await import("./deps");
-    await expect(productionServices.context()).rejects.toMatchObject({
-      code: "INVEST_UNAVAILABLE",
+    const { V1_DEPLOYMENTS } = await import("@aroma/guard");
+    const devnet = V1_DEPLOYMENTS.devnet!;
+    await expect(productionServices.context()).resolves.toMatchObject({
+      network: {
+        cluster: "devnet",
+        deployment: {
+          programId: devnet.programId,
+          fundingMint: devnet.fundingMint,
+          genesisHash: devnet.genesisHash,
+        },
+      },
     });
     expect(() => productionServices.faucet()).toThrow(
       expect.objectContaining({ code: "SERVICE_UNAVAILABLE" }),
