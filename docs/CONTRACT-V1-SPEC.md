@@ -165,6 +165,8 @@ The keeper builds Jupiter routes off-chain. The program does not trust the route
 
 ## 9. Delivery
 
+> **Milestones** ([REWRITE-PLAN.md §7](./REWRITE-PLAN.md#7-build-order-and-exit-criteria)): items 1 and the devnet-mock half of the test plan are **M6**; item 2 (Jupiter CPI, full LiteSVM with pinned binaries, fuzz) is **M8**; item 3 is M6 (builders) and **M7** (keeper, web app); item 4 and the mainnet beta (item 5) are **M10**. Deploys, the auditor and the multisig are owner steps.
+
 1. **Weeks 1–2:** config, asset registry, plan, admin and plan instructions, devnet-mock execution at the oracle price. Deploy to devnet under the new program ID.
 2. **Weeks 3–4:** Jupiter CPI path and the full LiteSVM suite.
 3. **Week 5:** v1 builders in `lib/sdk` and the keeper, wired into the rebuilt web app.

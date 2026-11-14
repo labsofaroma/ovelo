@@ -120,7 +120,7 @@ aroma/
 └─ .github/workflows/  ci.yml · contracts.yml · e2e.yml · deploy.yml
 ```
 
-> **Decision (M0): `packages/anchor` is not renamed to `packages/contracts` yet.** AGENTS.md, the Anchor tooling (`idl:sync` writes into `apps/web/lib/sdk/guard/`), the root `test:anchor` and `build:anchor` scripts, and the new `contracts.yml` path filter all name `packages/anchor`, and M0 must not move contract code. `packages/contracts` is created as a sibling **when the v1 program is scaffolded** (you own that work, Phase 1 of the ROADMAP). The prototype `packages/anchor` stays until M7, then is deleted (§9 step 3). When `packages/contracts` appears, update in one change: AGENTS.md, `contracts.yml` paths, `idl:sync`, `CODEOWNERS` and the root scripts.
+> **Decision (M0): `packages/anchor` is not renamed to `packages/contracts` yet.** AGENTS.md, the Anchor tooling (`idl:sync` writes into `apps/web/lib/sdk/guard/`), the root `test:anchor` and `build:anchor` scripts, and the new `contracts.yml` path filter all name `packages/anchor`, and M0 must not move contract code. `packages/contracts` is created as a sibling **when the v1 program is scaffolded** (you own that work, Phase 1 of the ROADMAP). The prototype `packages/anchor` stays until M9 (cutover), then is deleted (§9 step 3). When `packages/contracts` appears, update in one change: AGENTS.md, `contracts.yml` paths, `idl:sync`, `CODEOWNERS` and the root scripts.
 
 ---
 
@@ -222,7 +222,7 @@ Redis is kept only for caches, rate limits, keeper leases (`lease:plan:{pda}:{pe
 
 ## 7. Build order and exit criteria
 
-Each milestone is merged to `main` behind feature flags. The prototype stays deployed until M7.
+Each milestone is merged to `main` behind feature flags. The prototype stays deployed until M9. **Finishing M11 means the product is launched.**
 
 | # | Milestone | Scope | Exit criteria |
 |---|---|---|---|
@@ -232,9 +232,19 @@ Each milestone is merged to `main` behind feature flags. The prototype stays dep
 | **M3** | Read-only app (weeks 2–4, **implemented**, see status below) | marketing pages, markets, stock detail, baskets list and detail, watchlist, all as RSC with ISR | Lighthouse ≥ 90 on performance, SEO and accessibility; meets PRODUCT.md data rules (sources, timestamps, stale states) |
 | **M4** | Wallet + spot trading (weeks 3–6, **implemented**, see status below) | `features/wallet`, `features/trade` (single stock + basket, Jito bundles), receipts, portfolio | Playwright test buys on a mainnet fork or simulator; ported authorization tests pass; rate limits and CSP nonces live |
 | **M5** | Creators (weeks 5–6, **implemented**, see status below) | publish flow, invites table, dashboard, Solana Actions | creator E2E; single-use invites enforced |
-| **M6** | Recurring on the v1 contract (weeks 5–9, after your devnet deploy) | Codama client, `features/invest`, `apps/keeper` on QStash, `plans_index`, alerts, faucet | create → 3 installments → close + revoke works end-to-end on devnet; keeper alerting tested; skipped periods shown in the UI |
-| **M7** | Cutover (week 9–10) | point the production domain at v1, retire the prototype routes and the prototype devnet program | prototype plans closed or owners notified; old repo paths deleted; docs updated |
-| **M8** | Launch features | notifications, P&L, compliance gate, onboarding funnel ([ROADMAP.md](./ROADMAP.md) Phase 5) | |
+
+From M6 on, each milestone has a contract part and an app part. Steps marked **(owner)** are done by the product owner, never by an agent: deploys, choosing the auditor, the multisig, retiring the prototype program.
+
+| # | Milestone | Contract | App | Exit criteria |
+|---|---|---|---|---|
+| **M6** | Contract v1 core + devnet deploy | `packages/contracts`: config, asset registry, plan; admin and plan instructions; devnet-mock `execute_installment` minting at the oracle price, with funding to a treasury; catch-up and skip; pause; typed Subscriptions layout; security requirements of spec §7 | Codama client and builders in `lib/sdk/guard/v1`; IDL drift test | LiteSVM suite green; local validator end to end (create → 3 periods → close + revoke); deployed to devnet **(owner)**; config initialized; test assets registered |
+| **M7** | Recurring investing on devnet (was M6) | integration fixes only | `features/invest`, `apps/keeper` on QStash (leases, retries, dead-letter queue, alerts), `plans_index`, faucet with Turnstile and Redis limits (AUDIT H-5) | create → 3 installments → close + revoke on devnet; skipped periods shown; keeper alerting tested |
+| **M8** | Contract mainnet path | Jupiter CPI, oracle-bounded `min_out`, owner-ATA delivery check, multi-leg execution; full LiteSVM with pinned Jupiter, Pyth and Subscriptions binaries; proptest/fuzz; verifiable build | keeper Jupiter routes; mainnet build behind a flag | full suite on a mainnet fork; fuzz clean; verifiable build hash recorded |
+| **M9** | Cutover (was M7) | retire the prototype program: owners close plans; upgrade authority set to none **(owner)**; delete `packages/anchor` | v1 on the production domain **(owner: DNS)**, `/v1` prefix and prototype routes removed, prototype CSP and error residue closed | production serves v1 only |
+| **M10** | Audit + mainnet beta | external audit and fixes **(owner: auditor)**; Squads multisig (≥ 2-of-3, timelock) as upgrade authority **(owner)**; mainnet deploy with launch caps **(owner)**; real xStocks registered | mainnet recurring behind caps; monitoring and alerts | audit findings closed; multisig verified on-chain; first mainnet installments monitored |
+| **M11** | Launch features (was M8) | optional protocol fee via config | notifications, P&L, compliance gate, onboarding, creator fee share, creator dashboard | launch checklist complete; ROADMAP success metrics measured |
+
+> **Renumbering (M6, Part 0).** The M0–M5 status sections below, and some AUDIT.md lines written before this change, use the old numbers. Read them as: old **M6** (recurring on v1) = new **M7**; old **M7** (cutover) = new **M9**; old **M8** (launch features) = new **M11**. The status sections are kept as recorded.
 
 ### M0 status: implemented on branch `m0-foundation` (not pushed, not merged, nothing deployed)
 
@@ -566,7 +576,7 @@ M5 is split because M4 (wallet + spot trading) was in progress in parallel. **M5
 6. **Shared files edited:** `apps/web/tsconfig.strict.json`, `docs/REWRITE-PLAN.md`. `docs/M5-NEEDS-FROM-M4.md` is new. Nothing in the do-not-edit list was touched.
 7. **Not verified:** CI (files only, nothing pushed); a real Neon database; true parallel redemption on Postgres; wallet signing in a browser (M5b).
 
-**Critical path:** M0 → M2 → M4 (spot trading is the revenue path). M6 depends on your contract being deployed. Develop it against a local LiteSVM build until then.
+**Critical path:** M0 → M2 → M4 (spot trading, shipped) → M6 (contract core and its devnet deploy, owner) → M7 (recurring on devnet) → M8 (mainnet contract path) → M10 (audit, multisig, mainnet beta) → M11 (launch). M9 (cutover) can run any time after M7 and must finish before M10. M7 develops against a local LiteSVM build and the generated client until the owner's devnet deploy lands.
 
 ---
 
@@ -591,9 +601,9 @@ Coverage gates: 85% for `lib/sdk`, 80% for `apps/web/server` and `features/*/ser
 ## 9. Cutover and retirement
 
 1. While v1 is being built, the prototype runs on its current domain and v1 runs on `next.<domain>`.
-2. At M7, announce on the site that **prototype devnet plans will stop being collected** on a given date, and give a one-click "close + revoke" for each plan.
+2. At M9, announce on the site that **prototype devnet plans will stop being collected** on a given date, and give a one-click "close + revoke" for each plan.
 3. Switch DNS. Keep the prototype on an archived URL for 30 days. Then delete `apps/web/components/aroma`, `styles/*`, `packages/anchor` and the prototype `lib/sdk` modules that are replaced (they stay at the `prototype-final` tag).
-4. Retire the prototype program: once its plans are closed, set its upgrade authority to none or close the program account to recover rent. Only the original deployer's key can do this.
+4. Retire the prototype program **(owner)**: once its plans are closed, set its upgrade authority to none or close the program account to recover rent. Only the original deployer's key can do this. This is part of M9; the v1 program's own upgrade authority moves to a Squads multisig in M10.
 
 ---
 
@@ -601,12 +611,12 @@ Coverage gates: 85% for `lib/sdk`, 80% for `apps/web/server` and `features/*/ser
 
 | Risk | Mitigation |
 |---|---|
-| The rewrite drags on and nothing ships | Critical path M0 → M2 → M4 ships spot trading first; M6 runs in parallel with the contract |
+| The rewrite drags on and nothing ships | Critical path M0 → M2 → M4 ships spot trading first; M6 (contract core) and M7 (recurring app) are split so app work starts on LiteSVM before the devnet deploy |
 | Behaviour regressions in money paths | port prototype tests before the code; property tests on amounts |
 | Contract changes break `lib/sdk` | Codama regenerates the client; CI fails on IDL drift |
 | Jupiter or Pyth API changes | adapters isolated in `lib/sdk`, responses zod-validated, contract tests run nightly against live APIs |
 | xStocks Token-2022 extension surprises | asset registry checks extensions; E2E against the real mints on mainnet with small amounts |
-| One developer owns both contract and app | M6 waits on the devnet deploy; until then build against LiteSVM and the generated client |
+| One developer owns both contract and app | M7 waits on the owner's M6 devnet deploy; until then build against LiteSVM and the generated client. Mainnet (M10) waits on the M8 contract path and the external audit |
 
 ---
 

@@ -48,6 +48,8 @@ There is no separate SDK package for now. The chain, market and basket helpers s
 
 ## 3. Phases
 
+**Phases → milestones** ([REWRITE-PLAN.md §7](./REWRITE-PLAN.md#7-build-order-and-exit-criteria)): Phase 0 = M0; Phase 1 (contract) = **M6** (core + devnet deploy), **M8** (Jupiter mainnet path) and **M10** (audit, multisig, mainnet beta); Phase 2 = M2 (helpers) and the v1 client in M6; Phase 3 (keeper) = **M7**; Phase 4 (web app) = M1, M3, M4, M5, **M7** (`features/invest`) and **M9** (cutover); Phase 5 (launch features) = **M10** (mainnet recurring) and **M11** (the rest); Phase 6 comes after launch.
+
 ### Phase 0: New foundation (week 1)
 - [ ] Commit the prototype as-is and tag it `prototype-final`, so nothing is lost.
 - [ ] Create the v1 layout (§1) on a fresh branch. Use `packages/config` for shared tsconfig, ESLint 9 and Prettier.
