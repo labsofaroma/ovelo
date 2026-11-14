@@ -71,7 +71,8 @@ export async function prepareCreate(
   const [config, assets, sources, mint] = await Promise.all([
     readConfig(rpc),
     readAssets(rpc, network.deployment.programId),
-    deps.baskets(),
+    // Basket sources (market catalog, creator baskets) are read only when a basket is chosen.
+    request.selection.kind === "basket" ? deps.baskets() : Promise.resolve([]),
     readMint(rpc, fundingMint),
   ]);
   const catalog = buildCatalog(assets);
