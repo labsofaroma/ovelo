@@ -113,18 +113,16 @@ export async function postUpdateInstruction(params: {
   writeAuthority: TransactionSigner;
   encodedVaa: Address;
   /**
-   * A fresh keypair (created here, must sign) or the address of an existing price update
-   * account whose write authority is `writeAuthority` (overwritten in place, no signature).
+   * The price update account's keypair. It must sign even when the account already exists
+   * (Anchor `init_if_needed` without seeds keeps the signer constraint; verified in LiteSVM),
+   * so reusing a keeper-held keypair saves rent, not transaction bytes.
    */
-  priceUpdate: TransactionSigner | Address;
+  priceUpdate: TransactionSigner;
   message: Uint8Array;
   proof: readonly Uint8Array[];
   treasuryId: number;
 }): Promise<Instruction> {
-  const priceUpdate =
-    typeof params.priceUpdate === "string"
-      ? meta(params.priceUpdate, true)
-      : signerMeta(params.priceUpdate, true);
+  const priceUpdate = signerMeta(params.priceUpdate, true);
   return {
     programAddress: PYTH_RECEIVER_ID,
     accounts: [

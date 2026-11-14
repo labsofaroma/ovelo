@@ -98,11 +98,13 @@ export async function buildVerifiedPriceUpdates(params: {
   /** Rent-exempt lamports for `encodedVaaSpace(vaa.length)`, read from the RPC. */
   encodedVaaLamports: bigint;
   /**
-   * One per feed, in the accumulator's order: a fresh keypair (created by the post, rent
-   * reclaimed in `cleanup`) or the address of a price update account this write authority
-   * already owns (overwritten in place: no signature, no rent, no reclaim).
+   * One keypair per feed, in the accumulator's order. A fresh keypair creates the account; a
+   * keypair whose account this write authority already owns overwrites it in place (it still
+   * signs: the receiver keeps the signer constraint).
    */
-  priceUpdateSigners: readonly (TransactionSigner | Address)[];
+  priceUpdateSigners: readonly TransactionSigner[];
+  /** Keep the price update accounts for reuse (no `reclaim_rent` in `cleanup`). */
+  keepPriceUpdates?: boolean;
   treasuryId: number;
   /** Optional cap on bytes per write instruction (the packer already fills transactions). */
   chunkBytes?: number;
@@ -183,18 +185,11 @@ export async function buildVerifiedPriceUpdates(params: {
       }),
     ),
   );
-  const addressOf = (s: TransactionSigner | Address): Address =>
-    typeof s === "string" ? s : s.address;
   const cleanup = [
     closeEncodedVaaInstruction({ writeAuthority, encodedVaa: target }),
-    ...params.priceUpdateSigners
-      .filter((s): s is TransactionSigner => typeof s !== "string")
-      .map((s) =>
-        reclaimRentInstruction({
-          payer: writeAuthority,
-          priceUpdate: s.address,
-        }),
-      ),
+    ...(params.keepPriceUpdates ? [] : params.priceUpdateSigners).map((s) =>
+      reclaimRentInstruction({ payer: writeAuthority, priceUpdate: s.address }),
+    ),
   ];
   return {
     prepare,
@@ -202,7 +197,7 @@ export async function buildVerifiedPriceUpdates(params: {
     cleanup,
     priceUpdates: update.updates.map((u, i) => ({
       feedId: u.feed.feedId,
-      address: addressOf(params.priceUpdateSigners[i]!),
+      address: params.priceUpdateSigners[i]!.address,
       publishTime: u.feed.publishTime,
     })),
     guardianSetIndex: vaa.guardianSetIndex,
