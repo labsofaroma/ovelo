@@ -6,7 +6,7 @@ Severity scale: **Critical** (funds, integrity or an outage) · **High** (securi
 
 > **Status update after M0 (branch `m0-foundation`, unpushed).** Items below carry a **Status** line: **Addressed**, **Partial** or **Pending (milestone)**. Items without one are unchanged. Baseline numbers in §0 are from the audit date; measured at M0: 1 `tsc` error (not 4) and 5 failing test files (not 8). See [REWRITE-PLAN.md §7](./REWRITE-PLAN.md#m0-status-implemented-on-branch-m0-foundation-not-pushed-not-merged-nothing-deployed).
 >
-> **Milestones were renumbered in M6** (REWRITE-PLAN §7): recurring on v1 is now **M7**, the Jupiter mainnet contract path **M8**, cutover **M9**, audit and mainnet beta **M10**, launch features **M11**. Status lines below use the new numbers.
+> **Milestones were renumbered in M6** (REWRITE-PLAN §7): recurring investing is now **M7**, the Jupiter mainnet contract path **M8**, cutover **M9**, audit and mainnet beta **M10**, launch features **M11**. Status lines below use the new numbers.
 
 ---
 
@@ -26,12 +26,9 @@ Severity scale: **Critical** (funds, integrity or an outage) · **High** (securi
 
 ## 1. Smart contract — `packages/anchor/programs/aroma_guard`
 
-The prototype contract cannot be patched into a mainnet product. It is rebuilt from scratch as Aroma Guard v1; see [CONTRACT-V1-SPEC.md](./CONTRACT-V1-SPEC.md).
-
-> **M6:** the findings below are the historical record of `packages/anchor`, which is unchanged. The contract work for M6 is in `packages/contracts`, documented in [aroma-guard-v1.md](./aroma-guard-v1.md); it is not deployed until the owner deploys it.
+This section is the historical record of the prototype contract in `packages/anchor`, as audited on 13 November 2026. It is kept unchanged.
 
 ### C-1 (Critical): anyone can mint any amount of mock stock
-**Milestone: M6.**
 `execute_swap` mints `output.minimum_amount_out` of each output mint to the owner. That value is **chosen by the plan creator** in `create_plan` (`instructions/execute_swap.rs`, the `mint_to` loop), and nothing ties it to a price. A user can deposit 1 test KUSD and mint 10¹⁸ xAAPL.
 - `funding_mint` is **not pinned to KUSD**. Any mint without a freeze authority is accepted, so a user can create their own worthless mint, fund a plan with it and mint unlimited mock stock.
 - The mock mint authority is a **single global PDA** (`[b"mock_mint_authority"]`), so every plan can mint every mock mint.
@@ -39,41 +36,32 @@ The prototype contract cannot be patched into a mainnet product. It is rebuilt f
 On devnet this makes portfolios, leaderboards, creator stats and receipts that read these balances meaningless, and it is trivial to abuse.
 
 ### C-2 (Critical): there is no real swap path; the program is devnet-mock only
-**Milestone: M8** (M6 partial).
 - The `devnet_mock` flag is stored in `Plan` but **never read**. `execute_swap` always mints and then **burns** the collected funding.
 - No swap CPI exists (Jupiter, Raydium or Meteora). The name `execute_swap` is misleading.
 - `minimum_amount_out` is fixed at creation for up to a year. Against real markets it would either fail forever or give no slippage protection. A real version needs per-execution bounds based on an oracle (Pyth is already in the SDK).
 
 ### H-1 (High): missed installments are skipped forever
-**Milestone: M6** (contract), **M7** (UI).
 `due_period` allows only `last_executed_period < index`. If the collector misses period N and runs in period N+1, period N is lost for good. The unit test `schedule_never_replays_or_backfills_and_stops_at_expiry` confirms this is intended, but users are never told, and the UI may show "12 installments" when fewer ran.
 
 ### H-2 (High): closing a plan does not revoke the Subscriptions delegation
-**Milestone: M6** (client), **M7** (UI).
 `close_plan` closes the plan and its staging account, but the owner's token-account delegation to `SubscriptionAuthority` stays in place. Users must revoke it separately, and stale approvals pile up in wallets.
 
 ### H-3 (High): the upstream account layout is parsed with hard-coded byte offsets
-**Milestone: M6.**
 `validate_subscription` reads the Subscriptions accounts by raw offsets (`98..106`, `3..35`, `139..171`, …) **without checking a discriminator**. The PDA and owner checks limit the damage, but an upstream upgrade that changes the layout would silently misparse. (The `/// CHECK` comment claims "discriminator validated"; that is not true.)
 
 ### M-1 (Medium): no room for upgrades in the account layout
-**Milestone: M6.**
 `Plan::MAX_SIZE = 197 + 20*42` has no reserved bytes. Adding any field means a realloc migration for every existing plan.
 
 ### M-2 (Medium): no admin or safety controls
-**Milestone: M6**, and **M10** for the multisig upgrade authority (owner).
 There is no pause switch, no allow-list of funding mints, no protocol config account, no `security.txt` and no documented upgrade-authority policy. The upgrade authority is presumably one hot key in `~/.config/solana/id.json` (`Anchor.toml`).
 
 ### M-3 (Medium): an unused risky feature is enabled
-**Milestone: M6.**
 `anchor-lang` is built with `init-if-needed`, which is never used. It invites reinitialization bugs, so remove it.
 
 ### M-4 (Medium): stale ABI in the SDK and tests
-**Milestone: M6**, and **M9** (the stale helpers are deleted with `packages/anchor`).
 The SDK still ships Raydium CPMM helpers (`DEVNET_RAYDIUM_CPMM_PROGRAM`, `decodeDevnetCpmmPool`, `quoteDevnetCpmmExactIn`) and `*V2` aliases. The anchor README says the CPMM runtime fixtures "target a historical ABI". The LiteSVM tests do not cover the current minting flow end to end.
 
 ### L-1 (Low)
-**Milestone: M6.**
 `close_plan` accepts any `rent_payer`. The owner signs, so this is safe, but the rent should simply go to `owner`. There are no events for funding or output mismatches, and `PlanClosed` does not include `owner`.
 
 ---

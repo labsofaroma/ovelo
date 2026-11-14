@@ -1,10 +1,10 @@
 # Aroma v1 — Rebuild Plan
 
-_Written 13 November 2026. The current codebase is treated as a **prototype**. Aroma v1 is rebuilt from the ground up: a new repo layout, a new contract with a new program ID deployed from your own account, a new SDK surface and a new web app. Proven pieces of the prototype are carried over deliberately, not inherited by default._
+_Written 13 November 2026. The current codebase is treated as a **prototype**. Aroma v1 is rebuilt from the ground up: a new repo layout, the Aroma Guard v1 contract deployed from your own account, a new SDK surface and a new web app. Proven pieces of the prototype are carried over deliberately, not inherited by default._
 
 The detailed engineering plan (stack, repo layout, module-by-module mapping, API and data model, milestones) is in [REWRITE-PLAN.md](./REWRITE-PLAN.md).
 
-Why rebuild instead of patching: see [AUDIT.md](./AUDIT.md). The contract can't be fixed in place (C-1, C-2). The repo references code that isn't there (C-3). The collector never runs (C-4). There is no version history (H-7).
+Why rebuild instead of patching: see [AUDIT.md](./AUDIT.md). The repo references code that isn't there (C-3). The collector never runs (C-4). There is no version history (H-7).
 
 ---
 
@@ -35,11 +35,11 @@ There is no separate SDK package for now. The chain, market and basket helpers s
 | `sdk/pyth-oracle.ts`, `pyth-streaming.ts` | **Keep** | also used by the contract design |
 | `sdk/markets.ts`, `research.ts`, `basket/*` | **Keep, then split** | good logic, large files |
 | `lib/server/creator-auth.ts` | **Keep** | add single-use, expiring invites |
-| `lib/server/recurring-*.ts`, `sdk/guard/*` | **Rewrite** | tied to the prototype contract |
+| `lib/server/recurring-*.ts`, `sdk/guard/*` | **Drop** | prototype only; removed with the prototype UI (M9) |
 | `lib/server/faucet.ts` | **Rewrite** | Turnstile + Redis limits (AUDIT H-5) |
 | `lib/server/disk-cache.ts` | **Drop** | Redis or the Next Data Cache only |
 | Raydium CPMM helpers, `*V2` aliases | **Drop** | dead code |
-| `packages/anchor` | **Drop** | unused code once the prototype UI is removed (M9); the contract is `packages/contracts` |
+| `packages/anchor` | **Drop** | unused code once the prototype UI is removed (M9) |
 | `components/aroma/*` | **Rebuild** | split the 800–1,300-line components; keep the visual design (`.21st/DESIGN.md`, `styles/foundation.css`) |
 | `apps/web/tests/*` | **Port the relevant ones** | they encode many edge cases; keep the ones that apply to kept modules |
 | `.codex/hooks.json`, broken cron workflow, `tsconfig.tsbuildinfo` | **Drop** | |
@@ -60,7 +60,7 @@ There is no separate SDK package for now. The chain, market and basket helpers s
 ### Phase 1: Contract v1 (weeks 1–8, you own this)
 Follow [CONTRACT-V1-SPEC.md](./CONTRACT-V1-SPEC.md):
 1. Write the contract.
-2. Deploy to devnet from **your own wallet** under a new program ID (§10 of the spec).
+2. Deploy to devnet from **your own wallet** under its own program ID (§10 of the spec).
 3. `initialize_config` and register the test assets.
 4. Write the full LiteSVM suite.
 5. Add the Jupiter CPI path.

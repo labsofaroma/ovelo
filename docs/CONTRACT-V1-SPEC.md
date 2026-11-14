@@ -2,7 +2,7 @@
 
 _Status: specification, 13 November 2026. M6 implements the core and the devnet build ([aroma-guard-v1.md](./aroma-guard-v1.md)); deviations and decisions are in REWRITE-PLAN, M6 status._
 
-Aroma Guard v1 is a new program written **from scratch**, with its own program ID, account layout and instructions. It has no migration path and shares no state or seeds with any other program. The implementation lives in `packages/contracts` and is described in [aroma-guard-v1.md](./aroma-guard-v1.md).
+Aroma Guard v1 is a standalone program with its own program ID, account layout and instructions. The implementation lives in `packages/contracts` and is described in [aroma-guard-v1.md](./aroma-guard-v1.md).
 
 ---
 
@@ -162,7 +162,7 @@ The keeper builds Jupiter routes off-chain. The program does not trust the route
 
 > **Milestones** ([REWRITE-PLAN.md §7](./REWRITE-PLAN.md#7-build-order-and-exit-criteria)): items 1 and the devnet-mock half of the test plan are **M6**; item 2 (Jupiter CPI, full LiteSVM with pinned binaries, fuzz) is **M8**; item 3 is M6 (builders) and **M7** (keeper, web app); item 4 and the mainnet beta (item 5) are **M10**. Deploys, the auditor and the multisig are owner steps.
 
-1. **Weeks 1–2:** config, asset registry, plan, admin and plan instructions, devnet-mock execution at the oracle price. Deploy to devnet under the new program ID.
+1. **Weeks 1–2:** config, asset registry, plan, admin and plan instructions, devnet-mock execution at the oracle price. Deploy to devnet under its own program ID.
 2. **Weeks 3–4:** Jupiter CPI path and the full LiteSVM suite.
 3. **Week 5:** v1 builders in `lib/sdk` and the keeper, wired into the rebuilt web app.
 4. **Weeks 6–8:** external audit, fixes, verifiable build, multisig handover.

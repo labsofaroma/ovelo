@@ -240,7 +240,7 @@ From M6 on, each milestone has a contract part and an app part. Steps marked **(
 | **M6** | Contract v1 core + devnet deploy | `packages/contracts`: config, asset registry, plan; admin and plan instructions; devnet-mock `execute_installment` minting at the oracle price, with funding to a treasury; catch-up and skip; pause; typed Subscriptions layout; security requirements of spec §7 | Codama client and builders in `lib/sdk/guard/v1`; IDL drift test | LiteSVM suite green; local validator end to end (create → 3 periods → close + revoke); deployed to devnet **(owner)**; config initialized; test assets registered |
 | **M7** | Recurring investing on devnet (was M6) | integration fixes only | `features/invest`, `apps/keeper` on QStash (leases, retries, dead-letter queue, alerts), `plans_index`, faucet with Turnstile and Redis limits (AUDIT H-5) | create → 3 installments → close + revoke on devnet; skipped periods shown; keeper alerting tested |
 | **M8** | Contract mainnet path | Jupiter CPI, oracle-bounded `min_out`, owner-ATA delivery check, multi-leg execution; full LiteSVM with pinned Jupiter, Pyth and Subscriptions binaries; proptest/fuzz; verifiable build | keeper Jupiter routes; mainnet build behind a flag | full suite on a mainnet fork; fuzz clean; verifiable build hash recorded |
-| **M9** | Cutover (was M7) | delete `packages/anchor` and the old guard client (unused code) | v1 on the production domain **(owner: DNS)**, `/v1` prefix and prototype routes removed, prototype CSP and error residue closed | production serves v1 only |
+| **M9** | Cutover (was M7) | none | v1 on the production domain **(owner: DNS)**, `/v1` prefix and prototype routes removed with their unused code (including `packages/anchor`), prototype CSP and error residue closed | production serves v1 only |
 | **M10** | Audit + mainnet beta | external audit and fixes **(owner: auditor)**; Squads multisig (≥ 2-of-3, timelock) as upgrade authority **(owner)**; mainnet deploy with launch caps **(owner)**; real xStocks registered | mainnet recurring behind caps; monitoring and alerts | audit findings closed; multisig verified on-chain; first mainnet installments monitored |
 | **M11** | Launch features (was M8) | optional protocol fee via config | notifications, P&L, compliance gate, onboarding, creator fee share, creator dashboard | launch checklist complete; ROADMAP success metrics measured |
 
@@ -581,7 +581,7 @@ M5 is split because M4 (wallet + spot trading) was in progress in parallel. **M5
 Exit criteria (§7): LiteSVM suite green ✓; local validator end to end ✓; **deployed to devnet by the owner: pending**; config initialized and test assets registered: pending (scripts ready, [M6-DEVNET-DEPLOY.md](./M6-DEVNET-DEPLOY.md)). The program is documented in [aroma-guard-v1.md](./aroma-guard-v1.md).
 
 **Part 0 and Part A**
-- [x] Part 0: §7 rewritten through M11 (launch), critical path, §9/§10, ROADMAP phase mapping, spec §9 note, AUDIT milestone tags. Reworded afterwards so v1 stands alone (no on-chain retirement or ID of the earlier program; owner decision during M6).
+- [x] Part 0: §7 rewritten through M11 (launch), critical path, §9/§10, ROADMAP phase mapping, spec §9 note, AUDIT milestone tags. Reworded afterwards so v1 stands alone (owner decision during M6).
 - [x] A1: `features/creators/http.ts` 71% → **100% lines** / 97% branches on its own (`http.wiring.test.ts`, mocks only, no behaviour change).
 - [x] A2: the 13 `TODO(M6)` skips are retired (they imported two scripts that were never committed; one recorded a defect in the earlier devnet catalog). Disposition, one line each:
 
@@ -603,7 +603,7 @@ Exit criteria (§7): LiteSVM suite green ✓; local validator end to end ✓; **
 - [x] B6: 25 `cargo test` (incl. 3 proptests × 2,000 cases) and 56 LiteSVM cases with the pinned binaries.
 - [x] B7: Codama client in `lib/sdk/guard/v1/generated/` (renderer below), hand-written `builders`/`admin`/`execute`/`decoders`/`pdas`/`schedule`/`deployments`, drift test, `sdk-rules` exemption for `generated/` (400-line rule only).
 - [x] B8: `pnpm --filter @aroma/contracts e2e:local` passes.
-- [x] B9: `deploy-devnet.sh`, `init-devnet.ts`, `register-devnet-assets.ts`, `audit-devnet.ts`, all refusing non-devnet genesis; the runbook; `deployments.ts` holds `null` until the owner's deploy (the earlier devnet catalog is untouched, so the prototype keeps working).
+- [x] B9: `deploy-devnet.sh`, `init-devnet.ts`, `register-devnet-assets.ts`, `audit-devnet.ts`, all refusing non-devnet genesis; the runbook; `deployments.ts` holds `null` until the owner's deploy.
 - [x] B10: `contracts.yml` v1 job (files only).
 - [ ] **Open (owner):** devnet deploy, init, register, audit; then the paste-back step.
 
