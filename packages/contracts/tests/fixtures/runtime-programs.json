@@ -1,0 +1,27 @@
+{
+  "comment": "Pinned upstream binaries for LiteSVM and the local validator. Fetched read-only from devnet by scripts/fetch-runtime-programs.mjs and verified by SHA-256 of the ProgramData ELF. If upstream redeploys, the fetch fails until the new binary is reviewed and re-pinned.",
+  "network": "devnet",
+  "genesisHash": "EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG",
+  "programs": {
+    "subscriptions": {
+      "programId": "De1egAFMkMWZSN5rYXRj9CAdheBamobVNubTsi9avR44",
+      "programData": "HaYb5J9eXooZuNzN3z6TfuzVDcaTfiDdDPWCFtexFfMg",
+      "lastDeploySlot": "506642674",
+      "sha256": "2675ad1d2b5068d47fc5d169156cf4859a9c21c0406ce63e3828e3b7320fddbf",
+      "bytes": 133280,
+      "upstream": "solana-foundation/subscriptions program-v0.5.0 era (devnet redeploy after the 2026-08-10 release; account layouts asserted equal to the tag in integrations/subscriptions.rs)",
+      "mainnetSha256": "af3cefa5947173e03298361b3f461e2a314382a7206c084f77ad9a40c8b18d3a",
+      "mainnetLastDeploySlot": "438440823"
+    },
+    "pyth_receiver": {
+      "programId": "rec5EKMGg6MxZYaMdyBfgwp4d5rB9T1VQH5pJv5LtFJ",
+      "programData": "96QrNCjmh32H9quY9DX4NEH81nECVsbkATBDZeoVbvLV",
+      "lastDeploySlot": "491006444",
+      "sha256": "0d6bf9142c2eb1fdb8ead48054491369bed3a8d6846c5887e362844155599ab2",
+      "bytes": 1355920,
+      "upstream": "pyth-network/pyth-crosschain solana receiver; identical binary on devnet and mainnet",
+      "mainnetSha256": "0d6bf9142c2eb1fdb8ead48054491369bed3a8d6846c5887e362844155599ab2",
+      "mainnetLastDeploySlot": "327047637"
+    }
+  }
+}

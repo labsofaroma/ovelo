@@ -1,0 +1,21 @@
+{
+  "comment": "Real Pyth PriceUpdateV2 accounts written by the receiver on devnet (sponsored push feeds, shard 0), read-only. Stale for live use; tests set the clock to their publish time.",
+  "source": "https://api.devnet.solana.com",
+  "genesisHash": "EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG",
+  "slot": 522140337,
+  "readAt": "2026-11-14T09:29:18.632Z",
+  "priceUpdates": [
+    {
+      "symbol": "AAPL",
+      "address": "DJ2FyTgUAkEtXW3U5P9PF19meFTRtW4ZWKKFgACfVbUy",
+      "owner": "rec5EKMGg6MxZYaMdyBfgwp4d5rB9T1VQH5pJv5LtFJ",
+      "dataBase64": "IvEjY51+9M22qIobWbfIasZFzYU4kLAmRMXwVLcgFl9Eo5UYbkGDfgFJ9rZcsd5rEOr3XnwDygKcMG0DV+kbUxGxdQhKWtVWiIqGzAEAAAAAgDcAAAAAAAD7////R2xGagAAAABGbEZqAAAAANagyQEAAAAA3FAAAAAAAAATqjgcAAAAAAA="
+    },
+    {
+      "symbol": "TSLA",
+      "address": "E8WFH8brgP58arcuW2wwsPHiomYrSvrgWTsRLZLAEZUQ",
+      "owner": "rec5EKMGg6MxZYaMdyBfgwp4d5rB9T1VQH5pJv5LtFJ",
+      "dataBase64": "IvEjY51+9M3DFBCAhPMppDv/Jjb7yMJOnYrRnz1l4+2pMQbDYO3KrQEW2tUG19uNoByHWByHyol6ASoVNVfU1XjDucnhvAYy8dBkIwIAAAAAcBcAAAAAAAD7////6U3uagAAAADoTe5qAAAAADoZJAIAAAAAphgAAAAAAACLD/YeAAAAAAA="
+    }
+  ]
+}

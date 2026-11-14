@@ -1,0 +1,9 @@
+{
+  "extends": "@aroma/config/tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["ES2023", "DOM"],
+    "types": ["node"],
+    "allowJs": false
+  },
+  "include": ["tests/**/*.ts", "scripts/**/*.ts", "vitest.config.ts"]
+}
