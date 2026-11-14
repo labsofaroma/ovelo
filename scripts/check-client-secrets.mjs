@@ -71,7 +71,10 @@ const MIN_DISTINCT = 16;
 /** True when `text` contains secret-key-shaped material (exported for tests). */
 export function containsKeyMaterial(text) {
   for (const match of text.matchAll(KEY_ARRAY)) {
-    const values = match[0].slice(1, -1).split(",").map((v) => v.trim());
+    const values = match[0]
+      .slice(1, -1)
+      .split(",")
+      .map((v) => v.trim());
     if (new Set(values).size >= MIN_DISTINCT) return true;
   }
   return false;
