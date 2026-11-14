@@ -38,7 +38,10 @@ const pins = JSON.parse(
     "utf8",
   ),
 ) as {
-  programs: Record<string, { programId: string; sha256: string }>;
+  programs: Record<
+    string,
+    { programId: string; sha256: string; mainnetSha256?: string }
+  >;
 };
 export const GUARD_SO =
   process.env.AROMA_V1_GUARD_SO ??
@@ -52,11 +55,23 @@ const enc = getAddressEncoder();
 
 export const START = 1_800_000_000n; // clock origin for every test
 
+/**
+ * `AROMA_V1_SUBSCRIPTIONS=mainnet` runs the suite against mainnet's Subscriptions binary
+ * (`subscriptions-mainnet.so`, `pnpm test:fixtures:mainnet`), checked against `mainnetSha256`
+ * (M8 decision 2). Every other binary is always the devnet pin.
+ */
+const MAINNET_SUBSCRIPTIONS = process.env.AROMA_V1_SUBSCRIPTIONS === "mainnet";
+
 function pinned(name: string): Uint8Array {
-  const bytes = fs.readFileSync(path.join(PROGRAM_DIR, `${name}.so`));
+  const mainnet = name === "subscriptions" && MAINNET_SUBSCRIPTIONS;
+  const file = mainnet ? `${name}-mainnet.so` : `${name}.so`;
+  const bytes = fs.readFileSync(path.join(PROGRAM_DIR, file));
   const sha = crypto.createHash("sha256").update(bytes).digest("hex");
-  if (sha !== pins.programs[name]?.sha256)
-    throw new Error(`${name}.so is not the pinned binary; run test:fixtures.`);
+  const expected = mainnet
+    ? pins.programs[name]?.mainnetSha256
+    : pins.programs[name]?.sha256;
+  if (sha !== expected)
+    throw new Error(`${file} is not the pinned binary; run test:fixtures.`);
   return bytes;
 }
 

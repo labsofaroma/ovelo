@@ -6,6 +6,7 @@ export * from "./decoders";
 export * from "./builders";
 export * from "./admin";
 export * from "./execute";
+export * from "./mainnet";
 export * from "./deployments";
 export * from "./events";
 export * from "./filters";
@@ -35,4 +36,5 @@ export {
   type Output,
   type OutputArgs,
   type Plan,
+  type RouteLeg,
 } from "./generated";

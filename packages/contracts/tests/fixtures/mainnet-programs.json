@@ -1,0 +1,38 @@
+{
+  "comment": "SHA-256 pins of mainnet program binaries for the LiteSVM Jupiter suite (ProgramData ELF, read-only). `pnpm test:fixtures:mainnet` re-downloads and verifies them; an upstream redeploy fails the fetch until the routes are re-recorded and reviewed.",
+  "source": "https://api.mainnet-beta.solana.com",
+  "genesisHash": "5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d",
+  "slot": 469359673,
+  "blockTime": 1794666133,
+  "readAt": "2026-11-14T14:22:16.979Z",
+  "programs": {
+    "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA": {
+      "programId": "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
+      "programData": "3gvYRKWyXRR9xKWe1ZjPhLY5ZJRN7KDB4rFZFGoJfFk2",
+      "lastDeploySlot": "419472000",
+      "bytes": 108600,
+      "sha256": "8190d3f7ceb6cb7a7a8d8924bff89f9f611e15ce1f806f2b6237f3311a98f697"
+    },
+    "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb": {
+      "programId": "TokenzQdBNbLqP5VEhdkAS6EPFLC1PHnBqCXEpPxuEb",
+      "programData": "DoU57AYuPFu2QU514RktNPG22QhApEjnKxnBcu4BHDTY",
+      "lastDeploySlot": "460497271",
+      "bytes": 1382016,
+      "sha256": "15a2e615a42e20f31714bbaaee43002ae6f1cda2e8d7118243117ab3c1342e2d"
+    },
+    "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4": {
+      "programId": "JUP6LkbZbjS1jKKwapdHNy74zcZ3tLUZoi5QNyVTaV4",
+      "programData": "4Ec7ZxZS6Sbdg5UGSLHbAnM7GQHp2eFd4KYWRexAipQT",
+      "lastDeploySlot": "468023491",
+      "bytes": 2892224,
+      "sha256": "aab7dc4985e5bee9afe431b60fa71e411b9624d2898062ef49e5f19cb336b3d6"
+    },
+    "whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc": {
+      "programId": "whirLbMiicVdio4qvUfM5KAg6Ct8VwpYzGff3uctyCc",
+      "programData": "CtXfPzz36dH5Ws4UYKZvrQ1Xqzn42ecDW6y8NKuiN8nD",
+      "lastDeploySlot": "457152296",
+      "bytes": 10485715,
+      "sha256": "c422b22f3eefe86dd55878a4f505b9c68c26e241dc96af1573ca032b24b8ee3f"
+    }
+  }
+}
