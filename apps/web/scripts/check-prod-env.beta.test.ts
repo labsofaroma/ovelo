@@ -55,7 +55,8 @@ describe("check:prod-env --profile beta", () => {
             {
               cwd: fileURLToPath(new URL("..", import.meta.url)),
               encoding: "utf8",
-              env: { PATH: process.env.PATH ?? "" },
+              // Only PATH: the check must see the env FILE, not this process's variables.
+              env: { PATH: process.env.PATH ?? "", NODE_ENV: "test" },
             },
           ),
         };
