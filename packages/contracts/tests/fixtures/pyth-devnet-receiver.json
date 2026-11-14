@@ -1,0 +1,38 @@
+{
+  "comment": "Real devnet Pyth receiver Config and Wormhole guardian sets, read-only (scripts/record-pyth-devnet.ts). Reference only: tests write their own config and guardian set signed by a runtime test key.",
+  "source": "https://api.devnet.solana.com",
+  "genesisHash": "EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG",
+  "slot": 522171353,
+  "readAt": "2026-11-14T11:32:59.898Z",
+  "receiverConfig": {
+    "address": "DaWUKXCyXsnzcvLUyeJRWou8KTn7XtadgTsdhJ6RHS7b",
+    "owner": "rec5EKMGg6MxZYaMdyBfgwp4d5rB9T1VQH5pJv5LtFJ",
+    "dataBase64": "mwyq4B76zIJjJ40nEJm/1JGVGz5kjwixxxYx5KU2dK1D6Pn5gGjDhQDxC7TlDVb9oT3+HzKbjTk90koBRZHhgxaXlA18NKON3QEAAAAaAFB5dGhuZXRQeXRobmV0UHl0aG5ldFB5dGhuZXRQeXRoAAAAAAAAAAADAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA==",
+    "decoded": {
+      "governanceAuthority": "7g4Los4WMQnpxYiBJpU1HejBiM6xCk5RDFGCABhWE9M6",
+      "targetGovernanceAuthority": null,
+      "wormhole": "HDwcJBJXjL9FpJ7UBsYBtaDjsBUhuLCUYoz3zr8SWWaQ",
+      "validDataSources": [
+        {
+          "chain": 26,
+          "emitter": "6R92oFT6UiP2xWZBjTbwAkHzFCLy5BhWnNh6m83ndhZR",
+          "emitterHex": "507974686e6574507974686e6574507974686e6574507974686e657450797468"
+        }
+      ],
+      "singleUpdateFeeLamports": "0",
+      "minimumSignatures": 3
+    }
+  },
+  "guardianSets": [
+    {
+      "index": 0,
+      "address": "C7RmcKdjeFscYSyekkmCjvHcnBQd7qJDkeB9RmRtuB3L",
+      "dataBase64": "AAAAAAUAAABBU0uxduRho/swR5QA8hBUnszmOGUCmHti8hyrfrXM2PAXMIS2DVtBRKPo9qOCQSz2u5Cj+BBuaJd0dsnZ19RSlXeGQ1LJplOaSCOPzURwUhZjpagiM27OSFWbHfsek6AXp9rDRBCPatpJnGoAAAAAAAAAAA=="
+    },
+    {
+      "index": 1,
+      "address": "8d9szTd157GKCLcxBqiLUgB7mek3v65rbsy2ErRyjwQ5",
+      "dataBase64": "eE1KYiJTYH0BAAAABQAAAEFTS7F25GGj+zBHlADyEFSezOY4ZQKYe2LyHKt+tczY8BcwhLYNW0FEo+j2o4JBLPa7kKP4EG5ol3R2yRPtx3bTBjVJ/bBwKvGC7ckFpTnUOvCIhUu3aAZfSSnlu9+ky7BMmvkAAAAAAAAAAA=="
+    }
+  ]
+}
