@@ -130,3 +130,67 @@ describe("creator routes: rate limits in middleware (A3)", () => {
     expect((await redeem()).status).toBe(429);
   });
 });
+
+describe("creator routes: JSON and body size (A4)", () => {
+  /** The largest publish a client can send: 20 allocations, escaped description, signature. */
+  const maximal = JSON.stringify({
+    action: "publish",
+    wallet: "11111111111111111111111111111111111111111111",
+    basketId: "1f0e6a7c-3c2b-4f53-9d55-0d7c8f0c2a11",
+    nonce: "n".repeat(32),
+    signature: "s".repeat(88),
+    basket: {
+      name: "\u0001".repeat(50),
+      ticker: "MAXIMAL",
+      description: "\u0001".repeat(500),
+      allocations: Array.from({ length: 20 }, (_, i) => ({
+        mint: `${String(i).padStart(2, "1")}${"X".repeat(42)}`,
+        weightBps: 500,
+      })),
+    },
+  });
+
+  it.each(CREATOR_MUTATIONS)(
+    "%s %s without Content-Type: application/json is 415",
+    async (method, path) => {
+      const response = await middleware(
+        new NextRequest(`http://localhost:3000${path}`, {
+          method,
+          headers: { "content-type": "text/plain" },
+          body: "{}",
+        }),
+      );
+      expect(response.status).toBe(415);
+      expect((await response.json()).code).toBe("UNSUPPORTED_MEDIA_TYPE");
+    },
+  );
+
+  it.each(CREATOR_MUTATIONS)(
+    "%s %s with a maximal JSON payload passes the body cap",
+    async (method, path) => {
+      const bytes = new TextEncoder().encode(maximal).length;
+      expect(bytes).toBeLessThan(8_192);
+      const response = await middleware(
+        post(
+          `http://localhost:3000${path}`,
+          {
+            "content-length": String(bytes),
+            "x-real-ip": `192.0.2.${CREATOR_MUTATIONS.findIndex((m) => m[1] === path) + 1}`,
+          },
+          maximal,
+          method,
+        ),
+      );
+      expect(response.status).toBe(200);
+    },
+  );
+
+  it("a declared body over 16 KiB is 413 before the handler reads it", async () => {
+    const response = await middleware(
+      post("http://localhost:3000/api/v1/creators/baskets", {
+        "content-length": String(16_385),
+      }),
+    );
+    expect(response.status).toBe(413);
+  });
+});
