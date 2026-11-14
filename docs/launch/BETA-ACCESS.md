@@ -28,7 +28,7 @@ Code: `features/beta/config.ts`, `server/env.beta.ts`.
 | Route handlers | quote and Action POST: `assertTradeAccess` (location → beta → terms); submit: beta access of the verified authorization's wallet. |
 | Action GET | `disabled: true` while the gate is on (a GET names no wallet), with a link to the basket page. |
 | Never gated | reads; the Action `/confirm` receipt callback; terms and redeem routes; devnet plans and faucet. |
-| Failure | Database unreachable → **503 `BETA_ACCESS_UNAVAILABLE`** (fail closed); no wallet or unreadable body at the edge → 403. |
+| Failure | Database unreachable → **503 `BETA_ACCESS_UNAVAILABLE`** (fail closed). A request the edge cannot attribute to a wallet (no JSON, no `taker`/`account`, an authorization that does not verify) goes on to the handler, which parses the same bytes strictly and refuses it with the precise code (`INVALID_JSON`, `VALIDATION_FAILED`, `AUTHORIZATION_INVALID`) and checks beta access itself; no such request can quote or submit. |
 
 Errors (`{ code, message }`): `BETA_ACCESS_REQUIRED` (403), `BETA_ACCESS_UNAVAILABLE` (503), `BETA_INVITE_INVALID` (403).
 

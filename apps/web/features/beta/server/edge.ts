@@ -17,7 +17,11 @@ import { betaAccessOf } from "./gate";
  *   job; a forged token never names a wallet here);
  * - prototype trading routes: always refused while the gate is on (they know nothing of beta
  *   access).
- * Anything it cannot read, and any database failure, is a refusal (fail closed).
+ * A wallet without access, and any database failure, is refused here (fail closed). A request
+ * it cannot attribute to a wallet (no JSON, no `taker`/`account`, an authorization that does not
+ * verify) goes on to the handler, which parses the SAME bytes strictly with the same keyring and
+ * refuses it with the precise code (INVALID_JSON, VALIDATION_FAILED, AUTHORIZATION_INVALID); no
+ * such request can quote or submit, and the handler runs its own beta check as well.
  */
 export type BetaRefusal = {
   status: number;
@@ -72,12 +76,10 @@ export async function betaEdgeRefusal(
     wallet = await walletOf(entry, request, maxBytes);
   } catch (error) {
     const code = mapError(error).body.code;
-    // A body too large keeps its own answer; anything else unreadable is a beta refusal.
-    return code === "PAYLOAD_TOO_LARGE"
-      ? refuse(code)
-      : refuse("BETA_ACCESS_REQUIRED");
+    // Too large keeps its own answer; anything else unreadable is the handler's to refuse.
+    return code === "PAYLOAD_TOO_LARGE" ? refuse(code) : null;
   }
-  if (!wallet) return refuse("BETA_ACCESS_REQUIRED");
+  if (!wallet) return null;
   try {
     const access = await betaAccessOf(deps, wallet);
     return access === "none" ? refuse("BETA_ACCESS_REQUIRED") : null;

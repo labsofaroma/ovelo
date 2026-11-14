@@ -2,6 +2,7 @@ import { NextRequest } from "next/server";
 import fc from "fast-check";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { betaConfig } from "@/features/beta/config";
+import { normalizePath } from "@/features/beta/paths";
 import { setBetaDepsForTests } from "@/features/beta/server/deps";
 import type * as Invites from "@/features/beta/server/invites";
 import type { BetaDb } from "@/features/beta/server/invites";
@@ -111,17 +112,19 @@ describe("beta gate in middleware", () => {
         await post("/api/v1/trade/submit", { authorization: token(ALLOWED) }),
       ),
     ).toBe("pass");
-    const forged = token(ALLOWED).replace(/.$/, (c) => (c === "A" ? "B" : "A"));
+    // A forged token names no verified wallet: the handler refuses it (AUTHORIZATION_INVALID,
+    // features/beta/routes.test.ts) and the edge does not pretend to know the wallet.
+    const forged = token(OTHER).replace(/.$/, (c) => (c === "A" ? "B" : "A"));
     expect(
       await code(await post("/api/v1/trade/submit", { authorization: forged })),
-    ).toBe("BETA_ACCESS_REQUIRED");
+    ).toBe("pass");
   });
 
-  it("an unreadable body, or no wallet, is a refusal (fail closed)", async () => {
+  it("a request naming no wallet goes on to the handler, which refuses it by schema", async () => {
+    // The handler parses the same bytes strictly (INVALID_JSON, VALIDATION_FAILED) and checks
+    // beta access itself; no such request can quote or submit.
     for (const body of ["{", "[]", "null", {}, { taker: 1 }])
-      expect(await code(await post("/api/v1/trade/quote", body))).toBe(
-        "BETA_ACCESS_REQUIRED",
-      );
+      expect(await code(await post("/api/v1/trade/quote", body))).toBe("pass");
   });
 
   it("the database being unavailable fails closed with 503", async () => {
@@ -197,7 +200,7 @@ describe("beta gate in middleware", () => {
     );
     await fc.assert(
       fc.asyncProperty(spellings, async (path) => {
-        const body = path.includes("submit")
+        const body = normalizePath(path).endsWith("/submit")
           ? { authorization: token(OTHER) }
           : { taker: OTHER, account: OTHER };
         // Every spelling is refused here, before any handler (no "maybe it 404s" escape).
