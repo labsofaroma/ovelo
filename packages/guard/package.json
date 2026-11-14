@@ -9,7 +9,8 @@
     ".": "./src/index.ts",
     "./generated": "./src/v1/generated/index.ts",
     "./pyth": "./src/pyth/index.ts",
-    "./idl": "./src/v1/idl/aroma_guard.json"
+    "./idl": "./src/v1/idl/aroma_guard.json",
+    "./jupiter": "./src/jupiter/index.ts"
   },
   "scripts": {
     "lint": "eslint .",

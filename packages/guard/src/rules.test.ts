@@ -21,7 +21,10 @@ const code = (file: string): string =>
     .replace(/\/\*[\s\S]*?\*\//g, "")
     .replace(/(^|[^:])\/\/.*$/gm, "$1");
 const files = [...sources(SRC), ...sources(join(ROOT, "scripts"))];
-const handWritten = files.filter((file) => !file.includes("/v1/generated/"));
+// Generated code and the pinned Jupiter IDL (protocol metadata read from mainnet) are exempt.
+const handWritten = files.filter(
+  (file) => !file.includes("/v1/generated/") && !file.includes("/jupiter/idl/"),
+);
 const rel = (file: string) => relative(ROOT, file);
 
 describe("@aroma/guard rules", () => {
