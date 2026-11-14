@@ -15,6 +15,17 @@ export default defineConfig({
   use: {
     baseURL: process.env.E2E_BASE_URL ?? "http://127.0.0.1:3200",
     ...devices["Desktop Chrome"],
+    // M9: the fork app trusts the proxy headers (AROMA_TRUST_PROXY=true), as on Vercel; an allowed
+    // country is the default so the purchase specs can quote. compliance.spec.ts overrides it.
+    extraHTTPHeaders: { "x-vercel-ip-country": "DE" },
   },
-  projects: [{ name: "chromium" }],
+  // M9: the compliance spec runs first, while the shared test wallet has not accepted the terms.
+  projects: [
+    { name: "compliance", testMatch: /compliance\.spec\.ts$/ },
+    {
+      name: "chromium",
+      testIgnore: /compliance\.spec\.ts$/,
+      dependencies: ["compliance"],
+    },
+  ],
 });

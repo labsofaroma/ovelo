@@ -115,10 +115,7 @@ export function TradeTicket({
       </fieldset>
       {editing ? (
         // M9 compliance gate (additive): location, then terms, before a mainnet quote.
-        <TradeComplianceGate
-          live={channel === "live" && wallet.status === "connected"}
-          signer={wallet.signer}
-        >
+        <TradeComplianceGate live={channel === "live"} signer={wallet.signer}>
           <div className="mt-4 flex flex-wrap items-center gap-2">
             <Button
               onClick={requestQuote}

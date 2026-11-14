@@ -91,8 +91,8 @@ describe("TradeComplianceGate", () => {
         terms: { version: "v", hash: "h", final: false, accepted },
       });
     });
-    const signMessage = vi.fn(
-      async (_message: Uint8Array) => new Uint8Array(64).fill(7),
+    const signMessage = vi.fn(async (_message: Uint8Array) =>
+      new Uint8Array(64).fill(7),
     );
     renderGate(signer(signMessage));
     expect(

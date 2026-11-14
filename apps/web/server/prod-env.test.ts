@@ -1,0 +1,183 @@
+import { describe, expect, it, vi } from "vitest";
+import {
+  failed,
+  genesisFindings,
+  MAINNET_GENESIS,
+  report,
+  staticFindings,
+  WEB_PRODUCTION,
+} from "./prod-env";
+
+/** P3: `pnpm check:prod-env` refuses an incomplete, placeholder or test production profile. */
+const secret = (c: string) => c.repeat(40);
+const GOOD = {
+  AROMA_V1_ENABLED: "true",
+  AROMA_SITE_URL: "https://aroma.trade",
+  SOLANA_RPC_URL: "https://mainnet.helius-rpc.com/?api-key=k",
+  NEXT_PUBLIC_SOLANA_RPC_URL: "https://rpc.aroma.trade",
+  DATABASE_URL: "postgres://u:p@ep-cool-1.neon.tech/aroma?sslmode=require",
+  UPSTASH_REDIS_REST_URL: "https://eu1-good-1.upstash.io",
+  UPSTASH_REDIS_REST_TOKEN: "AXXXtoken",
+  AROMA_TRADE_SECRET: secret("t"),
+  JUPITER_API_KEY: "jup-key",
+  // See the KNOWN ISSUE test below: a real DSN carries its public key as userinfo.
+  SENTRY_DSN: "https://o1.ingest.sentry.io/1",
+  NEXT_PUBLIC_SENTRY_DSN: "https://o1.ingest.sentry.io/1",
+  SENTRY_ENVIRONMENT: "production",
+  JITO_BLOCK_ENGINE_URL: "https://mainnet.block-engine.jito.wtf/api/v1/bundles",
+  AROMA_REVALIDATE_SECRET: secret("r"),
+  NEXT_PUBLIC_PRIVY_APP_ID: "privy-app",
+  PYTH_API_KEY: "pyth",
+  NEXT_PUBLIC_TURNSTILE_SITE_KEY: "0x4AAAAAAA-real",
+  TURNSTILE_SECRET_KEY: "0x4AAAAAAA-real-secret",
+};
+const byName = (env: Record<string, string>, name: string) =>
+  staticFindings(env).filter((f) => f.name === name);
+
+describe("staticFindings (production profile)", () => {
+  it("a complete, real-looking profile passes", () => {
+    const findings = staticFindings(GOOD);
+    expect(failed(findings)).toBe(false);
+    for (const { name } of WEB_PRODUCTION)
+      expect(findings.find((f) => f.name === name)?.status).toBe("ok");
+  });
+
+  it.each(
+    WEB_PRODUCTION.filter((i) => i.level === "required").map((i) => i.name),
+  )("a missing required %s fails", (name) => {
+    const env: Record<string, string> = { ...GOOD };
+    delete env[name];
+    expect(failed(staticFindings(env))).toBe(true);
+  });
+
+  it("a missing recommended variable only warns", () => {
+    const { JITO_BLOCK_ENGINE_URL: _, ...env } = GOOD;
+    expect(byName(env, "JITO_BLOCK_ENGINE_URL")[0]?.status).toBe("warning");
+    expect(failed(staticFindings(env))).toBe(false);
+  });
+
+  it("the .env.example placeholders are refused", () => {
+    const env = {
+      ...GOOD,
+      DATABASE_URL:
+        "postgres://aroma:placeholder@db.placeholder.invalid/aroma?sslmode=require",
+      UPSTASH_REDIS_REST_URL: "https://redis.placeholder.invalid",
+      AROMA_TRADE_SECRET:
+        "placeholder-trade-secret-replace-with-32-plus-random-chars",
+    };
+    for (const name of [
+      "DATABASE_URL",
+      "UPSTASH_REDIS_REST_URL",
+      "AROMA_TRADE_SECRET",
+    ])
+      expect(byName(env, name).map((f) => f.status)).toContain("forbidden");
+  });
+
+  it.each([
+    ["AROMA_V1_ALLOW_TEST_SWITCHES", "true"],
+    ["NEXT_PUBLIC_AROMA_E2E_WALLET", "true"],
+    ["NEXT_PUBLIC_AROMA_LOCALNET", "true"],
+    [
+      "AROMA_V1_TEST_FORK_GENESIS",
+      "GH7ome3EiwEr7tu9JuTh2dpYWBJK3z69Xm1ZE3MEE6JC",
+    ],
+    ["AROMA_V1_TEST_JUPITER_URL", "http://127.0.0.1:4010"],
+    ["AROMA_LOCAL_NEON_WS_PROXY", "127.0.0.1:54330"],
+    ["TURNSTILE_SECRET_KEY", "1x0000000000000000000000000000000AA"],
+    ["NEXT_PUBLIC_TURNSTILE_SITE_KEY", "1x00000000000000000000AA"],
+    ["AROMA_COMPLIANCE_MISSING_COUNTRY", "allow"],
+    ["AROMA_COMPLIANCE_RESTRICTED_COUNTRIES", "CU,IR"],
+  ])("%s=<test value> is refused", (name, value) => {
+    const findings = staticFindings({ ...GOOD, [name]: value });
+    expect(failed(findings)).toBe(true);
+    expect(findings.some((f) => f.name === name && f.status !== "ok")).toBe(
+      true,
+    );
+  });
+
+  it.each([
+    "https://api.devnet.solana.com",
+    "https://my-devnet.helius-rpc.com",
+    "https://api.testnet.solana.com",
+  ])("a non-mainnet SOLANA_RPC_URL (%s) is refused", (url) => {
+    expect(
+      byName({ ...GOOD, SOLANA_RPC_URL: url }, "SOLANA_RPC_URL").map(
+        (f) => f.status,
+      ),
+    ).toContain("forbidden");
+  });
+
+  it("the public mainnet endpoint is allowed but warned (rate-limited)", () => {
+    const findings = byName(
+      { ...GOOD, SOLANA_RPC_URL: "https://api.mainnet-beta.solana.com" },
+      "SOLANA_RPC_URL",
+    );
+    expect(findings.map((f) => f.status)).toContain("warning");
+  });
+
+  it("KNOWN ISSUE (M9 blocker): the boot schema refuses a real Sentry DSN (public key as userinfo)", () => {
+    // server/env.schema.ts validates SENTRY_DSN with httpsUrl, which refuses any userinfo. Real
+    // DSNs look like https://<public-key>@o<org>.ingest.sentry.io/<project>, so production boot
+    // would stop. Owner decision needed (shared file); this test flips when it is fixed.
+    const dsn = "https://abc123@o1.ingest.sentry.io/1";
+    expect(byName({ ...GOOD, SENTRY_DSN: dsn }, "SENTRY_DSN")[0]).toMatchObject(
+      {
+        status: "invalid",
+        detail: "must not embed credentials",
+      },
+    );
+  });
+
+  it("a rotation in progress is a warning, not a failure", () => {
+    const findings = staticFindings({
+      ...GOOD,
+      AROMA_TRADE_SECRET_PREVIOUS: secret("p"),
+    });
+    expect(
+      findings.find((f) => f.name === "AROMA_TRADE_SECRET_PREVIOUS")?.status,
+    ).toBe("warning");
+    expect(failed(findings)).toBe(false);
+  });
+
+  it("the report names variables and statuses, never values", () => {
+    const env = {
+      ...GOOD,
+      DATABASE_URL: "postgres://u:supersecretvalue@x.placeholder.invalid/db",
+    };
+    const text = report(staticFindings(env));
+    for (const value of Object.values(env)) expect(text).not.toContain(value);
+    expect(text).not.toContain("supersecretvalue");
+    expect(text).toMatch(/FORBIDDEN\s+DATABASE_URL/);
+  });
+});
+
+describe("genesisFindings (read-only getGenesisHash)", () => {
+  const reply = (result: unknown) =>
+    vi.fn(async (_url: string, _init: RequestInit) =>
+      Response.json({ jsonrpc: "2.0", id: 1, result }),
+    );
+
+  it("mainnet genesis passes; only getGenesisHash is ever called", async () => {
+    const fetch = reply(MAINNET_GENESIS);
+    const findings = await genesisFindings(GOOD, fetch);
+    expect(findings.map((f) => f.status)).toEqual(["ok", "ok"]);
+    for (const [, init] of fetch.mock.calls)
+      expect(JSON.parse(String(init.body)).method).toBe("getGenesisHash");
+  });
+
+  it("a devnet genesis or an unreachable RPC fails", async () => {
+    expect(
+      failed(
+        await genesisFindings(
+          GOOD,
+          reply("EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG"),
+        ),
+      ),
+    ).toBe(true);
+    const down = vi.fn(async () => {
+      throw new Error("ECONNREFUSED");
+    });
+    const findings = await genesisFindings(GOOD, down);
+    expect(findings.every((f) => f.status === "invalid")).toBe(true);
+  });
+});
