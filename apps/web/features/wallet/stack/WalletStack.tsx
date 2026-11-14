@@ -8,9 +8,7 @@ import {
 import type { WalletName } from "@solana/wallet-adapter-base";
 import { VersionedTransaction } from "@solana/web3.js";
 import {
-  createContext,
   useCallback,
-  useContext,
   useEffect,
   useMemo,
   useState,
@@ -43,21 +41,14 @@ import {
 } from "./signing";
 
 /**
- * The wallet bridge (M4 B2): wallet-adapter for desktop extensions (Wallet Standard
- * auto-discovery), plus Privy for embedded wallets when NEXT_PUBLIC_PRIVY_APP_ID is set.
+ * The wallet bridge (M4 B2): wallet-adapter with Wallet Standard auto-discovery (desktop
+ * extensions, wallet in-app browsers) and, on Android, Mobile Wallet Adapter, which
+ * wallet-adapter-react adds by itself. Wallet-only login (REWRITE-PLAN §7.3 W1): no embedded or
+ * email wallets, so every signer is the user's own wallet.
  * This is the ONLY place v1 code uses @solana/web3.js (V0 fallback for legacy adapters).
  * One cluster per stack (M7 B2): the browser RPC must report that cluster's genesis, and an
  * account that declares only other chains is refused. Mainnet unless the page scopes it.
  */
-
-export type EmbeddedSession = {
-  ready: boolean;
-  authenticated: boolean;
-  signer: Signer | null;
-  login: () => void;
-  logout: () => Promise<void>;
-};
-export const EmbeddedContext = createContext<EmbeddedSession | null>(null);
 
 type StandardWallet = {
   accounts: readonly {
@@ -78,7 +69,6 @@ function Bridge({
   cluster: ClusterConfig;
 }) {
   const adapter = useAdapter();
-  const embedded = useContext(EmbeddedContext);
   const [picker, setPicker] = useState(initiallyOpen);
   const [network, setNetwork] = useState<"checking" | "ok" | "wrong">(
     "checking",
@@ -105,7 +95,7 @@ function Bridge({
   const messageFeature = standard?.features["solana:signMessage"] as
     StandardMessageFeature | undefined;
 
-  const adapterSigner = useMemo((): Signer | null => {
+  const signer = useMemo((): Signer | null => {
     if (!adapter.connected || !address) return null;
     const standardVersions = advertisedVersions(
       feature?.supportedTransactionVersions,
@@ -161,10 +151,6 @@ function Bridge({
   const wrongAccount = Boolean(
     account && !accountOnCluster(account.chains, cluster.cluster),
   );
-  // Embedded (Privy) signers exist on mainnet only; a signer from another cluster is never used.
-  const embeddedSigner =
-    embedded?.signer?.cluster === cluster.cluster ? embedded.signer : null;
-  const signer = adapterSigner ?? embeddedSigner;
   const status: WalletState["status"] =
     network === "wrong" || wrongAccount
       ? "wrong-network"
@@ -199,7 +185,6 @@ function Bridge({
         icon: w.adapter.icon ?? null,
         ready: w.readyState === "Installed" || w.readyState === "Loadable",
       })),
-      embedded: Boolean(embedded),
       error:
         error ??
         (status === "wrong-network"
@@ -207,16 +192,11 @@ function Bridge({
           : null),
       open: () => setPicker(true),
       select,
-      loginEmbedded: () => {
-        setPicker(false);
-        embedded?.login();
-      },
       disconnect: () => {
         void adapter.disconnect().catch(() => {});
-        void embedded?.logout().catch(() => {});
       },
     }),
-    [status, signer, adapter, embedded, error, select, cluster.cluster],
+    [status, signer, adapter, error, select, cluster.cluster],
   );
 
   return (
@@ -231,21 +211,12 @@ export default function WalletStack({
   children,
   initiallyOpen = false,
   cluster,
-  Embedded,
 }: {
   children: ReactNode;
   initiallyOpen?: boolean;
   cluster: ClusterConfig;
-  /** Privy provider (loaded only when an app id is configured, on mainnet). */
-  Embedded?: (props: { children: ReactNode }) => ReactNode;
 }) {
   const wallets = useMemo(() => [], []);
-  const inner = (
-    <Bridge initiallyOpen={initiallyOpen} cluster={cluster}>
-      {children}
-    </Bridge>
-  );
-  const Wrap = cluster.cluster === "mainnet" ? Embedded : undefined;
   return (
     <ConnectionProvider endpoint={cluster.rpcUrl}>
       <AdapterProvider
@@ -253,7 +224,9 @@ export default function WalletStack({
         autoConnect
         localStorageKey={storageKey(cluster.cluster)}
       >
-        {Wrap ? <Wrap>{inner}</Wrap> : inner}
+        <Bridge initiallyOpen={initiallyOpen} cluster={cluster}>
+          {children}
+        </Bridge>
       </AdapterProvider>
     </ConnectionProvider>
   );

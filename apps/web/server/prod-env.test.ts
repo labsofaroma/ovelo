@@ -26,7 +26,6 @@ const GOOD = {
   SENTRY_ENVIRONMENT: "production",
   JITO_BLOCK_ENGINE_URL: "https://mainnet.block-engine.jito.wtf/api/v1/bundles",
   AROMA_REVALIDATE_SECRET: secret("r"),
-  NEXT_PUBLIC_PRIVY_APP_ID: "privy-app",
   PYTH_API_KEY: "pyth",
   NEXT_PUBLIC_TURNSTILE_SITE_KEY: "0x4AAAAAAA-real",
   TURNSTILE_SECRET_KEY: "0x4AAAAAAA-real-secret",

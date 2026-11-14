@@ -6,7 +6,9 @@ import type { WalletCluster } from "./cluster";
 /**
  * The wallet contract every trade surface uses (REWRITE-PLAN §5.3). It is deliberately tiny and
  * free of Solana libraries, so pages import it without shipping the wallet stack. The stack
- * (wallet-adapter, Privy, web3.js) lives in ./stack and is loaded on demand by WalletBoundary.
+ * (wallet-adapter with Wallet Standard and Mobile Wallet Adapter, web3.js) lives in ./stack and
+ * is loaded on demand by WalletBoundary. Login is wallet-only (REWRITE-PLAN §7.3 W1): no
+ * embedded, email or custodial wallets.
  *
  * A Signer turns UNSIGNED base64 transactions into SIGNED base64 transactions, and message bytes
  * into a signature, through the user's wallet. It never sees, holds or exposes a private key
@@ -16,7 +18,7 @@ export type TransactionVersion = 0 | 1;
 
 export type Signer = {
   address: string;
-  kind: "privy" | "standard" | "adapter" | "e2e";
+  kind: "standard" | "adapter" | "e2e";
   /** The cluster this signer's boundary verified (M7 B2). Signers never cross clusters. */
   cluster: WalletCluster;
   /** Versions the wallet explicitly advertises for the signing method we call. */
@@ -51,12 +53,10 @@ export type WalletState = {
     | "wrong-network";
   signer: Signer | null;
   options: WalletOption[];
-  embedded: boolean;
   error: string | null;
   /** Load the stack (if needed) and show the wallet picker. */
   open(): void;
   select(name: string): void;
-  loginEmbedded(): void;
   disconnect(): void;
 };
 
@@ -65,11 +65,9 @@ export const idleWallet: WalletState = {
   status: "idle",
   signer: null,
   options: [],
-  embedded: false,
   error: null,
   open: () => {},
   select: () => {},
-  loginEmbedded: () => {},
   disconnect: () => {},
 };
 

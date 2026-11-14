@@ -39,7 +39,6 @@ export const WEB_PRODUCTION: readonly {
   { name: "SENTRY_ENVIRONMENT", level: "recommended", milestone: "M9" },
   { name: "JITO_BLOCK_ENGINE_URL", level: "recommended", milestone: "M9" },
   { name: "AROMA_REVALIDATE_SECRET", level: "recommended", milestone: "M9" },
-  { name: "NEXT_PUBLIC_PRIVY_APP_ID", level: "recommended", milestone: "M9" },
   { name: "PYTH_API_KEY", level: "recommended", milestone: "M10" },
   {
     name: "NEXT_PUBLIC_TURNSTILE_SITE_KEY",
@@ -82,7 +81,7 @@ const TURNSTILE_TEST_SITE_KEYS = new Set([
 const PLACEHOLDER =
   /(\.invalid\b|placeholder|changeme|replace[-_ ]?me|example\.(com|org)|aroma-local-only)/i;
 const APP_VARIABLE =
-  /^(AROMA_|NEXT_PUBLIC_|SOLANA_|UPSTASH_|DATABASE_URL|JUPITER_|PYTH_|PRIVY_|SENTRY_|JITO_|TURNSTILE_|QSTASH_|KEEPER_|CREATOR_|HERMES_)/;
+  /^(AROMA_|NEXT_PUBLIC_|SOLANA_|UPSTASH_|DATABASE_URL|JUPITER_|PYTH_|SENTRY_|JITO_|TURNSTILE_|QSTASH_|KEEPER_|CREATOR_|HERMES_)/;
 const NON_MAINNET_RPC = /(devnet|testnet|localhost|127\.0\.0\.1|\[::1\])/i;
 export const MAINNET_GENESIS = "5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d";
 

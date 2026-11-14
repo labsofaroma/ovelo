@@ -23,6 +23,8 @@ export default defineConfig({
       "observability/**/*.test.ts",
       "lib/sdk/**/*.test.ts",
       "features/**/*.test.{ts,tsx}",
+      // W1: the v1 lint rule fixture test (it runs ESLint with this app's config).
+      "scripts/**/*.test.ts",
     ],
     // PGlite (server/db/schema.test.ts) boots a WASM Postgres in beforeAll; 10s is too tight when
     // the whole suite runs in parallel.

@@ -28,7 +28,7 @@ export const privacyDocument = {
       heading: "Wallet and sign-in information",
       paragraphs: [
         "When you connect a wallet, the API uses your public wallet address to read balances and prepare trades. When you approve a transaction, its signed payload is sent for execution. Private keys are not requested by Aroma’s API. Native wallet authorisation tokens are kept in device secure storage; unresolved trade identifiers may be saved locally to prevent repeat submissions.",
-        "Privy processes sign-in information when you choose its authentication flow. Your wallet provider and RPC providers process the requests needed for signing, balances and transactions. Onchain transactions are public and cannot be erased by clearing Aroma data.",
+        "Aroma has no accounts or email sign-in: you connect your own wallet. Your wallet provider and RPC providers process the requests needed for signing, balances and transactions. Onchain transactions are public and cannot be erased by clearing Aroma data.",
       ],
     },
     {

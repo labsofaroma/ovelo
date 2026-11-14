@@ -7,8 +7,9 @@
  *   'strict-dynamic'; nothing injected by markup is.
  * - connect-src: an explicit list DERIVED FROM CONFIGURATION (the browser RPC and its websocket,
  *   Sentry's ingest host, Plausible when configured), plus the fixed endpoints the client stack
- *   talks to: Jupiter, Pyth Hermes, Privy, Jito, WalletConnect (wallet-adapter mobile/QR) and
- *   Cloudflare Turnstile. Never `https:` or `wss:` wildcards.
+ *   talks to: Jupiter, Pyth Hermes, Jito, WalletConnect (wallet-adapter mobile/QR) and
+ *   Cloudflare Turnstile. Never `https:` or `wss:` wildcards. Wallet-only login (REWRITE-PLAN
+ *   §7.3 W1): no embedded-wallet provider hosts in connect-src or frame-src.
  * - style-src keeps 'unsafe-inline': React style attributes and Base UI positioning need it,
  *   and styles cannot execute code. Scripts are the XSS vector this closes.
  */
@@ -21,11 +22,6 @@ export const FIXED_CONNECT_SOURCES = [
   "https://lite-api.jup.ag",
   // Pyth Hermes reference prices.
   "https://hermes.pyth.network",
-  // Privy embedded wallets.
-  "https://auth.privy.io",
-  "https://*.privy.io",
-  "wss://*.privy.io",
-  "https://*.rpc.privy.systems",
   // Jito Block Engine (bundles are sent by the server; listed for status links only).
   "https://mainnet.block-engine.jito.wtf",
   // WalletConnect relay and verify (wallet-adapter mobile / QR wallets).
@@ -111,7 +107,7 @@ export function buildCsp(input: {
     "img-src 'self' data: blob: https://xstocks-metadata.backed.fi https://prestocks.com https://backpack.exchange",
     "font-src 'self' data:",
     `connect-src ${connectSources(env).join(" ")}`,
-    "frame-src https://auth.privy.io https://*.privy.io https://verify.walletconnect.org https://challenges.cloudflare.com",
+    "frame-src https://verify.walletconnect.org https://challenges.cloudflare.com",
     "worker-src 'self' blob:",
     "manifest-src 'self'",
     ...(development ? [] : ["upgrade-insecure-requests"]),

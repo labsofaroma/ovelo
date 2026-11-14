@@ -33,7 +33,6 @@ const postgresUrl = z
   });
 
 const publicShape = {
-  NEXT_PUBLIC_PRIVY_APP_ID: optionalText,
   NEXT_PUBLIC_SOLANA_RPC_URL: httpsUrl.optional(),
   NEXT_PUBLIC_SOLANA_WS_URL: z
     .url({ protocol: /^wss$/, message: "must be a wss:// URL" })
@@ -98,7 +97,6 @@ const serverShape = {
   AROMA_TRUST_PROXY: bool.default(false),
   JUPITER_API_KEY: optionalText,
   PYTH_API_KEY: optionalText,
-  PRIVY_APP_SECRET: optionalText,
   CREATOR_AUTH_SECRET: secret32.optional(),
   /** Bearer secret for POST /api/v1/revalidate (M3). Unset: the route answers 503. */
   AROMA_REVALIDATE_SECRET: secret32.optional(),

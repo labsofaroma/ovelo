@@ -97,11 +97,9 @@ export default function E2EStack({
       options: bridge
         ? [{ name: "E2E test wallet", icon: null, ready: true }]
         : [],
-      embedded: false,
       error: connected && wrong ? wrongNetworkMessage(cluster.cluster) : null,
       open: () => setConnected(Boolean(bridge)),
       select: () => setConnected(Boolean(bridge)),
-      loginEmbedded: () => {},
       disconnect: () => setConnected(false),
     };
   }, [bridge, connected, network, cluster.cluster]);

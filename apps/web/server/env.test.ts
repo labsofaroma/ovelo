@@ -21,11 +21,11 @@ describe("validateEnv", () => {
   it("groups variables as public, server, devnet and keeper", () => {
     const env = validateEnv({
       ...V1,
-      NEXT_PUBLIC_PRIVY_APP_ID: "app",
+      NEXT_PUBLIC_PLAUSIBLE_DOMAIN: "aroma.trade",
       AROMA_RECURRING_RPC_URL: "https://api.devnet.solana.com",
       QSTASH_TOKEN: "q",
     });
-    expect(env.public.NEXT_PUBLIC_PRIVY_APP_ID).toBe("app");
+    expect(env.public.NEXT_PUBLIC_PLAUSIBLE_DOMAIN).toBe("aroma.trade");
     expect(env.server.DATABASE_URL).toContain("postgres://");
     expect(env.devnet.AROMA_RECURRING_RPC_URL).toContain("devnet");
     expect(env.keeper.QSTASH_TOKEN).toBe("q");
