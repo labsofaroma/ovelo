@@ -97,6 +97,35 @@ test("faucet: a wallet-signed claim with the Turnstile test key; a second claim 
   );
 });
 
+/** Fill the wizard and open its review (prepares the transaction; nothing is signed). */
+async function openReview(page: Page) {
+  await installWallet(page, s.wallet);
+  await connect(page);
+  await page.getByTestId("wizard-mode-assets").check();
+  await page.getByTestId("wizard-weight-AAPL").fill("60");
+  await page.getByTestId("wizard-weight-TSLA").fill("40");
+  await page.getByTestId("wizard-amount").fill("10");
+  await page.getByTestId("wizard-period").selectOption(String(PERIOD));
+  await page.getByTestId("wizard-periods").fill("4");
+  await page.getByTestId("wizard-review").click();
+}
+
+// Phase A (COMPLIANCE.md §5): the devnet risk disclosure wraps the confirm control.
+for (const theme of THEMES)
+  test(`the review shows the devnet risk disclosure, axe clean (${theme})`, async ({
+    page,
+  }) => {
+    await useTheme(page, theme);
+    await openReview(page);
+    const disclosure = page.getByRole("region", { name: "Risk disclosure" });
+    await expect(disclosure).toContainText("test tokens of no value");
+    await expect(disclosure.getByTestId("sign-and-create")).toBeVisible();
+    await expect(
+      page.getByText("Devnet: test tokens, no real value").first(),
+    ).toBeVisible();
+    await expectNoAxeViolations(page);
+  });
+
 test("create a plan in the UI: the review states the approval in plain words", async ({
   page,
   request,

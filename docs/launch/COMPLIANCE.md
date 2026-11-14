@@ -13,7 +13,7 @@ Counsel decided the level of enforcement (**per P1**): IP geo-blocking at every 
 | Action metadata | `GET /api/v1/actions/baskets/:id` | A blocked or unknown location gets the metadata with `disabled: true` and `error.message`. |
 | Never blocked | Action `/confirm` callback; plan close (`prepare-close`, `plans/submit`); terms routes; all GETs | Receipts for sent transactions are never lost, and a user can always exit a plan. |
 | **Terms acceptance** | `POST /api/v1/compliance/terms/{challenge,accept}`; checked in the quote route and the Action POST | The wallet signs (signMessage) a message naming the terms version and the SHA-256 of their canonical text (the M5 challenge pattern, purpose `terms`, 5-minute single-use nonce, origin-bound). Stored in `terms_acceptances` (migration `0004`; renumber if M8 adds one first) with the exact signed message and the trusted country. A quote needs an acceptance of the **current version and hash**: a version bump, or an edit of the text, requires every wallet to accept again. Refusal: **403** `TERMS_REQUIRED`; the Action's message points to the site. |
-| **Risk disclosure** | `features/compliance/components/RiskDisclosure.tsx` in the trade `ReviewPanel` | Wraps the confirm controls of every live review (stock, basket, creator basket), so the "Sign and buy" button cannot exist without it. No collapse, dismiss or "don't show again". The Action description carries the same text. |
+| **Risk disclosure** | `features/compliance/components/RiskDisclosure.tsx` in the trade `ReviewPanel` and (Phase A) the invest `ReviewPanel` | Wraps the confirm controls of every live review (stock, basket, creator basket) and of the devnet plan review (`surface="recurring-devnet"`), so the "Sign and buy" and "Sign and create" buttons cannot exist without it. No collapse, dismiss or "don't show again". The Action description carries the same text. |
 | UI states | `TradeComplianceGate` in the trade ticket | Restricted or unknown location: an honest notice, no quote button; paper practice and browsing remain. Allowed but no terms: the terms step. `GET /api/v1/compliance/status` drives it. |
 | Browse | middleware → `/v1/restricted` | Only if `AROMA_COMPLIANCE_BROWSE=block`; default is browse-only. Terms and privacy stay readable. |
 
@@ -38,7 +38,8 @@ Mainnet trading for a restricted country cannot be configured open (the schema a
 - Unit: `features/compliance/{policy,jurisdiction}.test.ts`, `server/terms.test.ts` (replay, wrong wallet, other origin, old version, version bump, expiry), `server/store.postgres.test.ts` (migration 0004 on PGlite).
 - Edge: `server/middleware.compliance.test.ts` (blocked, allowed, missing header, untrusted proxy, Action POST blocked with Actions headers, confirm open, devnet rule, prototype body, invalid policy, browse rewrite).
 - Routes: `features/compliance/routes.test.ts` (quote, submit, Action GET/POST, status, challenge, accept).
-- Components: `ReviewDisclosure.test.tsx` (the confirm control exists only inside the disclosure), `TradeComplianceGate.test.tsx`.
+- Components: `ReviewDisclosure.test.tsx` (the confirm control exists only inside the disclosure), `TradeComplianceGate.test.tsx`, `features/invest/components/ReviewPanel.test.tsx` (Phase A: the devnet review's confirm control is inside the `recurring-devnet` disclosure, the devnet label stays).
+- Invest E2E (`e2e/invest/invest.spec.ts`, Phase A): the review shows the devnet disclosure around "Sign and create", axe clean in light and dark.
 - Fork E2E: `e2e/trade/compliance.spec.ts` (runs before the purchase specs): blocked country cannot quote (UI and API), allowed country must accept the terms before the first quote, the disclosure is visible on the review, axe in light and dark.
 
 ## 4. What counsel must supply (needs counsel's final text)
@@ -58,4 +59,4 @@ Mainnet trading for a restricted country cannot be configured open (the schema a
 - Off Vercel, `AROMA_TRUST_PROXY=true` must be set only behind a proxy that overwrites `x-vercel-ip-country`; otherwise anyone can claim any country.
 - Terms acceptance proves a wallet signed a text; it does not identify a person or their residence.
 - The gate covers Aroma's server. A user who builds and signs their own Jupiter transaction for an xStock never touches Aroma.
-- Not yet wired: the invest wizard's review (`features/invest/**`, owned by the M7 session) should render `<RiskDisclosure surface="recurring-devnet">`; the component is ready.
+- The invest wizard's review renders `<RiskDisclosure surface="recurring-devnet">` around its confirm control (wired in Phase A, branch `phase-a-beta`); its text says the devnet beta uses test tokens of no value, and the persistent "Devnet: test tokens, no real value" label stays.

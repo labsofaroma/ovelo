@@ -1,13 +1,16 @@
 "use client";
 
 import { Badge, Button } from "@aroma/ui";
+import { RiskDisclosure } from "../../compliance/components/RiskDisclosure";
 import type { PlanSummary } from "../schema";
 import type { FlowStep } from "../queries";
 
 /**
  * The server's review text, shown verbatim before the wallet signs: title, lines, the plain-words
  * approval (it says the approval covers (1 + window) installments per period and that at most one
- * installment is taken per period), the cluster label and the risk note.
+ * installment is taken per period), the cluster label and the risk note. The confirm control
+ * lives INSIDE the devnet risk disclosure (M9 compliance gate, COMPLIANCE.md §5), the way the
+ * trade review's does, so the plan cannot be signed without it rendered.
  */
 export function ReviewPanel({
   summary,
@@ -56,14 +59,16 @@ export function ReviewPanel({
             ? "Submitting to Solana and waiting for confirmation…"
             : ""}
       </p>
-      <div className="flex flex-wrap gap-2">
-        <Button variant="ghost" onClick={onBack} disabled={busy}>
-          Back
-        </Button>
-        <Button data-testid={testId} loading={busy} onClick={onConfirm}>
-          {confirmLabel}
-        </Button>
-      </div>
+      <RiskDisclosure surface="recurring-devnet">
+        <div className="flex flex-wrap gap-2">
+          <Button variant="ghost" onClick={onBack} disabled={busy}>
+            Back
+          </Button>
+          <Button data-testid={testId} loading={busy} onClick={onConfirm}>
+            {confirmLabel}
+          </Button>
+        </div>
+      </RiskDisclosure>
     </section>
   );
 }
