@@ -1,23 +1,15 @@
 import "server-only";
-import { createActionHeaders } from "@solana/actions";
 import { expectedOrigin } from "@/features/creators/http";
 import { isV1Enabled } from "@/server/env";
 import { AppError } from "@/server/errors";
 import { errorResponse } from "@/server/http";
+import { actionHeaders } from "./actions-headers";
 
 /**
  * HTTP plumbing for /api/v1/actions/* (M5b B4): the v1 gate, the Actions spec headers on every
  * response (errors included, so Blink clients can read the `message`), and `{ code, message }`
  * error bodies via mapError. Middleware adds the CORS headers and the trade rate-limit bucket.
  */
-export function actionHeaders(): Record<string, string> {
-  return {
-    ...createActionHeaders({ chainId: "mainnet", actionVersion: "2.4" }),
-    "Access-Control-Expose-Headers":
-      "X-Blockchain-Ids, X-Action-Version, Retry-After",
-    "Cache-Control": "no-store",
-  };
-}
 
 /** Where Action links point: the canonical site, else the origin the client used. */
 export const actionOrigin = expectedOrigin;
