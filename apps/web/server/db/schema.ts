@@ -162,6 +162,10 @@ export const receipts = pgTable(
     legs: jsonb("legs").$type<unknown[]>().notNull().default([]),
     slot: bigint("slot", { mode: "bigint" }),
     blockTime: timestamptz("block_time"),
+    /** M7: the v1 plan a plan_create, plan_close or installment receipt belongs to. */
+    planPda: text("plan_pda"),
+    /** M7: installment receipts only, the plan period the transaction's legs executed. */
+    period: integer("period"),
     status: text("status", { enum: RECEIPT_STATUSES })
       .notNull()
       .default("pending"),
@@ -179,6 +183,12 @@ export const receipts = pgTable(
     check("receipts_amount_in_raw", rawAmount("amount_in")),
     index("receipts_wallet_time_idx").on(t.wallet, t.blockTime),
     index("receipts_basket_idx").on(t.basketId),
+    index("receipts_plan_idx").on(t.planPda, t.period),
+    check(
+      "receipts_plan_kinds",
+      sql`${t.planPda} IS NOT NULL OR ${t.kind} NOT IN ('plan_create', 'plan_close', 'installment')`,
+    ),
+    check("receipts_period_nonneg", sql`${t.period} IS NULL OR ${t.period} >= 0`),
   ],
 );
 
@@ -201,6 +211,9 @@ export const plansIndex = pgTable(
     nextDueAt: timestamptz("next_due_at"),
     lastPeriod: integer("last_period"),
     skippedPeriods: integer("skipped_periods").notNull().default(0),
+    /** M7: on-chain counters mirrored for drift detection (the chain is the source of truth). */
+    executedPeriods: integer("executed_periods").notNull().default(0),
+    periods: integer("periods"),
     updatedAt: timestamptz("updated_at").notNull().defaultNow(),
   },
   (t) => [
@@ -210,6 +223,8 @@ export const plansIndex = pgTable(
     ),
     check("plans_index_nonce_raw", rawAmount("nonce")),
     check("plans_index_skipped_nonneg", sql`${t.skippedPeriods} >= 0`),
+    check("plans_index_executed_nonneg", sql`${t.executedPeriods} >= 0`),
+    index("plans_index_owner_idx").on(t.owner),
     unique("plans_index_owner_funding_nonce_unique").on(
       t.owner,
       t.fundingMint,
