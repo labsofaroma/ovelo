@@ -1,7 +1,7 @@
 import { Skeleton } from "@aroma/ui";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { Suspense, type ReactNode } from "react";
+import { Suspense } from "react";
 import { AllocationTable } from "@/features/baskets/components/AllocationTable";
 import { BasketHeader } from "@/features/baskets/components/BasketHeader";
 import { BasketPerformance } from "@/features/baskets/components/BasketPerformance";
@@ -12,10 +12,11 @@ import { DataNotice } from "@/features/shared/components/DataNotice";
 import { formatObservedAt } from "@/features/shared/freshness";
 import { pageContainer, textLink } from "@/features/shared/styles";
 import { TradeUnavailable } from "@/features/stock/components/TradePlaceholder";
-import { getCreatorBasketPage } from "../basket-page";
+import { getBasketUsage, getCreatorBasketPage } from "../basket-page";
 import { creatorRoutes } from "../routes";
 import { formatBpsPercent, type CreatorBasketView } from "../schema";
 import { CreatorBasketIsland } from "./CreatorBasketIsland";
+import { CreatorUsage } from "./CreatorUsage";
 
 /** "AbCd…WxYz" for display (features/wallet/context is a client module, so not imported here). */
 const shortAddress = (address: string) =>
@@ -25,14 +26,15 @@ const shortAddress = (address: string) =>
 export async function CreatorBasketDetails({
   id,
   range,
-  stats,
 }: {
   id: string;
   range: PerformanceRange;
-  /** Purchase stats from receipts (B5), rendered by the caller. */
-  stats?: ReactNode;
 }) {
-  const page = await getCreatorBasketPage(id);
+  const [page, usage] = await Promise.all([
+    getCreatorBasketPage(id),
+    getBasketUsage(id),
+  ]);
+  const stats = <CreatorUsage usage={usage} />;
   if (page.state === "not-found") notFound();
   return (
     <main

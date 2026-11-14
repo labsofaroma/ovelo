@@ -323,7 +323,7 @@ describe("GET and DELETE /api/v1/creators/baskets/:id", () => {
 });
 
 describe("GET /api/v1/creators/:wallet/stats", () => {
-  it("reports recorded facts with source and as-of, and usage as unavailable", async () => {
+  it('reports recorded facts with source and as-of; usage without receipts is "none", not 0', async () => {
     await submit(creator, "publish", content());
     const response = await stats(
       jsonRequest(`/api/v1/creators/${creator.wallet}/stats`, "GET"),
@@ -335,7 +335,7 @@ describe("GET /api/v1/creators/:wallet/stats", () => {
       wallet: creator.wallet,
       asOf: NOW.toISOString(),
       source: "Aroma creator registry (Postgres)",
-      usage: { state: "unavailable" },
+      usage: { state: "none" },
     });
     expect((body.baskets as { published: number }).published).toBeGreaterThan(
       0,

@@ -9,8 +9,9 @@ import type { PublicError } from "@/server/errors";
 import { getDb } from "@/server/db/client";
 import { logger } from "@/server/logger";
 import { type CreatorsDb, isDatabaseUnavailable } from "./db";
-import type { CreatorBasketView } from "./schema";
+import type { CreatorBasketView, UsageView } from "./schema";
 import { getCreatorBasket } from "./server";
+import { receiptUsage } from "./stats";
 
 /**
  * `/v1/basket/[id]` for a creator basket (UUID ids; curated baskets keep features/baskets). The
@@ -104,4 +105,22 @@ export async function getCreatorBasketPage(
     view: markets.data,
     ...toSummary(creator, markets.data),
   };
+}
+
+/** Purchases of one creator basket from confirmed receipts; an outage is `unavailable`, not 0. */
+export async function getBasketUsage(
+  id: string,
+  db: () => CreatorsDb = getDb,
+  now: Date = new Date(),
+): Promise<UsageView> {
+  try {
+    return await receiptUsage(db(), { basketId: id }, now);
+  } catch (error) {
+    if (!isDatabaseUnavailable(error))
+      logger.error({ err: error }, "creator basket usage");
+    return {
+      state: "unavailable",
+      reason: "Purchase records could not be read right now.",
+    };
+  }
 }

@@ -104,10 +104,32 @@ export type CreatorBasketView = {
   allocations: { mint: string; symbol: string; weightBps: number }[];
 };
 
+/** One usage window from confirmed receipts. Volume is raw integer units per funding mint. */
+export type UsageWindow = {
+  window: "7d" | "30d" | "all";
+  /** Start of the window (null: since the first purchase). */
+  since: string | null;
+  purchases: number;
+  buyers: number;
+  volume: {
+    mint: string;
+    symbol: string | null;
+    decimals: number | null;
+    raw: string;
+  }[];
+};
+
 /**
- * Only what Aroma actually records (PRODUCT.md: never invent creator metrics). Usage and volume
- * need purchase receipts, which arrive in M5b: until then they are `unavailable`, never 0.
+ * Purchases through creator baskets, from CONFIRMED receipts only (M5b B5). `none` means no
+ * confirmed purchase was ever recorded: shown as "no purchases yet", never as 0 volume.
+ * `unavailable` means it could not be measured (for example, the database is down).
  */
+export type UsageView =
+  | { state: "ok"; asOf: string; source: string; windows: UsageWindow[] }
+  | { state: "none"; asOf: string; source: string }
+  | { state: "unavailable"; reason: string };
+
+/** Only what Aroma actually records (PRODUCT.md: never invent creator metrics). */
 export type CreatorStatsView = {
   wallet: string;
   displayName: string;
@@ -122,9 +144,7 @@ export type CreatorStatsView = {
    * date: a new version overwrites `published_at` and earlier versions are not kept yet.
    */
   lastPublishedAt: string | null;
-  usage:
-    | { state: "unavailable"; reason: string }
-    | { state: "ok"; buyers: number; volumeUsdcRaw: string; asOf: string };
+  usage: UsageView;
 };
 
 /** "12.34%" from 1234 bps, with integer arithmetic only. */

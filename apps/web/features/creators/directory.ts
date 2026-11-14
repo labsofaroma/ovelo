@@ -2,7 +2,8 @@ import "server-only";
 import { getDb } from "@/server/db/client";
 import { load, type Loaded } from "../shared/upstream";
 import type { CreatorBasketView } from "./schema";
-import { listPublishedBaskets, STATS_SOURCE } from "./server";
+import { listPublishedBaskets } from "./server";
+import { STATS_SOURCE } from "./stats";
 
 export type Directory = {
   baskets: CreatorBasketView[];

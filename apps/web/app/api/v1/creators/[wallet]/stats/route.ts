@@ -1,5 +1,5 @@
 import { creatorDeps, creatorRoute } from "@/features/creators/http";
-import { getCreatorStats } from "@/features/creators/server";
+import { getCreatorStats } from "@/features/creators/stats";
 import { walletSchema } from "@/server/auth/creator";
 import { AppError } from "@/server/errors";
 

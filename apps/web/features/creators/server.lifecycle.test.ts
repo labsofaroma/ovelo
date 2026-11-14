@@ -5,13 +5,12 @@ import type { CreatorsDb } from "./db";
 import {
   archiveBasket,
   getCreatorBasket,
-  getCreatorStats,
   listCreatorBaskets,
   listPublishedBaskets,
   publishBasket,
   saveDraft,
-  STATS_SOURCE,
 } from "./server";
+import { getCreatorStats, STATS_SOURCE } from "./stats";
 import { createTestDb } from "./test/db";
 import {
   ALICE,
@@ -131,7 +130,7 @@ describe("listing and stats", () => {
     expect(await listPublishedBaskets(db, { limit: 1 })).toHaveLength(1);
   });
 
-  it("reports only recorded facts, with source and as-of, and usage as unavailable (never 0)", async () => {
+  it('reports only recorded facts, with source and as-of; no receipts is "none" (never 0)', async () => {
     const stats = await getCreatorStats(db, ALICE, { now: NOW });
     const published = await listCreatorBaskets(db, ALICE);
     const archived = await listCreatorBaskets(db, ALICE, {
@@ -143,7 +142,7 @@ describe("listing and stats", () => {
       asOf: NOW.toISOString(),
       source: STATS_SOURCE,
       baskets: { published: published.length, archived: archived.length },
-      usage: { state: "unavailable" },
+      usage: { state: "none", asOf: NOW.toISOString() },
     });
     // Versions count every publish, including the republished version 2 above.
     expect(stats.publishedVersions).toBe(
@@ -154,6 +153,7 @@ describe("listing and stats", () => {
       .sort();
     expect(stats.lastPublishedAt).toBe(dates.at(-1));
     expect(stats.usage).not.toHaveProperty("buyers");
+    expect(stats.usage).not.toHaveProperty("windows");
   });
 
   it("a creator with nothing published has null dates, and a non-creator is NOT_FOUND", async () => {

@@ -1,5 +1,5 @@
 import "server-only";
-import { and, asc, desc, eq, inArray, sql } from "drizzle-orm";
+import { and, asc, desc, eq, inArray } from "drizzle-orm";
 import { validateProgrammableBasket } from "@/lib/sdk/baskets/custom";
 import {
   basketAllocations,
@@ -16,7 +16,6 @@ import {
   type BasketPublish,
   basketPublishSchema,
   type CreatorBasketView,
-  type CreatorStatsView,
 } from "./schema";
 
 /**
@@ -361,50 +360,4 @@ export async function listPublishedBaskets(
     .orderBy(desc(baskets.publishedAt), asc(baskets.id))
     .limit(limit);
   return withAllocations(db, rows);
-}
-
-export const STATS_SOURCE = "Aroma creator registry (Postgres)";
-const USAGE_UNAVAILABLE =
-  "Purchases through creator baskets are not recorded yet. Usage and volume appear once purchase receipts are recorded.";
-
-/** Only what is recorded: basket counts, versions and publish dates. Usage is unavailable. */
-export async function getCreatorStats(
-  db: CreatorsDb,
-  wallet: string,
-  options: { now?: Date } = {},
-): Promise<CreatorStatsView> {
-  const [creator] = await db
-    .select()
-    .from(creators)
-    .where(eq(creators.wallet, wallet));
-  if (!creator)
-    throw new AppError("NOT_FOUND", {
-      publicMessage: "No creator uses this wallet.",
-      detail: "stats-not-a-creator",
-    });
-  const [totals] = await db
-    .select({
-      published: sql<number>`count(*) filter (where ${baskets.status} = 'published')::int`,
-      archived: sql<number>`count(*) filter (where ${baskets.status} = 'archived')::int`,
-      versions: sql<number>`coalesce(sum(${baskets.version}) filter (where ${baskets.publishedAt} is not null), 0)::int`,
-      last: sql<Date | null>`max(${baskets.publishedAt})`,
-    })
-    .from(baskets)
-    .where(eq(baskets.creatorWallet, wallet));
-  const iso = (value: Date | string | null | undefined) =>
-    value ? new Date(value).toISOString() : null;
-  return {
-    wallet,
-    displayName: creator.displayName,
-    creatorSince: creator.createdAt.toISOString(),
-    asOf: (options.now ?? new Date()).toISOString(),
-    source: STATS_SOURCE,
-    baskets: {
-      published: totals?.published ?? 0,
-      archived: totals?.archived ?? 0,
-    },
-    publishedVersions: totals?.versions ?? 0,
-    lastPublishedAt: iso(totals?.last),
-    usage: { state: "unavailable", reason: USAGE_UNAVAILABLE },
-  };
 }
