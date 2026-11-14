@@ -1,0 +1,4 @@
+# Local-only state. Keypairs here are localnet or devnet-only and never touch mainnet.
+.e2e-local/
+.keys/
+.devnet/

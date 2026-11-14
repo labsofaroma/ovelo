@@ -330,6 +330,9 @@ importers:
       typescript:
         specifier: 5.9.3
         version: 5.9.3
+      vite-node:
+        specifier: 3.2.4
+        version: 3.2.4(@types/node@22.20.2)(jiti@2.7.0)(lightningcss@1.33.0)(terser@5.51.2)(tsx@4.20.6)
       vitest:
         specifier: 3.2.7
         version: 3.2.7(@types/debug@4.1.13)(@types/node@22.20.2)(jiti@2.7.0)(jsdom@26.1.0(bufferutil@4.1.0)(utf-8-validate@6.0.6))(lightningcss@1.33.0)(msw@2.15.0(@types/node@22.20.2)(typescript@5.9.3))(terser@5.51.2)(tsx@4.20.6)

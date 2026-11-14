@@ -13,7 +13,7 @@
     "test:litesvm": "vitest run --project litesvm",
     "idl:sync": "node scripts/sync-idl.mjs",
     "idl:check": "node scripts/sync-idl.mjs --check",
-    "e2e:local": "tsx scripts/e2e-local.ts",
+    "e2e:local": "vite-node scripts/e2e-local.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint ."
   },
@@ -30,6 +30,7 @@
     "litesvm": "1.2.1",
     "tsx": "4.20.6",
     "typescript": "5.9.3",
+    "vite-node": "3.2.4",
     "vitest": "3.2.7"
   }
 }
