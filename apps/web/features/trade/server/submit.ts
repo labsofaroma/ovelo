@@ -6,7 +6,9 @@ import { verifySignedTransactions } from "@/server/auth/trade-transactions";
 import { AppError, ERROR_CODES, mapError } from "@/server/errors";
 import { logger } from "@/server/logger";
 import { bundleStatus, sendJitoBundle, type JitoRpc } from "./bundle";
+import { tradeEvent } from "@/server/telemetry";
 import { assertMainnet, RpcError, type MainnetRpc } from "./rpc";
+import { RpcUnavailable } from "./rpc-pool";
 import {
   receiptRows,
   type ReceiptWriter,
@@ -20,9 +22,14 @@ import {
  * 2. claim the request id (idempotency): a replay returns the stored record, no rebroadcast;
  * 3. cluster, V1 activation and blockhash-height checks, all BEFORE any broadcast;
  * 4. derive every signature before sending, so a lost response still leaves recovery material;
- * 5. broadcast (single: sendTransaction with preflight; basket: one Jito bundle, never split);
+ * 5. broadcast (single: sendTransaction with preflight; basket: one Jito bundle, never split).
+ *    M9 failover: if the single send fails in TRANSPORT (never on a JSON-RPC refusal), the SAME
+ *    signed bytes are re-sent to the other RPC endpoint (idempotent by signature; nothing is
+ *    re-signed or rebuilt). After an uncertain first send, a refused re-send is "unknown", never
+ *    "failed": the first one may have been broadcast;
  * 6. write pending receipts, then track confirmation. An acknowledged broadcast whose receipt
- *    cannot be read is "unknown", never "failed" and never a safe retry.
+ *    cannot be read is "unknown", never "failed" and never a safe retry. Polling stops when the
+ *    chain is past the blockhash's last valid height with no status: it can never land.
  */
 
 export type SubmitDeps = {
@@ -34,7 +41,18 @@ export type SubmitDeps = {
   v1Active: () => Promise<boolean>;
   sleep: (ms: number) => Promise<void>;
   confirmAttempts?: number;
+  /** The other RPC endpoint than the one `rpc` sent through (M9 failover); null if none. */
+  resend?: () => MainnetRpc | null;
+  /** A fresh RPC handle pinned to one endpoint, for one status poll (consistent reads). */
+  reads?: () => MainnetRpc;
 };
+
+const SEND_OPTIONS = {
+  encoding: "base64",
+  skipPreflight: false,
+  preflightCommitment: "confirmed",
+  maxRetries: 2,
+} as const;
 
 const publicError = (code: keyof typeof ERROR_CODES, message?: string) => ({
   code,
@@ -90,15 +108,7 @@ export async function submitTrade(
   try {
     if (mode === "single") {
       sent = true;
-      await deps.rpc<string>("sendTransaction", [
-        signed[0],
-        {
-          encoding: "base64",
-          skipPreflight: false,
-          preflightCommitment: "confirmed",
-          maxRetries: 2,
-        },
-      ]);
+      await sendSigned(signed[0]!, record.id, deps);
     } else {
       sent = true;
       record.bundleId = await sendJitoBundle(signed, deps.jito!);
@@ -127,6 +137,40 @@ export async function submitTrade(
   await deps.receipts.insertPending(receiptRows(record));
   const pending = await save(deps, record, { status: "pending" });
   return track(pending, deps, deps.confirmAttempts ?? 8);
+}
+
+/**
+ * sendTransaction of the exact signed string. Only a failover-worthy transport failure moves the
+ * same string to the other endpoint; a JSON-RPC refusal is final and propagates as RpcError.
+ */
+async function sendSigned(
+  signedTransaction: string,
+  tradeId: string,
+  deps: SubmitDeps,
+): Promise<void> {
+  try {
+    await deps.rpc<string>("sendTransaction", [
+      signedTransaction,
+      SEND_OPTIONS,
+    ]);
+    return;
+  } catch (error) {
+    const other =
+      error instanceof RpcUnavailable && error.failover
+        ? deps.resend?.()
+        : null;
+    if (!other) throw error;
+    tradeEvent("submit.resend", { tradeId }, "warning");
+    try {
+      await other<string>("sendTransaction", [signedTransaction, SEND_OPTIONS]);
+    } catch (second) {
+      // The first send may have reached the cluster, so a refusal here proves nothing: unknown.
+      throw new AppError("UPSTREAM_UNAVAILABLE", {
+        detail: "re-send after an uncertain first send did not succeed",
+        cause: second,
+      });
+    }
+  }
 }
 
 async function preflightChecks(payload: TradePayload, deps: SubmitDeps) {
@@ -171,6 +215,9 @@ async function refresh(
   record: TradeRecord,
   deps: SubmitDeps,
 ): Promise<TradeRecord> {
+  // Statuses and block height must come from one node: a lagging node next to a leading one
+  // could otherwise make a landed transaction look expired.
+  const rpc = deps.reads?.() ?? deps.rpc;
   if (record.mode === "bundle") {
     const result = await bundleStatus(
       {
@@ -178,10 +225,10 @@ async function refresh(
         lastValidBlockHeight: record.lastValidBlockHeight,
         bundleId: record.bundleId,
       },
-      { rpc: deps.rpc, jito: deps.jito },
+      { rpc, jito: deps.jito },
     ).catch(() => ({ status: "unknown" as const, slot: null }));
     if (result.status === "confirmed")
-      return confirm(record, deps, result.slot);
+      return confirm(record, deps, result.slot, rpc);
     return result.status === record.status
       ? record
       : save(deps, record, { status: result.status });
@@ -192,7 +239,7 @@ async function refresh(
     slot: number;
   } | null;
   try {
-    const statuses = await deps.rpc<{
+    const statuses = await rpc<{
       value: ({
         err: unknown;
         confirmationStatus: string | null;
@@ -203,6 +250,17 @@ async function refresh(
       { searchTransactionHistory: true },
     ]);
     state = statuses.value?.[0] ?? null;
+    if (state === null && (await expired(record, rpc))) {
+      await deps.receipts.mark(record.signatures, {
+        status: "failed",
+        slot: null,
+        blockTime: null,
+      });
+      return save(deps, record, {
+        status: "failed",
+        error: publicError("BLOCKHASH_EXPIRED"),
+      });
+    }
   } catch {
     return record.status === "unknown"
       ? record
@@ -224,20 +282,41 @@ async function refresh(
     state &&
     ["confirmed", "finalized"].includes(state.confirmationStatus ?? "")
   )
-    return confirm(record, deps, state.slot);
+    return confirm(record, deps, state.slot, rpc);
   return record;
+}
+
+/**
+ * Block heights past `lastValidBlockHeight` during which a missing status still proves the
+ * transaction never landed: every node keeps signatures of recent blockhashes in its in-memory
+ * status cache (about 300 slots), so one that is past the expiry and has no status saw none.
+ * Later, a null may only mean the node lacks history (or a history lookup failed silently), so
+ * the record keeps its status: never "failed" from an absence of evidence.
+ */
+export const EXPIRY_DECISION_WINDOW = 150;
+
+/** No status, and the chain (finalized) is just past the last valid height: it never lands. */
+async function expired(record: TradeRecord, rpc: MainnetRpc): Promise<boolean> {
+  const height = await rpc<number>("getBlockHeight", [
+    { commitment: "finalized" },
+  ]);
+  return (
+    height > record.lastValidBlockHeight &&
+    height <= record.lastValidBlockHeight + EXPIRY_DECISION_WINDOW
+  );
 }
 
 async function confirm(
   record: TradeRecord,
   deps: SubmitDeps,
   slot: number | null,
+  rpc: MainnetRpc,
 ): Promise<TradeRecord> {
   let blockTime: Date | null = null;
   if (slot !== null) {
-    const seconds = await deps
-      .rpc<number | null>("getBlockTime", [slot])
-      .catch(() => null);
+    const seconds = await rpc<number | null>("getBlockTime", [slot]).catch(
+      () => null,
+    );
     blockTime = typeof seconds === "number" ? new Date(seconds * 1000) : null;
   }
   await deps.receipts.mark(record.signatures, {

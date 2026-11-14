@@ -14,6 +14,7 @@ import {
   RpcError,
   simulateTransaction,
 } from "./rpc";
+import { resetRpcPoolForTests } from "./rpc-pool";
 import { redisTradeStore, type TradeRecord } from "./store";
 
 /** Transport adapters with `fetch` stubbed: no network, no keys. */
@@ -21,7 +22,16 @@ afterEach(() => {
   vi.unstubAllGlobals();
   vi.unstubAllEnvs();
   resetJupiterPoolForTests();
+  resetRpcPoolForTests();
 });
+
+/** A node that proves mainnet genesis, then answers everything else with `other`. */
+const node = (other: () => Response | Promise<Response>) =>
+  vi.fn(async (_url: unknown, init?: RequestInit) =>
+    String(init?.body).includes('"getGenesisHash"')
+      ? json({ result: GENESIS_HASHES["mainnet-beta"] })
+      : other(),
+  );
 
 const json = (
   body: unknown,
@@ -45,22 +55,24 @@ describe("mainnetRpc", () => {
 
   it("maps a JSON-RPC error to RpcError and transport failures to UPSTREAM_UNAVAILABLE", async () => {
     vi.stubEnv("SOLANA_RPC_URL", "https://rpc.example.test");
-    vi.stubGlobal("fetch", async () => json({ error: { message: "nope" } }));
+    vi.stubGlobal(
+      "fetch",
+      node(() => json({ error: { code: -32000, message: "nope" } })),
+    );
     await expect(mainnetRpc("getSlot")).rejects.toBeInstanceOf(RpcError);
-    vi.stubGlobal("fetch", async () => {
-      throw new TypeError("offline");
-    });
-    await expect(mainnetRpc("getSlot")).rejects.toMatchObject({
-      code: "UPSTREAM_UNAVAILABLE",
-    });
-    vi.stubGlobal("fetch", async () => new Response("<html>", { status: 502 }));
-    await expect(mainnetRpc("getSlot")).rejects.toMatchObject({
-      code: "UPSTREAM_UNAVAILABLE",
-    });
-    vi.stubGlobal("fetch", async () => json({}, 500));
-    await expect(mainnetRpc("getSlot")).rejects.toMatchObject({
-      code: "UPSTREAM_UNAVAILABLE",
-    });
+    for (const fail of [
+      () => {
+        throw new TypeError("offline");
+      },
+      () => new Response("<html>", { status: 502 }),
+      () => json({}, 500),
+    ]) {
+      resetRpcPoolForTests();
+      vi.stubGlobal("fetch", node(fail));
+      await expect(mainnetRpc("getSlot")).rejects.toMatchObject({
+        code: "UPSTREAM_UNAVAILABLE",
+      });
+    }
   });
 
   it("latestBlockhash and simulateTransaction map results and failures", async () => {

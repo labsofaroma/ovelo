@@ -41,6 +41,10 @@ type SentryLike = {
     level: "info" | "warning" | "error";
     data: Record<string, unknown>;
   }) => void;
+  captureMessage: (
+    message: string,
+    context: { level: "error"; extra: Record<string, unknown> },
+  ) => unknown;
 };
 let sentry: Promise<SentryLike | null> | null = null;
 
@@ -73,5 +77,17 @@ export function tradeEvent(
       level,
       data: safe,
     }),
+  );
+}
+
+/**
+ * Something an operator must act on (for example an RPC endpoint on the wrong cluster): an error
+ * log line and a Sentry event (not just a breadcrumb), so an alert rule can page on it.
+ */
+export function alertEvent(stage: string, data: Record<string, unknown>): void {
+  const safe = redactIdentifiers(data);
+  logger.error({ stage, alert: true, ...safe }, `alert ${stage}`);
+  void loadSentry().then((client) =>
+    client?.captureMessage(`alert ${stage}`, { level: "error", extra: safe }),
   );
 }

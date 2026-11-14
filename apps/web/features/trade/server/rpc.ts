@@ -8,11 +8,19 @@ import {
   DEFAULT_MAINNET_RPC,
   GENESIS_HASHES,
 } from "@/server/rpc";
+import {
+  createRpcPool,
+  type MainnetRpc,
+  type RpcEndpoint,
+  type RpcPool,
+} from "./rpc-pool";
 
 /**
- * Mainnet JSON-RPC for the trade path (ported from composed-transactions.ts). The endpoint and
- * the genesis hash it must report come from server/rpc.ts (AGENTS.md rule 3). Every operation
- * that can lead to a broadcast first calls `assertMainnet`, which asks the node for its genesis.
+ * Mainnet JSON-RPC for the trade path (ported from composed-transactions.ts). The endpoints and
+ * the genesis hash they must report come from server/rpc.ts (AGENTS.md rule 3). Every endpoint
+ * proves that genesis before it serves a call, and every operation that can lead to a broadcast
+ * also calls `assertMainnet`. Failover between SOLANA_RPC_URL and SOLANA_RPC_FALLBACK_URL follows
+ * the rules in rpc-pool.ts (M9).
  *
  * E2E only: with test switches allowed (never on a Vercel production deployment) and a LOOPBACK
  * SOLANA_RPC_URL, AROMA_V1_TEST_FORK_GENESIS names the genesis of a local mainnet fork
@@ -26,29 +34,21 @@ export type RpcAccount = {
   lamports: number;
 } | null;
 
-export type MainnetRpc = <T>(method: string, params?: unknown[]) => Promise<T>;
-
-/** A JSON-RPC error answer (the node replied and refused). Transport failures are plain Errors. */
-export class RpcError extends Error {
-  readonly data: unknown;
-  constructor(message: string, data?: unknown) {
-    super(message);
-    this.name = "RpcError";
-    this.data = data;
-  }
-}
+export type { MainnetRpc } from "./rpc-pool";
+export { RpcError } from "./rpc-pool";
 
 const LOOPBACK = /^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?\/?$/;
 let forkWarned = false;
 
+/** The primary endpoint (SOLANA_RPC_URL), or the declared local fork in E2E. */
 export function mainnetEndpoint(): {
   url: string;
   genesis: string;
   fork: boolean;
 } {
   const raw = process.env.SOLANA_RPC_URL?.trim() || DEFAULT_MAINNET_RPC;
-  const forkGenesis = process.env.AROMA_V1_TEST_FORK_GENESIS?.trim();
-  if (forkGenesis && LOOPBACK.test(raw) && testSwitchesAllowed(process.env)) {
+  const forkGenesis = forkGenesisFor(raw);
+  if (forkGenesis) {
     if (!forkWarned) {
       forkWarned = true;
       logger.warn(
@@ -64,47 +64,49 @@ export function mainnetEndpoint(): {
   };
 }
 
-export const mainnetRpc: MainnetRpc = async <T>(
+/** The fork genesis when `raw` is loopback AND the E2E fork switch is on; otherwise null. */
+function forkGenesisFor(raw: string): string | null {
+  const forkGenesis = process.env.AROMA_V1_TEST_FORK_GENESIS?.trim();
+  return forkGenesis && LOOPBACK.test(raw) && testSwitchesAllowed(process.env)
+    ? forkGenesis
+    : null;
+}
+
+/**
+ * Primary, then the optional SOLANA_RPC_FALLBACK_URL (M9 failover). The fallback is validated
+ * like the primary (HTTPS, no credentials, not devnet-looking; loopback only for the declared
+ * E2E fork, and only next to a fork primary), must differ from it, and must prove the same
+ * genesis on its own (rpc-pool.ts). An invalid fallback fails closed; boot refuses it too.
+ */
+export function mainnetEndpoints(): RpcEndpoint[] {
+  const primary = mainnetEndpoint();
+  const endpoints: RpcEndpoint[] = [
+    { name: "primary", url: primary.url, genesis: primary.genesis },
+  ];
+  const raw = process.env.SOLANA_RPC_FALLBACK_URL?.trim();
+  if (!raw) return endpoints;
+  const url =
+    primary.fork && forkGenesisFor(raw)
+      ? new URL(raw).toString()
+      : assertMainnetRpcUrl(raw);
+  if (url === primary.url)
+    throw new AppError("SERVICE_UNAVAILABLE", {
+      detail: "SOLANA_RPC_FALLBACK_URL must differ from SOLANA_RPC_URL",
+    });
+  endpoints.push({ name: "fallback", url, genesis: primary.genesis });
+  return endpoints;
+}
+
+/** The pool over the configured endpoints (verification and cooldown state is kept per URL). */
+export function mainnetPool(): RpcPool {
+  return createRpcPool(mainnetEndpoints());
+}
+
+/** Any verified endpoint, failing over on transport errors only (rpc-pool.ts rules). */
+export const mainnetRpc: MainnetRpc = <T>(
   method: string,
   params: unknown[] = [],
-): Promise<T> => {
-  const { url } = mainnetEndpoint();
-  let response: Response;
-  try {
-    response = await fetch(url, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method, params }),
-      cache: "no-store",
-      signal: AbortSignal.timeout(12_000),
-    });
-  } catch (cause) {
-    throw new AppError("UPSTREAM_UNAVAILABLE", {
-      detail: `mainnet RPC ${method} transport failed`,
-      cause,
-    });
-  }
-  let body: unknown;
-  try {
-    body = await response.json();
-  } catch (cause) {
-    throw new AppError("UPSTREAM_UNAVAILABLE", {
-      detail: `mainnet RPC ${method} returned non-JSON`,
-      cause,
-    });
-  }
-  const data = (body ?? {}) as { error?: { message?: unknown }; result?: T };
-  if (data.error)
-    throw new RpcError(
-      typeof data.error.message === "string" ? data.error.message : "RPC error",
-      data.error,
-    );
-  if (!response.ok || !("result" in data))
-    throw new AppError("UPSTREAM_UNAVAILABLE", {
-      detail: `mainnet RPC ${method} HTTP ${response.status}`,
-    });
-  return data.result as T;
-};
+) => mainnetPool().rpc<T>(method, params);
 
 /** Refuse anything but the expected cluster (mainnet, or the declared local fork in E2E). */
 export async function assertMainnet(

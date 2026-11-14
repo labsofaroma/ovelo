@@ -15,7 +15,7 @@ import type { QuoteDeps } from "./quote";
 import { dbReceipts } from "./receipts-db";
 import {
   latestBlockhash,
-  mainnetRpc,
+  mainnetPool,
   mainnetV1Active,
   selectTransactionVersion,
   simulateTransaction,
@@ -104,14 +104,16 @@ export function quoteDeps(): QuoteDeps {
   const keyring = keyringFromEnv();
   const jitoUrl = jitoEndpoint();
   const jito = jitoUrl ? createJitoRpc(jitoUrl) : null;
+  // M9 affinity: one quote = one endpoint (blockhash, simulation, lookup tables, accounts).
+  const rpc = mainnetPool().pinned();
   return {
-    decimals: mintDecimals(mainnetRpc),
-    rpc: mainnetRpc,
-    selectVersion: (versions) => selectTransactionVersion(versions, mainnetRpc),
-    latestBlockhash: () => latestBlockhash(mainnetRpc),
-    simulate: (tx, addresses) => simulateTransaction(tx, addresses, mainnetRpc),
+    decimals: mintDecimals(rpc),
+    rpc,
+    selectVersion: (versions) => selectTransactionVersion(versions, rpc),
+    latestBlockhash: () => latestBlockhash(rpc),
+    simulate: (tx, addresses) => simulateTransaction(tx, addresses, rpc),
     jupiterBuild: fetchJupiterBuild,
-    lookupTables: (mappings) => loadVerifiedLookupTables(mappings, mainnetRpc),
+    lookupTables: (mappings) => loadVerifiedLookupTables(mappings, rpc),
     jitoTip: async (taker) => {
       if (!jito)
         throw new AppError("BUNDLE_UNAVAILABLE", {
@@ -136,13 +138,20 @@ export function submitDeps(): SubmitDeps {
   const { store, receipts } = stores();
   if (localStores())
     logger.warn("trade submit uses in-process stores (local fork E2E)");
+  // M9: preflight and the send go through one pinned endpoint; a transport failure of the send
+  // may re-send the same bytes to the other one; each status poll pins its own reads.
+  const pool = mainnetPool();
+  const rpc = pool.pinned();
   return {
     keyring: keyringFromEnv(),
-    rpc: mainnetRpc,
+    rpc,
     store,
     receipts,
     jito: jitoUrl ? createJitoRpc(jitoUrl) : null,
-    v1Active: () => mainnetV1Active(mainnetRpc),
+    v1Active: () => mainnetV1Active(rpc),
     sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+    resend: () =>
+      pool.on(rpc.endpoint() === "fallback" ? "primary" : "fallback"),
+    reads: () => pool.pinned(),
   };
 }
