@@ -35,11 +35,13 @@ export const rawAmountSchema = z
 export const tradeReceiptSchema = z
   .object({
     kind: z.enum(["spot", "basket"]),
-    /** Basket id for baskets; null for a single stock. */
+    /** Basket id for baskets (a curated slug or a creator basket UUID); null for a single stock. */
     basketId: z
       .string()
       .regex(/^[a-z0-9][a-z0-9-]{0,63}$/)
       .nullable(),
+    /** Creator baskets only: the published version quoted (basket_versions), M5b B3. */
+    basketVersion: z.number().int().positive().optional(),
     inputMint: base58,
     /** The maximum funding debit the user reviewed (raw units). */
     inAmount: rawAmountSchema,

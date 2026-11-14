@@ -96,6 +96,7 @@ describe("dbReceipts", () => {
         {
           signature: "bad",
           wallet: WALLET,
+          basketId: null,
           kind: "spot",
           amountIn: "1.5",
           mintIn: MINT_IN,

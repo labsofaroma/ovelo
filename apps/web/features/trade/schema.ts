@@ -93,6 +93,8 @@ export const quoteResponseSchema = z.object({
   quote: z.object({
     kind: z.enum(["spot", "basket"]),
     basketId: z.string().nullable(),
+    /** Creator baskets: the published version quoted. Null for stocks and curated baskets. */
+    basketVersion: z.number().int().nullable().optional(),
     source: z.literal("Jupiter"),
     quotedAt: z.string(),
     inputMint: z.string(),

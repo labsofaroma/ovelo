@@ -3,11 +3,12 @@ import { getMarkets } from "@/features/markets/server";
 import { AppError, mapError } from "@/server/errors";
 import { tradeEvent } from "@/server/telemetry";
 import type { QuoteRequestBody, SubmitRequestBody } from "../schema";
-import { quoteDeps, submitDeps } from "./deps";
+import { creatorDb, quoteDeps, submitDeps } from "./deps";
 import { prepareQuote, type PreparedQuote } from "./quote";
 import type { TradeRecord } from "./store";
 import { getTrade, submitTrade } from "./submit";
 import { resolveTarget } from "./target";
+import { creatorBasketId, loadCreatorTarget } from "./creator-target";
 
 /**
  * Services behind the thin /api/v1/trade handlers: parse(schema) → service → typed result →
@@ -22,7 +23,14 @@ export async function quoteTrade(
     throw new AppError("UPSTREAM_UNAVAILABLE", {
       detail: "issuer catalog unavailable for trade",
     });
-  const target = resolveTarget(body, markets.data);
+  const creatorId =
+    body.target.kind === "basket"
+      ? creatorBasketId(body.target.basketId)
+      : null;
+  const creator = creatorId
+    ? await loadCreatorTarget(creatorDb(), creatorId)
+    : null;
+  const target = resolveTarget(body, markets.data, creator);
   tradeEvent("quote.requested", {
     kind: target.kind,
     legs: target.legs.length,

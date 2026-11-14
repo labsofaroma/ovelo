@@ -1,6 +1,7 @@
 import "server-only";
 import { keyringFromEnv } from "@/server/auth/trade";
 import { authorizeTransactions } from "@/server/auth/trade-transactions";
+import type { CreatorsDb } from "@/features/creators/db";
 import { getDb } from "@/server/db/client";
 import { testSwitchesAllowed } from "@/server/env.schema";
 import { AppError } from "@/server/errors";
@@ -86,6 +87,11 @@ function stores(): { store: TradeStore; receipts: ReceiptWriter } {
       detail: "Upstash Redis is required for trade idempotency",
     });
   return { store: redisTradeStore(redis), receipts: dbReceipts(getDb()) };
+}
+
+/** Postgres for creator baskets (quotes) and receipts. Missing or unreachable: 503, never a guess. */
+export function creatorDb(): CreatorsDb {
+  return getDb();
 }
 
 export function receiptsReader(): ReceiptWriter {

@@ -2,6 +2,7 @@ import "server-only";
 import type { Redis } from "@upstash/redis";
 import type { TradeReceipt } from "@/server/auth/trade";
 import type { PublicError } from "@/server/errors";
+import { creatorBasketId } from "./creator-target";
 
 /**
  * Trade records and receipts.
@@ -40,6 +41,8 @@ export interface TradeStore {
 export type ReceiptRow = {
   signature: string;
   wallet: string;
+  /** Creator baskets only (FK to baskets); null for stocks and curated baskets (M4 decision 6). */
+  basketId: string | null;
   kind: "spot" | "basket";
   amountIn: string;
   mintIn: string;
@@ -153,6 +156,7 @@ export function receiptRows(
     return {
       signature,
       wallet: record.taker,
+      basketId: creatorBasketId(record.receipt.basketId),
       kind: record.receipt.kind,
       amountIn: amountIn.toString(),
       mintIn: record.receipt.inputMint,
@@ -160,6 +164,9 @@ export function receiptRows(
         ...leg,
         requestId: record.id,
         basket: record.receipt.basketId,
+        ...(record.receipt.basketVersion
+          ? { basketVersion: record.receipt.basketVersion }
+          : {}),
       })),
     };
   });

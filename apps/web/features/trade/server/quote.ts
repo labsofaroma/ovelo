@@ -30,6 +30,8 @@ const USDC = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
 export type OrderTarget = {
   kind: "spot" | "basket";
   basketId: string | null;
+  /** Creator baskets only: the published version whose weights these legs use. */
+  basketVersion?: number;
   legs: { mint: string; symbol: string; weightBps: number }[];
 };
 export type QuoteRequest = {
@@ -88,6 +90,7 @@ export type PreparedQuote = {
   quote: {
     kind: "spot" | "basket";
     basketId: string | null;
+    basketVersion: number | null;
     source: "Jupiter";
     quotedAt: string;
     inputMint: string;
@@ -329,6 +332,7 @@ export async function prepareQuote(
     receipt: {
       kind: target.kind,
       basketId: target.basketId,
+      ...(target.basketVersion ? { basketVersion: target.basketVersion } : {}),
       inputMint,
       inAmount: maxDebit,
       legs: quoteLegs
@@ -353,6 +357,7 @@ export async function prepareQuote(
     quote: {
       kind: target.kind,
       basketId: target.basketId,
+      basketVersion: target.basketVersion ?? null,
       source: "Jupiter",
       quotedAt: new Date(now).toISOString(),
       inputMint,

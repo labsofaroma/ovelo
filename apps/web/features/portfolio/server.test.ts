@@ -93,6 +93,7 @@ describe("toActivity", () => {
       {
         signature: "sig",
         wallet: WALLET,
+        basketId: null,
         kind: "basket",
         amountIn: "1000000",
         mintIn: mint(5),
