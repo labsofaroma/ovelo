@@ -12,8 +12,8 @@ export function BetaBanner({
 }) {
   if (!betaConfig(env).gate) return null;
   return (
-    <div
-      role="note"
+    // A landmark (complementary), so the banner is never content outside every region (axe).
+    <aside
       aria-label="Private beta"
       data-beta-banner
       className="border-b border-line bg-warning-soft px-4 py-2 text-center text-small"
@@ -21,6 +21,6 @@ export function BetaBanner({
       <strong className="font-semibold">Private beta.</strong> Mainnet buying is
       open to invited wallets only, with small per-trade and daily limits.
       Everything else is open to browse. Expect changes.
-    </div>
+    </aside>
   );
 }

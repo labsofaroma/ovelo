@@ -51,13 +51,13 @@ describe("BetaBanner", () => {
   it("labels every page while the gate is on and disappears when it is off", () => {
     const { unmount } = render(<BetaBanner env={{ AROMA_BETA_GATE: "on" }} />);
     expect(
-      screen.getByRole("note", { name: "Private beta" }).textContent,
+      screen.getByRole("complementary", { name: "Private beta" }).textContent,
     ).toMatch(/invited wallets only/);
     unmount();
     render(
       <BetaBanner env={{ AROMA_BETA_GATE: "off", NODE_ENV: "production" }} />,
     );
-    expect(screen.queryByRole("note")).toBeNull();
+    expect(screen.queryByRole("complementary")).toBeNull();
   });
 });
 

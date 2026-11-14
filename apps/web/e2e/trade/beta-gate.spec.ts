@@ -86,7 +86,9 @@ test("no access: refused by the API, redeem step in the ticket, Action disabled,
   expect(metadata.error.message).toMatch(/private beta/);
 
   const ticket = await openConnected(page);
-  await expect(page.getByRole("note", { name: "Private beta" })).toBeVisible();
+  await expect(
+    page.getByRole("complementary", { name: "Private beta" }),
+  ).toBeVisible();
   await expect(
     ticket.getByRole("region", { name: "Private beta access" }),
   ).toBeVisible();
