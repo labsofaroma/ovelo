@@ -80,6 +80,15 @@ describe("tradeOutcome", () => {
     );
   });
 
+  it("long past the expiry a missing status proves nothing: open (the amount keeps counting)", async () => {
+    expect(await tradeOutcome("r", deps(record(), { height: 100 + 150 }))).toBe(
+      "failed",
+    );
+    expect(await tradeOutcome("r", deps(record(), { height: 100 + 151 }))).toBe(
+      "open",
+    );
+  });
+
   it("an RPC failure keeps it open (fail closed: the amount keeps counting)", async () => {
     expect(await tradeOutcome("r", deps(record(), { fail: true }))).toBe(
       "open",
