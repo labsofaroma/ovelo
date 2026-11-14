@@ -12,7 +12,8 @@ export function SiteFooter() {
           Market data is observed from the sources named next to each figure and
           may be delayed, stale or unavailable. Tokenized stocks carry market,
           liquidity, issuer and network risk. Nothing here is investment advice.
-          Trading is not available in this preview.
+          Purchases are mainnet spot purchases signed in your own wallet; paper
+          practice moves no funds.
         </p>
         <nav aria-label="Legal">
           <ul className="flex flex-wrap gap-4">

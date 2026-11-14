@@ -59,8 +59,7 @@ export default async function CreatorsPage() {
             {plural(directory.data.baskets.length, "published basket")} ·
             Source: {directory.data.source} · As of{" "}
             {formatObservedAt(directory.data.asOf) ?? directory.data.asOf}.
-            Usage figures are not shown: purchases through creator baskets are
-            not recorded yet.
+            Purchases of each basket, from confirmed receipts, are on its page.
           </p>
           {directory.data.baskets.length ? (
             <ul className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">

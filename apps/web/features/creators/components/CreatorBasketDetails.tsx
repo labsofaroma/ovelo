@@ -228,7 +228,11 @@ function Buy({
         />
       ) : null}
       <CreatorBasketIsland
-        title={`Buy the ${creator.name} basket`}
+        title={
+          /\bbasket$/i.test(creator.name)
+            ? `Buy ${creator.name}`
+            : `Buy the ${creator.name} basket`
+        }
         basket={owner}
         target={
           blocked
