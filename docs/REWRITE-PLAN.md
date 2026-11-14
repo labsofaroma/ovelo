@@ -576,6 +576,79 @@ M5 is split because M4 (wallet + spot trading) was in progress in parallel. **M5
 6. **Shared files edited:** `apps/web/tsconfig.strict.json`, `docs/REWRITE-PLAN.md`. `docs/M5-NEEDS-FROM-M4.md` is new. Nothing in the do-not-edit list was touched.
 7. **Not verified:** CI (files only, nothing pushed); a real Neon database; true parallel redemption on Postgres; wallet signing in a browser (M5b).
 
+### M6 status: implemented on branch `m6-contract-core`, cut from `m5-creators` (not pushed, not merged, devnet deploy pending: owner)
+
+Exit criteria (§7): LiteSVM suite green ✓; local validator end to end ✓; **deployed to devnet by the owner: pending**; config initialized and test assets registered: pending (scripts ready, [M6-DEVNET-DEPLOY.md](./M6-DEVNET-DEPLOY.md)). The program is documented in [aroma-guard-v1.md](./aroma-guard-v1.md).
+
+**Part 0 and Part A**
+- [x] Part 0: §7 rewritten through M11 (launch), critical path, §9/§10, ROADMAP phase mapping, spec §9 note, AUDIT milestone tags. Reworded afterwards so v1 stands alone (no on-chain retirement or ID of the earlier program; owner decision during M6).
+- [x] A1: `features/creators/http.ts` 71% → **100% lines** / 97% branches on its own (`http.wiring.test.ts`, mocks only, no behaviour change).
+- [x] A2: the 13 `TODO(M6)` skips are retired (they imported two scripts that were never committed; one recorded a defect in the earlier devnet catalog). Disposition, one line each:
+
+  | Retired case | Reason | Tested now by |
+  |---|---|---|
+  | `devnet-authority-audit.test.mjs` × 4 (genesis stop; PDA vs faucet authority; wrong authority and feature activation; bad manifest) | `scripts/audit-devnet-recurring.mjs` never existed; the feature-activation check has no counterpart | `packages/contracts/scripts/audit.test.ts` (genesis stop, PDA authorities and faucet authority, wrong authority, foreign funding mint, read-only methods) |
+  | `devnet-xstocks.test.ts`: catalog uses SBUX, RTX, COP, CAT, DE, GE | the earlier devnet catalog; not used by the new devnet set | `scripts/assets.test.ts` (every devnet asset is a canonical basket constituent with its real feed) |
+  | `devnet-xstocks.test.ts` × 8 (mainnet refusal, mint reuse, bigint supply, idempotent repeat, creation timeout, funding timeout, checkpoint conflict, argument parsing) | `scripts/create-devnet-xstocks.cjs` never existed | `scripts/provision.test.ts` (same eight behaviours for the new provisioning) |
+
+  The four `devnet-xstocks.test.ts` cases that test `lib/sdk/devnet-xstocks` still run. Legacy suite: 276 = 275 pass + 1 skip (mobile only).
+- [x] A3: `packages/contracts/Anchor.toml` pins `anchor_version = "1.2.1"` and `solana_version = "3.1.10"` (installed), defaults to `localnet`, wallet `~/.config/solana/aroma-deployer.json`. `packages/anchor/Anchor.toml` still pins `solana_version = "4.0.0"` (not installed here); left unchanged because nothing in M6 builds it, and it is deleted in M9.
+
+**Part B**
+- [x] B1: `packages/contracts` (`@aroma/contracts`), layout per spec §3; release `overflow-checks`, fat LTO; features `devnet-mock` and default; `anchor-lang`/`anchor-spl` 1.2.1 (`token_interface`, no `init-if-needed`); `solana-security-txt`; program keypair generated, `anchor keys sync`; root `build:contracts`, `test:contracts`; `pnpm test` runs only the contracts unit project (no SBF build).
+- [x] B2: `Config` (800 B), `Asset` (190 B), `Plan` (1,079 B, `version`, 96 reserved bytes, ≤ 20 outputs, `leg_bitmap`, `skipped_periods`); sizes are constants with an `INIT_SPACE` test.
+- [x] B3: all ten instructions with explicit owner, program, token-program, `has_one` and seeds/bump constraints.
+- [x] B4: devnet-mock `execute_installment` (spec §6); pure math in `math.rs`. Pyth: the official `pyth-solana-receiver-sdk` 2.0.0 compiles with anchor 1.2.1 and is used.
+- [x] B5: `integrations/subscriptions.rs` (typed, pinned to `program-v0.5.0`, sources cited in the file), `integrations/pyth.rs`, `integrations/jupiter.rs` (M8 stub).
+- [x] B6: 25 `cargo test` (incl. 3 proptests × 2,000 cases) and 56 LiteSVM cases with the pinned binaries.
+- [x] B7: Codama client in `lib/sdk/guard/v1/generated/` (renderer below), hand-written `builders`/`admin`/`execute`/`decoders`/`pdas`/`schedule`/`deployments`, drift test, `sdk-rules` exemption for `generated/` (400-line rule only).
+- [x] B8: `pnpm --filter @aroma/contracts e2e:local` passes.
+- [x] B9: `deploy-devnet.sh`, `init-devnet.ts`, `register-devnet-assets.ts`, `audit-devnet.ts`, all refusing non-devnet genesis; the runbook; `deployments.ts` holds `null` until the owner's deploy (the earlier devnet catalog is untouched, so the prototype keeps working).
+- [x] B10: `contracts.yml` v1 job (files only).
+- [ ] **Open (owner):** devnet deploy, init, register, audit; then the paste-back step.
+
+**Decisions**
+1. **Product decisions applied:** keeper = a devnet-only keeper `7qMWtAz…oio2j` (`update_config` can set `None`); protocol fee 0 bps (path tested at 25 bps); catch-up window 1; test USD only on devnet (4 slots).
+2. **Token-2022 policy, amended by the owner after the evidence.** All 40 catalog xStocks (mainnet, read-only) have a permanent delegate, the confidential-transfer extension and Pausable, which the original decision rejected. Owner's answers: permanent delegate accepted only if allow-listed; confidential transfer accepted only with auto-approve off and an allow-listed authority; Pausable accepted only if its authority is allow-listed, and a paused mint fails closed at execution. Transfer hooks: allowed program only (the xStocks hook program is empty today, but its authority can set one, so the policy re-runs at every execution). Full table: aroma-guard-v1.md.
+3. **ScaledUiAmount.** All xStocks have it; 29 of 40 multipliers ≠ 1, exactly 1 for non-dividend stocks. One token = `multiplier` shares, so the oracle math divides by the multiplier in effect now. It is converted from the `f64` bit pattern to 12-decimal fixed point with integer operations and rounded up (output never above oracle value). No xStock uses interest-bearing; that extension is rejected.
+4. **Catch-up and the Subscriptions cap.** Upstream allows `amount_per_period` per time period with no carry-over, so a late installment uses the next period's allowance. The plan requires delegation terms of `(1 + window) × amount` per period and an expiry of `window` periods after the schedule; the plan snapshots the window. Executions take the **oldest runnable period**, so an executor cannot skip an in-window period; the program's accounting still pulls one installment per plan period (proptest).
+5. **Config additions** (before `reserved`, layout fixed from the first deploy): `max_confidence_bps`, `treasury`, three Token-2022 allow-lists. `Asset` gains `version`, `extensions`, `scaled_ui_amount`, `mock_mint_bump`, `registered_at`. `Plan` gains `funding_token_program`, `catch_up_window_periods`, `in_progress_period`, `staging_start_balance`, all before `outputs` so every fixed field keeps a fixed offset.
+6. **One accounts struct for both builds**, so one IDL and one client; the build script fails if the IDLs differ. The mainnet handler is a single `err!`.
+7. **Codama:** `@codama/renderers-js` **2.4.0** with `kitImportStrategy: rootOnly`. No release targets kit 7: 2.4.0 emits code for kit `^6.10`, 2.5.0 and later for `^8.3`. Verified, not assumed: the 2.4.0 output typechecks under the strict config against kit 7.1.1 and runs in LiteSVM, the client tests and the local validator. Imports go through `@solana/kit` and its `program-client-core` subpath, so the web app gained no dependency.
+8. **SBPF v0.** anchor-cli 1.2.1 builds SBPF v3 by default; SBPFv3 deployment is inactive on devnet and mainnet, so the build passes `--arch v0` and `check-build.mjs` rejects anything else (found when the local `solana program deploy` refused the v3 binary).
+9. **Subscriptions binary pin.** The earlier pin (devnet, slot 480,013,438) no longer matches: devnet was redeployed at slot 506,642,674 after the `program-v0.5.0` release (mainnet: slot 438,440,823, ≈ v0.4.0). M6 pins the current devnet binary and records mainnet's hash; the account layouts are identical in both (asserted in the typed parser).
+10. **Oracle:** the program accepts any receiver-owned, fully verified `PriceUpdateV2`. The sponsored equity push accounts exist on devnet but are months stale, so M7's keeper must post updates (Hermes, API key: owner).
+
+**Deviations**
+1. The devnet **test USD is created by `init-devnet`** (the config must allow-list it at initialization), not by `register-devnet-assets`.
+2. **LiteSVM writes `PriceUpdateV2` accounts** owned by the receiver (and loads one real devnet account) instead of posting through the receiver: a real post needs a Wormhole-signed update from Hermes, which needs an API key. Same in `e2e:local`, which loads them at genesis and therefore uses a 1-hour staleness bound in its local config (the 60 s bound is tested in LiteSVM).
+3. **Validator clock:** `e2e:local` uses 15-second periods (the devnet build allows ≥ 10 s; mainnet ≥ 1 hour), because `solana-test-validator` cannot warp its clock.
+4. **"Slippage failure on a later leg"** (spec §8) cannot happen in the devnet build, which mints exactly the oracle amount; that case is M8 (Jupiter). Rollback of a whole transaction on any failed leg is covered by the oracle-refusal cases (nothing moves).
+5. **Rust coverage** is not measured: `cargo-llvm-cov` is not installed and installing it was out of bounds.
+6. **Toolchain download:** the first `anchor build` made `cargo-build-sbf` (Agave 3.1.10) download platform-tools v1.57 into `~/.cache/solana` (the install's symlink already pointed there but the folder was missing), and Criterion, and re-register its rustup link. No installed version changed.
+
+**Findings fixed during M6**
+- The SBPF v3 default (decision 8); a Prettier run from `apps/web` reformatted the committed IDL (the IDL check now compares parsed JSON); a `tsc` run before the package config resolved emitted 54 `.js` files next to the sources (all removed; none committed); a LiteSVM case that only asserted a constant (removed).
+
+**Evidence (all local; CI not verified, files only; nothing deployed)**
+- `pnpm typecheck` ✓; `pnpm lint` **0 errors** (140 warnings, prototype code); `pnpm format:check` ✓.
+- `pnpm test`: web Vitest **995 passed, 1 skipped** (baseline 959 / 1); legacy node:test 276 (275 pass, 1 skip; 13 retired, A2); `@aroma/ui` 210; `@aroma/contracts` 16; config 2; keeper 1. Coverage gates hold (overall lines 95.7%; v1 client 100% lines, 97.4% branches).
+- `pnpm build:web` passes with the flag off and with `.env.example` and the flag on; `check-client-secrets: OK` both times.
+- `cargo test` 25/25 with each feature set; `cargo clippy --all-targets -D warnings` clean with each; `anchor build` (SBPF v0) both variants; `check-build.mjs`: minting marker and `mock_mint` seed absent from the default binary, present in the devnet one; identical IDLs.
+- LiteSVM 56/56; `e2e:local` PASS (period 0 on time, 1 caught up, 2 refused with `UnexpectedPeriod` and skipped, 3; close + revoke in one transaction; every leg = oracle floor; treasury +90 tUSD; delegation, authority and token approval gone; rent to the owner).
+- Codama drift: passes; fails when the IDL changes (demonstrated with `leg_mask → legs`, then reverted).
+- `audit-devnet` against real devnet (read-only): genesis accepted, reports "program is missing" (not deployed yet); against mainnet: refused at the genesis check.
+- Secrets: no keypair JSON, private key, `secretKey` or 64-byte array in the tree or in `git log -p m5-creators..HEAD`; the only tracked `.env*` is `.env.example`.
+
+**Shared files edited:** `AGENTS.md`, `.prettierignore`, `.github/workflows/contracts.yml`, `.github/CODEOWNERS`, root `package.json`, `pnpm-lock.yaml` (contracts dev dependencies only), `apps/web/{eslint.config.mjs,tsconfig.strict.json,vitest.config.ts}`, `apps/web/lib/sdk/sdk-rules.test.ts`, `apps/web/tests/sdk/devnet-xstocks.test.ts` (A2), docs. The earlier guard client, `packages/anchor` and the prototype UI are untouched.
+
+**Open items**
+- Owner: devnet deploy, init, register, audit ([M6-DEVNET-DEPLOY.md](./M6-DEVNET-DEPLOY.md)); back up the program keypair and the devnet keeper key.
+- Owner (M7): a Hermes API key so the keeper can post fully verified prices.
+- M7: keeper (post prices, execute oldest-first in leg batches of ≤ 3, alerts), UI (skipped periods; the delegation approval shows `(1 + window) ×` the installment per period, which needs plain wording).
+- M8: Jupiter path, verifiable build hash, Rust coverage.
+- CI not verified, files only.
+
 **Critical path:** M0 → M2 → M4 (spot trading, shipped) → M6 (contract core and its devnet deploy, owner) → M7 (recurring on devnet) → M8 (mainnet contract path) → M10 (audit, multisig, mainnet beta) → M11 (launch). M9 (cutover) can run any time after M7 and must finish before M10. M7 develops against a local LiteSVM build and the generated client until the owner's devnet deploy lands.
 
 ---

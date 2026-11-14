@@ -28,6 +28,8 @@ Severity scale: **Critical** (funds, integrity or an outage) · **High** (securi
 
 The prototype contract cannot be patched into a mainnet product. It is rebuilt from scratch as Aroma Guard v1; see [CONTRACT-V1-SPEC.md](./CONTRACT-V1-SPEC.md).
 
+> **M6:** the findings below are the historical record of `packages/anchor`, which is unchanged. The contract work for M6 is in `packages/contracts`, documented in [aroma-guard-v1.md](./aroma-guard-v1.md); it is not deployed until the owner deploys it.
+
 ### C-1 (Critical): anyone can mint any amount of mock stock
 **Milestone: M6.**
 `execute_swap` mints `output.minimum_amount_out` of each output mint to the owner. That value is **chosen by the plan creator** in `create_plan` (`instructions/execute_swap.rs`, the `mint_to` loop), and nothing ties it to a price. A user can deposit 1 test KUSD and mint 10¹⁸ xAAPL.

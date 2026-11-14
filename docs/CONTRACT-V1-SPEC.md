@@ -1,6 +1,6 @@
 # Aroma Guard v1 — Contract Specification
 
-_Status: specification for a ground-up rebuild, 13 November 2026. Nothing here is implemented yet._
+_Status: specification, 13 November 2026. M6 implements the core and the devnet build ([aroma-guard-v1.md](./aroma-guard-v1.md)); deviations and decisions are in REWRITE-PLAN, M6 status._
 
 Aroma Guard v1 is a new program written **from scratch**, with its own program ID, account layout and instructions. It has no migration path and shares no state or seeds with any other program. The implementation lives in `packages/contracts` and is described in [aroma-guard-v1.md](./aroma-guard-v1.md).
 
@@ -139,11 +139,11 @@ The keeper builds Jupiter routes off-chain. The program does not trust the route
 
 ## 7. Security requirements (from day one)
 
-- [ ] Typed Subscriptions layout with discriminator and length checks, in `integrations/subscriptions.rs` with the upstream version pinned.
-- [ ] No `init-if-needed`.
-- [ ] `checked_*` math everywhere, and `overflow-checks = true`.
-- [ ] `token_interface` / `InterfaceAccount`, so Token-2022 xStocks work. List each mint's extensions in the asset registry.
-- [ ] `solana-security-txt` embedded in the program.
+- [x] (M6) Typed Subscriptions layout with discriminator and length checks, in `integrations/subscriptions.rs` with the upstream version pinned.
+- [x] (M6) No `init-if-needed`.
+- [x] (M6) `checked_*` math everywhere, and `overflow-checks = true`.
+- [x] (M6) `token_interface` / `InterfaceAccount`, so Token-2022 xStocks work. List each mint's extensions in the asset registry.
+- [x] (M6) `solana-security-txt` embedded in the program.
 - [ ] Verifiable builds (`solana-verify`), with the hash published.
 - [ ] Upgrade authority on a Squads multisig (at least 2-of-3), with a timelock on mainnet.
 - [ ] External audit (OtterSec, Neodyme, Sec3, Zellic or similar) before mainnet.
