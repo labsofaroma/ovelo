@@ -9,14 +9,16 @@ The on-chain program behind Aroma's recurring investing: an owner approves a bou
 | IDL and client | `packages/guard/src/v1/` (`@aroma/guard`: `idl/`, Codama-generated `generated/`, hand-written builders; the web app re-exports it as `@/lib/sdk/guard/v1`) |
 | Spec | [CONTRACT-V1-SPEC.md](./CONTRACT-V1-SPEC.md) |
 | Devnet runbook | [M6-DEVNET-DEPLOY.md](./M6-DEVNET-DEPLOY.md) |
-| Integrations | Solana Foundation Subscriptions `De1egAF…avR44` (layout pinned at `program-v0.5.0`), Pyth receiver `rec5EKM…LtFJ` (`pyth-solana-receiver-sdk` 2.0.0) |
+| Integrations | Solana Foundation Subscriptions `De1egAF…avR44` (layout pinned at `program-v0.5.0`; mainnet's binary checked in M8), Pyth receiver `rec5EKM…LtFJ` (`pyth-solana-receiver-sdk` 2.0.0), Jupiter v6 `JUP6Lkb…TaV4` (`route_v2`, mainnet build) |
+| Audit package | [docs/audit/](./audit/README.md) (scope, threat model, invariants, decisions, limitations, build hash) |
 
 ## Two builds
 
 | | devnet build (`--features devnet-mock`) | mainnet build (default) |
 |---|---|---|
-| `execute_installment` | mints the oracle amount from a per-asset PDA; funding goes to the treasury | fails closed with `MainnetExecutionUnavailable` until the Jupiter path (M8) |
-| Minting code | present | absent: `scripts/check-build.mjs` proves from the binaries that neither the devnet marker nor the `mock_mint` seed is in the default build |
+| `execute_installment` | mints the oracle amount from a per-asset PDA; funding goes to the treasury | fails closed with `MainnetExecutionUnavailable` |
+| `execute_installment_routed` | refused (`RoutedExecutionUnavailable`) | swaps each leg through Jupiter `route_v2`, keeper-only (see [Mainnet execution](#mainnet-execution-default-build)) |
+| Minting code | present | absent: `scripts/check-build.mjs` proves from the binaries that neither the devnet marker nor the `mock_mint` seed is in the default build, and that the Jupiter CPI path is in the default build only |
 | `register_asset` | the mint authority must be the asset's `["mock_mint", mint]` PDA | issuer mints (no mint-authority requirement) |
 | Shortest period | 10 s (so a local validator can run several periods) | 1 hour |
 | IDL | identical (one accounts struct for both; the build script fails if they differ) | |
@@ -73,7 +75,8 @@ The plan's staging account is the plan PDA's associated token account for the fu
 | `set_asset_enabled(bool)` | `config.admin` | |
 | `create_plan(args)` | owner | not paused; funding mint allow-listed; 1 to 20 distinct outputs, none the funding mint, each a registered **enabled** asset (one `Asset` account per output in `remaining_accounts`); weights > 0 summing to 10,000 and every leg receiving funds; slippage ≤ the cap; amount ≤ the launch cap; period ≥ the minimum, schedule ≤ 366 days, start within [now − 120 s, now + 30 days]; the Subscriptions accounts (below); the owner's funding account delegates to the SubscriptionAuthority |
 | `pause_plan`, `resume_plan` | owner | refuses a no-op |
-| `execute_installment(period, leg_mask)` | keeper (anyone if `keeper_authority` is `None`) | see below |
+| `execute_installment(period, leg_mask)` | keeper (anyone if `keeper_authority` is `None`) | devnet build, see below; refused in the mainnet build |
+| `execute_installment_routed(period, leg_mask, routes)` | keeper (required) | mainnet build, see [Mainnet execution](#mainnet-execution-default-build); refused in the devnet build |
 | `close_plan` | owner | always (reads no config): returns staging, closes staging and the plan with all rent to the owner, emits `PlanClosed { plan, owner, … }`. The client adds the Subscriptions revoke to the same transaction |
 
 ### Subscriptions checks (`integrations/subscriptions.rs`)
@@ -102,6 +105,33 @@ Upstream also refuses delegations on mints with a permanent delegate, a transfer
 5. When the bitmap is full, staging must be back at its starting balance; the period is marked executed. `InstallmentExecuted { plan, period, legs: [{ leg, mint, amount_in, fee, amount_out, min_out, oracle_price, oracle_expo, oracle_publish_time, multiplier_fp }], newly_skipped, period_complete }`.
 
 A failed leg rolls back the whole transaction, pull included. A period split across transactions stays in flight until its last leg runs; closing the plan returns whatever is in staging.
+
+## Mainnet execution (default build)
+
+`execute_installment_routed(period, leg_mask, routes: Vec<RouteLeg { account_count: u8, data: Vec<u8> }>)` (M8). It uses the same accounts struct as `execute_installment`. Remaining accounts per leg in `leg_mask`, ascending: `[asset, price_update, …route]`. `route` is the Jupiter instruction's account list in Jupiter's order, `account_count` long. The totals must match exactly.
+
+1. **Entry:** not paused (config, plan); **keeper-only**: `keeper_authority` must be set and sign (`KeeperRequired`, `NotKeeper`; M8 decision 1); the leg mask is valid. Schedule, skips and the Subscriptions pull are as in the devnet build (`execute/common.rs`).
+2. **Each leg** (`execute/route.rs`):
+   - the asset is current and enabled; the live mint passes the Token-2022 policy, keeps its decimals and is not paused;
+   - **route prefix** (Jupiter `route_v2`, pinned IDL order):
+     - [9] is Jupiter v6 (executable) and [8] its event authority;
+     - [0] is the program's **swap authority** PDA `["swap_authority"]`, read-only;
+     - [1] is the swap authority's ATA for the funding mint, and [2] its ATA (transit) for the output mint;
+     - [3]/[5] are the funding mint and program, [4]/[6] the output mint and program;
+     - **[7] is the owner's ATA** for the output mint (address and owner checked);
+   - **forbidden accounts** anywhere in the route: the plan, config, staging, the owner's funding account, the treasury and fee accounts, the Subscriptions authority, delegation, event authority and program, and this program. Also forbidden: any writable token account owned by the plan, and any writable swap-authority token account other than [1] and [2];
+   - **terms:** `route_v2` discriminator, `in_amount = amount_in`, `platform_fee_bps = 0`, `positive_slippage_bps = 0`;
+   - **oracle:** the price checks of the devnet build, with age at most `min(max_oracle_staleness_s, 20 s)`;
+   - **amounts:**
+     - `leg_funding` is the weight split;
+     - `fee = floor(leg_funding × protocol_fee_bps / 10,000)`, and `amount_in = leg_funding − fee`;
+     - `expected_out` is the oracle value of the **full** `leg_funding`, using the multiplier rule above;
+     - `min_out = floor(expected_out × (10,000 − slippage) / 10,000)`. A fee therefore never lowers the floor;
+   - **funds:** staging pays the fee (plan PDA signs) and `amount_in` to [1] (plan PDA signs). Then the Jupiter CPI, in which only the swap authority signs;
+   - **after the CPI** (`swap_math::verify_swap`): staging dropped by exactly `leg_funding`; [1] and [2] are back at their starting balances; the owner's ATA rose by at least `min_out`.
+3. **Finish:** as in the devnet build: when the bitmap is full, staging must be back at its start. The event is the same `InstallmentExecuted`, where `amount_out` is what the owner received.
+
+The plan PDA, which is also the Subscriptions delegatee, signs only the pull and the two transfers out of staging, never anything a route can reach. The swap authority's ATAs (funding mint and each output mint) are shared, hold nothing at rest, and are created idempotently by the keeper. Only direct routes execute: a hop through another mint would need a third swap-authority account, which is refused. The keeper batches at most 2 routed legs per transaction and falls back to one leg per transaction when the measured size exceeds 1,232 bytes. The keeper side is documented in [keeper-mainnet.md](./keeper-mainnet.md); the security case is in [audit/](./audit/README.md).
 
 ## Token-2022 policy (`token_policy.rs`)
 
@@ -146,14 +176,17 @@ The sponsored Pyth push accounts for the equity feeds exist on devnet (10 of the
 - No `init-if-needed`; every account is created once with `init`. All math is `checked_*` in u128, with `overflow-checks = true` in release. No floats: the multiplier is converted from its bit pattern.
 - `token_interface` throughout (Token-2022 outputs).
 - `security.txt` embedded. `#![deny(clippy::all)]`; the one crate-level allow (`result_large_err`) is for Anchor's error type.
-- Open: verifiable build and published hash (M8), Squads multisig upgrade authority (M10), external audit (M10).
+- Mainnet build: Jupiter is called by a program-wide swap authority, never by the plan PDA (the Subscriptions delegatee); every swap is accepted on the oracle floor and balance changes only.
+- Verifiable build: `scripts/verify-build.sh`, hashes in `packages/contracts/verifiable-build.json` (local hash recorded in M8; the Docker hash is an owner step).
+- Open: published Docker-verifiable hash, Squads multisig upgrade authority (M10), external audit (M10).
 
 ## Tests
 
 | Layer | Where | What |
 |---|---|---|
-| Rust unit + proptest | `math_tests.rs`, `integrations/subscriptions.rs`, `tests.rs` | schedule, catch-up, skip, delegation terms, leg split, slippage floor, fees, decimals, scaled amount, multiplier conversion, staleness, confidence, layout parsing, sizes, argument validation; proptests: never more than `periods × amount` pulled and executed + skipped ≤ periods, legs sum exactly, output never above oracle value |
-| LiteSVM | `packages/contracts/tests/litesvm` | 56 cases through the real v1 builders with the pinned Subscriptions and Pyth receiver binaries |
+| Rust unit + proptest | `math_tests.rs`, `swap_math_tests.rs`, `integrations/*.rs`, `tests.rs` | schedule, catch-up, skip, delegation terms, leg split, slippage floor, fees, decimals, scaled amount, multiplier conversion, staleness, confidence, layout parsing, sizes, argument validation; proptests: never more than `periods × amount` pulled and executed + skipped ≤ periods, legs sum exactly, output never above oracle value |
+| LiteSVM | `packages/contracts/tests/litesvm` | 85 cases through the real v1 builders: the devnet build with the pinned Subscriptions, Pyth receiver and Wormhole binaries; the default build with mainnet's Jupiter, Orca Whirlpool, Token and Token-2022 binaries and recorded pools (`mainnet/`); the Subscriptions rules on both the devnet and mainnet binaries |
 | Client | `packages/guard/src/v1/*.test.ts` | PDAs, mirrors, decoders, builders (100% lines) |
 | Drift | `packages/guard/src/v1/drift.test.ts`, `idl:check` | committed IDL = Rust program; generated client = a fresh Codama render |
 | Local end to end | `pnpm --filter @aroma/contracts e2e:local` | a real validator, a real deploy, three periods with a catch-up and a skip, close + revoke |
+| Mainnet fork | `pnpm --filter @aroma/contracts e2e:fork` | the default build on a local mainnet fork (Jupiter, Whirlpool, Subscriptions, Pyth, USDC, three real xStocks), the keeper in `mainnet-fork` mode, three one-hour periods, close + revoke |

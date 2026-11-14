@@ -1,6 +1,6 @@
 # Aroma Guard v1 — Contract Specification
 
-_Status: specification, 13 November 2026. M6 implements the core and the devnet build ([aroma-guard-v1.md](./aroma-guard-v1.md)); deviations and decisions are in REWRITE-PLAN, M6 status._
+_Status: specification, 13 November 2026. M6 implements the core and the devnet build, M8 the mainnet (Jupiter) path ([aroma-guard-v1.md](./aroma-guard-v1.md), audit package [audit/](./audit/README.md)); deviations and decisions are in REWRITE-PLAN, M6 and M8 status._
 
 Aroma Guard v1 is a standalone program with its own program ID, account layout and instructions. The implementation lives in `packages/contracts` and is described in [aroma-guard-v1.md](./aroma-guard-v1.md).
 
@@ -118,7 +118,8 @@ The helpers in `lib/sdk` enforce a limit on outputs per transaction that account
 | `register_asset`, `set_asset_enabled` | `Config.admin` | rejects mints that have a permanent delegate, a transfer hook not on the allow-list, or a freeze authority not on the allow-list |
 | `create_plan` | owner | funding mint must be on the allow-list, outputs must be registered assets, weights must sum to 10,000, slippage at or below the cap, amount at or below the launch cap. Checks the Subscriptions delegation by **discriminator**, PDA and terms |
 | `pause_plan`, `resume_plan` | owner | |
-| `execute_installment(period, leg_mask)` | keeper (or anyone, if `keeper_authority` is None) | see §6 |
+| `execute_installment(period, leg_mask)` | keeper (or anyone, if `keeper_authority` is None) | see §6 (devnet build) |
+| `execute_installment_routed(period, leg_mask, routes)` | keeper (required in the mainnet build, M8 decision 1) | see §6 (mainnet build): each leg's Jupiter `route_v2` instruction data and its accounts |
 | `close_plan` | owner | returns staging funds, closes accounts, sends **rent to the owner**, emits `PlanClosed { plan, owner }`. The client code puts the Subscriptions **revoke** in the same transaction |
 
 ## 6. `execute_installment`
@@ -144,7 +145,7 @@ The keeper builds Jupiter routes off-chain. The program does not trust the route
 - [x] (M6) `checked_*` math everywhere, and `overflow-checks = true`.
 - [x] (M6) `token_interface` / `InterfaceAccount`, so Token-2022 xStocks work. List each mint's extensions in the asset registry.
 - [x] (M6) `solana-security-txt` embedded in the program.
-- [ ] Verifiable builds (`solana-verify`), with the hash published.
+- [ ] Verifiable builds (`solana-verify`), with the hash published. (M8: `scripts/verify-build.sh`, local hash recorded in `packages/contracts/verifiable-build.json`; the Docker hash and its publication are owner steps.)
 - [ ] Upgrade authority on a Squads multisig (at least 2-of-3), with a timelock on mainnet.
 - [ ] External audit (OtterSec, Neodyme, Sec3, Zellic or similar) before mainnet.
 

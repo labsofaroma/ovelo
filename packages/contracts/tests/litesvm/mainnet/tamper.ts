@@ -2,7 +2,7 @@
  * Test-only tampering with a built `execute_installment_routed` instruction, to prove each
  * refusal ON CHAIN (the client builder refuses these routes before signing).
  */
-import { AccountRole, type Address, type Instruction } from "@solana/kit";
+import { type AccountRole, type Address, type Instruction } from "@solana/kit";
 import {
   getExecuteInstallmentRoutedInstructionDataDecoder,
   getExecuteInstallmentRoutedInstructionDataEncoder,

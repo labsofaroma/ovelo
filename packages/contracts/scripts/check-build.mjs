@@ -63,4 +63,6 @@ if (report["devnet-mock"].jupiterCpi) {
   process.exit(1);
 }
 console.log("OK: minting code exists only in the devnet-mock build.");
-console.log("OK: the Jupiter CPI path exists only in the default (mainnet) build.");
+console.log(
+  "OK: the Jupiter CPI path exists only in the default (mainnet) build.",
+);
