@@ -11,6 +11,12 @@ describe("siteUrl", () => {
     ).toBe("https://aroma.example/");
   });
 
+  it("accepts plain http only on loopback", () => {
+    expect(siteUrl({ AROMA_SITE_URL: "http://127.0.0.1:3200" }).href).toBe(
+      "http://127.0.0.1:3200/",
+    );
+  });
+
   it("falls back to Vercel's production host, then to localhost", () => {
     expect(
       siteUrl({ VERCEL_PROJECT_PRODUCTION_URL: "aroma.vercel.app" }).href,
@@ -32,6 +38,7 @@ describe("siteUrl", () => {
     "https://aroma.example/?q=1",
     "https://aroma.example/#top",
     "ftp://aroma.example",
+    "http://aroma.example",
     "not a url",
   ])("refuses %s", (value) => {
     expect(() => siteUrl({ AROMA_SITE_URL: value })).toThrow();

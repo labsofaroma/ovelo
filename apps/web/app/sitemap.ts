@@ -1,11 +1,12 @@
 import type { MetadataRoute } from "next";
+import { SITEMAP_PATHS } from "../features/shared/routes";
 import { siteUrl } from "../features/shared/site";
-import { V1_SITEMAP_PATHS } from "../features/shared/routes";
+
+/** Public, indexable pages (M9: at the root; the /v1 URLs redirect 308). */
 export default function sitemap(): MetadataRoute.Sitemap {
-  // v1 routes are listed only when they exist (AROMA_V1_ENABLED=true, M3). M7 drops the prefix.
-  const v1 = process.env.AROMA_V1_ENABLED?.trim() === "true" ? V1_SITEMAP_PATHS : [];
-  return ["/", "/markets", "/baskets", "/privacy", "/terms", ...v1].map((path) => ({
-    url: new URL(path, siteUrl()).href,
+  const origin = siteUrl();
+  return SITEMAP_PATHS.map((path) => ({
+    url: new URL(path, origin).href,
     changeFrequency: "weekly",
     priority: path === "/" ? 1 : 0.6,
   }));

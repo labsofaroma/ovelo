@@ -1,10 +1,10 @@
 /**
  * Which Solana cluster a wallet boundary serves (M7 B2). Pure and client-safe.
  *
- * M4 made the wallet mainnet-only. Recurring investing (`/v1/invest`) runs on devnet, so a
+ * M4 made the wallet mainnet-only. Recurring investing (`/invest`) runs on devnet, so a
  * boundary is now scoped to ONE cluster, chosen by the server page that renders it:
  * - `mainnet`: every trade surface (the default; unchanged behaviour).
- * - `devnet`: `/v1/invest` only. The browser RPC must report devnet's genesis.
+ * - `devnet`: `/invest` only. The browser RPC must report devnet's genesis.
  * - `localnet`: test builds only (`NEXT_PUBLIC_AROMA_LOCALNET=true` at BUILD time, refused in
  *   production by the env schema and by the client-secret scan), for the E2E on a local
  *   validator. Its genesis is random per validator, so the server passes the one it verified.

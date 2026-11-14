@@ -75,9 +75,10 @@ describe("flag off", () => {
 });
 
 describe("flag on", () => {
-  it("actions.json maps /v1/basket/* to the v1 Action, and nothing to a removed route", async () => {
+  it("actions.json maps /basket/* (and the old /v1/basket/* links) to the v1 Action, nothing else", async () => {
     flag(true);
     expect(actionsJsonRules(isV1Enabled())).toEqual([
+      { pathPattern: "/basket/*", apiPath: "/api/v1/actions/baskets/*" },
       { pathPattern: "/v1/basket/*", apiPath: "/api/v1/actions/baskets/*" },
     ]);
   });

@@ -14,7 +14,7 @@ import { getCreatorBasket } from "./server";
 import { receiptUsage } from "./stats";
 
 /**
- * `/v1/basket/[id]` for a creator basket (UUID ids; curated baskets keep features/baskets). The
+ * `/basket/[id]` for a creator basket (UUID ids; curated baskets keep features/baskets). The
  * allocation is what the creator signed (basket_allocations, current version), matched against
  * the cached issuer catalog exactly like a curated basket, so the same AllocationTable,
  * performance view and trade ticket apply.

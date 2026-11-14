@@ -44,7 +44,7 @@ test("above $50 per trade → 422 TRADE_CAP_EXCEEDED", async ({ request }) => {
 
 test("the review shows the beta limits from the server", async ({ page }) => {
   await installTestWallet(page);
-  await page.goto(`/v1/stock/${STOCK}`);
+  await page.goto(`/stock/${STOCK}`);
   const ticket = ticketOf(page);
   await ticket.getByRole("button", { name: "Connect wallet" }).click();
   await expect(

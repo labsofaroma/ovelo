@@ -9,18 +9,18 @@ const ITEMS = [
   {
     href: routes.markets,
     label: "Markets",
-    match: ["/v1/markets", "/v1/stock"],
+    match: ["/markets", "/stock"],
   },
   {
     href: routes.baskets,
     label: "Baskets",
-    match: ["/v1/baskets", "/v1/basket/"],
+    match: ["/baskets", "/basket/"],
   },
-  { href: routes.watchlist, label: "Watchlist", match: ["/v1/watchlist"] },
-  { href: routes.portfolio, label: "Portfolio", match: ["/v1/portfolio"] },
-  { href: routes.creators, label: "Creators", match: ["/v1/creators"] },
+  { href: routes.watchlist, label: "Watchlist", match: ["/watchlist"] },
+  { href: routes.portfolio, label: "Portfolio", match: ["/portfolio"] },
+  { href: routes.creators, label: "Creators", match: ["/creators"] },
   // M7: devnet test only; the label says so. The v1 nav itself exists only while v1 is on.
-  { href: routes.invest, label: "Invest (devnet)", match: ["/v1/invest"] },
+  { href: routes.invest, label: "Invest (devnet)", match: ["/invest"] },
 ] as const;
 
 /** Primary nav. Client only for `aria-current`; links work without JavaScript. */

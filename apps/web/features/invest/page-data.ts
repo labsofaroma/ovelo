@@ -14,7 +14,7 @@ import { FAUCET_TEST_USD_RAW } from "./server/faucet";
 import { FUNDING_SYMBOL } from "./server/prepare";
 
 /**
- * Server data for /v1/invest. Unavailable (with an honest message) while the devnet deployment
+ * Server data for /invest. Unavailable (with an honest message) while the devnet deployment
  * record is null, when localnet is not a test build, or when the chain cannot be read.
  */
 export type InvestPageResult =

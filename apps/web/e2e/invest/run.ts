@@ -218,7 +218,7 @@ async function main() {
   );
   await until(
     "next start",
-    async () => (await fetch(`http://127.0.0.1:${APP_PORT}/v1/invest`)).ok,
+    async () => (await fetch(`http://127.0.0.1:${APP_PORT}/invest`)).ok,
   );
   start(
     "npx",

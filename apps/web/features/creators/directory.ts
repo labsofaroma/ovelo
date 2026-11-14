@@ -12,7 +12,7 @@ export type Directory = {
 };
 
 /**
- * The public creator directory for `/v1/creators`. Read per request (no cache): publishing must
+ * The public creator directory for `/creators`. Read per request (no cache): publishing must
  * show up at once, and there is no shared cache tag to invalidate yet. A missing or failing
  * database becomes an explicit unavailable state, never an empty list.
  */

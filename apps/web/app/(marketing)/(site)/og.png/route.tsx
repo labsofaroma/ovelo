@@ -3,10 +3,10 @@ import { OG_SIZE } from "@/features/shared/og";
 import { isV1Enabled } from "@/server/env";
 
 /**
- * GET /v1/og.png: generated social preview for every v1 route (closes AUDIT L-2 for v1).
+ * GET /og.png: generated social preview for every v1 route (closes AUDIT L-2 for v1).
  *
  * A route handler rather than `opengraph-image.tsx`: inside a route group Next serves that file at
- * a hashed URL (`/v1/opengraph-image-<hash>`), and both v1 groups resolve to /v1, so pages in the
+ * a hashed URL (`/opengraph-image-<hash>`), and both groups resolve to the same root, so pages in the
  * `(app)` group could not reference it. Here the URL is stable and `v1Metadata` points at it.
  *
  * A branded static design: no prices or figures, nothing that can go stale or be mistaken for

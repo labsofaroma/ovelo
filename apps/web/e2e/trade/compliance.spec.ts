@@ -36,7 +36,7 @@ const ticketOf = (page: Page) =>
 
 async function openConnected(page: Page) {
   await installTestWallet(page);
-  await page.goto(`/v1/stock/${STOCK}`);
+  await page.goto(`/stock/${STOCK}`);
   const ticket = ticketOf(page);
   await ticket.getByRole("button", { name: "Connect wallet" }).click();
   await expect(

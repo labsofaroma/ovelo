@@ -114,7 +114,7 @@ export async function sendToFork(signedBase64: string): Promise<string> {
   throw new Error("fork transaction did not confirm");
 }
 
-/** Build the creator basket in /v1/basket/new from LEGS, in order. */
+/** Build the creator basket in /basket/new from LEGS, in order. */
 export async function fillBuilder(page: Page, name: string, ticker: string) {
   await page.getByLabel("Basket name").fill(name);
   await page.getByLabel("Ticker").fill(ticker);

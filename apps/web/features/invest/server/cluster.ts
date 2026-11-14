@@ -17,7 +17,7 @@ import { AppError } from "@/server/errors";
 import type { InvestClusterName } from "../schema";
 
 /**
- * Which cluster `/v1/invest` runs on and where the program is (M7 B0/B2).
+ * Which cluster `/invest` runs on and where the program is (M7 B0/B2).
  *
  * - devnet: the deployment comes from `V1_DEPLOYMENTS.devnet`. While it is `null` (the owner has
  *   not deployed yet) the feature is UNAVAILABLE: every route answers INVEST_UNAVAILABLE and the

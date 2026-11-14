@@ -7,7 +7,7 @@ import { OPEN_PRIVACY_EVENT } from "./PrivacyChoicesButton";
 import { routes } from "../routes";
 
 /**
- * v1 consent (replaces the prototype's global PrivacyChoices on /v1). Same storage key and open
+ * v1 consent (replaced the prototype's global PrivacyChoices). Same storage key and open
  * event, so a choice made on either surface carries over. Analytics stay off unless the visitor
  * opts in, the deployment configures a Plausible domain, and no Do-Not-Track / GPC signal is set.
  * Only the route category is sent: no wallet, order, search or referrer data.
@@ -36,8 +36,8 @@ function readChoice(): boolean | null {
 
 function category(path: string): string {
   return path
-    .replace(/^\/v1\/stock\/[^/]+$/, "/v1/stock/detail")
-    .replace(/^\/v1\/basket\/[^/]+$/, "/v1/basket/detail");
+    .replace(/^\/stock\/[^/]+$/, "/stock/detail")
+    .replace(/^\/basket\/(?!new$)[^/]+$/, "/basket/detail");
 }
 
 export function ConsentBanner() {

@@ -7,7 +7,7 @@ import { useWatchlist, WATCHLIST_KEY } from "../store";
 const router = vi.hoisted(() => ({ replace: vi.fn() }));
 vi.mock("next/navigation", () => ({
   useRouter: () => router,
-  usePathname: () => "/v1/watchlist",
+  usePathname: () => "/watchlist",
 }));
 
 const { WatchlistSync } = await import("./WatchlistSync");
@@ -38,7 +38,7 @@ describe("WatchlistSync", () => {
     );
     await waitFor(() =>
       expect(router.replace).toHaveBeenCalledWith(
-        `/v1/watchlist?m=${mint(1)},${mint(2)}`,
+        `/watchlist?m=${mint(1)},${mint(2)}`,
         {
           scroll: false,
         },

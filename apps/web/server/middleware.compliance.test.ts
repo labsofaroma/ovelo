@@ -155,21 +155,32 @@ describe("browse rule", () => {
     );
 
   it("browse-only by default: a restricted visitor sees v1 pages", async () => {
-    const response = await page("/v1/markets", "US");
+    const response = await page("/markets", "US");
     expect(response.headers.get("x-middleware-rewrite")).toBeNull();
   });
 
-  it("browse=block rewrites v1 pages (not the legal pages) to the notice page", async () => {
+  it("browse=block rewrites pages (not the legal pages, APIs or files) to the notice page", async () => {
     vi.stubEnv("AROMA_COMPLIANCE_BROWSE", "block");
-    const blocked = await page("/v1/markets", "US");
-    expect(blocked.headers.get("x-middleware-rewrite")).toMatch(
-      /\/v1\/restricted$/,
-    );
+    for (const path of ["/", "/markets", "/stock/TSLAx"]) {
+      const blocked = await page(path, "US");
+      expect(blocked.headers.get("x-middleware-rewrite")).toMatch(
+        /\/restricted$/,
+      );
+    }
+    for (const path of [
+      "/privacy",
+      "/restricted",
+      "/sitemap.xml",
+      "/actions.json",
+    ])
+      expect(
+        (await page(path, "US")).headers.get("x-middleware-rewrite"),
+      ).toBeNull();
     expect(
-      (await page("/v1/terms", "US")).headers.get("x-middleware-rewrite"),
+      (await page("/terms", "US")).headers.get("x-middleware-rewrite"),
     ).toBeNull();
     expect(
-      (await page("/v1/markets", "DE")).headers.get("x-middleware-rewrite"),
+      (await page("/markets", "DE")).headers.get("x-middleware-rewrite"),
     ).toBeNull();
   });
 });

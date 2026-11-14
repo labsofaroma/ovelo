@@ -61,7 +61,7 @@ export type AssetLookup =
   | { state: "not-found" }
   | Extract<Loaded<MarketsView>, { state: "unavailable" }>;
 
-/** Resolve a /v1/stock/[symbol] segment against the cached catalog. */
+/** Resolve a /stock/[symbol] segment against the cached catalog. */
 export async function getAsset(symbolOrMint: string): Promise<AssetLookup> {
   const markets = await getMarkets();
   if (markets.state !== "ok") return markets;

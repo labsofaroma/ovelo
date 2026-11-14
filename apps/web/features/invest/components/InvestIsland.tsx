@@ -14,7 +14,7 @@ import { PlanCard } from "./PlanCard";
 import { PlanWizard } from "./PlanWizard";
 import type { InvestPageData } from "./types";
 
-/** Client entry for /v1/invest: one devnet (or localnet) wallet boundary, never mainnet. */
+/** Client entry for /invest: one devnet (or localnet) wallet boundary, never mainnet. */
 export function InvestIsland({ data }: { data: InvestPageData }) {
   return (
     <QueryProvider>

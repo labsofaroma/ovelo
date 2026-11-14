@@ -5,7 +5,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
  * middleware.ts (M4). The first block was PORTED from the prototype suites that loaded the old
  * synchronous middleware in a VM (tests/request-policy.test.mjs, tests/bundle-api.test.ts,
  * tests/basket-buy-actions.test.ts); since M9 it runs on v1 paths (the prototype APIs are gone).
- * The second block covers what M4 adds: nonce CSP on /v1, one HSTS header, split buckets.
+ * The second block covers what M4 adds: nonce CSP on /, one HSTS header, split buckets.
  */
 const { middleware } = await import("@/middleware");
 
@@ -171,9 +171,9 @@ describe("request guards (ported from the prototype suites; v1 paths since M9)",
 });
 
 describe("M4 additions", () => {
-  it("v1 pages get a per-request nonce CSP without 'unsafe-inline' scripts; the prototype does not", async () => {
-    const first = await middleware(req("http://localhost:3000/v1/markets"));
-    const second = await middleware(req("http://localhost:3000/v1/markets"));
+  it("every route gets a per-request nonce CSP without 'unsafe-inline' scripts (M9)", async () => {
+    const first = await middleware(req("http://localhost:3000/markets"));
+    const second = await middleware(req("http://localhost:3000/markets"));
     const csp = first.headers.get("content-security-policy")!;
     expect(csp).toMatch(
       /script-src 'self' 'nonce-[A-Za-z0-9+/=]{24}' 'strict-dynamic'/,
@@ -186,11 +186,18 @@ describe("M4 additions", () => {
     );
     expect(csp).not.toMatch(/connect-src[^;]* https: /);
     expect(second.headers.get("content-security-policy")).not.toBe(csp);
-    expect(
-      (await middleware(req("http://localhost:3000/markets"))).headers.get(
-        "content-security-policy",
-      ),
-    ).toBeNull();
+    for (const path of [
+      "/",
+      "/markets",
+      "/api/v1/health",
+      "/actions.json",
+      "/nope",
+    ])
+      expect(
+        (await middleware(req(`http://localhost:3000${path}`))).headers.get(
+          "content-security-policy",
+        ),
+      ).toMatch(/'nonce-/);
   });
 
   it("the origin allowlist uses the client's Host (next start binds to localhost)", async () => {
@@ -211,7 +218,7 @@ describe("M4 additions", () => {
   it("the loopback check uses the client's Host, not the server bind address", async () => {
     vi.stubEnv("AROMA_TRUST_PROXY", "true");
     const viaProxy = await middleware(
-      req("http://127.0.0.1:3300/v1", {
+      req("http://127.0.0.1:3300/", {
         headers: { host: "www.example.com", "x-forwarded-proto": "https" },
       }),
     );
@@ -231,7 +238,7 @@ describe("M4 additions", () => {
       "max-age=63072000; includeSubDomains; preload",
     );
     expect(
-      (await middleware(req("http://localhost:3000/v1"))).headers.get(
+      (await middleware(req("http://localhost:3000/"))).headers.get(
         "strict-transport-security",
       ),
     ).toBeNull();

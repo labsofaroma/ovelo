@@ -13,7 +13,7 @@ import { AllocationDonut } from "./AllocationDonut";
 import { HoldingsTable } from "./HoldingsTable";
 import { PnLSummary } from "./PnLSummary";
 
-/** Client entry for /v1/portfolio: the connected wallet's holdings, allocation and orders. */
+/** Client entry for /portfolio: the connected wallet's holdings, allocation and orders. */
 export function PortfolioIsland() {
   return (
     <QueryProvider>

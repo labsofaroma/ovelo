@@ -58,7 +58,7 @@ async function runKeeper(request: APIRequestContext) {
   };
 }
 async function connect(page: Page) {
-  await page.goto("/v1/invest");
+  await page.goto("/invest");
   await expect(page.getByTestId("cluster-label")).toContainText(
     "no real value",
   );
@@ -320,7 +320,7 @@ test("a forced failure (installment above the wallet's balance) is dead-lettered
 });
 
 for (const theme of THEMES)
-  test(`/v1/invest has zero axe violations with plans and timeline (${theme})`, async ({
+  test(`/invest has zero axe violations with plans and timeline (${theme})`, async ({
     page,
   }) => {
     await useTheme(page, theme);

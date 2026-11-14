@@ -15,7 +15,7 @@ for (const theme of THEMES) {
     page,
   }) => {
     await useTheme(page, theme);
-    const response = await page.goto("/v1/markets");
+    const response = await page.goto("/markets");
     expect(response?.status()).toBe(200);
     await expect(page.locator("main").getByRole("alert")).toContainText(
       "Market data is unavailable right now",
@@ -29,7 +29,7 @@ for (const theme of THEMES) {
 test("basket detail and watchlist degrade to explicit notices", async ({
   page,
 }) => {
-  await page.goto("/v1/basket/any-basket?range=90d");
+  await page.goto("/basket/any-basket?range=90d");
   await expect(page.locator("main").getByRole("alert")).toContainText(
     "This basket is unavailable",
   );

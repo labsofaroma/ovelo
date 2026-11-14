@@ -43,7 +43,7 @@ const publicShape = {
   NEXT_PUBLIC_SENTRY_DSN: sentryDsn.optional(),
   /** E2E builds only: compiles in the test wallet bridge (no key material). Never in production. */
   NEXT_PUBLIC_AROMA_E2E_WALLET: z.enum(["true", "false"]).optional(),
-  /** M7: browser RPC for `/v1/invest` on devnet (default: Solana's public devnet endpoint). */
+  /** M7: browser RPC for `/invest` on devnet (default: Solana's public devnet endpoint). */
   NEXT_PUBLIC_SOLANA_DEVNET_RPC_URL: httpsUrl.optional(),
   /**
    * M7, test builds only: compiles in the localnet wallet cluster (local-validator E2E). Refused
@@ -151,12 +151,12 @@ const base58Hash = z
   .regex(/^[1-9A-HJ-NP-Za-km-z]{32,44}$/, "must be base58");
 
 const devnetShape = {
-  /** Server devnet RPC (prototype and, from M7, `/v1/invest` on devnet). Genesis-checked per client. */
+  /** Server devnet RPC (prototype and, from M7, `/invest` on devnet). Genesis-checked per client. */
   AROMA_RECURRING_RPC_URL: z.url().optional(),
   AROMA_RECURRING_AUTH_SECRET: secret32.optional(),
   AROMA_FAUCET_SECRET_KEY: optionalText,
   /**
-   * M7: the cluster `/v1/invest` runs on. `localnet` (a local validator) is for test builds only:
+   * M7: the cluster `/invest` runs on. `localnet` (a local validator) is for test builds only:
    * it needs test switches and the localnet build flag, and is refused in production.
    */
   AROMA_V1_INVEST_CLUSTER: z.enum(["devnet", "localnet"]).default("devnet"),

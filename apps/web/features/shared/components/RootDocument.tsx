@@ -5,7 +5,7 @@ import { ConsentBanner } from "./ConsentBanner";
 
 /**
  * The v1 root document (M4, REWRITE-PLAN §4). `(app)` and `(marketing)` are root layouts of
- * their own, so /v1 no longer loads the prototype's root providers, its global CSS or
+ * their own, so v1 pages never loaded the prototype's root providers, its global CSS or
  * `@solana/web3.js` (M3 finding 1). The inline theme script carries the per-request CSP nonce set
  * by middleware (no 'unsafe-inline' for scripts); reading it makes v1 HTML dynamic, while
  * provider data stays in the Next data cache.
@@ -34,21 +34,4 @@ export async function RootDocument({ children }: { children: ReactNode }) {
       </body>
     </html>
   );
-}
-
-/** metadataBase for v1 (port of lib/site.ts siteUrl; invalid values fall back to localhost). */
-export function v1SiteUrl(): URL {
-  const configured =
-    process.env.AROMA_SITE_URL ||
-    (process.env.VERCEL_PROJECT_PRODUCTION_URL
-      ? `https://${process.env.VERCEL_PROJECT_PRODUCTION_URL}`
-      : "http://localhost:3000");
-  try {
-    const url = new URL(configured);
-    if (url.username || url.password || !/^https?:$/.test(url.protocol))
-      throw new Error("invalid");
-    return new URL(url.origin);
-  } catch {
-    return new URL("http://localhost:3000");
-  }
 }

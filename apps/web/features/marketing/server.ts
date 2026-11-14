@@ -33,7 +33,7 @@ export function toLandingSnapshot(view: MarketsView): LandingSnapshot {
   };
 }
 
-/** The landing page's dated market snapshot, from the same cached data as /v1/markets. */
+/** The landing page's dated market snapshot, from the same cached data as /markets. */
 export async function getLandingSnapshot(): Promise<Loaded<LandingSnapshot>> {
   const markets = await getMarkets();
   return markets.state === "ok"

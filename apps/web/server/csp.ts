@@ -50,7 +50,7 @@ function origin(value: string | undefined): string | null {
 /** Every connect-src origin, deduplicated, from configuration plus the fixed list. */
 export function connectSources(env: Env): string[] {
   const rpc = origin(env.NEXT_PUBLIC_SOLANA_RPC_URL) ?? DEFAULT_RPC;
-  // M7: `/v1/invest` talks to devnet from the browser (wallet genesis check, confirmations).
+  // M7: `/invest` talks to devnet from the browser (wallet genesis check, confirmations).
   const devnet =
     origin(env.NEXT_PUBLIC_SOLANA_DEVNET_RPC_URL) ?? DEFAULT_DEVNET_RPC;
   // M7 test builds only: the local validator (loopback), when the localnet cluster is on.
@@ -116,8 +116,3 @@ export function buildCsp(input: {
 
 /** One HSTS header, two years, subdomains, preload (AUDIT L-2). Only ever sent over HTTPS. */
 export const HSTS = "max-age=63072000; includeSubDomains; preload";
-
-/** Paths that get the strict nonce CSP (M4: v1 first; the prototype keeps its policy until M7). */
-export function isV1Path(pathname: string): boolean {
-  return /^\/(v1|api\/v1)(\/|$)/.test(pathname);
-}

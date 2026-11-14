@@ -1,27 +1,30 @@
-/** Base path of the v1 routes until M7. Build every internal v1 link from these helpers. */
-export const V1 = "/v1" as const;
-
+/**
+ * Internal page routes. Build every internal link from these helpers. M9 Step 4: the pages moved
+ * from the temporary `/v1` prefix to the root; next.config.mjs redirects the old URLs (308).
+ */
 export const routes = {
-  home: V1,
-  markets: `${V1}/markets`,
-  baskets: `${V1}/baskets`,
-  watchlist: `${V1}/watchlist`,
-  portfolio: `${V1}/portfolio`,
-  creators: `${V1}/creators`,
+  home: "/",
+  markets: "/markets",
+  baskets: "/baskets",
+  watchlist: "/watchlist",
+  portfolio: "/portfolio",
+  creators: "/creators",
   /** M7: recurring investing on devnet (test tokens). */
-  invest: `${V1}/invest`,
-  builder: `${V1}/basket/new`,
-  privacy: `${V1}/privacy`,
-  terms: `${V1}/terms`,
-  stock: (symbol: string) => `${V1}/stock/${encodeURIComponent(symbol)}`,
-  basket: (id: string) => `${V1}/basket/${encodeURIComponent(id)}`,
+  invest: "/invest",
+  builder: "/basket/new",
+  privacy: "/privacy",
+  terms: "/terms",
+  settings: "/settings",
+  stock: (symbol: string) => `/stock/${encodeURIComponent(symbol)}`,
+  basket: (id: string) => `/basket/${encodeURIComponent(id)}`,
 } as const;
 
-/** Public, indexable v1 routes (sitemap). The watchlist is per-device, so it is not listed. */
-export const V1_SITEMAP_PATHS = [
+/** Public, indexable routes (sitemap). The watchlist and portfolio are per-wallet, so not listed. */
+export const SITEMAP_PATHS = [
   routes.home,
   routes.markets,
   routes.baskets,
+  routes.creators,
   routes.privacy,
   routes.terms,
 ] as const;

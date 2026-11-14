@@ -3,7 +3,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 /**
  * A1: the stock and basket segment layouts look the id up in the market snapshot to send real 404s.
  * With AROMA_V1_ENABLED off they must 404 before any data access, so a deployed prototype never
- * calls the markets server for /v1 URLs.
+ * calls the markets server.
  */
 const markets = vi.hoisted(() => ({
   getAsset: vi.fn(),
@@ -17,9 +17,9 @@ vi.mock("next/navigation", () => ({
 }));
 
 const { default: StockLayout } =
-  await import("@/app/(app)/v1/stock/[symbol]/layout");
+  await import("@/app/(app)/(shell)/stock/[symbol]/layout");
 const { default: BasketLayout } =
-  await import("@/app/(app)/v1/basket/[id]/layout");
+  await import("@/app/(app)/(shell)/basket/[id]/layout");
 
 describe("v1 segment layouts are gated before data access", () => {
   const original = process.env.AROMA_V1_ENABLED;

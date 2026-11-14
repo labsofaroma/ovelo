@@ -34,7 +34,7 @@ export function pickWatched(
   };
 }
 
-/** Market data for the watched mints, from the same cached snapshot as /v1/markets. */
+/** Market data for the watched mints, from the same cached snapshot as /markets. */
 export async function getWatchlist(
   mints: readonly string[],
 ): Promise<Loaded<WatchlistView>> {

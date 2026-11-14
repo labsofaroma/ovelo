@@ -63,7 +63,7 @@ export function filterRows(
   };
 }
 
-/** Builds a shareable /v1/markets URL that keeps only non-default filters. */
+/** Builds a shareable /markets URL that keeps only non-default filters. */
 export function filtersToSearch(
   filters: MarketFilters,
   patch: Partial<MarketFilters> = {},

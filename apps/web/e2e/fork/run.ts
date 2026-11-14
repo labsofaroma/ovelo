@@ -350,7 +350,7 @@ async function main() {
   }
   await run("npx", ["next", "start", "-p", String(APP_PORT)], appEnv, true);
   for (let i = 0; i < 60; i++) {
-    const ok = await fetch(`http://127.0.0.1:${APP_PORT}/v1/privacy`)
+    const ok = await fetch(`http://127.0.0.1:${APP_PORT}/privacy`)
       .then((r) => r.ok)
       .catch(() => false);
     if (ok) break;

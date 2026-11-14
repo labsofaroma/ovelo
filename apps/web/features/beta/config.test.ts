@@ -75,7 +75,7 @@ describe("gated entry points", () => {
     "/api/v1/plans/prepare-create",
     "/api/v1/faucet",
     "/api/v1/prices",
-    "/v1/markets",
+    "/markets",
   ])("%s stays open (receipts, terms, redeem, devnet, reads)", (path) => {
     expect(betaEntry(path, "POST")).toBeNull();
   });

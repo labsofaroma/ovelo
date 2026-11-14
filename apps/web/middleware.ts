@@ -7,7 +7,7 @@ import {
 import { betaDeps } from "./features/beta/server/deps";
 import { betaEdgeRefusal } from "./features/beta/server/edge";
 import { normalizePath } from "./features/beta/paths";
-import { buildCsp, generateNonce, HSTS, isV1Path } from "./server/csp";
+import { buildCsp, generateNonce, HSTS } from "./server/csp";
 import { testSwitchesAllowed } from "./server/env.schema";
 import { ERROR_CODES, type ErrorCode } from "./server/errors";
 import { goneResponse, isGonePath } from "./server/gone";
@@ -30,7 +30,7 @@ import {
  * Middleware (M4 B8; closes AUDIT H-4 and H-6 for v1, and the L-2 HSTS item).
  * - HTTPS: redirect to AROMA_SITE_URL in production, then ONE HSTS header with includeSubDomains
  *   and preload.
- * - /v1/* and /api/v1/*: a per-request nonce CSP (no 'unsafe-inline' scripts), the nonce passed to
+ * - Every route: a per-request nonce CSP (no 'unsafe-inline' scripts), the nonce passed to
  *   Next via the request headers.
  * - /api/*: origin allowlist, JSON-only mutations, body cap, and Upstash rate limits split into
  *   read, write, trade and creator buckets (a bounded local fallback evicts the oldest key and never
@@ -133,17 +133,17 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
       gone.headers.set("Strict-Transport-Security", HSTS);
     return gone;
   }
-  const v1 = isV1Path(pathname) || isV1Path(gatePath);
   const api = pathname.startsWith("/api/") || gatePath.startsWith("/api/");
   // Solana Actions (M5b): /api/v1/actions/* and the actions.json rules file.
   const action =
     gatePath.startsWith("/api/v1/actions/") || pathname === "/actions.json";
 
-  // Nonce CSP for v1 pages and APIs; Next reads the nonce from the request's CSP header.
-  const nonce = v1 ? generateNonce() : null;
-  const csp = nonce ? buildCsp({ nonce, env, development }) : null;
+  // Nonce CSP on every route (M9: the prototype's policy is gone); Next reads the nonce from the
+  // request's CSP header.
+  const nonce = generateNonce();
+  const csp = buildCsp({ nonce, env, development });
   const requestHeaders = new Headers(request.headers);
-  if (nonce && csp) {
+  {
     requestHeaders.set("x-nonce", nonce);
     requestHeaders.set("Content-Security-Policy", csp);
   }
@@ -251,7 +251,7 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
       response.headers.set("Access-Control-Max-Age", "600");
   }
 
-  if (csp) response.headers.set("Content-Security-Policy", csp);
+  response.headers.set("Content-Security-Policy", csp);
   if (!local && protocol === "https")
     response.headers.set("Strict-Transport-Security", HSTS);
   return response;

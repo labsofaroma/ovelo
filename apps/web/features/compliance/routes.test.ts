@@ -277,7 +277,7 @@ describe("Solana Action", () => {
     expect(refused.status).toBe(403);
     const body = await refused.json();
     expect(body.code).toBe("TERMS_REQUIRED");
-    expect(body.message).toContain(`${SITE}/v1/basket/test-basket`);
+    expect(body.message).toContain(`${SITE}/basket/test-basket`);
     await acceptFor(signer);
     await post(DE, signer.wallet);
     expect(service.quoteTrade).toHaveBeenCalledOnce();

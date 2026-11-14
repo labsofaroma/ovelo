@@ -46,7 +46,7 @@ function hadSession(key: string): boolean {
 }
 
 /**
- * `cluster` defaults to mainnet. Only `/v1/invest` passes another one (devnet, or localnet in a
+ * `cluster` defaults to mainnet. Only `/invest` passes another one (devnet, or localnet in a
  * test build), built by its server page; each cluster gets its own storage key and stack.
  */
 export function WalletBoundary({

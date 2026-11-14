@@ -52,21 +52,21 @@ async function buy(page: Page, path: string, amount: string) {
 test("stock: browse → quote → review → sign → submit → confirmed on the fork", async ({
   page,
 }) => {
-  await page.goto("/v1/markets");
-  await buy(page, `/v1/stock/${STOCK}`, "1");
+  await page.goto("/markets");
+  await buy(page, `/stock/${STOCK}`, "1");
 });
 
 test("basket: one order buys every constituent, confirmed on the fork", async ({
   page,
 }) => {
-  await buy(page, `/v1/basket/${BASKET}`, "2");
+  await buy(page, `/basket/${BASKET}`, "2");
 });
 
 test("portfolio lists the fork holdings and the confirmed orders, without a P&L estimate", async ({
   page,
 }) => {
   await installTestWallet(page);
-  await page.goto("/v1/portfolio");
+  await page.goto("/portfolio");
   await page.getByRole("button", { name: "Connect wallet" }).first().click();
   await expect(page.getByRole("heading", { name: "Holdings" })).toBeVisible();
   await expect(
@@ -155,7 +155,7 @@ test("rate limit: the trade bucket answers 429 with { code, message }", async ({
 test("paper trade end to end: practice order, no transaction, no wallet", async ({
   page,
 }) => {
-  await page.goto(`/v1/stock/${STOCK}`);
+  await page.goto(`/stock/${STOCK}`);
   const ticket = page.locator("section", {
     has: page.getByRole("heading", { name: /^Buy / }),
   });
@@ -176,16 +176,12 @@ for (const theme of THEMES) {
   test(`new pages have zero axe violations (${theme})`, async ({ page }) => {
     await useTheme(page, theme);
     await installTestWallet(page);
-    for (const path of [
-      "/v1/portfolio",
-      `/v1/stock/${STOCK}`,
-      `/v1/basket/${BASKET}`,
-    ]) {
+    for (const path of ["/portfolio", `/stock/${STOCK}`, `/basket/${BASKET}`]) {
       await page.goto(path);
       await expectNoAxeViolations(page);
     }
     // The review screen too.
-    await page.goto(`/v1/stock/${STOCK}`);
+    await page.goto(`/stock/${STOCK}`);
     const ticket = page.locator("section", {
       has: page.getByRole("heading", { name: /^Buy / }),
     });

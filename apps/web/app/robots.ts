@@ -1,5 +1,7 @@
 import type { MetadataRoute } from "next";
 import { siteUrl } from "../features/shared/site";
+
+/** Index the public pages of the production site only; per-wallet and API paths never. */
 export default function robots(): MetadataRoute.Robots {
   const origin = siteUrl();
   if (
@@ -14,10 +16,10 @@ export default function robots(): MetadataRoute.Robots {
       disallow: [
         "/api/",
         "/portfolio",
-        "/orders",
+        "/watchlist",
         "/settings",
-        // v1 (M3): the watchlist is per-device and noindex.
-        ...(process.env.AROMA_V1_ENABLED?.trim() === "true" ? ["/v1/watchlist"] : []),
+        "/restricted",
+        "/basket/new",
       ],
     },
     sitemap: new URL("/sitemap.xml", origin).href,

@@ -85,7 +85,7 @@ export function actionMetadata(
 ): ActionGetResponse {
   return {
     type: "action",
-    icon: `${origin}/v1/og.png`,
+    icon: `${origin}/og.png`,
     title: `Buy ${basket.name} (${basket.ticker}) · Mainnet spot purchase`,
     description:
       "Buy the whole basket once with mainnet USDC, in one transaction your wallet signs. Constituent tokens settle to your wallet. Maximum slippage is 1%; SOL is needed for network fees and account rent. If the basket needs more than one transaction, buy it on Aroma instead. No partial basket is ever bought. " +
@@ -290,7 +290,7 @@ export function completedAction(
 ): CompletedAction {
   return {
     type: "completed",
-    icon: `${origin}/v1/og.png`,
+    icon: `${origin}/og.png`,
     title:
       status === "confirmed" ? "Basket purchase confirmed" : "Purchase failed",
     description:

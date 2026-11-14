@@ -97,7 +97,7 @@ describe("actionMetadata", () => {
   it("is a mainnet spot purchase with an absolute icon and an amount parameter", () => {
     const meta = actionMetadata(BASKET, ORIGIN);
     expect(meta.type).toBe("action");
-    expect(meta.icon).toBe(`${ORIGIN}/v1/og.png`);
+    expect(meta.icon).toBe(`${ORIGIN}/og.png`);
     expect(meta.title).toMatch(/Mainnet spot purchase/);
     expect(meta.description).toMatch(/No partial basket/);
     expect(meta.links?.actions[0]).toMatchObject({
@@ -152,7 +152,7 @@ describe("actionTransaction", () => {
       run();
     } catch (error) {
       expect((error as { publicMessage: string }).publicMessage).toContain(
-        `${ORIGIN}/v1/basket/${BASKET.id}`,
+        `${ORIGIN}/basket/${BASKET.id}`,
       );
     }
   });

@@ -56,7 +56,7 @@ test("admin CLI invite → connect → redeem → build → sign → publish", a
 }) => {
   inviteCode = createInvite();
   await installTestWallet(page, { messageDelayMs: 1_500 });
-  await open(page, "/v1/basket/new");
+  await open(page, "/basket/new");
   await page.screenshot({
     path: `${SHOTS}/builder-empty-light.png`,
     fullPage: true,
@@ -98,7 +98,7 @@ test("a second basket is published in dark mode (one signature: already a creato
   page,
 }) => {
   await installTestWallet(page, { messageDelayMs: 1_500 });
-  await open(page, "/v1/basket/new", "dark");
+  await open(page, "/basket/new", "dark");
   await page.screenshot({
     path: `${SHOTS}/builder-empty-dark.png`,
     fullPage: true,
@@ -127,7 +127,7 @@ for (const theme of THEMES)
   test(`directory and basket page show it, with zero axe violations (${theme})`, async ({
     page,
   }) => {
-    await open(page, "/v1/creators", theme);
+    await open(page, "/creators", theme);
     const card = page.getByRole("heading", { name: NAME });
     await expect(card).toBeVisible();
     await expectNoAxeViolations(page);
@@ -136,7 +136,7 @@ for (const theme of THEMES)
       fullPage: true,
     });
     await card.getByRole("link").click();
-    await expect(page).toHaveURL(new RegExp(`/v1/basket/${basketId}$`));
+    await expect(page).toHaveURL(new RegExp(`/basket/${basketId}$`));
     await expect(
       page.getByRole("heading", { level: 1, name: NAME }),
     ).toBeVisible();
@@ -147,7 +147,7 @@ for (const theme of THEMES)
       path: `${SHOTS}/creator-basket-${theme}.png`,
       fullPage: true,
     });
-    await open(page, "/v1/basket/new", theme);
+    await open(page, "/basket/new", theme);
     await expectNoAxeViolations(page);
   });
 
@@ -155,7 +155,7 @@ test("buy through the trade ticket on the creator basket page, confirmed on the 
   page,
 }) => {
   await installTestWallet(page);
-  await open(page, `/v1/basket/${basketId}`);
+  await open(page, `/basket/${basketId}`);
   const ticket = page.locator("section", {
     has: page.getByRole("heading", { name: /^Buy / }),
   });
@@ -175,7 +175,7 @@ test("buy through the v1 Solana Action, confirmed on the fork, receipt recorded 
   const rules = (await (await request.get("/actions.json")).json()) as {
     rules: { pathPattern: string }[];
   };
-  expect(rules.rules[0]!.pathPattern).toBe("/v1/basket/*");
+  expect(rules.rules[0]!.pathPattern).toBe("/basket/*");
   const meta = await api(
     request,
     IP.action,
@@ -237,7 +237,7 @@ test("stats show both purchases from confirmed receipts", async ({
   expect(all.volume).toHaveLength(1);
   expect(all.volume[0]!.mint).toBe(USDC);
   expect(BigInt(all.volume[0]!.raw)).toBe(4_000_000n);
-  await open(page, `/v1/basket/${basketId}`);
+  await open(page, `/basket/${basketId}`);
   const purchases = page.getByRole("region", { name: "Purchases" });
   await expect(
     purchases.getByRole("row", { name: /All time 2 1 4\.000000 USDC/ }),
@@ -352,7 +352,7 @@ test("archive with confirmation; an archived basket cannot be bought", async ({
   request,
 }) => {
   await installTestWallet(page);
-  await open(page, `/v1/basket/${basketId}`);
+  await open(page, `/basket/${basketId}`);
   await page.getByRole("button", { name: "Connect wallet" }).first().click();
   await page.getByRole("button", { name: "Archive basket" }).click();
   const dialog = page.getByRole("dialog", { name: `Archive ${NAME}?` });

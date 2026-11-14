@@ -22,7 +22,7 @@ import { CreatorUsage } from "./CreatorUsage";
 const shortAddress = (address: string) =>
   `${address.slice(0, 4)}…${address.slice(-4)}`;
 
-/** `/v1/basket/[id]` for a creator basket (UUID). Curated baskets keep their own page. */
+/** `/basket/[id]` for a creator basket (UUID). Curated baskets keep their own page. */
 export async function CreatorBasketDetails({
   id,
   range,

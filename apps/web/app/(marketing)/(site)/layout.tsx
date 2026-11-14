@@ -4,7 +4,7 @@ import { SiteHeader } from "@/features/shared/components/SiteHeader";
 import { assertV1Enabled } from "@/features/shared/v1";
 
 /**
- * v1 marketing pages (landing, privacy, terms) under the temporary `/v1` prefix. The `(marketing)`
+ * Marketing pages (landing, privacy, terms; M9: at the root, formerly under `/v1`). The `(marketing)`
  * root layout loads the Tailwind v4 entry and the theme script (M4).
  */
 export default function V1MarketingLayout({

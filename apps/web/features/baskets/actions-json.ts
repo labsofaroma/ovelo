@@ -1,12 +1,14 @@
 /**
- * actions.json rules (M5b B4). /v1/basket/* maps to the v1 Action only while AROMA_V1_ENABLED is
- * on. M9 Step 3: the prototype rules are gone with the prototype's Action routes (they answer 410).
+ * actions.json rules (M5b B4). Basket pages map to the v1 Action while AROMA_V1_ENABLED is on.
+ * M9: the pages moved from /v1 to the root, so /basket/* is the rule; /v1/basket/* stays so Blinks
+ * already shared still resolve (the page itself redirects 308). The prototype rules went with its
+ * Action routes (they answer 410).
  */
-export const V1_ACTION_RULE = {
-  pathPattern: "/v1/basket/*",
-  apiPath: "/api/v1/actions/baskets/*",
-} as const;
+export const ACTION_RULES = [
+  { pathPattern: "/basket/*", apiPath: "/api/v1/actions/baskets/*" },
+  { pathPattern: "/v1/basket/*", apiPath: "/api/v1/actions/baskets/*" },
+] as const;
 
 export function actionsJsonRules(v1Enabled: boolean) {
-  return v1Enabled ? [V1_ACTION_RULE] : [];
+  return v1Enabled ? [...ACTION_RULES] : [];
 }

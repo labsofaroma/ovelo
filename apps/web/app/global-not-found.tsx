@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import { NotFound } from "@/features/shared/components/NotFound";
-import {
-  RootDocument,
-  v1SiteUrl,
-} from "@/features/shared/components/RootDocument";
+import { RootDocument } from "@/features/shared/components/RootDocument";
+import { siteUrl } from "@/features/shared/site";
 import { SiteFooter } from "@/features/shared/components/SiteFooter";
 import { SiteHeader } from "@/features/shared/components/SiteHeader";
 import "./aroma-ui.v4.css";
@@ -14,7 +12,7 @@ import "./aroma-ui.v4.css";
  * prototype's 404 page and global CSS.
  */
 export const metadata: Metadata = {
-  metadataBase: v1SiteUrl(),
+  metadataBase: siteUrl(),
   title: "Page not found | Aroma",
   robots: { index: false, follow: false },
 };

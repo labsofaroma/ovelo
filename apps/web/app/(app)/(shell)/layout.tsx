@@ -5,7 +5,7 @@ import { SiteHeader } from "@/features/shared/components/SiteHeader";
 import { assertV1Enabled } from "@/features/shared/v1";
 
 /**
- * v1 product pages under the temporary `/v1` prefix (M3 decision 1). The `(app)` group layout
+ * Product pages (M9: at the root; they lived under a temporary `/v1` prefix until then). The `(app)` group layout
  * above already loads the Tailwind v4 entry and the theme script.
  */
 export default function V1AppLayout({ children }: { children: ReactNode }) {

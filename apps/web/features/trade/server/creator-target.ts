@@ -5,7 +5,7 @@ import type { CreatorsDb } from "@/features/creators/db";
 
 /**
  * Creator baskets as trade targets (M5b B3). Curated baskets are lib/sdk slugs ("sol-core");
- * creator baskets are rows in Postgres keyed by UUID. One id space serves both `/v1/basket/[id]`
+ * creator baskets are rows in Postgres keyed by UUID. One id space serves both `/basket/[id]`
  * and `target.basketId`, and the UUID shape decides which source resolves it: a curated slug
  * can never be a UUID (lib/sdk ids are short words joined by hyphens).
  */

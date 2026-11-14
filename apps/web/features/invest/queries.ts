@@ -7,7 +7,7 @@ import type { Signer } from "../wallet/context";
 import { investApi } from "./api";
 import type { PreparedTransaction, SubmitResponse } from "./schema";
 
-/** TanStack Query hooks for /v1/invest. Server state only; the chain is the source of truth. */
+/** TanStack Query hooks for /invest. Server state only; the chain is the source of truth. */
 
 export const plansKey = (owner: string | null) =>
   ["invest", "plans", owner] as const;

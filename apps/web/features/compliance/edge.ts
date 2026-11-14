@@ -55,18 +55,22 @@ export function edgeRefusal(
   };
 }
 
-/** v1 page paths that render the browse-blocked notice instead when browse is `block`. */
-export const RESTRICTED_PAGE = "/v1/restricted";
+/** Pages render the browse-blocked notice instead when browse is `block` (APIs and files never). */
+export const RESTRICTED_PAGE = "/restricted";
 
 export function browseBlocked(
   pathname: string,
   headers: Headers,
   env: Env,
 ): boolean {
-  if (!/^\/v1(\/|$)/.test(pathname) || pathname === RESTRICTED_PAGE)
-    return false;
+  const page =
+    !pathname.startsWith("/api/") &&
+    !pathname.startsWith("/_next/") &&
+    pathname !== "/actions.json" &&
+    !/\.[a-z0-9]+$/i.test(pathname);
+  if (!page || pathname === RESTRICTED_PAGE) return false;
   // Legal pages stay readable for everyone.
-  if (/^\/v1\/(terms|privacy)$/.test(pathname)) return false;
+  if (/^\/(terms|privacy)$/.test(pathname)) return false;
   const policy = policyOrNull(env);
   if (!policy || policy.surfaces.browse === "allow") return false;
   return !surfaceAllowed(

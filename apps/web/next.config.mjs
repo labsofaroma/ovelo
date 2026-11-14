@@ -1,3 +1,5 @@
+import { LEGACY_REDIRECTS } from "./redirects.mjs";
+
 /** @type {import('next').NextConfig} */
 const config = {
   poweredByHeader: false,
@@ -19,9 +21,9 @@ const config = {
   // @aroma/ui ships TypeScript source and CSS Modules; Next compiles it with the app.
   transpilePackages: ["@aroma/ui", "@aroma/guard"],
   // Rewrite `import { X } from "@aroma/ui"` to X's own module, so a page ships only the primitives
-  // it renders, not the whole barrel (M3: /v1/markets first-load budget, REWRITE-PLAN §8).
-  // globalNotFound (M4): three root layouts ((prototype), (app), (marketing)) mean unmatched URLs
-  // need their own document, app/global-not-found.tsx.
+  // it renders, not the whole barrel (M3: /markets first-load budget, REWRITE-PLAN §8).
+  // globalNotFound (M4): two root layouts ((app), (marketing)) mean unmatched URLs need their own
+  // document, app/global-not-found.tsx.
   experimental: { optimizePackageImports: ["@aroma/ui"], globalNotFound: true },
   images: {
     formats: ["image/avif", "image/webp"],
@@ -30,6 +32,10 @@ const config = {
       { protocol: "https", hostname: "prestocks.com" },
       { protocol: "https", hostname: "backpack.exchange" },
     ],
+  },
+  // M9: old URLs (the /v1 prefix and the prototype paths that moved) answer 308 (redirects.mjs).
+  async redirects() {
+    return LEGACY_REDIRECTS;
   },
   async headers() {
     return [
@@ -45,31 +51,8 @@ const config = {
           },
         ],
       },
-      // The prototype's CSP, unchanged, for prototype paths ONLY (everything except /v1, /v1/*,
-      // /api/v1 and /api/v1/*). Those get the strict per-request nonce CSP from middleware.ts
-      // (M4). Tightening the prototype is M7 work (docs/REWRITE-PLAN.md, M4 status).
-      {
-        source: "/:path((?!v1(?:/|$)|api/v1(?:/|$)).*)",
-        headers: [
-          {
-            key: "Content-Security-Policy",
-            value: [
-              "default-src 'self'",
-              "base-uri 'self'",
-              "object-src 'none'",
-              "frame-ancestors 'none'",
-              "form-action 'self'",
-              "img-src 'self' data: blob: https:",
-              "font-src 'self' data:",
-              "style-src 'self' 'unsafe-inline'",
-              `script-src 'self' 'unsafe-inline' ${process.env.NODE_ENV === "development" ? "'unsafe-eval'" : ""} https://challenges.cloudflare.com https://va.vercel-scripts.com`,
-              "connect-src 'self' https: wss: http://localhost:* http://127.0.0.1:* ws://localhost:* ws://127.0.0.1:*",
-              "frame-src https://auth.privy.io https://*.privy.io https://*.walletconnect.com https://verify.walletconnect.org https://challenges.cloudflare.com",
-              "worker-src 'self' blob:",
-            ].join("; "),
-          },
-        ],
-      },
+      // Every page and API route gets the per-request nonce CSP from middleware.ts (M9: the
+      // prototype's own policy went with the prototype).
     ];
   },
   webpack: (config) => {

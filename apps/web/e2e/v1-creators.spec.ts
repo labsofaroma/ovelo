@@ -17,7 +17,7 @@ for (const theme of THEMES) {
     page,
   }) => {
     await useTheme(page, theme);
-    const response = await page.goto("/v1/basket/new");
+    const response = await page.goto("/basket/new");
     expect(response?.status()).toBe(200);
     await expectPageBasics(page, theme);
     await expectNoAxeViolations(page);
@@ -27,7 +27,7 @@ for (const theme of THEMES) {
     page,
   }) => {
     await useTheme(page, theme);
-    const response = await page.goto("/v1/creators");
+    const response = await page.goto("/creators");
     expect(response?.status()).toBe(200);
     await expectPageBasics(page, theme);
     const unavailable = page.getByText(
@@ -47,7 +47,7 @@ test("builder is dynamic: nonce CSP header, nonced scripts, and the island hydra
     if (/Content Security Policy|Refused to/i.test(message.text()))
       errors.push(message.text());
   });
-  const response = await page.goto("/v1/basket/new");
+  const response = await page.goto("/basket/new");
   const csp = response?.headers()["content-security-policy"] ?? "";
   const nonce = /'nonce-([A-Za-z0-9+/=_-]+)'/.exec(csp)?.[1];
   expect(nonce, "per-request nonce in script-src").toBeTruthy();
@@ -62,7 +62,7 @@ test("builder is dynamic: nonce CSP header, nonced scripts, and the island hydra
   expect(scripts.length).toBeGreaterThan(0);
   for (const value of scripts) expect(value).toBe(nonce);
   // A second request gets a different nonce.
-  const again = await page.request.get("/v1/basket/new");
+  const again = await page.request.get("/basket/new");
   expect(again.headers()["content-security-policy"]).not.toContain(
     `'nonce-${nonce}'`,
   );
@@ -78,7 +78,7 @@ test("builder: pick assets, weights reach 100%, preview renders, draft survives 
   page,
 }) => {
   await useTheme(page, "light");
-  await page.goto("/v1/basket/new");
+  await page.goto("/basket/new");
   await page.getByLabel("Basket name").fill("Smoke basket");
   await page.getByLabel("Ticker").fill("smoke");
   await expect(page.getByLabel("Ticker")).toHaveValue("SMOKE");
@@ -138,7 +138,7 @@ test("builder works when browser storage is blocked, and says the draft is not s
       },
     });
   });
-  const response = await page.goto("/v1/basket/new");
+  const response = await page.goto("/basket/new");
   expect(response?.status()).toBe(200);
   await expect(
     page.getByText(/This browser is not letting Aroma save/),

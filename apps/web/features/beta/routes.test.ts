@@ -368,7 +368,7 @@ describe("Solana Action with the gate on", () => {
     ).json();
     expect(meta.disabled).toBe(true);
     expect(meta.error.message).toMatch(/private beta/);
-    expect(meta.error.message).toContain(`${SITE}/v1/basket/test-basket`);
+    expect(meta.error.message).toContain(`${SITE}/basket/test-basket`);
     const signer = await makeSigner();
     const refused = await action.POST(
       json("/api/v1/actions/baskets/test-basket?amount=2", {
@@ -379,7 +379,7 @@ describe("Solana Action with the gate on", () => {
     expect(refused.status).toBe(403);
     const body = await refused.json();
     expect(body.code).toBe("BETA_ACCESS_REQUIRED");
-    expect(body.message).toContain(`${SITE}/v1/basket/test-basket`);
+    expect(body.message).toContain(`${SITE}/basket/test-basket`);
     expect(service.quoteTrade).not.toHaveBeenCalled();
   });
 });

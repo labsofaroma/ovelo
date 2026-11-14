@@ -28,7 +28,7 @@ import {
   registry,
 } from "./test/fixtures";
 
-/** `/v1/basket/[id]` and `/v1/basket/new?from=` loaders for creator baskets (M5b B2). */
+/** `/basket/[id]` and `/basket/new?from=` loaders for creator baskets (M5b B2). */
 const markets = vi.hoisted(() => ({ value: null as unknown }));
 vi.mock("@/features/markets/server", () => ({
   getMarkets: async () => markets.value,

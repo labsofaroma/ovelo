@@ -6,7 +6,7 @@
  * transaction, and the prototype's trading routes, which have no notion of beta access and are
  * therefore closed outright while the gate is on. Never gated: reads (GET/HEAD/OPTIONS), the
  * Action `/confirm` receipt callback, browsing, research, paper practice and the devnet
- * `/v1/invest` routes.
+ * `/invest` routes.
  *
  * The path is normalised first (percent-decoding, repeated and trailing slashes, dot segments,
  * case), so a spelling variant can never route to a handler without being matched here.

@@ -1,9 +1,7 @@
 import type { Metadata } from "next";
 import type { ReactNode } from "react";
-import {
-  RootDocument,
-  v1SiteUrl,
-} from "@/features/shared/components/RootDocument";
+import { RootDocument } from "@/features/shared/components/RootDocument";
+import { siteUrl } from "@/features/shared/site";
 import "../aroma-ui.v4.css";
 
 /**
@@ -13,7 +11,7 @@ import "../aroma-ui.v4.css";
  * Navigating between the prototype and v1 is a full page load. M7 makes this the only root.
  */
 export const metadata: Metadata = {
-  metadataBase: v1SiteUrl(),
+  metadataBase: siteUrl(),
   title: { default: "Aroma", template: "Aroma | %s" },
   description:
     "Research tokenized stocks, buy single names or baskets from your own wallet on Solana.",
