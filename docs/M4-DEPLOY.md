@@ -63,3 +63,61 @@ M4 never signed or sent a transaction with real funds. These were proven only on
 - Receipts in Neon. They were tested against PGlite with the real migrations; E2E used in-memory receipts.
 - Sentry breadcrumbs reaching a real Sentry project.
 - Lighthouse on a deployed host. The scores in the M4 status were measured on a local `next start`.
+
+## 5. M5: creators and Solana Actions
+
+_Added on `m5-creators` (M5b). Nothing here has been deployed either. Every buy test ran on the local fork; no transaction with real funds was signed or sent._
+
+### 5.1 Environment
+
+M5 adds **no new required variable**. It uses the M4 ones:
+
+| Variable | Used by M5 for | Notes |
+|---|---|---|
+| `DATABASE_URL` | creators, invites, baskets, `basket_versions`, receipts, creator stats | run `pnpm db:migrate` first: **migration `0002_basket_versions`** is new (insert-only history; triggers refuse UPDATE/DELETE/TRUNCATE) |
+| `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | single-use creator challenges (5-minute nonces, `GETDEL`), the new `creator` rate-limit bucket | without Redis, challenges cannot be issued (503); nothing falls back to memory outside a local-fork E2E |
+| `AROMA_SITE_URL` | the `Site:` line of every creator challenge, and the links inside Solana Actions | set it to the canonical HTTPS origin, or wallet prompts show the host the request came in on |
+| `AROMA_TRADE_SECRET` | the Action's `links.next` callback is bound by the same HMAC authorization as a trade | rotation (section 2) applies; a callback more than 15 minutes after its quote expired is refused |
+| `NEXT_PUBLIC_PRIVY_APP_ID` | optional; Privy embedded wallets sign creator challenges with `useSignMessage` | build-time |
+
+**Must NOT be set in production:** `AROMA_LOCAL_NEON_WS_PROXY` (local Docker Postgres only; it is ignored unless `DATABASE_URL` is loopback and `VERCEL_ENV` is not `production`, but keep it out of every deployed environment). `CREATOR_AUTH_SECRET` and `CREATOR_INVITE_CODES` are prototype-only; v1 needs neither (remove at M7).
+
+### 5.2 Rate limits (middleware)
+
+| Bucket | Paths | Limit per client IP |
+|---|---|---|
+| `creator` (new) | `POST /api/v1/creators/challenge`, `POST /api/v1/creators/invites/redeem` | 10 / min |
+| `write` | other creator mutations (publish/save, archive) | 20 / min |
+| `trade` | `/api/v1/trade/*` and **every non-GET `/api/v1/actions/*`** (quote, build and simulate; the confirm callback reads mainnet) | 10 / min |
+
+Behind a proxy other than Vercel, `AROMA_TRUST_PROXY=true` is required for per-client buckets; otherwise every client shares one bucket (M4 behaviour, by design: forwarding headers are not trusted).
+
+### 5.3 Creator onboarding (operator)
+
+1. Create an invite with the admin CLI, from `apps/web` with `DATABASE_URL` in the environment: `pnpm exec tsx scripts/create-invite.ts --days 7` (single-use by default; `--uses N` up to 100; expiry 1–90 days, always). The code is printed **once**; only its SHA-256 is stored.
+2. Send the code to the creator over a private channel. They open `/v1/basket/new`, connect a wallet that can **sign messages** (Wallet Standard `solana:signMessage`, a legacy adapter's `signMessage`, or a Privy embedded wallet), enter the code and a display name, and sign twice (redeem, then publish). Nothing is a transaction.
+3. A used, expired or unknown code gets one public message; the reason is in the logs (`invite:used`, `invite:expired`, …).
+
+### 5.4 Solana Actions
+
+- v1 Actions: `GET/POST /api/v1/actions/baskets/:id` (curated slug or published creator basket UUID) and `POST /api/v1/actions/baskets/:id/confirm` (the `links.next` callback that records the receipt after reading the transaction back from mainnet). All return 404 while `AROMA_V1_ENABLED` is off.
+- `actions.json` adds `{ "pathPattern": "/v1/basket/*", "apiPath": "/api/v1/actions/baskets/*" }` only while the flag is on; the prototype rules are unchanged.
+- A basket that needs more than one transaction is refused by the Action with a link to buy it on the site (no partial order; Blink clients sign one transaction).
+- Purchases through a Blink client that never calls `links.next` are **not** counted in creator stats (never guessed).
+- [ ] Check with a Blink client (for example the Dialect inspector) against a preview URL: metadata renders, the POST returns a transaction for your wallet, and **do not sign it** unless you intend a small real purchase with your own wallet.
+
+**M7 path switch.** At cutover: (1) move `app/api/v1/actions/baskets/[id]` to `app/api/actions/baskets/[id]` and delete the prototype `app/api/actions/buy-baskets` and `baskets` routes; (2) in `features/baskets/actions-json.ts` replace the prototype rules with `{ pathPattern: "/basket/*", apiPath: "/api/actions/baskets/*" }` and drop the `/v1` rule; (3) in `middleware.ts` drop the `v1Action` special case (the `/api/actions/` prefix covers it) and in `server/request-guard.ts` the `/api/v1/actions/` trade path; (4) `actionHref` in `features/baskets/actions.ts` loses `/v1`. Old Blink URLs under `/v1/basket/*` then 404; announce the new links before the switch.
+
+### 5.5 Before switching traffic (additions)
+
+- [ ] `pnpm db:migrate` applied `0002_basket_versions` (check `select count(*) from basket_versions` works, and an `UPDATE basket_versions …` is refused).
+- [ ] One invite created, redeemed and used to publish a basket on the preview, with an operator's own wallet; the basket appears in `/v1/creators` and at `/v1/basket/<id>`.
+- [ ] A response from `/v1/basket/new` carries the nonce CSP (same check as section 3); the builder hydrates (typing updates the preview).
+- [ ] `POST /api/v1/creators/challenge` from one IP answers 429 after 10 per minute (Upstash path).
+
+### 5.6 Not verified on real mainnet (M5)
+
+- A real wallet extension or Privy signing a creator challenge (E2E used the test-only bridge).
+- A Blink client fetching the v1 Action, signing and sending on mainnet, and calling the confirm callback.
+- Receipts and creator stats in Neon (verified on PGlite and on local Docker Postgres through the Neon driver).
+- Upstash for creator challenges and the `creator` bucket (E2E and tests used in-process stores).

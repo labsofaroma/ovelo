@@ -231,7 +231,7 @@ Each milestone is merged to `main` behind feature flags. The prototype stays dep
 | **M2** | Shared helpers cleanup (weeks 1–3, **implemented**, see status below) | in `apps/web/lib/sdk`: `core/`, `pyth/`, `jupiter/`, `markets/`, `research/`, `baskets/`, `paper/` ported with their tests | ≥ 85% coverage; one `@solana/kit` version; no `any` in public types |
 | **M3** | Read-only app (weeks 2–4, **implemented**, see status below) | marketing pages, markets, stock detail, baskets list and detail, watchlist, all as RSC with ISR | Lighthouse ≥ 90 on performance, SEO and accessibility; meets PRODUCT.md data rules (sources, timestamps, stale states) |
 | **M4** | Wallet + spot trading (weeks 3–6, **implemented**, see status below) | `features/wallet`, `features/trade` (single stock + basket, Jito bundles), receipts, portfolio | Playwright test buys on a mainnet fork or simulator; ported authorization tests pass; rate limits and CSP nonces live |
-| **M5** | Creators (weeks 5–6, **M5a implemented**, M5b pending, see status below) | publish flow, invites table, dashboard, Solana Actions | creator E2E; single-use invites enforced |
+| **M5** | Creators (weeks 5–6, **implemented**, see status below) | publish flow, invites table, dashboard, Solana Actions | creator E2E; single-use invites enforced |
 | **M6** | Recurring on the v1 contract (weeks 5–9, after your devnet deploy) | Codama client, `features/invest`, `apps/keeper` on QStash, `plans_index`, alerts, faucet | create → 3 installments → close + revoke works end-to-end on devnet; keeper alerting tested; skipped periods shown in the UI |
 | **M7** | Cutover (week 9–10) | point the production domain at v1, retire the prototype routes and the prototype devnet program | prototype plans closed or owners notified; old repo paths deleted; docs updated |
 | **M8** | Launch features | notifications, P&L, compliance gate, onboarding funnel ([ROADMAP.md](./ROADMAP.md) Phase 5) | |
@@ -474,7 +474,63 @@ Part B:
 - web3.js v1 server-side in `lib/sdk` and `server/rpc.ts` (AUDIT M-12 residue).
 - Custom and creator baskets (M5): the trade server supports catalog baskets only.
 
-### M5 status: M5a done, M5b pending (branch `m5-creators`, cut from `m3-read-only-app`; not pushed, not merged, nothing deployed)
+### M5 status: implemented on branch `m5-creators`, rebased onto `m4-wallet-trading` (not pushed, not merged, nothing deployed)
+
+Exit criteria (§7): **creator E2E**; **single-use invites enforced**. M5 was built in two parts: **M5a** (no wallet; below, as recorded before the rebase) on `m3-read-only-app`, and **M5b** after rebasing onto M4. Everything M5a needed from M4 is resolved ([M5-NEEDS-FROM-M4.md](./M5-NEEDS-FROM-M4.md)). The pre-rebase branch is kept locally as `m5a-backup`.
+
+**Step 0.** Baselines before the rebase, both green: `m5-creators` (typecheck, lint 0 errors / 143 warnings, format, 617 Vitest + 296 node:test with 280 pass / 16 skip, both builds) and `m4-wallet-trading` in a temporary worktree (lint 0 / 141, 672 Vitest + 289 node:test with 275 / 14, both builds). The rebase had one conflict, the expected one in this file (both status sections kept). After the rebase everything passed; typecheck first failed only on stale `.next/types` from the pre-rebase build (old `app/page.tsx` paths, which M4 moved to `(prototype)`) and passed once `.next` was regenerated. Nothing red came from either milestone.
+
+**Part A (fixes found in review)**
+- [x] A1: `/v1/basket/new` exported `revalidate = 120`; now `force-dynamic` (M4 decision 2). The build already listed it as dynamic, because the `(app)` root layout calls `headers()` for the nonce, so the export was a latent trap, not a live breakage. `features/shared/v1-dynamic.test.ts` fails any v1 page or route that exports `revalidate`, `generateStaticParams` or `force-static` (the OG image is the one allowed static route). A Playwright test checks the nonce CSP header, that every script carries that nonce, a fresh nonce per request, and that the builder hydrates.
+- [x] A2: the per-handler `assertSameOrigin` (with the `request.url` fallback M4 fixed in middleware) is deleted; middleware's allowlist applies. The challenge's `Site:` line uses middleware's `requestProtocol`/`requestHost`. `server/middleware.creators.test.ts`: cross-site POST/DELETE to each creator route is 403 `ORIGIN_FORBIDDEN`; same-site under `next start` (proxy and 127.0.0.1) is accepted.
+- [x] A3: handler limiters and the shared `"local"` key are deleted. New middleware `creator` bucket (10/min) for challenge issuance and invite redemption; other creator mutations stay in `write`. Tests in `server/request-guard.test.ts` and `server/middleware.creators.test.ts`.
+- [x] A4: every client call (`features/creators/api.ts`) sends JSON with `Content-Type: application/json`, DELETE included (tested). Middleware: 415 without it on each creator route, a maximal 20-allocation payload passes the 16 KiB cap (under 8 KiB), 413 above it. Handlers: the largest valid basket publishes; a 20-allocation body is a 400 schema refusal, not a 413.
+- [x] A5: the property tests run on `fast-check` (`fc.assert(fc.asyncProperty(...))`, same 7 properties, 200 runs each).
+- [x] A6: `check-client-secrets` passes on the rebased production builds (flag off and on): `OK … E2E markers forbidden`; no E2E wallet marker or configured secret in `.next/static`.
+
+**Part B (M5b)**
+- [x] B1: `Signer.signMessage(bytes)` in `features/wallet`: Wallet Standard `solana:signMessage`, a legacy adapter's `signMessage`, Privy `useSignMessage`; answers checked (64 bytes, and a wallet that signed different bytes is refused); wallets that cannot sign messages get a clear message. The E2E bridge signs messages in test builds only.
+- [x] B2: `PublishPanel` in the builder: connect → redeem the invite (first time) → challenge → sign → submit, with explicit steps and no optimistic state (TanStack Query mutations in `features/creators/queries.ts`). `?from=<id>` pre-fills a published basket to publish its next version. Creator baskets render at `/v1/basket/[id]` (UUID ids; curated slugs unchanged) with provenance, allocation, hypothetical performance, purchases and the M4 trade ticket; the creator wallet sees "Publish a new version" and "Archive" (confirmation dialog). Directory cards link there; nav has **Creators**.
+- [x] B3: the trade server quotes and sells PUBLISHED creator baskets with the curated rules (every constituent listed, verified and unpaused; weights from `basket_allocations`; simulation before return; no partial order); archived is refused. `receipts.basket_id` is set for creator baskets (curated stays null, M4 decision 6) and every leg carries `basketVersion`. Migration `0002_basket_versions`: insert-only history (triggers refuse UPDATE/DELETE/TRUNCATE), PGlite tests.
+- [x] B4: `features/baskets/actions.ts` on M4's `quoteTrade`: `GET/POST /api/v1/actions/baskets/:id` and a `links.next` confirm callback that records the receipt only after reading the transaction back from mainnet and matching the authorized message hash, fee payer, wallet and signature. Gated by the flag; `actions.json` adds `/v1/basket/*` only while it is on; middleware gives `/api/v1/actions/*` the Action CORS and chain headers and the trade bucket. The prototype `/api/actions/*` is untouched. M7 path switch: [M4-DEPLOY.md §5.4](./M4-DEPLOY.md).
+- [x] B5: `features/creators/stats.ts`: purchases (orders), unique buyers and raw volume per funding mint from **confirmed** receipts only, over 7 days, 30 days and all time, with source and as-of. No confirmed purchase is "No purchases yet", never 0; an outage is "unavailable".
+- [x] B6: `apps/web/scripts/local-db.sh` (`pnpm --filter @aroma/web db:local up|reset|down|env`): Docker Postgres 17 + Neon's wsproxy, migrations through the production driver. `server/db/local-neon.ts` applies only to a loopback `DATABASE_URL` with `AROMA_LOCAL_NEON_WS_PROXY`, never in Vercel production. No Neon account was created.
+- [x] B7: creator E2E on the local fork (below).
+
+**Evidence (all local; CI not verified, files only)**
+- `pnpm typecheck` clean; `pnpm lint` **0 errors** (141 warnings, all pre-existing prototype/`lib/sdk`); `pnpm format:check` clean.
+- `pnpm test`: web Vitest **959 passed, 1 skipped** (`invites.postgres.test.ts`, which needs the local Postgres and passes against it); node:test 289 (275 pass, 14 skipped: M4's M6/mobile skips, unchanged); `@aroma/ui` 210, config 2, keeper 1.
+- Coverage (all gates hold): overall lines 95.3%; `lib/sdk/*` 94.5–100%; `server/auth/creator.ts` **98.9%** lines / 92.3% branches; `features/creators/server.ts` **97.9%** / 94.7%; `stats.ts` 100% / 78.9%; `features/baskets/actions.ts` 95.5% / 90.9%. The creator and Actions server modules not named `server.ts` are now in the gated set.
+- `pnpm build:web` passes with the flag off (every new page and API route is 404, POST included; `/`, `/markets`, `/baskets`, `/basket/builder`, `/creators` are 200; `actions.json` lists only the prototype rules) and with `.env.example` and the flag on. Secret scan OK on both.
+- `next start` header dump on `/v1/basket/new`: `Content-Security-Policy … script-src 'self' 'nonce-…' 'strict-dynamic'` (no `'unsafe-inline'` scripts), `Cache-Control: private, no-cache, no-store`; all 35 scripts carry the response's nonce.
+- **Fork E2E** (`pnpm --filter @aroma/web e2e:fork`): **18/18**: M4's 9 unchanged, plus 9 creator tests: admin CLI invite → connect → redeem → build → sign → publish; a second basket in dark mode; directory and basket page with zero axe violations in light and dark (builder too); a buy through the trade ticket and one through the v1 Action, both confirmed on the fork; stats 2 purchases, 1 buyer, 4 USDC raw; refusals (used invite 403, replayed challenge 401, another creator publishing over the basket 403, cross-site publish 403 `ORIGIN_FORBIDDEN`); archive through the dialog, after which the quote is refused as archived and the Action is 404. **No mainnet transaction was sent**; every transaction went to the fork at 127.0.0.1.
+- **M3 smoke suite** (`pnpm --filter @aroma/web test:e2e`): **36/36** (M3's 28, M5a's 7, the A1 nonce/hydration test).
+- **Single-use invites:** exactly one of 25 parallel redemptions succeeds on PGlite and on **real Postgres with 25 connections** through the Neon driver; the E2E refuses a used invite.
+
+**M5b decisions**
+
+1. **One id space for baskets.** Curated baskets are lib/sdk slugs, creator baskets are UUIDs; `/v1/basket/[id]`, `target.basketId` and the Action use the shape to pick the source. No new request field, and a slug can never be a UUID.
+2. **Builder asset rule = trade rule.** Listed, verified, not halted (M4 decision 4); an observed token price is shown when there is one but no longer required (M5a decision 5 required it, which left 10–32 selectable assets on keyless Jupiter). Unpriced assets say "No token price observed".
+3. **Action receipts come from a `links.next` callback** bound by the HMAC authorization and verified against the transaction read back from mainnet (15-minute grace after quote expiry, idempotent). A Blink client that never calls back is not counted.
+4. **Usage windows use the order time** (`receipts.created_at`, the server clock), not the chain's block time, which can run ahead (seconds on mainnet, hours on a warped fork; found by the E2E).
+5. **Local-fork E2E uses in-process creator challenges** (no Redis there), with M4's exact gate (`features/trade/server/local.ts`), and writes receipts to the local Postgres when one is configured.
+6. **Volume is never converted or summed across mints**: one exact `numeric` sum of raw units per funding mint.
+
+**M5b deviations and findings**
+
+1. **Found and fixed by the new checks:** the usage-window bug (decision 4); `features/creators/server.ts` reached 410 lines in the `basket_versions` commit and was split in `3c092a9` (stats moved to `stats.ts`), three commits later; lint at the commits between would report it; a route test that imported `app/actions.json` pulled prototype `lib/server` into the strict tsconfig (rules moved to `features/baskets/actions-json.ts`); a server component importing a helper from a `"use client"` module; after an archive, `router.refresh()` once failed to re-render the server part (one fork run), so the page now reloads (the next fork run passed 18/18).
+2. **Found in the screenshots and fixed:** the v1 footer still said "Trading is not available in this preview" (false since M4); `/v1/creators` said purchases are not recorded; "Buy the … basket basket". The consent banner is fixed bottom-right and covered the publish panel in full-page captures; the E2E now dismisses it first (it is the existing root component, not changed).
+3. **Screenshots looked at** (`apps/web/test-results/m5-screens/`, regenerated by each fork run): builder empty, filled and publishing (signing spinner and "Confirm the basket in your wallet"), directory and creator basket page, in light and dark. During the runs 1,614 assets were selectable and 1,581 to 1,593 had no observed token price (keyless Jupiter, M3 finding 4); the pages say so.
+4. **Shared and prototype files edited:** `middleware.ts`, `server/request-guard.ts`, `server/auth/trade.ts` (optional `basketVersion` on the receipt), `server/db/{schema,client,migrate}.ts`, `features/trade/{schema.ts,server/*}`, `features/wallet/*`, `features/shared/{routes.ts,components/NavLinks.tsx,components/SiteFooter.tsx}`, `features/baskets/components/BasketHeader.tsx`, `app/(app)/v1/basket/[id]/{layout,page}.tsx`, `app/actions.json/route.ts` (prototype rules unchanged), `e2e/fork/run.ts`, `e2e/trade/wallet.ts`, `vitest.config.ts`, `apps/web/package.json` (one script, no dependency). No other prototype file, no `lib/sdk` file, and no lockfile change.
+
+**Open items**
+- CI: **not verified**, files only. Nothing pushed.
+- Real mainnet: a real wallet extension or Privy signing a creator challenge; a Blink client using the v1 Action and calling back; Upstash for challenges and the `creator` bucket; receipts and stats in Neon ([M4-DEPLOY.md §5.6](./M4-DEPLOY.md)).
+- `features/creators/http.ts` is 71% lines on its own (production wiring: Upstash store, market registry); the gated aggregate passes.
+- No creator reward mechanism (AUDIT §4.4); the prototype `/creators` and `CREATOR_*` env stay until M7.
+- Edit-and-republish is via `?from=` in the builder; there is no creator dashboard page listing one's own drafts and archived baskets yet.
+
+#### M5a (before the rebase; kept as recorded)
 
 M5 is split because M4 (wallet + spot trading) was in progress in parallel. **M5a** is everything that does not need a wallet. **M5b** (wallet-signed publish, Solana Actions, receipt-based stats, the creator E2E) starts after rebasing onto M4. What M5a needs from M4 is listed in [M5-NEEDS-FROM-M4.md](./M5-NEEDS-FROM-M4.md).
 
@@ -489,7 +545,7 @@ M5 is split because M4 (wallet + spot trading) was in progress in parallel. **M5
 - [x] `pnpm build:web` passes with the flag off (every new page and route is 404; the prototype `/`, `/markets`, `/baskets`, `/basket/builder` and `/creators` are 200) and with `.env.example` placeholders and the flag on.
 - [ ] **Open (M5b):** wallet-signed publish, update and archive in the UI; `features/baskets/actions.ts` (Solana Actions); receipt-based usage and volume; rate limits in M4's middleware; the creator E2E (mocked signer → redeem → build → publish → directory → buy via Action on a simulator).
 
-**Decisions**
+**M5a decisions**
 
 1. **Challenge state is a Redis nonce, not an HMAC token.** The prototype signed an HMAC token with `CREATOR_AUTH_SECRET` and claimed the nonce separately. In v1 the payload is stored under the nonce for 5 minutes and consumed with `GETDEL` *before* any check, so a challenge authorizes at most once even under concurrent requests. A refused attempt burns it too. No new secret is needed.
 2. **A fourth purpose, `redeem`.** The plan lists `publish | update | delete`, but redeeming an invite creates a `creators` row for a wallet. It must be signed (AGENTS.md rule 2), or anyone could register someone else's wallet.
@@ -500,7 +556,7 @@ M5 is split because M4 (wallet + spot trading) was in progress in parallel. **M5
 7. **Drafts on the server are private** (`GET` returns 404). The M5a builder keeps drafts in browser storage only.
 8. **Creator routes live in `features/creators/routes.ts`**, and there is no nav link yet, so that `features/shared` stays untouched while M4 is in flight.
 
-**Deviations and findings**
+**M5a deviations and findings**
 
 1. **`tsconfig.strict.json` did not cover `features/` or the v1 route groups.** TypeScript's `include` has no brace expansion, so `*.{ts,tsx}` matched nothing, and those files were strictly checked only when imported. Fixed (one pattern per extension); all 100 existing files pass. This is the one shared config edit.
 2. **Found by the gates and fixed before commit:** `next build` rejects `void` as a route handler's second parameter (the wrapper now has overloads). An unreachable Neon database rejected with a DOM `ErrorEvent` wrapped by Drizzle and surfaced as 500; it is now 503 `SERVICE_UNAVAILABLE`. On phones, the weight rows lost their symbol labels and the builder overflowed to 596 px; found in the screenshots, now 0 px of overflow at 390 px and 1440 px.
