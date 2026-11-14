@@ -105,6 +105,26 @@ export const ERROR_CODES = {
     message:
       "This basket needs several transactions and bundle submission is not available. No partial order was created.",
   },
+  // M7: recurring investing on devnet and the devnet faucet.
+  INVEST_UNAVAILABLE: {
+    status: 503,
+    message:
+      "Recurring investing is not available on devnet yet. Nothing was created.",
+  },
+  CAPTCHA_FAILED: {
+    status: 403,
+    message: "The human check did not pass. Complete it and try again.",
+  },
+  FAUCET_LIMITED: {
+    status: 429,
+    message:
+      "This wallet or network already claimed test tokens recently. Try again later.",
+  },
+  FAUCET_EXHAUSTED: {
+    status: 503,
+    message:
+      "The test faucet has handed out today's budget. Try again tomorrow (UTC).",
+  },
 } as const;
 
 export type ErrorCode = keyof typeof ERROR_CODES;

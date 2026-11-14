@@ -45,7 +45,7 @@ export function clientIp(headers: Headers, env: Env): string {
   );
 }
 
-export type Bucket = "read" | "write" | "trade" | "creator";
+export type Bucket = "read" | "write" | "trade" | "creator" | "faucet";
 
 const TRADE_PATHS = [
   /^\/api\/v1\/trade(\/|$)/,
@@ -56,7 +56,13 @@ const TRADE_PATHS = [
   // v1 Actions quote, build and simulate a basket order (M5b B4); the confirm callback reads
   // a transaction back from mainnet.
   /^\/api\/v1\/actions\//,
+  // M7: plan prepare (chain reads + simulation) and submit (send + confirm) on devnet.
+  /^\/api\/v1\/plans\/(prepare-create|submit)$/,
+  /^\/api\/v1\/plans\/[1-9A-HJ-NP-Za-km-z]{32,44}\/prepare-close$/,
 ];
+
+/** M7: the devnet faucet sends tokens; its own per-wallet, per-IP and daily limits apply too. */
+const FAUCET_PATHS = [/^\/api\/v1\/faucet$/];
 
 /**
  * Creator calls that are cheap to spam and costly to serve or guess at: issuing a challenge (a
@@ -72,6 +78,7 @@ const CREATOR_PATHS = [
 export function bucketFor(pathname: string, method: string): Bucket {
   if (method === "GET" || method === "HEAD") return "read";
   if (TRADE_PATHS.some((pattern) => pattern.test(pathname))) return "trade";
+  if (FAUCET_PATHS.some((pattern) => pattern.test(pathname))) return "faucet";
   return CREATOR_PATHS.some((pattern) => pattern.test(pathname))
     ? "creator"
     : "write";
@@ -83,6 +90,7 @@ export const LIMITS: Record<Bucket, { limit: number; windowSeconds: number }> =
     write: { limit: 20, windowSeconds: 60 },
     trade: { limit: 10, windowSeconds: 60 },
     creator: { limit: 10, windowSeconds: 60 },
+    faucet: { limit: 5, windowSeconds: 60 },
   };
 
 /** Request body cap, enforced on Content-Length before the route reads the stream. */

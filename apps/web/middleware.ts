@@ -59,6 +59,12 @@ function limiter(bucket: Bucket): RateLimiter {
       redis: getRedis(),
       required,
     }),
+    faucet: createRateLimiter({
+      name: "api:faucet",
+      ...LIMITS.faucet,
+      redis: getRedis(),
+      required,
+    }),
   };
   return limiters[bucket];
 }
