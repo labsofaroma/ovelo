@@ -14,11 +14,12 @@ const flag = (name: string) => {
   const i = args.indexOf(name);
   return i >= 0 ? args[i + 1] : undefined;
 };
-const cluster = flag("--cluster") as Cluster | undefined;
-if (cluster !== "devnet" && cluster !== "mainnet") {
+const clusterArg = flag("--cluster");
+if (clusterArg !== "devnet" && clusterArg !== "mainnet") {
   process.stderr.write("check:custody: --cluster devnet|mainnet is required\n");
   process.exit(2);
 }
+const cluster: Cluster = clusterArg;
 const url =
   flag("--rpc") ??
   (cluster === "devnet"
