@@ -216,6 +216,8 @@ describe("M4 additions", () => {
   });
 
   it("the loopback check uses the client's Host, not the server bind address", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("AROMA_SITE_URL", "https://www.example.com");
     vi.stubEnv("AROMA_TRUST_PROXY", "true");
     const viaProxy = await middleware(
       req("http://127.0.0.1:3300/", {
@@ -227,7 +229,9 @@ describe("M4 additions", () => {
     );
   });
 
-  it("one HSTS header with includeSubDomains and preload over HTTPS, none on loopback HTTP", async () => {
+  it("one HSTS header with includeSubDomains and preload over HTTPS in production, none on loopback HTTP", async () => {
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("AROMA_SITE_URL", "https://aroma.example");
     vi.stubEnv("AROMA_TRUST_PROXY", "true");
     const https = await middleware(
       req("http://aroma.example/v1", {
@@ -242,6 +246,21 @@ describe("M4 additions", () => {
         "strict-transport-security",
       ),
     ).toBeNull();
+  });
+
+  it("no HSTS on a Vercel preview or a development run, even over HTTPS (M9: production only)", async () => {
+    vi.stubEnv("AROMA_TRUST_PROXY", "true");
+    const https = () =>
+      middleware(
+        req("http://aroma-git-x.vercel.app/", {
+          headers: { "x-forwarded-proto": "https" },
+        }),
+      );
+    expect((await https()).headers.get("strict-transport-security")).toBeNull();
+    vi.stubEnv("NODE_ENV", "production");
+    vi.stubEnv("VERCEL_ENV", "preview");
+    vi.stubEnv("AROMA_SITE_URL", "https://aroma-git-x.vercel.app");
+    expect((await https()).headers.get("strict-transport-security")).toBeNull();
   });
 
   it("v1 rejections are { code, message }; the trade bucket answers 429 before the write bucket", async () => {

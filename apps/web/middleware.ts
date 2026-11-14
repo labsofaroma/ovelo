@@ -7,7 +7,7 @@ import {
 import { betaDeps } from "./features/beta/server/deps";
 import { betaEdgeRefusal } from "./features/beta/server/edge";
 import { normalizePath } from "./features/beta/paths";
-import { buildCsp, generateNonce, HSTS } from "./server/csp";
+import { buildCsp, generateNonce, HSTS, hstsApplies } from "./server/csp";
 import { testSwitchesAllowed } from "./server/env.schema";
 import { ERROR_CODES, type ErrorCode } from "./server/errors";
 import { goneResponse, isGonePath } from "./server/gone";
@@ -31,7 +31,7 @@ import {
 /**
  * Middleware (M4 B8; closes AUDIT H-4 and H-6 for v1, and the L-2 HSTS item).
  * - HTTPS: redirect to AROMA_SITE_URL in production, then ONE HSTS header with includeSubDomains
- *   and preload.
+ *   and preload, on production deployments only (M9: never on previews or local runs).
  * - Every route: a per-request nonce CSP (no 'unsafe-inline' scripts), the nonce passed to
  *   Next via the request headers.
  * - /api/*: origin allowlist, JSON-only mutations, body cap, and Upstash rate limits split into
@@ -130,7 +130,12 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   // M9: the removed prototype APIs are gone for good (410), whatever else the request carries.
   if (isGonePath(gatePath)) {
     const gone = goneResponse(gatePath);
-    if (!local && protocol === "https")
+    // Every response carries the policy (M9 Step 7), even a JSON one that runs no script.
+    gone.headers.set(
+      "Content-Security-Policy",
+      buildCsp({ nonce: generateNonce(), env, development }),
+    );
+    if (hstsApplies(env, local, protocol))
       gone.headers.set("Strict-Transport-Security", HSTS);
     return gone;
   }
@@ -259,7 +264,7 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   }
 
   response.headers.set("Content-Security-Policy", csp);
-  if (!local && protocol === "https")
+  if (hstsApplies(env, local, protocol))
     response.headers.set("Strict-Transport-Security", HSTS);
   return response;
 }

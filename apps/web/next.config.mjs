@@ -46,7 +46,9 @@ const config = {
           { key: "X-Frame-Options", value: "DENY" },
           {
             key: "Permissions-Policy",
-            value: "camera=(), microphone=(), geolocation=()",
+            // The camera is for nothing in Aroma; payments go through wallets, never the browser.
+            value:
+              "camera=(), microphone=(), geolocation=(), payment=(), usb=(), serial=(), bluetooth=(), browsing-topics=()",
           },
         ],
       },

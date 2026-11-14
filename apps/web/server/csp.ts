@@ -1,5 +1,5 @@
 /**
- * Content Security Policy for v1 (AUDIT H-6). Pure (no `server-only`, no I/O): the middleware
+ * Content Security Policy for every route (AUDIT H-6; M9: the prototype's policy is gone). Pure (no `server-only`, no I/O): the middleware
  * calls it per request with a fresh nonce, and tests call it directly.
  *
  * - script-src: 'self' + the per-request nonce + 'strict-dynamic'. No 'unsafe-inline'. Scripts
@@ -116,3 +116,18 @@ export function buildCsp(input: {
 
 /** One HSTS header, two years, subdomains, preload (AUDIT L-2). Only ever sent over HTTPS. */
 export const HSTS = "max-age=63072000; includeSubDomains; preload";
+
+/**
+ * HSTS with preload is a domain-wide, long-lived commitment: only a production deployment sends
+ * it (VERCEL_ENV=production, or a production build off Vercel), only over HTTPS, never on
+ * loopback. Vercel previews and local runs never do (M9).
+ */
+export function hstsApplies(
+  env: Env,
+  loopback: boolean,
+  protocol: string,
+): boolean {
+  if (loopback || protocol !== "https") return false;
+  if (env.VERCEL_ENV) return env.VERCEL_ENV === "production";
+  return env.NODE_ENV === "production";
+}

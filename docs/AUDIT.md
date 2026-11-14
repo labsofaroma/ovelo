@@ -6,6 +6,8 @@ Severity scale: **Critical** (funds, integrity or an outage) · **High** (securi
 
 > **Status update after M0 (branch `m0-foundation`, unpushed).** Items below carry a **Status** line: **Addressed**, **Partial** or **Pending (milestone)**. Items without one are unchanged. Baseline numbers in §0 are from the audit date; measured at M0: 1 `tsc` error (not 4) and 5 failing test files (not 8). See [REWRITE-PLAN.md §7](./REWRITE-PLAN.md#m0-status-implemented-on-branch-m0-foundation-not-pushed-not-merged-nothing-deployed).
 >
+> **M9 (Phase B, branch `phase-b-cutover`):** the prototype is deleted; the M9 lines below close H-4, H-5, H-6, M-5, M-6, M-9 and C-4 with their evidence, record M-12 as partial by decision and L-3 as the owner's license choice.
+>
 > **Milestones were renumbered in M6** (REWRITE-PLAN §7): recurring investing is now **M7**, the Jupiter mainnet contract path **M8**, cutover **M9**, audit and mainnet beta **M10**, launch features **M11**. Status lines below use the new numbers.
 
 ---
@@ -76,12 +78,16 @@ The SDK still ships Raydium CPMM helpers (`DEVNET_RAYDIUM_CPMM_PROGRAM`, `decode
 
 **Status: Addressed in code (M4); Upstash path not verified against a live Redis.** `middleware.ts` now runs on the Node.js runtime and uses `server/ratelimit.ts` (Upstash sliding window, shared across instances and regions) with separate **read** (120/min), **write** (20/min) and **trade** (10/min) buckets per client IP, for prototype and v1 API routes alike. **M5** adds a **creator** bucket (10/min) for challenge issuance and invite redemption, puts every non-GET `/api/v1/actions/*` in the trade bucket, and removes the creator handlers' own limiters (which shared one `"local"` bucket without a trusted proxy). When Redis is unreachable it degrades to a bounded per-process limiter that evicts the oldest key and never rejects every new identifier (tested: `server/ratelimit.test.ts`, `server/middleware.test.ts`). With v1 on in production, a missing Redis fails closed. The old `createRequestLimiter` remains in `lib/server/request-policy.ts` only for its own legacy test, and is deleted at M9. Not verified: 429s from a real Upstash instance (no credentials in M4; the local fallback produced the 429s in tests and E2E).
 
+**M9 (Phase B, `phase-b-cutover`): Closed in code.** The legacy per-instance limiter went with the prototype (`lib/server/request-policy.ts` deleted with `lib/server/**`); every remaining API is `/api/v1` behind the Upstash buckets, and Redis-backed limits are required outside local test runs (`middleware.ts`, `required = !testSwitchesAllowed`). Evidence: `server/route-gates.test.ts` pins the bucket of every method of every route. Not verified against a live Upstash (owner, P3).
+
 ### H-5 (High): the devnet faucet can be drained
 **Milestone: M7.**
 `/api/faucet` has no authentication or CAPTCHA. Its only guard is a **15-second, in-memory, per-wallet cooldown** (`lib/server/faucet.ts`). Generating fresh wallets bypasses it completely, and each claim sends up to 1,000 KUSD + 0.1 SOL. The SOL top-up also swallows every error silently.
 - Fix: cooldowns stored in Redis by wallet **and** IP, the Cloudflare Turnstile you already allow in the CSP, a daily budget, and a lower SOL top-up.
 
 **Status: Addressed for v1 on devnet (M7); prototype `/api/faucet` unchanged until M9.** `POST /api/v1/faucet` needs a wallet-signed claim (AGENTS.md rule 2) and a Cloudflare Turnstile token verified server-side; Redis limits one claim per wallet per 24 hours, three per IP per UTC day, and a global daily budget, taken atomically and released when a send fails. It mints a fixed 100 test USD with a devnet-only faucet key that holds the test USD mint authority (never the deployer) and tops up 0.05 SOL only for a low wallet. Every error is logged and returned as `{ code, message }`. Tested in `features/invest/server/faucet.test.ts` and the local-validator E2E (a second claim is refused). Not verified: real Turnstile keys and Upstash on devnet (owner).
+
+**M9 (Phase B): Closed.** The prototype faucet is gone: `/api/faucet` answers 410 GONE (`server/gone.ts`, `server/gone.test.ts`); `POST /api/v1/faucet` (Turnstile, wallet-signed, Redis limits, daily budget) is the only faucet. Evidence: the invest E2E (14/14) on the new paths.
 
 ### H-6 (High): permissive CSP
 `script-src 'self' 'unsafe-inline'` cancels most XSS protection on a page that signs wallet transactions. `connect-src https: wss:` allows exfiltration to any host. `img-src https:` is broad. Move to nonce-based scripts (Next.js middleware nonces) and an explicit list of connect hosts (RPC, Jupiter, Pyth, Privy, Jito, Upstash is server-side only).
@@ -90,10 +96,14 @@ The SDK still ships Raydium CPMM helpers (`DEVNET_RAYDIUM_CPMM_PROGRAM`, `decode
 - `/v1/*` and `/api/v1/*` get a per-request nonce CSP from middleware (`server/csp.ts`): `script-src 'self' 'nonce-…' 'strict-dynamic'` with no `'unsafe-inline'`, an explicit `connect-src` derived from configuration (browser RPC and its websocket, Sentry ingest, Plausible) plus the fixed client endpoints (Jupiter, Hermes, Jito, WalletConnect, Turnstile; **Phase A:** Privy removed from v1 `connect-src` and `frame-src`, wallet-only login, pinned by `server/csp.wallet-only.test.ts`), no wildcard schemes, and an `img-src` limited to the issuer logo hosts. All v1 pages trade, and they have their own root layouts, so no prototype script runs there.
 - **Still open, M9:** prototype routes keep the old policy. `next.config.mjs` scopes it to non-v1 paths. To tighten them: render the prototype root through a nonce-aware layout (its inline theme script needs the nonce), list the hosts the prototype calls from the browser (its own `/api`, Privy, WalletConnect, Vercel scripts), and drop `'unsafe-inline'`. That is easiest once the prototype pages are deleted at M9.
 
+**M9 (Phase B): Closed.** The prototype's CSP is deleted from `next.config.mjs`; middleware sends the per-request nonce CSP (`script-src 'self' 'nonce-…' 'strict-dynamic'`, no `'unsafe-inline'`, `frame-ancestors 'none'`, explicit `connect-src`) on every route, including 404 and 410 answers. HSTS with `includeSubDomains; preload` on production deployments only; `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy` and `X-Frame-Options` on every path. Evidence: `server/security-headers.test.ts` (page, dynamic page, API, Action, `actions.json`, 410, 404) and the `next start` header check in the Phase B final gate.
+
 ### M-5 (Medium): internal error messages reach clients
 19 API handlers return `error.message` directly (for example `faucet`, `recurring/collect`). RPC errors, keypair-parse failures and Redis errors can leak infrastructure details. Map errors to user-safe codes and log the details on the server.
 
 **Status: Partial (M4 covered the trade and portfolio routes).** Every `/api/v1` handler (`health`, `revalidate`, `trade/quote`, `trade/submit`, `trade/:id`, `portfolio/:wallet`, `prices`) returns only `{ code, message }` through `mapError`. Upstream, RPC and simulation details go to logs, and the user sees fixed, coded messages (`server/errors.ts` gained trade codes; route-contract tests in `features/trade/routes.test.ts` check that an internal error text never reaches the body). The prototype handlers that M4 replaced (`trade/order`, `trade/execute`, `transaction/execute`, `buy-basket`, `bundles/execute`, `bundles/status`, `portfolio`) still serve the prototype until M9 and still return `error.message`. **M5:** the v1 creator routes (`/api/v1/creators/*`) and Actions (`/api/v1/actions/*`) return only `{ code, message }` too, including Action errors (with the Actions headers). The prototype `/api/creators/*` and `/api/actions/*` still return `error.message` until M9; recurring and faucet move in M7.
+
+**M9 (Phase B): Closed.** The prototype handlers that returned `error.message` are deleted (410 GONE); every remaining handler answers errors as `{ code, message }` only. Evidence: `server/route-contract.test.ts` walks every `app/api/v1/**/route.ts`, drives each method to an error with the network disabled, and requires exactly `{ code, message }` (two strings, no stack or upstream text); the health report keeps its documented facts-only shape.
 
 ### M-6 (Medium): a requirement on a missing `Origin` header
 `allowedOrigin` accepts requests that have no `Origin`, because native apps omit it. That is fine for unauthenticated reads. Make sure every state-changing route also needs a signature or HMAC token, as trade, creator and collector routes already do. **`/api/faucet` does not.**
@@ -101,6 +111,8 @@ The SDK still ships Raydium CPMM helpers (`DEVNET_RAYDIUM_CPMM_PROGRAM`, `decode
 **Status: Addressed for `/api/v1` (M4); `/api/faucet` still pending (M7).** Every state-changing `/api/v1` route rejects a foreign `Origin` twice: once in middleware (allowlist) and once in the handler (`assertSameOrigin` in `server/http.ts`). `POST /api/v1/trade/submit` also needs the HMAC trade authorization and a valid wallet signature on every authorized message. `POST /api/v1/trade/quote` changes no state and signs nothing. `POST /api/v1/revalidate` needs its bearer secret. A request with no `Origin` is accepted only because of those credentials. Tested in `features/trade/routes.test.ts` and `server/middleware.test.ts`.
 
 **M5:** the creator routes rely on middleware's allowlist alone (their own `assertSameOrigin` fell back to `request.url`, which `next start` rewrites to localhost, the bug M4 fixed in middleware; deleted). Every creator mutation also needs a single-use challenge signed by the wallet (`server/auth/creator.ts`); the v1 Action's receipt callback needs the HMAC trade authorization and is checked against the transaction read back from mainnet. Action paths are deliberately open to any origin (they only prepare owner-signed transactions), like the prototype's. Tested in `server/middleware.creators.test.ts` and `server/middleware.actions.test.ts`.
+
+**M9 (Phase B): Closed.** `/api/faucet` is gone (410). Every state-changing `/api/v1` route needs a signature, an HMAC authorization or a bearer secret, plus the middleware origin allowlist (`server/route-gates.test.ts`, `server/middleware*.test.ts`).
 
 ### M-7 (Medium): no real health check or observability
 `/api/health` returns a hard-coded `ok`. There is no RPC, Redis or Jupiter probe, no structured logging, no Sentry or OpenTelemetry, and no alerting on collector failures.
@@ -114,6 +126,8 @@ The SDK still ships Raydium CPMM helpers (`DEVNET_RAYDIUM_CPMM_PROGRAM`, `decode
 `disk-cache.ts` writes to `.aroma-cache` or `/tmp`. On Vercel this is per instance and temporary, so cache hit rates are unpredictable. Use Redis or the Next Data Cache for everything.
 
 **Status: Partial (M3).** Every v1 read path (`apps/web/features/*/server.ts`) uses the Next Data Cache (`unstable_cache` with tags `v1:markets` / `v1:research[:mint]`, refreshed by `revalidate` and by `POST /api/v1/revalidate`) and never imports `disk-cache.ts`. An outage is never cached, so the last good snapshot keeps serving with its original timestamp and is labelled stale. The prototype's `lib/server/disk-cache.ts` still serves the prototype routes and is deleted at M9 with them; `server/redis.ts` remains available for M4 caches that need cross-instance locks.
+
+**M9 (Phase B): Closed.** `lib/server/disk-cache.ts` is deleted with the prototype; no code writes to disk for caching (`git grep -n disk-cache -- apps` finds only a comment in `features/markets/server.ts` saying there is none). Reads use the Next Data Cache; locks and idempotency use Redis.
 
 ### L-2 (Low)
 - HSTS is set twice and has no `includeSubDomains; preload`.
@@ -157,6 +171,8 @@ The GitHub Action runs every 10 minutes, fails at `scripts/bot.ts` and burns Act
 
 **Status: Addressed for v1 on devnet in code (M7); real devnet run pending the owner's deploy and accounts.** The broken `recurring-bot.yml` workflow is deleted. `apps/keeper` is a QStash-triggered service (signature verified with the current and next keys) that executes due v1 plans oldest period first, posts fresh, fully verified Pyth prices, and records skipped periods instead of losing them silently; leases, retries with backoff, a dead-letter list with a CLI, and de-duplicated alerts (failed, skipped, low balance, Hermes, RPC, dead-letter growth) to a Slack or Discord webhook. Verified on a local validator (`pnpm --filter @aroma/web e2e:invest`); see [keeper-operations.md](./keeper-operations.md). The prototype collector route still serves the prototype until M9.
 
+**M9 (Phase B): Closed for the prototype collector.** The prototype collector (`/api/recurring/collect`, `lib/server/recurring-*`) is deleted; its paths answer 410. `apps/keeper` is the only executor (devnet today; mainnet keeper at M12).
+
 ### H-7 (High): no version control history
 Nothing is committed. There is no rollback, no review and no blame. Make a first commit now.
 
@@ -182,11 +198,15 @@ _Fixed:_ three web tests imported `packages/sdk/node_modules/@solana/kit-v1`. Th
 - **One `@solana/kit`:** `apps/web` depends on `@solana/kit` 7.1.1 only, enforced by `lib/sdk/sdk-rules.test.ts`. The lockfile still carries 5.5.1 (transitive, via Privy → `x402` / `@coinbase/cdp-sdk`) and 6.10.0 (dev only, via `litesvm` in `packages/anchor`). Neither is imported by app code. `kit-v1` (8.3.0) is gone.
 - **web3.js v1:** in the v1 client bundle it is confined to the wallet bridge (`features/wallet`, M4). It is **not** yet gone elsewhere. Server-side it is still used by `lib/sdk` (`baskets/mainnet.ts`, `baskets/bundle.ts`, `jupiter/simulate.ts`, `jupiter/route-plan.ts`, `core/mint-precision.ts`, `pyth/solana.ts`, `markets/sources/backpack.ts`, plus the prototype-only `guard/*` and `subscriptions/*`) and by `server/rpc.ts` (`Connection`). The prototype uses it in about 40 files. Moving those server modules to kit is open work; the prototype files go at M9.
 
+**M9 (Phase B): Partial, by decision.** `@solana/web3.js` v1 stays in the trade server (`features/trade/server`, `lib/sdk/{baskets,jupiter,core,pyth,markets}`) and in the wallet bridge (`features/wallet`): the wallet adapter needs it, and rewriting the money path before a public launch is the wrong risk. Removed: the prototype's ~40 web3.js files, `@solana/kit` 5.5.1 (Privy's transitive copy) and 6.10.0 (`packages/anchor`'s `litesvm`) with their packages. One `@solana/kit` (7.1.1) in app code (`lib/sdk/sdk-rules.test.ts`). **Post-launch item:** migrate the trade server and `lib/sdk` to kit.
+
 ### L-3 (Low)
 - `.gitignore` hides many internal docs (`docs/audits/`, `docs/deployment.md`, `TODO.md`). Fine, but contributors then lack them, so keep public summaries.
 - No `LICENSE`, `CODEOWNERS`, PR template, Dependabot/Renovate or `engines` field.
 
 **Status: Partial.** Added: `CODEOWNERS`, PR template, Dependabot config and the `engines` field. `LICENSE` is a **placeholder**; the license is still to be chosen. Hidden internal docs: unchanged.
+
+**M9 (Phase B): Partial (owner).** `LICENSE` is still a placeholder: choosing the license is the owner's decision (listed in the Phase B open items). Everything else in L-3 is addressed.
 
 ---
 
