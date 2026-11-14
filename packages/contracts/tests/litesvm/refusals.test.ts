@@ -5,8 +5,8 @@ import {
   type Address,
   type Instruction,
 } from "@solana/kit";
-import * as v1 from "../../../../apps/web/lib/sdk/guard/v1";
-import { getCreatePlanInstructionDataEncoder } from "../../../../apps/web/lib/sdk/guard/v1/generated";
+import * as v1 from "@aroma/guard";
+import { getCreatePlanInstructionDataEncoder } from "@aroma/guard/generated";
 import { ataIx, errorCode, World } from "./world";
 
 /** Index of the first remaining account in `execute_installment` (13 fixed accounts). */

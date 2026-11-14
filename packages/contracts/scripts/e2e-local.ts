@@ -19,7 +19,7 @@ import {
   type Address,
   type Instruction,
 } from "@solana/kit";
-import * as v1 from "../../../apps/web/lib/sdk/guard/v1";
+import * as v1 from "@aroma/guard";
 import { assertLocalnet } from "./lib/cluster";
 import { CONTRACTS_ROOT, ensureKeypair } from "./lib/keys";
 import type { Connection } from "./lib/send";

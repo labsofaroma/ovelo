@@ -87,7 +87,7 @@ Must print `"passed": true` and `"transactionsSubmitted": 0`: upgrade authority 
 3. The JSON printed by steps 5, 6 and 7.
 4. `packages/contracts/.devnet/state.json`. It holds public addresses only; check that no entry has `"secretKey"`. A `secretKey` stays only for a mint whose creation did not finish; rerun step 6 instead of pasting it.
 
-Then the agent re-runs the audit read-only, fixes anything it flags in code (not on-chain), records the deployment in `apps/web/lib/sdk/guard/v1/deployments.ts` and the docs, re-runs the drift and build checks, and marks M6 done.
+Then the agent re-runs the audit read-only, fixes anything it flags in code (not on-chain), records the deployment in `packages/guard/src/v1/deployments.ts` and the docs, re-runs the drift and build checks, and marks M6 done.
 
 ## Never
 

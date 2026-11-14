@@ -1,7 +1,7 @@
 /** Helpers for scripts/e2e-local.ts: local config, genesis price accounts, clock, assertions. */
 import crypto from "node:crypto";
 import type { Address } from "@solana/kit";
-import * as v1 from "../../../../apps/web/lib/sdk/guard/v1";
+import * as v1 from "@aroma/guard";
 
 const DEFAULT = "11111111111111111111111111111111" as Address;
 const four = (first?: Address) => [first ?? DEFAULT, DEFAULT, DEFAULT, DEFAULT];

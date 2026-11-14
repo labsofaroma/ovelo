@@ -2,7 +2,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { createKeyPairSignerFromBytes, type Address } from "@solana/kit";
-import * as v1 from "../../../../apps/web/lib/sdk/guard/v1";
+import * as v1 from "@aroma/guard";
 import { GENESIS } from "./cluster";
 import { assertIgnored, CONTRACTS_ROOT, newExportableKeypair } from "./keys";
 import type { ProvisionDeps, ProvisionState } from "./provision";

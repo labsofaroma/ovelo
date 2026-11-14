@@ -9,12 +9,14 @@ on:
       - "packages/anchor/**"
       - "packages/contracts/**"
       - "apps/web/lib/sdk/guard/**"
+      - "packages/guard/**"
       - ".github/workflows/contracts.yml"
   pull_request:
     paths:
       - "packages/anchor/**"
       - "packages/contracts/**"
       - "apps/web/lib/sdk/guard/**"
+      - "packages/guard/**"
       - ".github/workflows/contracts.yml"
 
 concurrency:

@@ -7,7 +7,7 @@
  * with the REAL Pyth feed id of the underlying equity. Idempotent and resumable (.devnet/state.json).
  */
 import type { Address } from "@solana/kit";
-import * as v1 from "../../../apps/web/lib/sdk/guard/v1";
+import * as v1 from "@aroma/guard";
 import { DEFAULT_DEPLOYER, DEFAULT_DEVNET_RPC, parseArgs } from "./lib/args";
 import { feedBytes, selectAssets } from "./lib/assets";
 import { assertDevnet } from "./lib/cluster";

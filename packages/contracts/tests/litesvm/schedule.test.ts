@@ -1,6 +1,6 @@
 /** Schedule (replay, catch-up, skip), pauses, and close + revoke in one transaction. */
 import { describe, expect, test } from "vitest";
-import * as v1 from "../../../../apps/web/lib/sdk/guard/v1";
+import * as v1 from "@aroma/guard";
 import { errorCode, World } from "./world";
 
 const DAY = 86_400n;
@@ -116,7 +116,7 @@ describe("pauses", () => {
     const w = await World.create({ stocks: 1 });
     const plan = await w.createPlan();
     const { getPausePlanInstruction, getResumePlanInstruction } =
-      await import("../../../../apps/web/lib/sdk/guard/v1/generated");
+      await import("@aroma/guard/generated");
     await w.env.send(w.owner, [
       getPausePlanInstruction({ owner: w.owner, plan }),
     ]);
@@ -145,8 +145,7 @@ describe("pauses", () => {
     const w = await World.create({ stocks: 2 });
     const plan = await w.createPlan({ amount: 50_000_000n });
     expect((await w.execute(plan, 0, 0b01)).ok).toBe(true); // leg 1 still in staging
-    const { getPausePlanInstruction } =
-      await import("../../../../apps/web/lib/sdk/guard/v1/generated");
+    const { getPausePlanInstruction } = await import("@aroma/guard/generated");
     await w.env.send(w.owner, [
       getPausePlanInstruction({ owner: w.owner, plan }),
     ]);

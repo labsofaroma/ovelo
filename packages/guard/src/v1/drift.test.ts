@@ -3,7 +3,7 @@ import os from "node:os";
 import path from "node:path";
 import { describe, expect, test } from "vitest";
 // @ts-expect-error -- plain ESM script without type declarations
-import { COMMITTED_IDL, generatedDrift } from "./sync-idl.mjs";
+import { COMMITTED_IDL, generatedDrift } from "../../scripts/codama.mjs";
 
 /** AGENTS.md rule 6: the generated client must be exactly what Codama renders from the IDL. */
 describe("Codama drift", () => {

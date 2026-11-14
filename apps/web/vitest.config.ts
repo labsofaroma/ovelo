@@ -44,8 +44,6 @@ export default defineConfig({
         "lib/sdk/baskets/**/*.ts",
         "lib/sdk/paper/**/*.ts",
         "lib/sdk/trade/**/*.ts",
-        // M6: hand-written v1 contract client (generated/ is excluded below).
-        "lib/sdk/guard/v1/**/*.ts",
         // M4 gate (REWRITE-PLAN §8): server infrastructure and feature server modules, 80%.
         "server/**/*.ts",
         "features/*/server.ts",
@@ -58,8 +56,6 @@ export default defineConfig({
         "**/*.test.ts",
         "**/index.ts",
         "**/idl/**",
-        "lib/sdk/guard/v1/generated/**",
-        "lib/sdk/guard/v1/test/**",
         "**/test-fixtures.ts",
         "**/types.ts",
         "**/test-*.ts",

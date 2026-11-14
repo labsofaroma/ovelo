@@ -20,7 +20,7 @@ import {
   createPauseInstruction,
   createUpdateTransferHookInstruction,
 } from "@solana/spl-token";
-import * as v1 from "../../../../apps/web/lib/sdk/guard/v1";
+import * as v1 from "@aroma/guard";
 import { feed, kitIx, pk } from "./harness";
 import { ataIx, DEFAULT, errorCode, World } from "./world";
 

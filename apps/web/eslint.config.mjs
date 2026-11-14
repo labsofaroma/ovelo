@@ -15,15 +15,13 @@ export default [
       "middleware.ts",
       "app/**",
     ],
-    // M6: the hand-written v1 contract client is new code (errors). Its Codama output is
-    // generated (marked GENERATED in every file) and not linted.
+    // The v1 client moved to `packages/guard` (M7); the re-export here is new code (errors).
     legacyExclude: [
       "app/(app)/**",
       "app/(marketing)/**",
       "app/api/v1/**",
       "lib/sdk/guard/v1/**",
     ],
-    ignores: ["lib/sdk/guard/v1/generated/**"],
   }),
   {
     // Next.js loads PostCSS plugins with require(), so this wrapper must be CommonJS.

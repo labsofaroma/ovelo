@@ -6,11 +6,8 @@ import {
   type Address,
   type ReadonlyUint8Array,
 } from "@solana/kit";
-import * as v1 from "../../../apps/web/lib/sdk/guard/v1";
-import {
-  getAssetEncoder,
-  getConfigEncoder,
-} from "../../../apps/web/lib/sdk/guard/v1/generated";
+import * as v1 from "@aroma/guard";
+import { getAssetEncoder, getConfigEncoder } from "@aroma/guard/generated";
 import { auditDevnet } from "./lib/audit";
 import { GENESIS } from "./lib/cluster";
 import type { JsonRpc } from "./lib/jsonrpc";

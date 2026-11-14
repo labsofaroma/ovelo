@@ -9,7 +9,7 @@
  * Idempotent: an existing config is compared with the expected values and never overwritten.
  */
 import path from "node:path";
-import * as v1 from "../../../apps/web/lib/sdk/guard/v1";
+import * as v1 from "@aroma/guard";
 import { DEFAULT_DEPLOYER, DEFAULT_DEVNET_RPC, parseArgs } from "./lib/args";
 import { assertDevnet } from "./lib/cluster";
 import { devnetConfig } from "./lib/devnet-config";

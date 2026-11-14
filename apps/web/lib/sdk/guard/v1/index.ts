@@ -1,26 +1,5 @@
-/** Aroma Guard v1 client: generated instructions and accounts plus hand-written helpers. */
-export * from "./constants";
-export * from "./pdas";
-export * from "./schedule";
-export * from "./decoders";
-export * from "./builders";
-export * from "./admin";
-export * from "./execute";
-export * from "./deployments";
-export {
-  AROMA_GUARD_PROGRAM_ADDRESS,
-  AromaGuardAccount,
-  AromaGuardInstruction,
-  getAromaGuardErrorMessage,
-  isAromaGuardError,
-  getAssetDiscriminatorBytes,
-  getConfigParamsEncoder,
-  getOutputEncoder,
-  type Asset,
-  type Config,
-  type ConfigParams,
-  type ConfigParamsArgs,
-  type Output,
-  type OutputArgs,
-  type Plan,
-} from "./generated";
+/**
+ * The Aroma Guard v1 client lives in the `@aroma/guard` workspace package (shared with
+ * `apps/keeper`). This re-export keeps the web app's `@/lib/sdk/guard/v1` import path.
+ */
+export * from "@aroma/guard";

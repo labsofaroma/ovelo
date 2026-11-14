@@ -1,22 +1,23 @@
 #!/usr/bin/env node
 // Keeps the Rust program, the committed IDL and the generated client in sync (AGENTS.md rule 6).
-//   (no flag)          copy the built IDL to apps/web and regenerate the client
+//   (no flag)          copy the built IDL to packages/guard and regenerate the client
 //   --check            fail if the built IDL or the generated client differ from what is committed
 //   --check-generated  fail if the generated client differs from a fresh render of the committed
 //                      IDL (no build needed; run by `pnpm test`)
 // Never loads a wallet and never deploys.
 import fs from "node:fs";
-import os from "node:os";
 import path from "node:path";
-import { renderClient, diffDirs } from "./codama.mjs";
+import {
+  COMMITTED_IDL,
+  GENERATED,
+  generatedDrift,
+  renderClient,
+} from "../../guard/scripts/codama.mjs";
 
 const root = path.resolve(
   path.dirname(new URL(import.meta.url).pathname),
   "..",
 );
-const v1 = path.resolve(root, "../../apps/web/lib/sdk/guard/v1");
-export const COMMITTED_IDL = path.join(v1, "idl", "aroma_guard.json");
-export const GENERATED = path.join(v1, "generated");
 const BUILT_IDL = path.join(root, "target/build/mainnet/aroma_guard.json");
 const BUILT_IDL_DEVNET = path.join(
   root,
@@ -24,19 +25,6 @@ const BUILT_IDL_DEVNET = path.join(
 );
 
 const canonical = (json) => JSON.stringify(json, null, 2) + "\n";
-
-export async function generatedDrift(
-  idlPath = COMMITTED_IDL,
-  generatedDir = GENERATED,
-) {
-  const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "aroma-drift-"));
-  try {
-    await renderClient(JSON.parse(fs.readFileSync(idlPath, "utf8")), tmp);
-    return diffDirs(tmp, generatedDir);
-  } finally {
-    fs.rmSync(tmp, { recursive: true, force: true });
-  }
-}
 
 function builtIdl() {
   for (const file of [BUILT_IDL, BUILT_IDL_DEVNET]) {

@@ -1,6 +1,6 @@
 /** Aroma Guard v1 devnet config from the M6 product decisions (REWRITE-PLAN M6 status). */
 import type { Address } from "@solana/kit";
-import type * as v1 from "../../../../apps/web/lib/sdk/guard/v1";
+import type * as v1 from "@aroma/guard";
 
 const NONE = "11111111111111111111111111111111" as Address;
 const four = (first?: Address) => [first ?? NONE, NONE, NONE, NONE];

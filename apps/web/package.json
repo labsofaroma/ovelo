@@ -20,6 +20,7 @@
     "e2e:fork": "tsx e2e/fork/run.ts"
   },
   "dependencies": {
+    "@aroma/guard": "workspace:*",
     "@aroma/ui": "workspace:*",
     "@base-ui/react": "1.8.0",
     "@farcaster/mini-app-solana": "^1.0.0",

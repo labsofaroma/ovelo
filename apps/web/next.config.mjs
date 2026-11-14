@@ -14,7 +14,7 @@ const config = {
   },
   compress: true,
   // @aroma/ui ships TypeScript source and CSS Modules; Next compiles it with the app.
-  transpilePackages: ["@aroma/ui"],
+  transpilePackages: ["@aroma/ui", "@aroma/guard"],
   // Rewrite `import { X } from "@aroma/ui"` to X's own module, so a page ships only the primitives
   // it renders, not the whole barrel (M3: /v1/markets first-load budget, REWRITE-PLAN §8).
   // globalNotFound (M4): three root layouts ((prototype), (app), (marketing)) mean unmatched URLs

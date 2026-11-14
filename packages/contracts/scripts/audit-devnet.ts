@@ -8,7 +8,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { address } from "@solana/kit";
-import * as v1 from "../../../apps/web/lib/sdk/guard/v1";
+import * as v1 from "@aroma/guard";
 import { DEFAULT_DEVNET_RPC, parseArgs } from "./lib/args";
 import { auditDevnet } from "./lib/audit";
 import { STATE_FILE } from "./lib/devnet-state";

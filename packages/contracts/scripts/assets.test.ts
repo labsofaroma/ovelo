@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 import { basketSymbols, DEVNET_ASSETS, selectAssets } from "./lib/assets";
-import { XSTOCKS_PYTH_FEEDS } from "../../../apps/web/lib/sdk/pyth/feeds";
+import { XSTOCKS_PYTH_FEEDS } from "@aroma/guard/pyth";
 
 test("every devnet asset is a canonical basket constituent with its real Pyth equity feed", () => {
   const baskets = basketSymbols();

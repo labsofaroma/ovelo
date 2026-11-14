@@ -59,3 +59,4 @@ docs/v2-roadmap-and-architecture.md
 .codex/
 playwright-report
 test-results
+coverage/

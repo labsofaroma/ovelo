@@ -5,6 +5,7 @@
 /packages/anchor/                   @labsofaroma
 /packages/contracts/                @labsofaroma
 /apps/web/lib/sdk/guard/            @labsofaroma
+/packages/guard/                    @labsofaroma
 /apps/web/server/                   @labsofaroma
 /apps/web/lib/server/               @labsofaroma
 /.github/                           @labsofaroma

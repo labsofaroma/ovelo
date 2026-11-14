@@ -1,7 +1,7 @@
 /**
  * LiteSVM harness for Aroma Guard v1 (devnet-mock build). Loads the pinned Subscriptions and
  * Pyth receiver binaries, deploys the program as an upgradeable program with a known upgrade
- * authority, and drives it through the hand-written v1 builders in `apps/web/lib/sdk/guard/v1`.
+ * authority, and drives it through the hand-written v1 builders in `@aroma/guard`.
  * Every keypair here is generated in memory for one test and never leaves the process.
  */
 import fs from "node:fs";
@@ -27,7 +27,7 @@ import {
 } from "@solana/kit";
 import { PublicKey, type TransactionInstruction } from "@solana/web3.js";
 import { AccountLayout, MintLayout } from "@solana/spl-token";
-import * as v1 from "../../../../apps/web/lib/sdk/guard/v1";
+import * as v1 from "@aroma/guard";
 
 const root = path.resolve(import.meta.dirname, "../..");
 export const PROGRAM_DIR =

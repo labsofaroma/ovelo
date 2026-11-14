@@ -3,7 +3,7 @@
  * and never sends a transaction.
  */
 import { getAddressDecoder, getBase58Decoder, type Address } from "@solana/kit";
-import * as v1 from "../../../../apps/web/lib/sdk/guard/v1";
+import * as v1 from "@aroma/guard";
 import { GENESIS } from "./cluster";
 import { readOnly, type JsonRpc } from "./jsonrpc";
 import { parseMintFacts } from "./provision";

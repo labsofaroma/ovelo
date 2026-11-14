@@ -10,14 +10,14 @@ pnpm-lock.yaml
 *.tsbuildinfo
 apps/web/components/
 apps/web/lib/*
-# M6: the hand-written v1 contract client is new code; its generated output and IDL are not.
+# The v1 contract client (packages/guard) is new code; its generated output and IDL are not.
 !apps/web/lib/sdk/
 apps/web/lib/sdk/*
 !apps/web/lib/sdk/guard/
 apps/web/lib/sdk/guard/*
 !apps/web/lib/sdk/guard/v1/
-apps/web/lib/sdk/guard/v1/generated/
-apps/web/lib/sdk/guard/v1/idl/
+packages/guard/src/v1/generated/
+packages/guard/src/v1/idl/
 apps/web/styles/
 apps/web/tests/
 apps/web/scripts/

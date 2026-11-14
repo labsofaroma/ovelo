@@ -1,0 +1,38 @@
+{
+  "name": "@aroma/guard",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Aroma Guard v1 client (Codama-generated code plus hand-written builders, decoders and schedule math) and the Pyth pieces the web app and the keeper share. TypeScript source, no build step.",
+  "sideEffects": false,
+  "exports": {
+    ".": "./src/index.ts",
+    "./generated": "./src/v1/generated/index.ts",
+    "./pyth": "./src/pyth/index.ts",
+    "./idl": "./src/v1/idl/aroma_guard.json"
+  },
+  "scripts": {
+    "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage"
+  },
+  "dependencies": {
+    "@solana/kit": "7.1.1",
+    "@solana/subscriptions": "0.5.0"
+  },
+  "devDependencies": {
+    "@aroma/config": "workspace:*",
+    "@codama/nodes-from-anchor": "1.5.6",
+    "@codama/renderers-js": "2.4.0",
+    "@solana/spl-token": "0.4.15",
+    "@solana/web3.js": "1.98.4",
+    "@types/node": "22.20.2",
+    "@vitest/coverage-v8": "3.2.7",
+    "codama": "1.11.0",
+    "eslint": "9.39.5",
+    "fast-check": "4.10.2",
+    "typescript": "5.9.3",
+    "vitest": "3.2.7"
+  }
+}

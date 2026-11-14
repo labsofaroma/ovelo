@@ -1,7 +1,7 @@
 /** Admin access, one-time initialization, config validation, and the mainnet build. */
 import { describe, expect, test } from "vitest";
 import { generateKeyPairSigner } from "@solana/kit";
-import * as v1 from "../../../../apps/web/lib/sdk/guard/v1";
+import * as v1 from "@aroma/guard";
 import { Env, MAINNET_SO } from "./harness";
 import { configParams, DEFAULT, errorCode, World } from "./world";
 

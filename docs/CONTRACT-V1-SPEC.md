@@ -192,7 +192,7 @@ solana program show <PROGRAM_ID>
 
 After deploying:
 - Run `initialize_config` from the deployer wallet, then `register_asset` for each test stock.
-- Update the program ID in the v1 IDL and generated client (`pnpm --filter @aroma/contracts idl:sync`) and the v1 devnet deployment record (`apps/web/lib/sdk/guard/v1/deployments.ts`).
+- Update the program ID in the v1 IDL and generated client (`pnpm --filter @aroma/contracts idl:sync`) and the v1 devnet deployment record (`packages/guard/src/v1/deployments.ts`).
 - **Never commit** `aroma-deployer.json` or `aroma_guard-keypair.json`; `target/` is already git-ignored.
 - Before mainnet, hand the upgrade authority to a Squads multisig: `solana program set-upgrade-authority <PROGRAM_ID> --new-upgrade-authority <SQUADS_VAULT>`. Keep your wallet as one of the signers.
 - For mainnet, use a separate deployer wallet from devnet, funded only for the deploy.

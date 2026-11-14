@@ -6,7 +6,7 @@ The on-chain program behind Aroma's recurring investing: an owner approves a bou
 |---|---|
 | Program ID | `FYrrfhrysaGUwCNyTggqyKmTWqpg3vph8gzmSWt7QtTU` (fixed by the program keypair; not deployed yet) |
 | Source | `packages/contracts/programs/aroma_guard` (Anchor 1.2.1, Agave 3.1.10, SBPF v0) |
-| IDL and client | `apps/web/lib/sdk/guard/v1/` (`idl/`, Codama-generated `generated/`, hand-written builders) |
+| IDL and client | `packages/guard/src/v1/` (`@aroma/guard`: `idl/`, Codama-generated `generated/`, hand-written builders; the web app re-exports it as `@/lib/sdk/guard/v1`) |
 | Spec | [CONTRACT-V1-SPEC.md](./CONTRACT-V1-SPEC.md) |
 | Devnet runbook | [M6-DEVNET-DEPLOY.md](./M6-DEVNET-DEPLOY.md) |
 | Integrations | Solana Foundation Subscriptions `De1egAF…avR44` (layout pinned at `program-v0.5.0`), Pyth receiver `rec5EKM…LtFJ` (`pyth-solana-receiver-sdk` 2.0.0) |
@@ -154,6 +154,6 @@ The sponsored Pyth push accounts for the equity feeds exist on devnet (10 of the
 |---|---|---|
 | Rust unit + proptest | `math_tests.rs`, `integrations/subscriptions.rs`, `tests.rs` | schedule, catch-up, skip, delegation terms, leg split, slippage floor, fees, decimals, scaled amount, multiplier conversion, staleness, confidence, layout parsing, sizes, argument validation; proptests: never more than `periods × amount` pulled and executed + skipped ≤ periods, legs sum exactly, output never above oracle value |
 | LiteSVM | `packages/contracts/tests/litesvm` | 56 cases through the real v1 builders with the pinned Subscriptions and Pyth receiver binaries |
-| Client | `apps/web/lib/sdk/guard/v1/*.test.ts` | PDAs, mirrors, decoders, builders (100% lines) |
-| Drift | `packages/contracts/scripts/sync-idl.test.ts`, `idl:check` | committed IDL = Rust program; generated client = a fresh Codama render |
+| Client | `packages/guard/src/v1/*.test.ts` | PDAs, mirrors, decoders, builders (100% lines) |
+| Drift | `packages/guard/src/v1/drift.test.ts`, `idl:check` | committed IDL = Rust program; generated client = a fresh Codama render |
 | Local end to end | `pnpm --filter @aroma/contracts e2e:local` | a real validator, a real deploy, three periods with a catch-up and a skip, close + revoke |

@@ -19,7 +19,7 @@ describe("checked decoders", () => {
     const bytes = encodePlan();
     expect(decodePlanAccount(bytes).nonce).toBe(7n);
     const bad = new Uint8Array(bytes);
-    bad[0] ^= 1;
+    bad[0] = bad[0]! ^ 1;
     expect(() => decodePlanAccount(bad)).toThrow(/Not an Aroma Guard v1 plan/);
     expect(() => decodePlanAccount(encodePlan({ version: 2 }))).toThrow(
       /version 2/,
