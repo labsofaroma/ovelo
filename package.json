@@ -20,6 +20,7 @@
     "db:generate": "pnpm --filter @aroma/web db:generate",
     "db:migrate": "pnpm --filter @aroma/web db:migrate",
     "check:prod-env": "pnpm --filter @aroma/web check:prod-env",
+    "check:custody": "pnpm --filter @aroma/web check:custody",
     "test:anchor": "pnpm --filter @aroma/anchor test",
     "build:anchor": "cd packages/anchor && anchor build",
     "build:contracts": "pnpm --filter @aroma/contracts build",

@@ -18,6 +18,7 @@
     "db:local": "scripts/local-db.sh",
     "check-env": "tsx scripts/check-env.ts",
     "check:prod-env": "tsx scripts/check-prod-env.ts",
+    "check:custody": "tsx scripts/check-custody.ts",
     "e2e:fork": "tsx e2e/fork/run.ts",
     "e2e:invest": "tsx e2e/invest/run.ts"
   },

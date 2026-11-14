@@ -22,12 +22,18 @@ const env: Record<string, string | undefined> = file
   ? parseEnv(readFileSync(file, "utf8"))
   : { ...process.env };
 
-const findings = staticFindings(env);
-if (!args.includes("--offline"))
-  findings.push(...(await genesisFindings(env, (url, init) => fetch(url, init))));
-process.stdout.write(
-  `check:prod-env (${file ? "env file" : "process env"}; values are never printed)\n${report(findings)}\n`,
-);
-const bad = failed(findings);
-process.stdout.write(`check:prod-env: ${bad ? "FAILED" : "OK"}\n`);
-process.exit(bad ? 1 : 0);
+async function main(): Promise<void> {
+  const findings = staticFindings(env);
+  if (!args.includes("--offline"))
+    findings.push(
+      ...(await genesisFindings(env, (url, init) => fetch(url, init))),
+    );
+  process.stdout.write(
+    `check:prod-env (${file ? "env file" : "process env"}; values are never printed)\n${report(findings)}\n`,
+  );
+  const bad = failed(findings);
+  process.stdout.write(`check:prod-env: ${bad ? "FAILED" : "OK"}\n`);
+  process.exit(bad ? 1 : 0);
+}
+
+void main();
