@@ -46,3 +46,14 @@ pub const MAX_MULTIPLIER_FP: u128 = 1_000_000_000_000_000_000;
 /// Remaining accounts per leg in `execute_installment`:
 /// `[asset, output_mint, owner_output_token, price_update, mock_mint_authority, output_token_program]`.
 pub const ACCOUNTS_PER_LEG: usize = 6;
+
+/// Mainnet build: the program-wide PDA `["swap_authority"]` that signs every Jupiter CPI. It owns
+/// one funding-mint account and one transit account per output mint; each must end every leg at
+/// the balance it started with (M8, REWRITE-PLAN M8 decision 4).
+pub const SWAP_AUTHORITY_SEED: &[u8] = b"swap_authority";
+/// Mainnet build: a price update may be at most this old, whatever `max_oracle_staleness_s` allows
+/// (M8 decision 1: bounds which update in the staleness window an executor can choose).
+pub const MAINNET_MAX_PRICE_AGE_S: u32 = 20;
+/// `execute_installment_routed`: remaining accounts per leg before its Jupiter accounts:
+/// `[asset, price_update]`.
+pub const ROUTED_FIXED_ACCOUNTS_PER_LEG: usize = 2;

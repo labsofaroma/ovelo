@@ -109,6 +109,22 @@ pub enum GuardError {
 
     #[msg("Arithmetic overflow")]
     MathOverflow,
-    #[msg("Mainnet execution is not available until the Jupiter path ships (M8)")]
+    #[msg("This build executes installments through execute_installment_routed")]
     MainnetExecutionUnavailable,
+
+    // Mainnet (Jupiter) execution, M8. Appended so every earlier code keeps its number.
+    #[msg("This build requires a configured keeper_authority")]
+    KeeperRequired,
+    #[msg("This build has no swap path; installments execute through execute_installment")]
+    RoutedExecutionUnavailable,
+    #[msg("Route is not a supported Jupiter route_v2 instruction")]
+    UnsupportedRoute,
+    #[msg("Route amount, fee or positive-slippage terms differ from the leg")]
+    RouteTermsMismatch,
+    #[msg("Route account does not match the leg (authority, accounts, mints, programs)")]
+    RouteAccountMismatch,
+    #[msg("Route includes an account it must not touch")]
+    RouteAccountForbidden,
+    #[msg("Swap accounts did not return to their starting balances")]
+    SwapBalanceMismatch,
 }

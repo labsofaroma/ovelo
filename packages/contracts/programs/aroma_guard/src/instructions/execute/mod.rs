@@ -1,7 +1,9 @@
-//! `execute_installment(period, leg_mask)` (CONTRACT-V1-SPEC §6). One accounts struct for both
-//! builds, so the IDL and the generated client are identical. Which handler exists is decided at
-//! compile time: `devnet_mock.rs` (feature `devnet-mock`) mints at the oracle price; `mainnet.rs`
-//! (default) contains no minting code and fails closed until M8.
+//! `execute_installment(period, leg_mask)` and `execute_installment_routed(period, leg_mask,
+//! routes)` (CONTRACT-V1-SPEC §6). One accounts struct for both instructions and both builds, so
+//! the IDL and the generated client are identical. Which handlers do something is decided at
+//! compile time: `devnet_mock.rs` (feature `devnet-mock`) mints at the oracle price through
+//! `execute_installment` and refuses the routed instruction; `mainnet.rs` (default) contains no
+//! minting code, refuses `execute_installment` and swaps through Jupiter in the routed one.
 
 use anchor_lang::prelude::*;
 use anchor_spl::token_interface::{Mint, TokenAccount, TokenInterface};
@@ -17,13 +19,39 @@ pub mod devnet_mock;
 pub use devnet_mock::execute_installment_handler;
 
 #[cfg(not(feature = "devnet-mock"))]
+pub mod common;
+#[cfg(not(feature = "devnet-mock"))]
 pub mod mainnet;
 #[cfg(not(feature = "devnet-mock"))]
-pub use mainnet::execute_installment_handler;
+pub mod route;
+#[cfg(not(feature = "devnet-mock"))]
+pub use mainnet::{execute_installment_handler, execute_installment_routed_handler};
 
-/// Remaining accounts, per leg in `leg_mask` (ascending leg index), `ACCOUNTS_PER_LEG` each:
-/// `[asset, output_mint (mut), owner_output_token (mut), price_update, mock_mint_authority,
-/// output_token_program]`.
+/// The devnet-mock build has no swap path.
+#[cfg(feature = "devnet-mock")]
+pub fn execute_installment_routed_handler<'info>(
+    _ctx: Context<'info, ExecuteInstallment<'info>>,
+    _period: u16,
+    _leg_mask: u32,
+    _routes: Vec<RouteLeg>,
+) -> Result<()> {
+    err!(GuardError::RoutedExecutionUnavailable)
+}
+
+/// One leg's Jupiter instruction for `execute_installment_routed`: its accounts are the next
+/// `account_count` remaining accounts after the leg's `[asset, price_update]`, and `data` is the
+/// Jupiter `route_v2` instruction data, forwarded unchanged after the program's checks.
+#[derive(AnchorSerialize, AnchorDeserialize, Clone, Debug, PartialEq, Eq)]
+pub struct RouteLeg {
+    pub account_count: u8,
+    pub data: Vec<u8>,
+}
+
+/// Remaining accounts, per leg in `leg_mask` (ascending leg index).
+/// `execute_installment` (devnet-mock), `ACCOUNTS_PER_LEG` each: `[asset, output_mint (mut),
+/// owner_output_token (mut), price_update, mock_mint_authority, output_token_program]`.
+/// `execute_installment_routed` (mainnet): `[asset, price_update, …route]` with
+/// `RouteLeg.account_count` route accounts (`route.rs`). `treasury_token` is unused there.
 #[derive(Accounts)]
 pub struct ExecuteInstallment<'info> {
     /// The keeper (or anyone when `config.keeper_authority` is `None`); pays fees only.

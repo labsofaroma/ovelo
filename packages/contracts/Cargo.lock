@@ -298,6 +298,7 @@ dependencies = [
  "anchor-spl",
  "proptest",
  "pyth-solana-receiver-sdk",
+ "sha2 0.10.9",
  "solana-security-txt",
 ]
 

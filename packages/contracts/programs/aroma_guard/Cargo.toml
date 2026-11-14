@@ -33,6 +33,8 @@ solana-security-txt = "=1.1.3"
 
 [dev-dependencies]
 proptest = "1"
+# Tests only: recomputes the pinned Jupiter route_v2 discriminator.
+sha2 = "=0.10.9"
 
 [lints.rust]
 unexpected_cfgs = { level = "warn", check-cfg = ['cfg(target_os, values("solana"))'] }

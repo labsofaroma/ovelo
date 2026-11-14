@@ -14,6 +14,8 @@ pub mod instructions;
 pub mod integrations;
 pub mod math;
 pub mod state;
+#[cfg(not(feature = "devnet-mock"))]
+pub mod swap_math;
 pub mod token_policy;
 
 #[cfg(test)]
@@ -76,6 +78,17 @@ pub mod aroma_guard {
         leg_mask: u32,
     ) -> Result<()> {
         execute_installment_handler(ctx, period, leg_mask)
+    }
+
+    /// Mainnet build: one Jupiter `route_v2` swap per leg, keeper-only (M8). Devnet-mock build:
+    /// refused (`RoutedExecutionUnavailable`).
+    pub fn execute_installment_routed<'info>(
+        ctx: Context<'info, ExecuteInstallment<'info>>,
+        period: u16,
+        leg_mask: u32,
+        routes: Vec<RouteLeg>,
+    ) -> Result<()> {
+        execute_installment_routed_handler(ctx, period, leg_mask, routes)
     }
 
     pub fn close_plan(ctx: Context<ClosePlan>) -> Result<()> {
