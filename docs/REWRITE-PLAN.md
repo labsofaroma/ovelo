@@ -230,7 +230,7 @@ Each milestone is merged to `main` behind feature flags. The prototype stays dep
 | **M1** | Design system (week 1–2, **implemented**, see status below) | `packages/ui`: tokens from `foundation.css` and `DESIGN.md`, Tailwind v4, shadcn primitives, `Brand`/`AssetAvatar`/`Change`, light and dark, reduced motion | Storybook or Ladle page for every primitive; axe has zero violations |
 | **M2** | Shared helpers cleanup (weeks 1–3, **implemented**, see status below) | in `apps/web/lib/sdk`: `core/`, `pyth/`, `jupiter/`, `markets/`, `research/`, `baskets/`, `paper/` ported with their tests | ≥ 85% coverage; one `@solana/kit` version; no `any` in public types |
 | **M3** | Read-only app (weeks 2–4, **implemented**, see status below) | marketing pages, markets, stock detail, baskets list and detail, watchlist, all as RSC with ISR | Lighthouse ≥ 90 on performance, SEO and accessibility; meets PRODUCT.md data rules (sources, timestamps, stale states) |
-| **M4** | Wallet + spot trading (weeks 3–6) | `features/wallet`, `features/trade` (single stock + basket, Jito bundles), receipts, portfolio | Playwright test buys on a mainnet fork or simulator; ported authorization tests pass; rate limits and CSP nonces live |
+| **M4** | Wallet + spot trading (weeks 3–6, **implemented**, see status below) | `features/wallet`, `features/trade` (single stock + basket, Jito bundles), receipts, portfolio | Playwright test buys on a mainnet fork or simulator; ported authorization tests pass; rate limits and CSP nonces live |
 | **M5** | Creators (weeks 5–6) | publish flow, invites table, dashboard, Solana Actions | creator E2E; single-use invites enforced |
 | **M6** | Recurring on the v1 contract (weeks 5–9, after your devnet deploy) | Codama client, `features/invest`, `apps/keeper` on QStash, `plans_index`, alerts, faucet | create → 3 installments → close + revoke works end-to-end on devnet; keeper alerting tested; skipped periods shown in the UI |
 | **M7** | Cutover (week 9–10) | point the production domain at v1, retire the prototype routes and the prototype devnet program | prototype plans closed or owners notified; old repo paths deleted; docs updated |
@@ -377,6 +377,102 @@ First-load JS: `/v1/markets` **147 kB** (budget 180 kB), `/v1/stock/[symbol]` 16
 5. **Screenshots looked at** (markets light, dark, stale and unavailable; stock light, dark-stale and mobile; basket light and unavailable; landing light and dark-mobile). They led to three fixes: unobserved prices rendered at figure size, the stock `h1` wrapping badly on phones, and "1 assets".
 6. **Shared files edited:** `apps/web/package.json`, `pnpm-lock.yaml` (18 lines, versions already present), `tsconfig.strict.json`, `vitest.config.ts`, `next.config.mjs`, `app/aroma-ui.v4.css`, `server/env.schema.ts`, `.env.example`, `app/sitemap.ts`, `app/robots.ts`, `app/providers.tsx`, `components/aroma/PrivacyChoices.tsx`. No `lib/sdk` edits (`git diff m2-shared-helpers --stat -- apps/web/lib/sdk` is empty).
 7. **Not verified:** CI (files only, nothing pushed); the prototype in a browser (build, tests and route status codes only); Lighthouse on a deployed host.
+
+### M4 status: implemented on branch `m4-wallet-trading`, cut from `m3-read-only-app` (not pushed, not merged, nothing deployed)
+
+Exit criteria (§7): **a Playwright test buys on a mainnet fork or simulator**, **ported authorization tests pass**, **rate limits and CSP nonces live**.
+
+| Lighthouse 12.8.2, mobile profile, local `next start` (flag on, placeholder env) | Performance | Accessibility | SEO |
+|---|---|---|---|
+| `/v1` | 97 | 100 | 91 |
+| `/v1/markets` | 94 | 100 | 92 |
+| `/v1/stock/AAPLx` | **92** (M3: 88) | 100 | 92 |
+| `/v1/portfolio` | 97 | 100 | 91 |
+
+SEO is 91–92 rather than 100 for the M3 reason (Next 15 streams metadata into the body for non-bot user agents; `/v1/portfolio` is also `noindex` on purpose). The first `/v1/stock/AAPLx` run errored on the document request and the rerun gave the score above.
+
+First-load JS: `/v1/markets` **148 kB** (budget 180 kB), `/v1/stock/[symbol]` 190 kB (trade island, TanStack Query and the quote schema; the wallet stack is not in first load), `/v1/portfolio` 150 kB, `/v1` 111 kB.
+
+Part A (fixes to M0–M3):
+- [x] A1: the stock and basket segment layouts call `assertV1Enabled()` before reading the snapshot (`features/shared/layout-gate.test.ts`; it fails without the fix).
+- [x] A2: `AROMA_V1_SIMULATE_UPSTREAM_OUTAGE` has no effect in production unless a local `next start` sets `AROMA_V1_ALLOW_TEST_SWITCHES=true`, which the schema rejects when `VERCEL_ENV=production`. It logs a warning whenever it is set (`features/shared/upstream.test.ts`).
+- [x] A3: M3-SDK-REQUESTS #2, #3 and #4 are resolved in `lib/sdk` and the M3 workarounds are removed (details in that doc).
+- [x] A4: the 8 converted test files M2 left outside `tsc` are typed and checked by the full strict `tsconfig.json`.
+- [x] A5: jsdom canvas errors are silenced by a 2D-context stub in `@aroma/ui`'s test setup (0 occurrences; console is not muted).
+- [x] A6: AUDIT M-12 now records the real state. AGENTS.md points new code at `packages/ui/tokens.css`.
+
+Part B:
+- [x] B1: React **19.2.9** and types 19.2 in `apps/web` and `packages/ui`, one React in the lockfile. Peer ranges checked: Privy `^18 || ^19`, wallet-adapter `*`, Base UI `^19`, Ladle `>=18`, Next `^19.0.0`. The Ladle gate is 312/312 (axe over every story, light and dark, plus the keyboard and reduced-motion suites).
+- [x] B2: `features/wallet`.
+  - The context is key-free: `useSigner`/`useWallet` turn unsigned base64 into signed base64.
+  - `WalletBoundary` loads the stack only on connect, or after first paint when restoring a session.
+  - The stack is wallet-adapter (Wallet Standard raw-byte signing for V0 and V1; web3.js only here, for the legacy V0 fallback) plus Privy embedded wallets when an app id is set.
+  - The picker is built from `packages/ui`.
+  - Mainnet only: the browser RPC must report the mainnet genesis, and devnet-only accounts are refused.
+  - v1 has its own root layouts (decision 1).
+- [x] B3: `server/auth/trade.ts` and `trade-transactions.ts`. The prototype trading, bundle-authorization and composed-transaction suites were ported (10 tests), plus fast-check properties (6).
+- [x] B4: `features/trade/server/*`. The prototype suites were ported first (jupiter-intermediate-accounts 45 cases, lookup tables, Jito, single-execution recovery, V1 gating, order-precision target checks), then the modules written. Every built transaction is simulated before it is returned.
+- [x] B5: `POST /api/v1/trade/quote`, `POST /api/v1/trade/submit`, `GET /api/v1/trade/:id`, `GET /api/v1/portfolio/:wallet` (plus `GET /api/v1/prices` for paper practice). Receipts go to the M0 table as raw-integer text, and submit is idempotent through a Redis `SET NX` on the request id.
+- [x] B6: `useTradeFlow` on a pure state machine (`flow.ts`), TanStack Query v5 (`features/*/queries.ts`), `TradeTicket` on stock and basket pages, a review screen, and paper mode.
+- [x] B7: `/v1/portfolio` with `HoldingsTable`, `AllocationDonut`, `PnLSummary` (no cost basis is estimated) and `ActivityList` (from receipts).
+- [x] B8: Node.js middleware with Upstash read, write and trade buckets, a per-request nonce CSP on `/v1/*` and `/api/v1/*`, one HSTS header with preload, and `Origin` checks.
+- [x] B9: Jupiter and Pyth health probes; redacted structured logs and Sentry breadcrumbs for every trade stage.
+- [x] B10: `scripts/check-client-secrets.mjs`, run by `pnpm build:web`. The two M4-tagged skips run again.
+- [x] B11: the local-fork E2E (`pnpm --filter @aroma/web e2e:fork`) and an authored `e2e.yml`.
+- [ ] **Open:** see "Open items" below.
+
+**E2E evidence.**
+- **Trade suite on a local mainnet fork** (`pnpm --filter @aroma/web e2e:fork`): 9/9 pass.
+  - The fork was solana-test-validator 3.1.10 with `--clone-feature-set`, warped to the current mainnet slot, with 10 programs and 459 accounts cloned from mainnet.
+  - Stock buy of AAPLx (1 USDC) and basket `sol-core` (3 legs, one transaction, 2 USDC) were each quoted, reviewed, signed by the test wallet, submitted and confirmed on the fork.
+  - Also passing: portfolio and activity, tampered authorization 403, expired quote 410, trade-bucket 429, paper trade, and axe light and dark on `/v1/portfolio`, `/v1/stock`, `/v1/basket` and the review screen.
+  - **No mainnet transaction was sent.**
+  - Baskets with a Manifest-only leg (JPMx, LMTx, HONx today) are skipped because Agave 3.1.10 cannot execute Manifest's current binary. XOMx is currently paused by its issuer.
+- **M3 smoke suite** (`pnpm --filter @aroma/web test:e2e`): 28/28, zero axe violations in light and dark, outage states included.
+- **Ladle gate:** 312/312.
+
+**Decisions**
+
+1. **Three root layouts.** The prototype pages moved to `app/(prototype)` (URLs unchanged). `(app)` and `(marketing)` are roots of their own, so `/v1` loads none of the prototype's providers, global CSS, consent footer or `@solana/web3.js` (M3 finding 1). Unmatched URLs use `global-not-found` with the prototype's 404. Moving between the prototype and v1 is a full page load. **M7:** delete `(prototype)`.
+2. **v1 HTML is dynamic.** A nonce CSP needs a nonce per request, so v1 pages are no longer ISR. Market and research data still come from the Next data cache, so pages stay fast (TTFB about 20 ms warm). The legal pages are `force-dynamic` for the same reason: a prerendered page would carry no nonce and its scripts would be blocked.
+3. **One authorization token for single transactions and bundles:** `at1.<kid>.<payload>.<mac>`, with a zod-strict payload. The key id enables rotation through `AROMA_TRADE_SECRET_PREVIOUS`. Bundle-status capabilities are replaced by a server-side trade record keyed by the request id (idempotency and status in one place).
+4. **Funding is USDC, USDT or SOL; targets are catalog rows.** Only verified, unhalted rows with their issuer catalog present can be traded, so discovery-only listings cannot be. A live basket needs every constituent listed, verified and unpaused, but no catalog token price: the Jupiter quote and the mainnet simulation price the order (keyless catalogs leave most mints unpriced).
+5. **Bundles only when configured.** A basket that needs more than one transaction is refused (`BUNDLE_UNAVAILABLE`, no partial order) unless `JITO_BLOCK_ENGINE_URL` is set. Jito rejection or ambiguity is never retried as individual transactions.
+6. **Receipts:** one `receipts` row per transaction signature. `basket_id` stays null because curated baskets are not in the `baskets` table; the slug and request id are on each leg. Status moves pending → confirmed | failed and never back.
+7. **Fees shown are what the transaction encodes:** 5,000 lamports per signature, the priority fee from compute-budget instructions ("not reported" for V1 headers it cannot read), the Jito tip, and a platform fee of 0. Amounts on the review screen use exact precision, so a minimum received is never rounded up.
+8. **The E2E wallet holds no key.** Builds with `NEXT_PUBLIC_AROMA_E2E_WALLET=true` include a bridge to `window.aromaE2EWallet`, which Playwright exposes from Node test code holding a deterministic keypair. `next.config` always inlines the flag, so production builds drop the import. The secret scan fails any build that contains the marker.
+9. **Middleware runs on the Node.js runtime** (stable in Next 15.5) so it can use pino and Upstash. The prototype's `{ error }` bodies are unchanged; v1 gets `{ code, message }`.
+
+**Deviations and findings**
+
+1. **Real defects found by the new tests and checks, all fixed:**
+   - zod 4 runs `.refine` after a failed regex, so `BigInt()` threw on input like `:` (found by a fast-check property);
+   - the E2E wallet chunk was emitted into production builds (found by the secret scan);
+   - `assertSameOrigin` compared `Origin` with `request.url`, which `next start` rewrites to localhost, so same-site POSTs got 403 (found by the fork E2E);
+   - middleware judged "loopback" from the server's bind address, so no HSTS was sent behind a proxy (found by the header dump);
+   - static legal pages carried no nonce;
+   - v1 depended on prototype CSS for its resets and fonts, so buttons fell back to the browser's grey and failed dark-mode contrast (found by the M3 smoke suite);
+   - Hermes needs a key, so an unconfigured Pyth probe is now `skipped`;
+   - a fork without `--warp-slot` cannot use cloned lookup tables.
+2. **Prototype behaviour changed on purpose:**
+   - basket history is history-only for the prototype too (A3);
+   - one HSTS header with preload on every HTTPS response;
+   - Upstash rate limiting for prototype API routes (same 120/20 limits, plus a trade bucket of 10);
+   - the prototype's CSP is scoped to non-v1 paths, otherwise unchanged.
+3. **Prototype files edited:** the moved `app/(prototype)/**` files (imports only); `tests/wallet-provider-routes.test.ts` (path); `tests/request-policy.test.mjs`, `tests/bundle-api.test.ts` and `tests/basket-buy-actions.test.ts` (their 7 middleware cases moved to `server/middleware.test.ts`); `tests/client-secret-scan.test.mjs` and `tests/secrets-configuration.test.mjs` (comments only); `middleware.ts` (rewritten); `next.config.mjs`.
+4. **Shared helpers edited (allowed after M2):**
+   - `lib/sdk/baskets/performance/{history,growth,returns}.ts`, `lib/sdk/baskets/liquidity.ts` (parameter type), `lib/sdk/markets/{http,catalog}.ts`;
+   - new `lib/sdk/markets/test-fixtures.ts`;
+   - `server/{errors,env.schema,http,health}.ts`, `packages/ui/src/test/setup.ts`, `packages/ui/e2e/stories.ts`, `packages/config/eslint/index.js`.
+5. **Prototype tests:** the legacy runner has 7 fewer tests (moved to Vitest, same assertions) and 2 fewer skips (restored). Skips left: 14, all M6 or post-v1 mobile, as listed under M0.
+
+**Open items**
+- Real mainnet: not verified (see `docs/M4-DEPLOY.md` §4). No transaction with real funds was signed or sent.
+- CI: not verified. `ci.yml` and `e2e.yml` are files only.
+- Upstash rate limits and Redis idempotency against a live instance; receipts in Neon.
+- Prototype CSP tightening (AUDIT H-6 residue, M7); prototype `/api` routes still return `error.message` (M-5 residue).
+- web3.js v1 server-side in `lib/sdk` and `server/rpc.ts` (AUDIT M-12 residue).
+- Custom and creator baskets (M5): the trade server supports catalog baskets only.
 
 **Critical path:** M0 → M2 → M4 (spot trading is the revenue path). M6 depends on your contract being deployed. Develop it against a local LiteSVM build until then.
 
