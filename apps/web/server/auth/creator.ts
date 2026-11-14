@@ -31,6 +31,8 @@ export const CHALLENGE_PURPOSES = [
   "update",
   "delete",
   "redeem",
+  // M9 compliance gate (additive): a wallet accepting a terms version (no basket, no funds).
+  "terms",
 ] as const;
 export type ChallengePurpose = (typeof CHALLENGE_PURPOSES)[number];
 
@@ -39,6 +41,7 @@ const PURPOSE_TITLE: Record<ChallengePurpose, string> = {
   update: "save a creator basket draft",
   delete: "archive a creator basket",
   redeem: "redeem a creator invite",
+  terms: "accept Aroma's terms of use",
 };
 
 /** A base58 address that is on the Ed25519 curve, so it can sign (a PDA cannot). */

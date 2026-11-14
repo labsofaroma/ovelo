@@ -276,3 +276,37 @@ export const portfolioSnapshots = pgTable(
     check("portfolio_snapshots_value_nonneg", sql`${t.valueUsd} >= 0`),
   ],
 );
+
+/**
+ * M9 compliance gate (C3): a wallet's signed acceptance of one terms version. The signature
+ * covers the exact `message` (version and SHA-256 of the terms text); the nonce is single-use
+ * (Redis GETDEL first, this UNIQUE as a second line). One row per wallet and version + hash.
+ */
+export const termsAcceptances = pgTable(
+  "terms_acceptances",
+  {
+    id: uuid("id").primaryKey().defaultRandom(),
+    wallet: text("wallet").notNull(),
+    termsVersion: text("terms_version").notNull(),
+    termsHash: text("terms_hash").notNull(),
+    message: text("message").notNull(),
+    /** Base64 Ed25519 signature over `message`. */
+    signature: text("signature").notNull(),
+    nonce: text("nonce").notNull().unique(),
+    /** The trusted platform country at acceptance (null when unknown). */
+    country: text("country"),
+    acceptedAt: timestamptz("accepted_at").notNull().defaultNow(),
+  },
+  (t) => [
+    check("terms_acceptances_hash_hex", sql`${t.termsHash} ~ '^[0-9a-f]{64}$'`),
+    check(
+      "terms_acceptances_country_code",
+      sql`${t.country} IS NULL OR ${t.country} ~ '^[A-Z]{2}$'`,
+    ),
+    unique("terms_acceptances_wallet_version_unique").on(
+      t.wallet,
+      t.termsVersion,
+      t.termsHash,
+    ),
+  ],
+);

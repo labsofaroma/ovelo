@@ -7,6 +7,15 @@ const service = vi.hoisted(() => ({
   tradeStatus: vi.fn(),
   publicRecord: (r: unknown) => r,
 }));
+// M9: the compliance gate has its own route tests (features/compliance/routes.test.ts).
+vi.mock("@/features/compliance/server/gate", () => ({
+  assertTradeCompliance: vi.fn(async () => {}),
+  assertJurisdiction: vi.fn(),
+  requestJurisdiction: vi.fn(() => ({ status: "allowed", country: "DE" })),
+}));
+vi.mock("@/features/compliance/server/deps", () => ({
+  complianceDeps: () => ({ policy: () => ({}) }),
+}));
 vi.mock("@/features/trade/server/service", () => service);
 vi.mock("@/features/portfolio/service", () => ({ loadPortfolio: vi.fn() }));
 

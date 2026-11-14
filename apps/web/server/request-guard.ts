@@ -34,6 +34,13 @@ export function allowedOrigin(
   return allowed.includes(origin);
 }
 
+// --- M9 compliance gate (additive): the one trusted-proxy rule, shared with the geo gate. ---
+/** True only behind a proxy that overwrites forwarding and geo headers (Vercel, or opted in). */
+export function trustsProxy(env: Env): boolean {
+  return env.VERCEL === "1" || env.AROMA_TRUST_PROXY === "true";
+}
+// --- end M9 compliance gate ---
+
 /** Client IP, trusting forwarding headers only behind a proxy that overwrites them. */
 export function clientIp(headers: Headers, env: Env): string {
   const trustProxy = env.VERCEL === "1" || env.AROMA_TRUST_PROXY === "true";

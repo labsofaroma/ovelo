@@ -125,6 +125,17 @@ export const ERROR_CODES = {
     message:
       "The test faucet has handed out today's budget. Try again tomorrow (UTC).",
   },
+  // M9 compliance gate (additive). Messages are fixed placeholders pending counsel's text.
+  JURISDICTION_RESTRICTED: {
+    status: 451,
+    message:
+      "Trading is not available in your location. You can still browse market information. Nothing was quoted or sent.",
+  },
+  TERMS_REQUIRED: {
+    status: 403,
+    message:
+      "Accept the current terms with your wallet before your first trade. Nothing was quoted.",
+  },
 } as const;
 
 export type ErrorCode = keyof typeof ERROR_CODES;

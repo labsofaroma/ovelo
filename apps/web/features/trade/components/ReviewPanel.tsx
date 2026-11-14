@@ -2,6 +2,17 @@ import { Badge, Button } from "@aroma/ui";
 import { formatUnits } from "@aroma/ui/format";
 import { useEffect, useState } from "react";
 import { quoteClock, type AnyQuote } from "../flow";
+// --- M9 compliance gate (additive) ---
+import { RiskDisclosure } from "../../compliance/components/RiskDisclosure";
+import type { DisclosureSurface } from "../../compliance/disclosures";
+
+const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+/** Which disclosure a live quote needs: stock, curated basket or creator basket (UUID id). */
+function disclosureSurface(quote: AnyQuote): DisclosureSurface {
+  if (quote.channel !== "live" || quote.quote.kind === "spot") return "spot";
+  return UUID.test(quote.quote.basketId ?? "") ? "creator-basket" : "basket";
+}
+// --- end M9 compliance gate ---
 
 /**
  * The review screen (PRODUCT.md): what is bought, the source and route, price impact, fees,
@@ -156,18 +167,61 @@ export function ReviewPanel({
           {quote.quote.atomicityWarning}
         </p>
       ) : null}
-      <div className="mt-4 flex flex-wrap gap-2">
-        {expired ? (
-          <Button onClick={onRequote}>Quote expired: get a new quote</Button>
-        ) : (
-          <Button onClick={onConfirm} loading={busy}>
-            {live ? "Sign and buy on mainnet" : "Place paper order"}
-          </Button>
-        )}
-        <Button variant="secondary" onClick={onCancel} disabled={busy}>
-          Cancel
-        </Button>
-      </div>
+      {/* M9 compliance gate (additive): live confirm controls exist only inside the disclosure. */}
+      {live ? (
+        <RiskDisclosure surface={disclosureSurface(quote)}>
+          <ReviewActions
+            live
+            expired={expired}
+            busy={busy}
+            onConfirm={onConfirm}
+            onRequote={onRequote}
+            onCancel={onCancel}
+          />
+        </RiskDisclosure>
+      ) : (
+        <div className="mt-4">
+          <ReviewActions
+            live={false}
+            expired={expired}
+            busy={busy}
+            onConfirm={onConfirm}
+            onRequote={onRequote}
+            onCancel={onCancel}
+          />
+        </div>
+      )}
     </section>
+  );
+}
+
+function ReviewActions({
+  live,
+  expired,
+  busy,
+  onConfirm,
+  onRequote,
+  onCancel,
+}: {
+  live: boolean;
+  expired: boolean;
+  busy: boolean;
+  onConfirm: () => void;
+  onRequote: () => void;
+  onCancel: () => void;
+}) {
+  return (
+    <div className="flex flex-wrap gap-2">
+      {expired ? (
+        <Button onClick={onRequote}>Quote expired: get a new quote</Button>
+      ) : (
+        <Button onClick={onConfirm} loading={busy}>
+          {live ? "Sign and buy on mainnet" : "Place paper order"}
+        </Button>
+      )}
+      <Button variant="secondary" onClick={onCancel} disabled={busy}>
+        Cancel
+      </Button>
+    </div>
   );
 }

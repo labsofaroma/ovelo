@@ -1,4 +1,9 @@
 import { NextResponse, type NextRequest } from "next/server";
+import {
+  browseBlocked,
+  edgeRefusal,
+  RESTRICTED_PAGE,
+} from "./features/compliance/edge";
 import { buildCsp, generateNonce, HSTS, isV1Path } from "./server/csp";
 import { testSwitchesAllowed } from "./server/env.schema";
 import { ERROR_CODES, type ErrorCode } from "./server/errors";
@@ -141,6 +146,12 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
     requestHeaders.set("Content-Security-Policy", csp);
   }
   let response = NextResponse.next({ request: { headers: requestHeaders } });
+  // --- M9 compliance gate (additive): browse-blocked visitors see the notice page. ---
+  if (browseBlocked(pathname, request.headers, env))
+    response = NextResponse.rewrite(new URL(RESTRICTED_PAGE, request.url), {
+      request: { headers: requestHeaders },
+    });
+  // --- end M9 compliance gate ---
 
   if (api || action) {
     const origin = request.headers.get("origin");
@@ -183,6 +194,24 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
           maxBodyBytes(pathname)
       )
         response = reject(v1, action, "PAYLOAD_TOO_LARGE");
+      // --- M9 compliance gate (additive): geo-blocking on every trading entry point. ---
+      else {
+        const refusal = edgeRefusal(
+          pathname,
+          request.method,
+          request.headers,
+          env,
+        );
+        if (refusal)
+          response = NextResponse.json(
+            v1 || action ? refusal.body : { error: refusal.body.message },
+            {
+              status: refusal.status,
+              headers: { "Cache-Control": "no-store" },
+            },
+          );
+      }
+      // --- end M9 compliance gate ---
     }
     if (action) {
       // Public Actions only prepare owner-signed transactions. Credentialed APIs keep the allowlist.

@@ -1,5 +1,9 @@
 import { Badge, Button } from "@aroma/ui";
 import { useId, useState } from "react";
+// --- M9 compliance gate (additive) ---
+import { TradeComplianceGate } from "../../compliance/components/TradeComplianceGate";
+import { useComplianceRefresh } from "../../compliance/queries";
+// --- end M9 compliance gate ---
 import { ConnectButton } from "../../wallet/ConnectButton";
 import { useWallet } from "../../wallet/context";
 import { FUNDING_TOKENS } from "../schema";
@@ -31,6 +35,9 @@ export function TradeTicket({
     channel === "paper"
       ? "USD"
       : (FUNDING_TOKENS.find((t) => t.mint === funding)?.symbol ?? "");
+
+  // M9 compliance gate (additive): a gate refusal re-reads the status so the ticket shows why.
+  useComplianceRefresh(state.step === "error" ? state.error.code : null);
 
   const requestQuote = () =>
     void flow.quote({ channel, amount: amount.trim(), inputMint: funding });
@@ -107,25 +114,31 @@ export function TradeTicket({
         </div>
       </fieldset>
       {editing ? (
-        <div className="mt-4 flex flex-wrap items-center gap-2">
-          <Button
-            onClick={requestQuote}
-            disabled={
-              !amount.trim() ||
-              (channel === "live" && wallet.status !== "connected")
-            }
-          >
-            Get quote
-          </Button>
-          {channel === "live" && wallet.status !== "connected" ? (
-            <span className="text-small text-muted">
-              Connect a mainnet wallet to get a signable quote.
-            </span>
-          ) : null}
-          {channel === "paper" ? (
-            <Badge tone="neutral">Practice: no transaction is created</Badge>
-          ) : null}
-        </div>
+        // M9 compliance gate (additive): location, then terms, before a mainnet quote.
+        <TradeComplianceGate
+          live={channel === "live" && wallet.status === "connected"}
+          signer={wallet.signer}
+        >
+          <div className="mt-4 flex flex-wrap items-center gap-2">
+            <Button
+              onClick={requestQuote}
+              disabled={
+                !amount.trim() ||
+                (channel === "live" && wallet.status !== "connected")
+              }
+            >
+              Get quote
+            </Button>
+            {channel === "live" && wallet.status !== "connected" ? (
+              <span className="text-small text-muted">
+                Connect a mainnet wallet to get a signable quote.
+              </span>
+            ) : null}
+            {channel === "paper" ? (
+              <Badge tone="neutral">Practice: no transaction is created</Badge>
+            ) : null}
+          </div>
+        </TradeComplianceGate>
       ) : null}
       {state.step === "quoting" ? (
         <p role="status" className="mt-4 text-small">

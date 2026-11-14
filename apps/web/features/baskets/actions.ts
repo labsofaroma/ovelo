@@ -25,6 +25,7 @@ import { openAuthorization, type TradeKeyring } from "@/server/auth/trade";
 import { messageHash } from "@/server/auth/trade-transactions";
 import { AppError } from "@/server/errors";
 import { routes } from "@/features/shared/routes";
+import { disclosureSentence } from "@/features/compliance/disclosures";
 
 /**
  * Solana Actions for v1 baskets (M5b B4, port of lib/server/basket-buy-actions.ts). There is no
@@ -87,7 +88,13 @@ export function actionMetadata(
     icon: `${origin}/v1/og.png`,
     title: `Buy ${basket.name} (${basket.ticker}) · Mainnet spot purchase`,
     description:
-      "Buy the whole basket once with mainnet USDC, in one transaction your wallet signs. Constituent tokens settle to your wallet. Maximum slippage is 1%; SOL is needed for network fees and account rent. If the basket needs more than one transaction, buy it on Aroma instead. No partial basket is ever bought.",
+      "Buy the whole basket once with mainnet USDC, in one transaction your wallet signs. Constituent tokens settle to your wallet. Maximum slippage is 1%; SOL is needed for network fees and account rent. If the basket needs more than one transaction, buy it on Aroma instead. No partial basket is ever bought. " +
+      // M9 compliance gate: the risk disclosure travels with every Action.
+      disclosureSentence(
+        ...(creatorBasketId(basket.id)
+          ? (["action", "creator-basket"] as const)
+          : (["action", "basket"] as const)),
+      ),
     label: "Buy basket",
     links: {
       actions: [

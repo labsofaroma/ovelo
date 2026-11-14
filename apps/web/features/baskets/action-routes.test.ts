@@ -7,6 +7,15 @@ import { AppError } from "@/server/errors";
 
 /** M5b B4: the v1 Action routes and the actions.json rule, gated by AROMA_V1_ENABLED. */
 const quote = vi.hoisted(() => ({ fn: vi.fn() }));
+// M9: the compliance gate has its own route tests (features/compliance/routes.test.ts).
+vi.mock("@/features/compliance/server/gate", () => ({
+  assertTradeCompliance: vi.fn(async () => {}),
+  assertJurisdiction: vi.fn(),
+  requestJurisdiction: vi.fn(() => ({ status: "allowed", country: "DE" })),
+}));
+vi.mock("@/features/compliance/server/deps", () => ({
+  complianceDeps: () => ({ policy: () => ({}) }),
+}));
 vi.mock("@/features/markets/server", () => ({
   getMarkets: async () => ({ state: "ok", data: toMarketsView(snapshot()) }),
 }));

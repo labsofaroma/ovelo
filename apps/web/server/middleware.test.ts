@@ -9,7 +9,12 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
  */
 const { middleware } = await import("@/middleware");
 
-beforeEach(() => vi.stubEnv("NODE_ENV", "development"));
+beforeEach(() => {
+  vi.stubEnv("NODE_ENV", "development");
+  // M9: these tests are not about the geo gate (server/middleware.compliance.test.ts is); with no
+  // trusted country header the gate would fail closed, so it is opened for them.
+  vi.stubEnv("AROMA_COMPLIANCE_MISSING_COUNTRY", "allow");
+});
 afterEach(() => vi.unstubAllEnvs());
 
 const req = (

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { complianceShape } from "./env.compliance";
 import { localnetRules } from "./env.rules";
 export { TURNSTILE_TEST_SECRETS } from "./env.rules";
 
@@ -123,6 +124,9 @@ const serverShape = {
       message: "must be a loopback http URL",
     })
     .optional(),
+  // --- M9 compliance gate (additive) ---
+  ...complianceShape,
+  // --- end M9 compliance gate ---
 };
 
 const loopbackHttp = z

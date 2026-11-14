@@ -1,3 +1,5 @@
+import { complianceDeps } from "@/features/compliance/server/deps";
+import { assertJurisdiction } from "@/features/compliance/server/gate";
 import { submitRequestSchema } from "@/features/trade/schema";
 import {
   publicRecord,
@@ -21,6 +23,8 @@ export async function POST(request: Request): Promise<Response> {
   try {
     if (!isV1Enabled()) throw new AppError("NOT_FOUND");
     assertSameOrigin(request);
+    // M9 compliance gate: the location is checked again at submit (the terms were checked at quote).
+    assertJurisdiction(request, "trade", complianceDeps().policy());
     // Five 4,096-byte V1 transactions are 27,320 base64 characters.
     const body = await parse(submitRequestSchema, { maxBytes: 32_768 })(
       request,
