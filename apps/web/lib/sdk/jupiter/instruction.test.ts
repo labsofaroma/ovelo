@@ -7,7 +7,7 @@ import {
   testJupiterInstruction,
   type TestApiInstruction,
 } from "./test-fixtures";
-import * as live from "../../../tests/sdk/fixtures/jupiter-mainnet-build.json";
+import * as live from "./fixtures/jupiter-mainnet-build.json";
 import { JUPITER_EXACT_IN_IDL as idl } from "./idl/exact-in";
 function request(
   instruction: TestApiInstruction,

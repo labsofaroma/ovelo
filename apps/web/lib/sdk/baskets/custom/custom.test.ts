@@ -7,10 +7,12 @@ import {
   encodeBasketShareCode,
   decodeBasketShareCode,
   formatSocialUrl,
+} from "./index";
+import {
   executePaperRebalance,
   createPaperAccount,
   executePaperOrder,
-} from "../../index";
+} from "../../paper";
 import { testAsset } from "../../markets/test-fixtures";
 import type { ProgrammableBasket } from "./types";
 

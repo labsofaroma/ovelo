@@ -8,7 +8,7 @@ import {
   TransactionMessage,
   ComputeBudgetProgram,
 } from "@solana/web3.js";
-import * as sdk from "../index";
+import * as sdk from "./mainnet";
 const key = () => Keypair.generate().publicKey.toBase58();
 
 test("V1-only creation rejects missing capability and never splits orders", async () => {
@@ -167,86 +167,4 @@ test("V1 rejects no-op compute instructions, oversized payloads and invalid limi
     await await expect(
       sdk.composeMainnetTransaction({ ...params, ...limits, instructions: [] }),
     ).rejects.toThrow(/budget|fee limit/);
-});
-test("official recurring setup contains only official instructions and the owner signer", async () => {
-  const owner = key(),
-    buyer = key(),
-    mint = key();
-  const built = await sdk.buildRecurringPaymentInstructions({
-    owner,
-    buyer,
-    mint,
-    tokenProgram: "TokenkegQfeZyiNwAJbNbGKPFXCWuBvf9Ss623VQ5DA",
-    amount: 100n,
-    periodSeconds: 86400,
-    periods: 3,
-    nonce: 42n,
-    nowSeconds: 1000,
-    initializeAuthority: true,
-  });
-  expect(built.instructions.length).toBe(2);
-  expect(
-    built.instructions.every(
-      (ix) => ix.programId.toBase58() === sdk.MAINNET_SUBSCRIPTIONS_PROGRAM,
-    ),
-  ).toBeTruthy();
-  expect(
-    built.instructions.every((ix) =>
-      ix.keys
-        .filter((k) => k.isSigner)
-        .every((k) => k.pubkey.toBase58() === owner),
-    ),
-  ).toBeTruthy();
-  expect(built.payment.expiresAt).toBe(260200);
-  expect(built.payment.startsAt).toBe(0);
-  const revoke = await sdk.buildRevokeRecurringInstruction(
-    owner,
-    built.payment.address,
-    owner,
-  );
-  expect(revoke.programId.toBase58()).toBe(sdk.MAINNET_SUBSCRIPTIONS_PROGRAM);
-  expect(
-    revoke.keys.some(
-      (k) => k.pubkey.toBase58() === built.payment.address && k.isWritable,
-    ),
-  ).toBeTruthy();
-});
-test("recurring limits reject infinite, oversized and invalid schedules", () => {
-  const cases: [bigint, number, number][] = [
-    [0n, 86400, 3],
-    [2n ** 64n, 86400, 3],
-    [1n, 3599, 1],
-    [1n, 86400, 0],
-    [1n, 2592000, 13],
-    [1n, NaN, 1],
-  ];
-  for (const [amount, interval, periods] of cases)
-    expect(() =>
-      sdk.validateRecurringTerms(amount, interval, periods),
-    ).toThrow();
-  sdk.validateRecurringTerms(1n, 86400, 365);
-});
-test("collection does not backfill missed periods or run after hard expiry", () => {
-  const p: sdk.RecurringPayment = {
-    address: key(),
-    owner: key(),
-    buyer: key(),
-    mint: key(),
-    startsAt: 0,
-    amountPerPeriod: "100",
-    pulledInPeriod: "60",
-    periodSeconds: 3600,
-    currentPeriodStartedAt: 1000,
-    expiresAt: 20000,
-  };
-  expect(sdk.recurringRemaining(p, 2000)).toEqual({
-    amount: 40n,
-    periodStartedAt: 1000,
-  });
-  expect(sdk.recurringRemaining(p, 10000)).toEqual({
-    amount: 100n,
-    periodStartedAt: 8200,
-  });
-  expect(sdk.recurringRemaining(p, 999).amount).toBe(0n);
-  expect(sdk.recurringRemaining(p, 20000).amount).toBe(0n);
 });

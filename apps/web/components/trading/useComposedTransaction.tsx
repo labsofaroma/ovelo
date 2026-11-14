@@ -5,6 +5,7 @@ import {
   type WalletTransactionOrder,
   type BasketBundleOrder,
   type BasketBundleExecution,
+  type RecurringInvestmentPlan,
 } from "@/lib/sdk";
 import { useTradingAuth } from "./TradingAuth";
 import { aromaClient } from "../aroma/api-client";
@@ -114,7 +115,10 @@ export function useComposedTransaction() {
     return false;
   }
   async function execute(
-    order: WalletTransactionOrder | BasketBundleOrder,
+    // M9 Step 1: the recurring setup is prototype-only, so it is no longer on the shared order type.
+    order: (WalletTransactionOrder | BasketBundleOrder) & {
+      investmentSetup?: RecurringInvestmentPlan;
+    },
   ): Promise<boolean> {
     if (running.current || pending) return false;
     running.current = true;
