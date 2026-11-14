@@ -914,19 +914,23 @@ Exit (§7.3, "work before it"): W1–W4 done in code with tests ✓; owner items
 2. The fork E2E now needs the local Postgres for the purchase specs (the caps and the beta gate live there); `E2E_CREATOR=0` turns the gate off but trading then fails closed on the caps.
 3. `features/invest/server/deps.test.ts` had a 5 s default timeout for a cold dynamic import (~3 s alone) and timed out under the full parallel suite; its timeout is now 30 s.
 4. Outside the files this phase may change, `next.config.mjs` (prototype CSP and the Privy env inlining) and `turbo.json` (`PRIVY_APP_SECRET` in the build hash) still name Privy for the prototype; both go with the prototype in M9.
-5. The axe check for the invest review runs in the invest E2E (real browser, light and dark, with contrast); the web unit tests have no declared axe dependency.
+5. **Found, not fixed (outside Phase A): AAPLx's live Jupiter route is refused** as an "unsupported Jupiter swap variant" by the M4 route review (`features/trade/server/route.ts`). The trade server fails closed, so on mainnet today AAPLx cannot be bought through Aroma until the reviewed Jupiter program schema is refreshed; other xStocks (TSLAx, the sol-energy legs) route. Needs a decision and a reviewed schema update before the beta opens.
+6. The E2E itself found two Phase A defects, both fixed: the beta banner sat outside every landmark (axe `region`; now an `<aside>`), and the edge answered `BETA_ACCESS_REQUIRED` for a tampered authorization or a malformed body (now the handler answers `AUTHORIZATION_INVALID` or 400, and still checks beta access). It also showed the M7 invest E2E sending no trusted country after M9's gate (the faucet was geo-refused); the harness now sends one, as the trade E2E does.
+7. The axe check for the invest review runs in the invest E2E (real browser, light and dark, with contrast); the web unit tests have no declared axe dependency.
 
 **Evidence (local; CI not verified; nothing deployed; no mainnet transaction)**
 - `pnpm test`: web **1,363 passed / 3 skipped** (the 3 are local-Postgres tests, skipped without `DATABASE_URL`; all 3 pass against `scripts/local-db.sh`: creators, beta invites, caps), legacy node:test 276 (275 pass, 1 skipped), guard 99, keeper 47, contracts 30, ui 210, config 2.
 - Local Postgres (Docker, Neon proxy): 25 parallel beta redemptions on 25 connections → exactly 1 succeeds; 25 parallel $50 reservations against $200 → exactly 4.
 - `pnpm lint` 0 errors; `pnpm typecheck`, `pnpm format:check`, `pnpm build:web` (env check and client-secret scan) OK.
-- Final gate with the fork and invest E2E: recorded in the Phase A summary of this branch's last commit.
+- `pnpm --filter @aroma/web e2e:fork` (local mainnet fork; clones and Jupiter routes read-only, every transaction to the local validator): **33 / 33 passed** with `E2E_STOCK=TSLA` (beta gate 5, compliance 8, buys and refusals 9, caps 2, creators 9). With the default `AAPL` target the purchase specs fail before Phase A code is reached: today's live Jupiter route for AAPLx uses a swap variant the trade server's reviewed schema does not know (`ROUTE_UNAVAILABLE`: "Unsupported Jupiter swap variant", fail closed by design); see deviation 5.
+- `pnpm --filter @aroma/web e2e:invest` (local validator, keeper, local Postgres and Redis): **14 / 14 passed**, including the review disclosure with axe in light and dark.
 
 **Open items (owner)**
 - P3 minimum accounts and env (BETA-RUNBOOK §1), `pnpm db:migrate` on Neon (§2).
 - P6: push, CI green on GitHub, merge, and the `beta.<domain>` deploy from the merged tip (§3).
 - Counsel's final texts (terms, disclosures, country list, beta and cap wording) — all copy is placeholder.
 - P5 real-money spot tests, about 0.007 SOL plus small USDC (§5): owner only, later.
+- AAPLx routing (deviation 5): refresh the reviewed Jupiter swap schema, with review, before AAPLx is offered in the beta.
 
 **Critical path:** M0 → M2 → M4 (spot trading, shipped) → M6 (contract core and its devnet deploy, done 2026-11-14) → M7 (recurring on devnet) → M8 (mainnet contract path, audit-ready, not deployed) → M9 (cutover, spot live) → M10 (recurring via Jupiter DCA, or the devnet beta) → M11 (launch, within the $5 SOL budget, §7.2) → M12 when funded (audit, multisig, Aroma Guard on mainnet). M7 develops against a local LiteSVM build and the generated client until the owner's devnet deploy lands.
 
