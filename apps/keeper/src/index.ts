@@ -1,2 +1,6 @@
-/** Placeholder export so the workspace builds, lints and tests. M6 implements the collector. */
-export const KEEPER_PACKAGE = "@aroma/keeper" as const;
+/** @aroma/keeper: the Aroma Guard v1 keeper (devnet). Entry points: server.ts, cli.ts. */
+export { createHandler } from "./handler";
+export { runOnce, reconcile } from "./run";
+export { executePlan } from "./execute";
+export { parseKeeperEnv } from "./env";
+export { signQStashRequest, verifyQStashSignature } from "./qstash";
