@@ -112,6 +112,11 @@ export function openPlanAuthorization(
   if (!key) throw invalid("unknown key id");
   const expected = mac(key.secret, `${version}.${kid}.${body}`);
   const given = Buffer.from(received, "base64url");
+  // One spelling per MAC: Node's decoder ignores the final character's padding bits and skips
+  // characters outside the alphabet, so several strings decode to the same MAC. Accept only the
+  // canonical one (what seal produced), so a token cannot be re-spelled and still verify.
+  if (given.toString("base64url") !== received)
+    throw invalid("mac not canonical");
   if (given.length !== expected.length || !timingSafeEqual(given, expected))
     throw invalid("mac mismatch");
   let decoded: unknown;

@@ -56,7 +56,7 @@ const codeOf = (run: () => unknown): string => {
 };
 
 describe("authorization properties", () => {
-  it("any single-character change anywhere in the token is rejected", () => {
+  it("any single-character change anywhere in the token is rejected, padding bits included", () => {
     const token = sealAuthorization(payload(), keyring);
     const alphabet =
       "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_.";
@@ -68,30 +68,46 @@ describe("authorization properties", () => {
           fc.pre(token[index] !== replacement);
           const tampered =
             token.slice(0, index) + replacement + token.slice(index + 1);
-          // base64url can encode the same bytes two ways only in its final padding bits; a change
-          // there that decodes to identical bytes is not a tamper, so require a real difference.
-          const same =
-            tampered
-              .split(".")
-              .map((part) => {
-                try {
-                  return Buffer.from(part, "base64url").toString("hex");
-                } catch {
-                  return part;
-                }
-              })
-              .join(".") ===
-            token
-              .split(".")
-              .map((part) => Buffer.from(part, "base64url").toString("hex"))
-              .join(".");
-          fc.pre(!same);
           expect(
             codeOf(() => openAuthorization(tampered, keyring, { now: NOW })),
           ).toBe("AUTHORIZATION_INVALID");
         },
       ),
       { numRuns: 400 },
+    );
+  });
+
+  it("a MAC re-spelled to decode to the same bytes is rejected (canonical encoding only)", () => {
+    const token = sealAuthorization(payload(), keyring);
+    const [head, mac] = [
+      token.slice(0, token.lastIndexOf(".")),
+      token.split(".")[3]!,
+    ];
+    const bytes = Buffer.from(mac, "base64url");
+    const alphabet =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+    // The final character's 2 padding bits: 3 other spellings decode to the same 32 bytes.
+    const respellings = alphabet
+      .split("")
+      .map((c) => mac.slice(0, -1) + c)
+      .filter((m) => m !== mac && Buffer.from(m, "base64url").equals(bytes));
+    expect(respellings).toHaveLength(3);
+    // Characters Node's decoder skips, and the padding it tolerates.
+    const skipped = [
+      `${mac}=`,
+      `${mac}==`,
+      `${mac.slice(0, 5)}!${mac.slice(5)}`,
+    ];
+    for (const m of skipped)
+      expect(Buffer.from(m, "base64url").equals(bytes), m).toBe(true);
+    for (const m of [...respellings, ...skipped])
+      expect(
+        codeOf(() => openAuthorization(`${head}.${m}`, keyring, { now: NOW })),
+        m,
+      ).toBe("AUTHORIZATION_INVALID");
+    // The canonical token itself still verifies.
+    expect(openAuthorization(token, keyring, { now: NOW }).requestId).toBe(
+      payload().requestId,
     );
   });
 

@@ -156,7 +156,7 @@ describe("plan authorizations (pa1)", () => {
     );
   });
 
-  it("property: changing any character of the token is refused", async () => {
+  it("property: changing any character of the token is refused, padding bits included", async () => {
     const owner = await generateKeyPairSigner();
     const { authorization } = await signedPair(owner);
     fc.assert(
@@ -167,14 +167,6 @@ describe("plan authorizations (pa1)", () => {
           fc.pre(authorization[i] !== c);
           const tampered =
             authorization.slice(0, i) + c + authorization.slice(i + 1);
-          // base64url can spell the same bytes two ways in its final padding bits; a change there
-          // that decodes to identical bytes is not a tamper (as in trade.property.test.ts).
-          const bytes = (t: string) =>
-            t
-              .split(".")
-              .map((part) => Buffer.from(part, "base64url").toString("hex"))
-              .join(".");
-          fc.pre(bytes(tampered) !== bytes(authorization));
           expect(() =>
             openPlanAuthorization(tampered, keyring, { now: NOW }),
           ).toThrow();
@@ -182,6 +174,35 @@ describe("plan authorizations (pa1)", () => {
       ),
       { numRuns: 300 },
     );
+  });
+
+  it("refuses a MAC re-spelled to decode to the same bytes (canonical encoding only)", async () => {
+    const owner = await generateKeyPairSigner();
+    const { authorization } = await signedPair(owner);
+    const cut = authorization.lastIndexOf(".");
+    const [head, mac] = [
+      authorization.slice(0, cut),
+      authorization.slice(cut + 1),
+    ];
+    const bytes = Buffer.from(mac, "base64url");
+    const alphabet =
+      "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789-_";
+    const respellings = alphabet
+      .split("")
+      .map((c) => mac.slice(0, -1) + c)
+      .filter((m) => m !== mac && Buffer.from(m, "base64url").equals(bytes));
+    expect(respellings).toHaveLength(3);
+    for (const m of [
+      ...respellings,
+      `${mac}=`,
+      `${mac.slice(0, 5)}!${mac.slice(5)}`,
+    ])
+      expect(() =>
+        openPlanAuthorization(`${head}.${m}`, keyring, { now: NOW }),
+      ).toThrow();
+    expect(() =>
+      openPlanAuthorization(authorization, keyring, { now: NOW }),
+    ).not.toThrow();
   });
 
   it("refuses different bytes, a missing or wrong signature, and an extra signer", async () => {
