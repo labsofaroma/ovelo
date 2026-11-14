@@ -9,6 +9,7 @@ import {
 } from "@aroma/guard";
 import { AppError } from "@/server/errors";
 import {
+  DEVNET_TEST_PERIOD_SECONDS,
   MAX_SCHEDULE_SECONDS,
   MIN_TEST_PERIOD_SECONDS,
   PERIOD_PRESETS,
@@ -82,6 +83,8 @@ export function resolveOutputs(
 
 export function assertPlanTerms(input: {
   cluster: InvestClusterName;
+  /** Devnet test builds only: also accept DEVNET_TEST_PERIOD_SECONDS. */
+  testPeriods?: boolean;
   config: Pick<
     Config,
     "paused" | "allowedFundingMints" | "maxInstallmentAmount"
@@ -108,7 +111,11 @@ export function assertPlanTerms(input: {
       "That installment is above the devnet limit per installment.",
       "above launch cap",
     );
-  if (input.cluster === "devnet" && !PRESETS.has(input.periodSeconds))
+  if (
+    input.cluster === "devnet" &&
+    !PRESETS.has(input.periodSeconds) &&
+    !(input.testPeriods && input.periodSeconds === DEVNET_TEST_PERIOD_SECONDS)
+  )
     throw refuse(
       "Choose every day, every week or every 30 days.",
       "period not a preset",

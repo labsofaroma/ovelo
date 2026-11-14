@@ -44,6 +44,12 @@ export type InvestNetwork = {
   /** Browser RPC endpoint the wallet boundary checks. */
   browserRpcUrl: string;
   deployment: InvestDeployment;
+  /**
+   * Devnet test builds only (`testSwitchesAllowed`: never a Vercel production deployment; under
+   * `next start` only with AROMA_V1_ALLOW_TEST_SWITCHES=true): offer and accept the short
+   * devnet test period. Always false for a real devnet deployment.
+   */
+  testPeriods?: boolean;
 };
 
 export type NetworkResolution =
@@ -111,6 +117,13 @@ export function resolveInvestNetwork(env: Env): NetworkResolution {
       rpcUrl: env.devnet.AROMA_RECURRING_RPC_URL ?? DEFAULT_DEVNET_RPC,
       browserRpcUrl:
         env.public.NEXT_PUBLIC_SOLANA_DEVNET_RPC_URL ?? DEFAULT_DEVNET_RPC,
+      testPeriods: testSwitchesAllowed({
+        NODE_ENV: env.server.NODE_ENV,
+        AROMA_V1_ALLOW_TEST_SWITCHES: env.server.AROMA_V1_ALLOW_TEST_SWITCHES
+          ? "true"
+          : "false",
+        VERCEL_ENV: env.server.VERCEL_ENV,
+      }),
       deployment: {
         programId: deployment.programId,
         fundingMint: deployment.fundingMint,

@@ -70,6 +70,38 @@ describe("invest cluster (B0/B2)", () => {
     });
   });
 
+  it("the devnet test period is on only where test switches are allowed, never in Vercel production", async () => {
+    const { resolveInvestNetwork } = await load({
+      cluster: "devnet",
+      genesisHash: DEVNET_GENESIS_HASH,
+      programId: "FYrrfhrysaGUwCNyTggqyKmTWqpg3vph8gzmSWt7QtTU",
+      deploySignature: "x",
+      fundingMint: "So11111111111111111111111111111111111111112",
+    });
+    const testPeriods = (source: Record<string, string>) => {
+      const r = resolveInvestNetwork(env(source));
+      if (!r.available) throw new Error("expected devnet");
+      return r.network.testPeriods;
+    };
+    expect(testPeriods({ NODE_ENV: "production" })).toBe(false);
+    expect(
+      testPeriods({
+        NODE_ENV: "production",
+        AROMA_V1_ALLOW_TEST_SWITCHES: "true",
+      }),
+    ).toBe(true);
+    expect(
+      testPeriods({
+        NODE_ENV: "production",
+        AROMA_V1_ALLOW_TEST_SWITCHES: "false",
+        VERCEL_ENV: "production",
+      }),
+    ).toBe(false);
+    expect(testPeriods({ NODE_ENV: "production", VERCEL_ENV: "preview" })).toBe(
+      false,
+    );
+  });
+
   it("localnet only with the test switches and build flag, on loopback, with its own genesis", async () => {
     const { resolveInvestNetwork } = await load(null);
     expect(resolveInvestNetwork(env(localnet))).toMatchObject({

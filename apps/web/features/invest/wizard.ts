@@ -1,4 +1,5 @@
 import {
+  DEVNET_TEST_PERIOD_SECONDS,
   MAX_OUTPUTS,
   MAX_SCHEDULE_SECONDS,
   PERIOD_PRESETS,
@@ -39,6 +40,7 @@ export const TEST_PERIOD_SECONDS = 15;
 
 export function periodChoices(
   cluster: "devnet" | "localnet",
+  testPeriods = false,
 ): { seconds: number; label: string }[] {
   const base = [
     { seconds: PERIOD_PRESETS.daily, label: "Every day" },
@@ -53,7 +55,15 @@ export function periodChoices(
         },
         ...base,
       ]
-    : base;
+    : testPeriods
+      ? [
+          {
+            seconds: DEVNET_TEST_PERIOD_SECONDS,
+            label: "Every 15 minutes (devnet test build)",
+          },
+          ...base,
+        ]
+      : base;
 }
 
 /** "33.34" → 3334 bps; null if not a percentage with at most two decimals. */

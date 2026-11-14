@@ -74,6 +74,7 @@ export async function loadInvestPage(): Promise<InvestPageResult> {
           })),
         })),
         catchUpWindowPeriods: config.catchUpWindowPeriods,
+        testPeriods: network.testPeriods === true,
         maxInstallmentRaw: config.maxInstallmentAmount.toString(),
         fundingSymbol: FUNDING_SYMBOL,
         fundingDecimals: mint.decimals,

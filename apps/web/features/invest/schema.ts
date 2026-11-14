@@ -34,6 +34,12 @@ export const PERIOD_LABEL: Record<number, string> = {
   2_592_000: "every 30 days",
 };
 export const MIN_TEST_PERIOD_SECONDS = 10;
+/**
+ * Devnet TEST builds only (test switches allowed, never a Vercel production deployment): one short
+ * period so a real devnet run fits several installments and a skipped period in one US trading
+ * session (equity feeds publish only in market hours). Real devnet users get the presets.
+ */
+export const DEVNET_TEST_PERIOD_SECONDS = 900;
 /** The program's limit: the whole schedule fits in 366 days. */
 export const MAX_SCHEDULE_SECONDS = 366 * 86_400;
 export const MAX_OUTPUTS = 20;

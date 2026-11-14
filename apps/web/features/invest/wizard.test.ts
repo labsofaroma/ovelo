@@ -158,4 +158,15 @@ describe("plan wizard rules", () => {
     });
     expect(JSON.stringify(periodChoices("localnet"))).not.toMatch(/month/i);
   });
+
+  it("a devnet test build adds the 15-minute test period; a real devnet build never does", () => {
+    expect(periodChoices("devnet", false)).toEqual(periodChoices("devnet"));
+    expect(periodChoices("devnet", true)[0]).toEqual({
+      seconds: 900,
+      label: "Every 15 minutes (devnet test build)",
+    });
+    expect(periodChoices("devnet", true).slice(1)).toEqual(
+      periodChoices("devnet"),
+    );
+  });
 });

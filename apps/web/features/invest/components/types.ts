@@ -11,6 +11,8 @@ export type InvestPageData = {
   assets: WizardAsset[];
   baskets: WizardBasket[];
   catchUpWindowPeriods: number;
+  /** Devnet test build: the wizard also offers the 15-minute test period. */
+  testPeriods?: boolean;
   /** Launch cap per installment, raw units. */
   maxInstallmentRaw: string;
   fundingSymbol: string;

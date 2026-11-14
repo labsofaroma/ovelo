@@ -22,7 +22,7 @@ const selectClass =
 /** Choose → amount and schedule → review (server summary) → sign → submitted. */
 export function PlanWizard({ data }: { data: InvestPageData }) {
   const signer = useSigner();
-  const choices = periodChoices(data.cluster);
+  const choices = periodChoices(data.cluster, data.testPeriods === true);
   const [state, setState] = useState<WizardState>({
     mode: data.baskets.some((b) => b.available) ? "basket" : "assets",
     basketId: data.baskets.find((b) => b.available)?.id ?? null,

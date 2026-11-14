@@ -85,6 +85,7 @@ export async function prepareCreate(
   const fundingAmount = BigInt(request.fundingAmount);
   assertPlanTerms({
     cluster: network.cluster,
+    testPeriods: network.testPeriods,
     config,
     fundingMint,
     fundingAmount,

@@ -252,6 +252,27 @@ describe("prepareCreate", () => {
     ).rejects.toMatchObject({ code: "INVEST_UNAVAILABLE" });
   });
 
+  it("devnet accepts the 15-minute test period only in a test build, and no other short period", async () => {
+    const w = await world();
+    expect(w.network.cluster).toBe("devnet");
+    const aapl = [{ mint: w.aapl.address, weightBps: 10_000 }];
+    const short = { ...request(w.owner.address, aapl), periodSeconds: 900 };
+    await expect(prepareCreate(await deps(w), short)).rejects.toMatchObject({
+      code: "VALIDATION_FAILED",
+      publicMessage: "Choose every day, every week or every 30 days.",
+    });
+    const test = await deps(w);
+    const testBuild = {
+      ...test,
+      network: { ...test.network, testPeriods: true },
+    };
+    const prepared = await prepareCreate(testBuild, short);
+    expect(prepared.transaction).toEqual(expect.any(String));
+    await expect(
+      prepareCreate(testBuild, { ...short, periodSeconds: 60 }),
+    ).rejects.toMatchObject({ code: "VALIDATION_FAILED" });
+  });
+
   it("needs the owner's test USD account, and never returns a transaction that fails simulation", async () => {
     const w = await world();
     w.chain.accounts.delete(w.ownerUsd);
