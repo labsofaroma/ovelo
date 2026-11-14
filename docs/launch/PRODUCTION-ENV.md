@@ -7,6 +7,7 @@ _Prepared on `launch-prep`; **the owner creates every account and key**. Sources
 ```bash
 pnpm check:prod-env --env-file <path relative to apps/web>   # or with the env already exported
 pnpm check:prod-env --offline                                # skip the RPC genesis calls
+pnpm check:prod-env --profile beta --env-file <path>         # Phase A: beta.<domain> (§5)
 ```
 
 It validates the production profile with the real boot schema (forced to `VERCEL_ENV=production`), then: required variables present; no `.invalid` / `placeholder` / test values; no Cloudflare Turnstile test keys; E2E, localnet and test switches off; the compliance policy fails closed and restricts US; and each mainnet RPC answers `getGenesisHash` with mainnet's genesis (read-only). It prints **names and statuses only**. Exit 1 on any missing, invalid or forbidden item.
@@ -36,6 +37,8 @@ Milestone = when it is needed: **M9** spot and baskets live; **M10** mainnet rec
 | Pyth | `PYTH_API_KEY` | Hermes (prices, health probe); Hermes answers 401 without a key | Pyth Pro / Hermes access | per provider | M12 (web: recommended at M9) |
 | Analytics | `NEXT_PUBLIC_PLAUSIBLE_DOMAIN` | consent-gated analytics | plausible.io | — | optional |
 | Operator | `AROMA_OPERATOR_NAME`, `AROMA_SUPPORT_EMAIL` | legal pages' contact block | owner | — | M9 |
+| Beta gate (Phase A) | `AROMA_BETA_GATE`, `AROMA_BETA_WALLETS` | private-beta access ([BETA-ACCESS.md](./BETA-ACCESS.md)): `on` for `beta.<domain>`, `off` at Phase B; optional wallet allowlist | — | — | Phase A |
+| Trade caps (Phase A) | `AROMA_MAX_TRADE_USDC_RAW`, `AROMA_MAX_DAILY_USDC_RAW` | per-trade and per-wallet daily caps in raw USDC units ([TRADE-CAPS.md](./TRADE-CAPS.md)); **required in production**, 0 refused | — | — | Phase A |
 | Compliance | `AROMA_COMPLIANCE_*`, `AROMA_TERMS_VERSION` | jurisdiction policy overrides ([COMPLIANCE.md §2](./COMPLIANCE.md#2-configuration-not-code)); leave unset for the defaults; never `MISSING_COUNTRY=allow` | counsel's final list | — | M9 |
 | Turnstile | `NEXT_PUBLIC_TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY` | the devnet faucet's human check; test keys refused in production | Cloudflare → Turnstile, hostname = the domain | free | M7 (devnet surface) |
 | Devnet surface | `AROMA_RECURRING_RPC_URL`, `NEXT_PUBLIC_SOLANA_DEVNET_RPC_URL`, `AROMA_V1_INVEST_CLUSTER=devnet`, `AROMA_V1_FAUCET_KEYPAIR`, `AROMA_V1_FAUCET_DAILY_CLAIMS` | `/v1/invest` on devnet and its faucet (devnet-only key, never the deployer) | devnet RPC (paid devnet endpoint recommended); faucet key per KEY-CUSTODY | — | M7 |
@@ -83,3 +86,30 @@ Estimate: one focused session with tests (unit tests for each rule, plus the for
 6. Sentry project, operator contact. (No Privy app: wallet-only login, REWRITE-PLAN §7.3 W1.)
 7. Generate `AROMA_TRADE_SECRET` and `AROMA_REVALIDATE_SECRET` directly into Vercel's env UI (never in a file in the repo).
 8. `pnpm check:prod-env` against the Vercel production env (`vercel env pull` into a file **outside** the repo, run the check, delete the file).
+
+## 5. Phase A: `beta.<domain>` (private beta)
+
+A **separate Vercel project** for `beta.<domain>`, built from the merged tip (needs P6), with its own env. The prototype stays on the main domain. Validate it with `pnpm check:prod-env --profile beta --env-file <file outside the repo>`: the production profile, plus the beta gate set to `on` explicitly, both caps set (above $50 / $200 warns), **no browser-visible variable v1 does not read** (the prototype's `NEXT_PUBLIC_PRIVY_APP_ID` is refused: v1 is wallet-only, W1), `AROMA_SITE_URL` on a `beta.` host (warning), and each mainnet RPC's genesis (read-only `getGenesisHash`).
+
+Every variable the owner sets for `beta.<domain>`:
+
+| Service | Variable(s) | Value / where | Required |
+|---|---|---|---|
+| Feature flag | `AROMA_V1_ENABLED` | `true` | yes |
+| Domain | `AROMA_SITE_URL` | `https://beta.<domain>` | yes |
+| Mainnet RPC (server) | `SOLANA_RPC_URL` | paid Helius or Triton key (path/query, never `user:pass@`) | yes |
+| Mainnet RPC (browser) | `NEXT_PUBLIC_SOLANA_RPC_URL`, `NEXT_PUBLIC_SOLANA_WS_URL` | a separate, origin-locked key for `beta.<domain>` | yes (WS optional) |
+| Neon | `DATABASE_URL` | pooled, `sslmode=require`; then `pnpm db:migrate` (through `0006_trade_caps`) | yes |
+| Upstash Redis | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | eviction **off** (single-use nonces) | yes |
+| Trade HMAC | `AROMA_TRADE_SECRET` | `openssl rand -base64 48`, straight into Vercel | yes |
+| Jupiter | `JUPITER_API_KEY` | portal.jup.ag (keyless → `TRADING_UNAVAILABLE`) | yes |
+| Beta gate | `AROMA_BETA_GATE`, `AROMA_BETA_WALLETS` | `on`; allowlist optional | gate yes |
+| Caps | `AROMA_MAX_TRADE_USDC_RAW`, `AROMA_MAX_DAILY_USDC_RAW` | `50000000`, `200000000` | yes |
+| Sentry | `SENTRY_DSN`, `NEXT_PUBLIC_SENTRY_DSN`, `SENTRY_ENVIRONMENT`, `NEXT_PUBLIC_SENTRY_ENVIRONMENT`, `SENTRY_AUTH_TOKEN` (build) | the project's DSN (`https://<key>@o<org>.ingest[.<region>].sentry.io/<project>`), environment `beta` | DSNs yes |
+| Turnstile | `NEXT_PUBLIC_TURNSTILE_SITE_KEY`, `TURNSTILE_SECRET_KEY` | hostname `beta.<domain>`; never Cloudflare's test keys | recommended (devnet faucet) |
+| Alerts | Sentry alert rules (web errors, `quote.refused`/`submit.refused` spikes) to the owner's channel; `KEEPER_ALERT_WEBHOOK_URL` on the **devnet** keeper host | Slack or Discord incoming webhook | recommended |
+| Devnet surface | `AROMA_RECURRING_RPC_URL`, `NEXT_PUBLIC_SOLANA_DEVNET_RPC_URL`, `AROMA_V1_INVEST_CLUSTER=devnet`, `AROMA_V1_FAUCET_KEYPAIR`, `AROMA_V1_FAUCET_DAILY_CLAIMS` | as §1 (devnet-only key, never the deployer) | for `/v1/invest` |
+| Recommended | `JITO_BLOCK_ENGINE_URL`, `AROMA_REVALIDATE_SECRET`, `PYTH_API_KEY`, `AROMA_OPERATOR_NAME`, `AROMA_SUPPORT_EMAIL`, `AROMA_COMPLIANCE_*` (counsel's list) | as §1 | — |
+
+**Must be unset on the beta** (in addition to the production list above): `NEXT_PUBLIC_PRIVY_APP_ID` and any other prototype-only variable (`AROMA_RECURRING_AUTH_SECRET`, `AROMA_FAUCET_SECRET_KEY`, `CREATOR_AUTH_SECRET`, `CREATOR_INVITE_CODES`, `BOT_KEYPAIR`). The owner's checklist, in order: [BETA-RUNBOOK.md](./BETA-RUNBOOK.md).
+

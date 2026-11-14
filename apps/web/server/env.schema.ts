@@ -200,6 +200,9 @@ for (const key of Object.keys(serverShape)) GROUP_OF[key] = "server";
 for (const key of Object.keys(devnetShape)) GROUP_OF[key] = "devnet";
 for (const key of Object.keys(keeperShape)) GROUP_OF[key] = "keeper";
 
+/** Every variable the v1 schema reads (check:prod-env's beta profile flags the others). */
+export const SCHEMA_VARIABLES: readonly string[] = Object.keys(flatShape);
+
 /** Required once AROMA_V1_ENABLED=true. */
 export const V1_REQUIRED = [
   "SOLANA_RPC_URL",

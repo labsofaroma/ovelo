@@ -8,6 +8,7 @@ _Prepared on `launch-prep`; **owner executes, one step at a time**. Nothing has 
 main (= prototype-final, e85d128)
  └ m0-foundation → m1-design-system → m2-shared-helpers → m3-read-only-app → m4-wallet-trading
    → m5-creators → m6-contract-core → m7-recurring-devnet → m8-mainnet-path → launch-prep
+   → phase-a-beta
 ```
 
 Every branch must contain the previous one; `main` becomes the final tip by **fast-forward** (no merge commit, no squash, history kept). State (2026-11-14, after the stacking rebase): the whole stack `main → … → m7-recurring-devnet → m8-mainnet-path → launch-prep` is linear (all ten checks below print `OK`, no merge commits, one author identity). `m8-mainnet-path` was rebased onto the `m7-recurring-devnet` tip (which holds the devnet deployment record) and `launch-prep` onto `m8-mainnet-path`. Only docs conflicted: the critical path, the §7 M8/M9 rows, and the open items in `aroma-guard-v1.md`. M8's own files were updated to the budget plan (mainnet keeper, multisig and audit at M12). The terms migration stayed `0004`, because M8 added no migration. The pre-rebase tips are kept locally as `backup/m8-mainnet-path-pre-rebase` and `backup/launch-prep-pre-rebase`; never push them.
@@ -17,15 +18,16 @@ Every branch must contain the previous one; `main` becomes the final tip by **fa
 ```bash
 prev=main
 for b in m0-foundation m1-design-system m2-shared-helpers m3-read-only-app m4-wallet-trading \
-         m5-creators m6-contract-core m7-recurring-devnet m8-mainnet-path launch-prep; do
+         m5-creators m6-contract-core m7-recurring-devnet m8-mainnet-path launch-prep \
+         phase-a-beta; do
   git merge-base --is-ancestor "$prev" "$b" && echo "OK $prev -> $b" || echo "NOT LINEAR $prev -> $b"
   prev=$b
 done
-git log --merges --oneline main..launch-prep   # must print nothing
-git log --format='%an <%ae>' main..launch-prep | sort -u   # must be the Aroma Labs identity only
+git log --merges --oneline main..phase-a-beta   # must print nothing
+git log --format='%an <%ae>' main..phase-a-beta | sort -u   # must be the Aroma Labs identity only
 ```
 
-All ten lines must say `OK` before anything is pushed.
+All eleven lines must say `OK` before anything is pushed (Phase A added `phase-a-beta` on top of `launch-prep`).
 
 ## 2. The prototype stays deployable
 
@@ -47,9 +49,10 @@ git push origin m6-contract-core
 git push origin m7-recurring-devnet
 git push origin m8-mainnet-path
 git push origin launch-prep
-# 3. open a PR launch-prep → main; wait for the required checks (section 4) to pass on GitHub
+git push origin phase-a-beta                              # Phase A (private beta)
+# 3. open a PR phase-a-beta → main; wait for the required checks (section 4) to pass on GitHub
 # 4. fast-forward main (after the owner's review and green checks):
-git push origin launch-prep:main                          # rejected unless it is a fast-forward
+git push origin phase-a-beta:main                         # rejected unless it is a fast-forward
 ```
 
 `git push --force` is never used. If `main` moved on GitHub in the meantime, stop and ask.
@@ -114,7 +117,7 @@ gh api -X POST repos/aromalabs/aroma/rulesets -H "Accept: application/vnd.github
 JSON
 ```
 
-With one maintainer, a required review means a second person (or an org member) must approve; if there is none yet, set `required_approving_review_count` to 0 and keep the checks, linear history and no force-push. With `enforce_admins: true` the fast-forward in section 3 must go through the PR (merge method "Rebase and merge" keeps the commits; GitHub may rewrite committer data, so a plain fast-forward push before turning protection on is the cleaner option: push → checks green → `git push origin launch-prep:main` → then apply protection).
+With one maintainer, a required review means a second person (or an org member) must approve; if there is none yet, set `required_approving_review_count` to 0 and keep the checks, linear history and no force-push. With `enforce_admins: true` the fast-forward in section 3 must go through the PR (merge method "Rebase and merge" keeps the commits; GitHub may rewrite committer data, so a plain fast-forward push before turning protection on is the cleaner option: push → checks green → `git push origin phase-a-beta:main` → then apply protection).
 
 ## 5. Workflow files: local verification
 
