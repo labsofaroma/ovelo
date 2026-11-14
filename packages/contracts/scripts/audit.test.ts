@@ -46,11 +46,14 @@ async function world(
     upgradeAuthority?: Address;
     stockAuthority?: "pda" | "other";
     extraFunding?: boolean;
+    /** Who holds the test USD mint authority (default: the faucet key, M7). */
+    usdAuthority?: "faucet" | "deployer";
   } = {},
 ) {
   const key = async () => (await generateKeyPairSigner()).address;
   const deployer = await key();
   const keeper = await key();
+  const faucet = await key();
   const usd = await key();
   const stock = await key();
   const programData = await v1.findProgramDataAddress();
@@ -115,7 +118,7 @@ async function world(
     [usd]: {
       owner: v1.TOKEN_PROGRAM_ID,
       executable: false,
-      data: b64(mint(deployer, 6)),
+      data: b64(mint(o.usdAuthority === "deployer" ? deployer : faucet, 6)),
     },
     [stock]: {
       owner: T22,
@@ -155,6 +158,7 @@ async function world(
       programId: v1.AROMA_GUARD_V1_PROGRAM_ID,
       deployer,
       keeper,
+      faucet,
       testUsd: usd,
     },
   };
@@ -167,7 +171,20 @@ describe("read-only devnet audit", () => {
     expect(w.calls).toEqual(["getGenesisHash"]);
   });
 
-  test("a correct deployment passes: stocks need their PDA, the test USD keeps the deployer as faucet", async () => {
+  test("a test USD minted by the deployer is flagged (M7: the faucet key holds it)", async () => {
+    const w = await world({ usdAuthority: "deployer" });
+    const r = await auditDevnet(w.rpc, w.expect);
+    expect(r.passed).toBe(false);
+    expect(r.checks.testUsdAuthorityIsFaucet).toBe(false);
+    expect(r.issues.join(" ")).toMatch(/still the deployer/);
+    const same = await auditDevnet(w.rpc, {
+      ...w.expect,
+      faucet: w.expect.deployer,
+    });
+    expect(same.checks.testUsdAuthorityIsFaucet).toBe(false);
+  });
+
+  test("a correct deployment passes: stocks need their PDA, the test USD belongs to the faucet key", async () => {
     const w = await world();
     const r = await auditDevnet(w.rpc, w.expect);
     expect(r.issues).toEqual([]);

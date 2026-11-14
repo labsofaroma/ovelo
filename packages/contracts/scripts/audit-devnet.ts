@@ -3,7 +3,7 @@
  * READ-ONLY audit of the Aroma Guard v1 devnet deployment (refuses any other genesis; never
  * signs, never sends): upgrade authority = the owner's deployer, config admin and keeper, the
  * M6 decisions, no foreign funding mint, test USD and every asset's mint authority.
- *   pnpm --filter @aroma/contracts devnet:audit --deployer <DEPLOYER_PUBKEY> [--keeper PUBKEY] [--rpc URL]
+ *   pnpm --filter @aroma/contracts devnet:audit --deployer <DEPLOYER_PUBKEY> [--keeper PUBKEY] [--faucet PUBKEY] [--rpc URL]
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -19,7 +19,7 @@ import { execFileSync } from "node:child_process";
 
 async function main() {
   const args = parseArgs(process.argv.slice(2), {
-    values: ["--rpc", "--deployer", "--keeper"],
+    values: ["--rpc", "--deployer", "--keeper", "--faucet"],
   });
   const deployer = args.values.get("--deployer");
   if (!deployer)
@@ -32,6 +32,12 @@ async function main() {
     execFileSync("solana-keygen", ["pubkey", keeperFile], {
       encoding: "utf8",
     }).trim();
+  const faucetFile = path.join(CONTRACTS_ROOT, ".keys/devnet-faucet.json");
+  const faucet =
+    args.values.get("--faucet") ??
+    execFileSync("solana-keygen", ["pubkey", faucetFile], {
+      encoding: "utf8",
+    }).trim();
   const state = fs.existsSync(STATE_FILE)
     ? (JSON.parse(fs.readFileSync(STATE_FILE, "utf8")) as ProvisionState)
     : null;
@@ -41,6 +47,7 @@ async function main() {
       programId: v1.AROMA_GUARD_V1_PROGRAM_ID,
       deployer: address(deployer),
       keeper: address(keeper),
+      faucet: address(faucet),
       testUsd: state?.testUsd?.mint ?? null,
     },
   );

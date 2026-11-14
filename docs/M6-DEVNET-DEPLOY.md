@@ -33,7 +33,7 @@ solana balance "$(solana-keygen pubkey ~/.config/solana/aroma-deployer.json)" --
 ```
 This wallet is devnet-only. Use a **different**, fresh deployer for mainnet (M10).
 
-Also back up `packages/contracts/.keys/devnet-keeper.json` (devnet only; M7's keeper signs with it).
+Also back up `packages/contracts/.keys/devnet-keeper.json` (devnet only; M7's keeper signs with it) and, after step 5, `packages/contracts/.keys/devnet-faucet.json` (devnet only; the faucet signs with it). Fund both with devnet SOL (`solana airdrop 2 <pubkey> --url devnet`): the keeper pays fees and Pyth price posts, the faucet pays fees, token accounts and its small SOL top-ups.
 
 ## 3. Rebuild and check locally (optional but recommended)
 
@@ -63,7 +63,7 @@ solana program close <BUFFER_ADDRESS> --url devnet --keypair ~/.config/solana/ar
 ```bash
 pnpm --filter @aroma/contracts devnet:init --deployer ~/.config/solana/aroma-deployer.json
 ```
-Creates the test USD (`tUSD`, classic SPL, 6 decimals, mint authority = deployer, no freeze authority) and calls `initialize_config` signed by the deployer (the upgrade authority) with the M6 decisions: keeper = the devnet keeper, protocol fee 0 bps, catch-up window 1, the test USD as the only funding mint, treasury = deployer, 300 bps slippage cap, 60 s staleness, 2% confidence, 500 tUSD per installment. Safe to rerun: an existing config is compared, never overwritten. State (public addresses) goes to `packages/contracts/.devnet/state.json` (git-ignored).
+Creates the test USD (`tUSD`, classic SPL, 6 decimals, no freeze authority) with the **devnet-only faucet key** as mint authority (M7 decision: the faucet key becomes a server secret, the deployer never does). The key is `packages/contracts/.keys/devnet-faucet.json` (git-ignored), created on the first run; pass `--faucet <pubkey>` to reuse an existing one. It refuses to run if the faucet key is the deployer, or if an earlier test USD still has the deployer as mint authority (it prints the one `spl-token authorize … mint <faucet>` command to run first). Then it calls `initialize_config` signed by the deployer (the upgrade authority) with the M6 decisions: keeper = the devnet keeper, protocol fee 0 bps, catch-up window 1, the test USD as the only funding mint, treasury = deployer, 300 bps slippage cap, 60 s staleness, 2% confidence, 500 tUSD per installment. Safe to rerun: an existing config is compared, never overwritten. State (public addresses) goes to `packages/contracts/.devnet/state.json` (git-ignored).
 
 ## 6. Register the test assets
 
@@ -78,7 +78,7 @@ Creates xAAPL, xMSFT and xNVDA: Token-2022 mints (8 decimals, ScaledUiAmount wit
 ```bash
 pnpm --filter @aroma/contracts devnet:audit --deployer "$(solana-keygen pubkey ~/.config/solana/aroma-deployer.json)"
 ```
-Must print `"passed": true` and `"transactionsSubmitted": 0`: upgrade authority = deployer, config admin = deployer, keeper = the devnet keeper, not paused, fee 0 and window 1, only the test USD allow-listed, test USD and every asset with the expected mint authority and no freeze authority.
+Must print `"passed": true` and `"transactionsSubmitted": 0`: upgrade authority = deployer, config admin = deployer, keeper = the devnet keeper, not paused, fee 0 and window 1, only the test USD allow-listed, test USD mint authority = the faucet key (not the deployer), every asset with its mock PDA as mint authority, and no freeze authorities.
 
 ## What to paste back
 

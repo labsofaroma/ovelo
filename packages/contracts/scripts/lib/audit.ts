@@ -22,6 +22,8 @@ export type AuditExpectations = {
   programId: Address;
   deployer: Address;
   keeper: Address;
+  /** The devnet-only faucet key that must hold the test USD mint authority (M7). */
+  faucet: Address;
   testUsd: Address | null;
 };
 export type AuditReport = {
@@ -156,11 +158,14 @@ export async function auditDevnet(
       config !== null,
     ),
     check(
-      "testUsdAuthorityIsDeployer",
-      usd?.mintAuthority === expect.deployer &&
+      "testUsdAuthorityIsFaucet",
+      usd?.mintAuthority === expect.faucet &&
+        expect.faucet !== expect.deployer &&
         usd.freezeAuthority === null &&
         usd.decimals === 6,
-      "test USD mint authority, freeze authority or decimals unexpected",
+      usd?.mintAuthority === expect.deployer
+        ? "test USD mint authority is still the deployer; hand it to the faucet key"
+        : "test USD mint authority, freeze authority or decimals unexpected",
     ),
     check("assetsRegistered", assets.length >= 1, "no assets registered"),
     check(
