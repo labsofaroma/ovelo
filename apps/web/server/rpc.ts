@@ -16,7 +16,7 @@ import { tryGetEnv } from "./env";
 
 export type Cluster = "mainnet-beta" | "devnet";
 
-/** Genesis hashes. `devnet` matches DEVNET_GENESIS_HASH in lib/sdk/devnet-xstocks.ts (tested). */
+/** Genesis hashes; every v1 copy is pinned against these in rpc.test.ts. */
 export const GENESIS_HASHES = {
   "mainnet-beta": "5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d",
   devnet: "EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG",

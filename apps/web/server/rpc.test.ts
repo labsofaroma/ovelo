@@ -8,6 +8,12 @@ import {
   connectToCluster,
   GENESIS_HASHES,
 } from "./rpc";
+import { DEVNET_GENESIS_HASH, MAINNET_GENESIS_HASH } from "@aroma/guard";
+import {
+  DEVNET_GENESIS as WALLET_DEVNET_GENESIS,
+  MAINNET_GENESIS as WALLET_MAINNET_GENESIS,
+} from "@/features/wallet/cluster";
+import { MAINNET_GENESIS as PROD_ENV_MAINNET_GENESIS } from "./prod-env";
 
 /** A fake JSON-RPC node: answers getGenesisHash with the given value, or fails. */
 function node(genesis: string | "down") {
@@ -155,19 +161,30 @@ describe("endpoint policy", () => {
   });
 });
 
-describe("constants stay in sync with the prototype", () => {
-  const read = (path: string) =>
-    readFileSync(new URL(path, import.meta.url), "utf8");
+describe("genesis hashes: pinned, and every v1 copy agrees", () => {
+  // The cluster identities themselves (AGENTS.md rule 3), written out here so a typo in any copy
+  // cannot also change the expectation. M9 Step 1: these used to be read from prototype files.
+  const MAINNET = "5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d";
+  const DEVNET = "EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG";
 
-  it("devnet genesis hash equals DEVNET_GENESIS_HASH in lib/sdk/devnet-xstocks.ts", () => {
-    expect(read("../lib/sdk/devnet-xstocks.ts")).toContain(
-      `"${GENESIS_HASHES.devnet}"`,
-    );
+  it("server/rpc.ts names the real clusters", () => {
+    expect(GENESIS_HASHES["mainnet-beta"]).toBe(MAINNET);
+    expect(GENESIS_HASHES.devnet).toBe(DEVNET);
   });
 
-  it("mainnet genesis hash equals MAINNET_GENESIS in lib/server/mainnet-connection.ts", () => {
-    expect(read("../lib/server/mainnet-connection.ts")).toContain(
-      `"${GENESIS_HASHES["mainnet-beta"]}"`,
+  it("the Guard client (shared with the keeper), the wallet and the prod-env check agree", () => {
+    expect(MAINNET_GENESIS_HASH).toBe(MAINNET);
+    expect(DEVNET_GENESIS_HASH).toBe(DEVNET);
+    expect(WALLET_MAINNET_GENESIS).toBe(MAINNET);
+    expect(WALLET_DEVNET_GENESIS).toBe(DEVNET);
+    expect(PROD_ENV_MAINNET_GENESIS).toBe(MAINNET);
+  });
+
+  it("the mint-precision resolver (private constant) checks the mainnet genesis", () => {
+    const source = readFileSync(
+      new URL("../lib/sdk/core/mint-precision.ts", import.meta.url),
+      "utf8",
     );
+    expect(source).toContain(`MAINNET_GENESIS_HASH = "${MAINNET}"`);
   });
 });
