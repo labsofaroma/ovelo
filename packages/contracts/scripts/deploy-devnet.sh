@@ -13,13 +13,15 @@ URL="${AROMA_DEVNET_RPC:-https://api.devnet.solana.com}"
 die() { echo "deploy-devnet: $*" >&2; exit 1; }
 
 [ -f "$DEPLOYER" ] || die "deployer keypair not found at $DEPLOYER (CONTRACT-V1-SPEC §10, step 1)."
-[ -f "$PROGRAM_KEYPAIR" ] || die "program keypair missing at $PROGRAM_KEYPAIR."
+[ -f "$PROGRAM_KEYPAIR" ] || die "$PROGRAM_KEYPAIR is missing; \`anchor build\` would create a NEW program keypair (a different program ID). Restore it from your backup (docs/M6-DEVNET-DEPLOY.md §1). Refusing to deploy."
 [ "$(solana genesis-hash --url "$URL")" = "$DEVNET_GENESIS" ] || die "$URL is not Solana devnet. Refusing."
-[ "$(solana-keygen pubkey "$PROGRAM_KEYPAIR")" = "$EXPECTED_PROGRAM_ID" ] || die "program keypair does not match $EXPECTED_PROGRAM_ID."
+# The keypair, declare_id!, Anchor.toml and the built IDLs must all be EXPECTED_PROGRAM_ID.
+node scripts/check-program-id.mjs --expect "$EXPECTED_PROGRAM_ID" || die "program ID check failed. Refusing to deploy."
 DEPLOYER_PUBKEY="$(solana-keygen pubkey "$DEPLOYER")"
 echo "Deployer: $DEPLOYER_PUBKEY  balance: $(solana balance "$DEPLOYER_PUBKEY" --url "$URL")"
 
 bash scripts/build.sh
+node scripts/check-program-id.mjs --require-idl --expect "$EXPECTED_PROGRAM_ID" || die "program ID check failed after the build. Refusing to deploy."
 
 solana program deploy \
   --url "$URL" \
