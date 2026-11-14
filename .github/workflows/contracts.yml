@@ -1,8 +1,12 @@
 name: Contracts
 
-# Runs only when an on-chain program, its generated client, or this workflow changes.
-# M6: authored only; not yet run on GitHub (CI not verified).
+# Runs only when an on-chain program, its generated client, or this workflow changes; the
+# mainnet-fork end to end runs nightly (M8). M6/M8: authored only; not yet run on GitHub
+# (CI not verified).
 on:
+  schedule:
+    - cron: "17 3 * * *" # nightly: mainnet-fork end to end (about 2.5 h: 1-hour periods)
+  workflow_dispatch:
   push:
     branches: [main]
     paths:
@@ -29,6 +33,7 @@ permissions:
 jobs:
   contracts:
     name: packages/anchor - cargo test and IDL drift
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -73,6 +78,7 @@ jobs:
 
   v1:
     name: packages/contracts - cargo test, clippy, both builds, LiteSVM, IDL and Codama drift
+    if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
     timeout-minutes: 60
     env:
@@ -127,5 +133,90 @@ jobs:
       - name: Pinned Subscriptions and Pyth receiver binaries (read-only devnet fetch, SHA-256 checked)
         run: pnpm --filter @aroma/contracts test:fixtures
 
-      - name: LiteSVM suite
+      - name: Pinned mainnet binaries (Jupiter, Whirlpool, Token, Token-2022, Subscriptions; read-only, SHA-256 checked)
+        run: pnpm --filter @aroma/contracts test:fixtures:mainnet
+
+      - name: LiteSVM suite (devnet-mock and default builds, real Jupiter routes)
         run: pnpm --filter @aroma/contracts test:litesvm
+
+      - name: LiteSVM suite against mainnet's Subscriptions binary (M8 decision 2)
+        run: pnpm --filter @aroma/contracts test:litesvm:subscriptions-mainnet
+
+  verifiable-build:
+    name: packages/contracts - verifiable build of the default (mainnet) binary
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      AROMA_VERIFY_IMAGE: solanafoundation/solana-verifiable-build:3.1.10
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - name: Install solana-verify 0.5.2
+        run: cargo install solana-verify --version 0.5.2 --locked
+
+      - name: Pull the pinned build image
+        run: docker pull "$AROMA_VERIFY_IMAGE"
+
+      - name: solana-verify build (compares with verifiable-build.json "docker" once recorded)
+        working-directory: packages/contracts
+        run: bash scripts/verify-build.sh --docker
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: aroma-guard-verifiable
+          path: packages/contracts/target/build/verifiable/aroma_guard.so
+
+  mainnet-fork:
+    name: packages/contracts - mainnet-fork end to end (nightly; local fork, no mainnet transaction)
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    timeout-minutes: 240
+    env:
+      AGAVE_VERSION: "3.1.10"
+      ANCHOR_VERSION: "1.2.1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: packages/contracts
+
+      - name: Install Agave ${{ env.AGAVE_VERSION }}
+        run: |
+          sh -c "$(curl -sSfL https://release.anza.xyz/v${AGAVE_VERSION}/install)"
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> "$GITHUB_PATH"
+
+      - name: Install anchor-cli ${{ env.ANCHOR_VERSION }}
+        run: cargo install anchor-cli --version "${ANCHOR_VERSION}" --locked
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.31.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install (frozen lockfile)
+        run: pnpm install --frozen-lockfile
+
+      - name: anchor build, both variants, SBPF v0
+        run: pnpm --filter @aroma/contracts build
+
+      - name: e2e:fork (3 one-hour periods, then close + revoke)
+        run: pnpm --filter @aroma/contracts e2e:fork
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: e2e-fork-report
+          path: |
+            packages/contracts/.e2e-fork/report.json
+            packages/contracts/.e2e-fork/routes.json
+          if-no-files-found: ignore
