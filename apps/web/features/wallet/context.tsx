@@ -1,6 +1,7 @@
 "use client";
 
 import { createContext, useContext } from "react";
+import type { WalletCluster } from "./cluster";
 
 /**
  * The wallet contract every trade surface uses (REWRITE-PLAN §5.3). It is deliberately tiny and
@@ -16,6 +17,8 @@ export type TransactionVersion = 0 | 1;
 export type Signer = {
   address: string;
   kind: "privy" | "standard" | "adapter" | "e2e";
+  /** The cluster this signer's boundary verified (M7 B2). Signers never cross clusters. */
+  cluster: WalletCluster;
   /** Versions the wallet explicitly advertises for the signing method we call. */
   supportedTransactionVersions: TransactionVersion[];
   signTransactions(
@@ -36,6 +39,8 @@ export type WalletOption = {
 };
 
 export type WalletState = {
+  /** The cluster this boundary serves (mainnet unless a page scopes it, M7 B2). */
+  cluster: WalletCluster;
   /** "idle": the stack is not loaded yet (nothing was asked of the user). */
   status:
     | "idle"
@@ -56,6 +61,7 @@ export type WalletState = {
 };
 
 export const idleWallet: WalletState = {
+  cluster: "mainnet",
   status: "idle",
   signer: null,
   options: [],

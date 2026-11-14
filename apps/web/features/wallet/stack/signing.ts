@@ -1,4 +1,10 @@
 import type { TransactionVersion } from "../context";
+import {
+  accountOnCluster,
+  CHAIN_ID,
+  MAINNET_GENESIS as MAINNET_GENESIS_HASH,
+  rpcReportsGenesis,
+} from "../cluster";
 
 /**
  * Pure signing helpers for the wallet bridge (ported from components/trading/TradingAuth.tsx).
@@ -6,9 +12,8 @@ import type { TransactionVersion } from "../context";
  * versions the wallet explicitly ADVERTISES are used. Nothing here can read a private key.
  */
 
-export const MAINNET_CHAIN = "solana:mainnet";
-export const MAINNET_GENESIS = "5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d";
-const NON_MAINNET = /^solana:(devnet|testnet|localnet)$/;
+export const MAINNET_CHAIN = CHAIN_ID.mainnet;
+export const MAINNET_GENESIS = MAINNET_GENESIS_HASH;
 
 export function decode(encoded: string): Uint8Array {
   return Uint8Array.from(atob(encoded), (c) => c.charCodeAt(0));
@@ -34,9 +39,7 @@ export function advertisedVersions(
 export function accountOnMainnet(
   chains: readonly string[] | undefined,
 ): boolean {
-  if (!chains || chains.length === 0) return true;
-  if (chains.includes(MAINNET_CHAIN)) return true;
-  return !chains.some((chain) => NON_MAINNET.test(chain));
+  return accountOnCluster(chains, "mainnet");
 }
 
 export type StandardSignFeature = {
@@ -50,13 +53,14 @@ export async function signWithStandard(
   feature: StandardSignFeature,
   account: unknown,
   unsigned: readonly string[],
+  chain: string = MAINNET_CHAIN,
 ): Promise<string[]> {
   if (!feature.signTransaction)
     throw new Error("This wallet cannot sign transactions.");
   const signed = await feature.signTransaction(
     ...unsigned.map((tx) => ({
       account,
-      chain: MAINNET_CHAIN,
+      chain,
       transaction: decode(tx),
     })),
   );
@@ -66,21 +70,11 @@ export async function signWithStandard(
 }
 
 /** The browser RPC must report mainnet's genesis; devnet (or anything else) is refused. */
-export async function rpcIsMainnet(
+export function rpcIsMainnet(
   endpoint: string,
   fetcher: typeof fetch = fetch,
 ): Promise<boolean> {
-  try {
-    const response = await fetcher(endpoint, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ jsonrpc: "2.0", id: 1, method: "getGenesisHash" }),
-    });
-    const body = (await response.json()) as { result?: unknown };
-    return body.result === MAINNET_GENESIS;
-  } catch {
-    return false;
-  }
+  return rpcReportsGenesis(endpoint, MAINNET_GENESIS, fetcher);
 }
 
 export function assertCanSign(

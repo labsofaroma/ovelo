@@ -24,13 +24,19 @@ import {
 } from "../context";
 import { WalletPicker } from "./WalletPicker";
 import {
-  accountOnMainnet,
+  accountOnCluster,
+  CHAIN_ID,
+  rpcReportsGenesis,
+  storageKey,
+  wrongNetworkMessage,
+  type ClusterConfig,
+} from "../cluster";
+import {
   advertisedVersions,
   assertCanSign,
   decode,
   encode,
   messageSigner,
-  rpcIsMainnet,
   signWithStandard,
   type StandardMessageFeature,
   type StandardSignFeature,
@@ -40,8 +46,8 @@ import {
  * The wallet bridge (M4 B2): wallet-adapter for desktop extensions (Wallet Standard
  * auto-discovery), plus Privy for embedded wallets when NEXT_PUBLIC_PRIVY_APP_ID is set.
  * This is the ONLY place v1 code uses @solana/web3.js (V0 fallback for legacy adapters).
- * Mainnet only: the browser RPC must report mainnet's genesis, and an account that only declares
- * devnet/testnet chains is refused.
+ * One cluster per stack (M7 B2): the browser RPC must report that cluster's genesis, and an
+ * account that declares only other chains is refused. Mainnet unless the page scopes it.
  */
 
 export type EmbeddedSession = {
@@ -52,10 +58,6 @@ export type EmbeddedSession = {
   logout: () => Promise<void>;
 };
 export const EmbeddedContext = createContext<EmbeddedSession | null>(null);
-
-const ENDPOINT =
-  process.env.NEXT_PUBLIC_SOLANA_RPC_URL ||
-  "https://api.mainnet-beta.solana.com";
 
 type StandardWallet = {
   accounts: readonly {
@@ -69,27 +71,29 @@ type StandardWallet = {
 function Bridge({
   children,
   initiallyOpen,
+  cluster,
 }: {
   children: ReactNode;
   initiallyOpen: boolean;
+  cluster: ClusterConfig;
 }) {
   const adapter = useAdapter();
   const embedded = useContext(EmbeddedContext);
   const [picker, setPicker] = useState(initiallyOpen);
-  const [network, setNetwork] = useState<"checking" | "mainnet" | "wrong">(
+  const [network, setNetwork] = useState<"checking" | "ok" | "wrong">(
     "checking",
   );
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     let live = true;
-    void rpcIsMainnet(ENDPOINT).then((ok) => {
-      if (live) setNetwork(ok ? "mainnet" : "wrong");
+    void rpcReportsGenesis(cluster.rpcUrl, cluster.genesisHash).then((ok) => {
+      if (live) setNetwork(ok ? "ok" : "wrong");
     });
     return () => {
       live = false;
     };
-  }, []);
+  }, [cluster.rpcUrl, cluster.genesisHash]);
 
   const address = adapter.publicKey?.toBase58() ?? null;
   const standard = (
@@ -122,6 +126,7 @@ function Bridge({
     return {
       address,
       kind: standardVersions.length ? "standard" : "adapter",
+      cluster: cluster.cluster,
       supportedTransactionVersions: versions,
       signMessage: messageSigner({
         standard: messageFeature,
@@ -131,7 +136,12 @@ function Bridge({
       async signTransactions(unsigned, version) {
         assertCanSign(versions, version, unsigned.length);
         if (standardVersions.includes(version) && feature)
-          return signWithStandard(feature, account, unsigned);
+          return signWithStandard(
+            feature,
+            account,
+            unsigned,
+            CHAIN_ID[cluster.cluster],
+          );
         // Legacy adapters: V0 only, through web3.js.
         const transactions = unsigned.map((tx) =>
           VersionedTransaction.deserialize(decode(tx)),
@@ -146,10 +156,15 @@ function Bridge({
         return signed;
       },
     };
-  }, [adapter, address, account, feature, messageFeature]);
+  }, [adapter, address, account, feature, messageFeature, cluster.cluster]);
 
-  const wrongAccount = Boolean(account && !accountOnMainnet(account.chains));
-  const signer = adapterSigner ?? embedded?.signer ?? null;
+  const wrongAccount = Boolean(
+    account && !accountOnCluster(account.chains, cluster.cluster),
+  );
+  // Embedded (Privy) signers exist on mainnet only; a signer from another cluster is never used.
+  const embeddedSigner =
+    embedded?.signer?.cluster === cluster.cluster ? embedded.signer : null;
+  const signer = adapterSigner ?? embeddedSigner;
   const status: WalletState["status"] =
     network === "wrong" || wrongAccount
       ? "wrong-network"
@@ -176,6 +191,7 @@ function Bridge({
 
   const value = useMemo<WalletState>(
     () => ({
+      cluster: cluster.cluster,
       status,
       signer: status === "connected" ? signer : null,
       options: adapter.wallets.map((w) => ({
@@ -186,9 +202,7 @@ function Bridge({
       embedded: Boolean(embedded),
       error:
         error ??
-        (status === "wrong-network"
-          ? "Aroma trades on Solana mainnet only. Switch your wallet or network to mainnet."
-          : null),
+        (status === "wrong-network" ? wrongNetworkMessage(cluster.cluster) : null),
       open: () => setPicker(true),
       select,
       loginEmbedded: () => {
@@ -200,7 +214,7 @@ function Bridge({
         void embedded?.logout().catch(() => {});
       },
     }),
-    [status, signer, adapter, embedded, error, select],
+    [status, signer, adapter, embedded, error, select, cluster.cluster],
   );
 
   return (
@@ -214,19 +228,30 @@ function Bridge({
 export default function WalletStack({
   children,
   initiallyOpen = false,
+  cluster,
   Embedded,
 }: {
   children: ReactNode;
   initiallyOpen?: boolean;
-  /** Privy provider (loaded only when an app id is configured). */
+  cluster: ClusterConfig;
+  /** Privy provider (loaded only when an app id is configured, on mainnet). */
   Embedded?: (props: { children: ReactNode }) => ReactNode;
 }) {
   const wallets = useMemo(() => [], []);
-  const inner = <Bridge initiallyOpen={initiallyOpen}>{children}</Bridge>;
+  const inner = (
+    <Bridge initiallyOpen={initiallyOpen} cluster={cluster}>
+      {children}
+    </Bridge>
+  );
+  const Wrap = cluster.cluster === "mainnet" ? Embedded : undefined;
   return (
-    <ConnectionProvider endpoint={ENDPOINT}>
-      <AdapterProvider wallets={wallets} autoConnect>
-        {Embedded ? <Embedded>{inner}</Embedded> : inner}
+    <ConnectionProvider endpoint={cluster.rpcUrl}>
+      <AdapterProvider
+        wallets={wallets}
+        autoConnect
+        localStorageKey={storageKey(cluster.cluster)}
+      >
+        {Wrap ? <Wrap>{inner}</Wrap> : inner}
       </AdapterProvider>
     </ConnectionProvider>
   );

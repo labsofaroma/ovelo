@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { localnetRules } from "./env.rules";
+export { TURNSTILE_TEST_SECRETS } from "./env.rules";
 
 /**
  * Pure environment schema (no `server-only`, no I/O) so it can be reused by the boot hook,
@@ -38,6 +40,15 @@ const publicShape = {
   NEXT_PUBLIC_SENTRY_DSN: httpsUrl.optional(),
   /** E2E builds only: compiles in the test wallet bridge (no key material). Never in production. */
   NEXT_PUBLIC_AROMA_E2E_WALLET: z.enum(["true", "false"]).optional(),
+  /** M7: browser RPC for `/v1/invest` on devnet (default: Solana's public devnet endpoint). */
+  NEXT_PUBLIC_SOLANA_DEVNET_RPC_URL: httpsUrl.optional(),
+  /**
+   * M7, test builds only: compiles in the localnet wallet cluster (local-validator E2E). Refused
+   * in production here and by the client-secret scan.
+   */
+  NEXT_PUBLIC_AROMA_LOCALNET: z.enum(["true", "false"]).optional(),
+  /** M7: Cloudflare Turnstile site key for the devnet faucet (public). */
+  NEXT_PUBLIC_TURNSTILE_SITE_KEY: optionalText,
 };
 
 const serverShape = {
@@ -107,10 +118,50 @@ const serverShape = {
     .optional(),
 };
 
+const loopbackHttp = z
+  .url({ message: "must be a URL" })
+  .refine((v) => /^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?\/?$/.test(v), {
+    message: "must be a loopback http URL",
+  });
+const base58Hash = z
+  .string()
+  .regex(/^[1-9A-HJ-NP-Za-km-z]{32,44}$/, "must be base58");
+
 const devnetShape = {
+  /** Server devnet RPC (prototype and, from M7, `/v1/invest` on devnet). Genesis-checked per client. */
   AROMA_RECURRING_RPC_URL: z.url().optional(),
   AROMA_RECURRING_AUTH_SECRET: secret32.optional(),
   AROMA_FAUCET_SECRET_KEY: optionalText,
+  /**
+   * M7: the cluster `/v1/invest` runs on. `localnet` (a local validator) is for test builds only:
+   * it needs test switches and the localnet build flag, and is refused in production.
+   */
+  AROMA_V1_INVEST_CLUSTER: z.enum(["devnet", "localnet"]).default("devnet"),
+  /** M7 localnet only: the validator's RPC, its genesis hash and the test USD mint. */
+  AROMA_V1_LOCALNET_RPC_URL: loopbackHttp.optional(),
+  AROMA_V1_LOCALNET_GENESIS: base58Hash.optional(),
+  AROMA_V1_LOCALNET_FUNDING_MINT: base58Hash.optional(),
+  /**
+   * M7 faucet: the devnet-only key that holds the test USD mint authority (never the deployer),
+   * as a 64-byte JSON array. Refused on any non-devnet genesis at use.
+   */
+  AROMA_V1_FAUCET_KEYPAIR: z
+    .string()
+    .regex(
+      /^\[\s*\d{1,3}(\s*,\s*\d{1,3}){63}\s*\]$/,
+      "must be a 64-byte JSON array",
+    )
+    .optional(),
+  /** M7 faucet: Cloudflare Turnstile secret (server-side siteverify). */
+  TURNSTILE_SECRET_KEY: optionalText,
+  /** M7 faucet: claims allowed per UTC day across all wallets (default 200). */
+  AROMA_V1_FAUCET_DAILY_CLAIMS: z
+    .string()
+    .regex(/^\d+$/, "must be an integer")
+    .refine((v) => Number(v) >= 1 && Number(v) <= 10_000, {
+      message: "must be between 1 and 10000",
+    })
+    .optional(),
 };
 
 const keeperShape = {
@@ -168,6 +219,7 @@ const flatSchema = z.object(flatShape).superRefine((env, ctx) => {
       path: ["NEXT_PUBLIC_AROMA_E2E_WALLET"],
       message: "must not be set in a production deployment",
     });
+  localnetRules(env, ctx);
   if (env.SOLANA_RPC_URL && !env.SOLANA_RPC_URL.startsWith("https://")) {
     const loopback = /^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?\/?$/.test(
       env.SOLANA_RPC_URL,

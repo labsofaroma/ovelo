@@ -6,10 +6,13 @@
  *      in plain, gzip and brotli artifacts;
  *   2. the NAMES of secret-bearing server variables (a name in a client chunk means server code
  *      was bundled for the browser);
- *   3. E2E-only markers (the test wallet bridge) that must never reach a production build.
+ *   3. E2E-only markers (the test wallet bridge) that must never reach a production build;
+ *   4. localnet markers (M7: the test-only localnet wallet cluster) likewise;
+ *   5. Solana secret-key material: a JSON array of exactly 64 byte values (M7: keeper and
+ *      faucet keys are loaded from env in that shape and must never be bundled).
  * Output names the file and the VARIABLE, never the value. Exit 1 on any finding.
  *
- *   node scripts/check-client-secrets.mjs [--next apps/web/.next] [--allow-e2e]
+ *   node scripts/check-client-secrets.mjs [--next apps/web/.next] [--allow-e2e] [--allow-localnet]
  */
 import { readFile, readdir, stat } from "node:fs/promises";
 import { existsSync } from "node:fs";
@@ -24,6 +27,8 @@ const ALWAYS_SECRET = new Set([
   "BOT_KEYPAIR",
   "CREATOR_INVITE_CODES",
   "AROMA_FAUCET_SECRET_KEY",
+  "AROMA_V1_FAUCET_KEYPAIR",
+  "KEEPER_KEYPAIR",
 ]);
 const SECRET_NAME =
   /(SECRET|TOKEN|PASSWORD|PRIVATE|KEYPAIR|API_KEYS?|SIGNING_KEY|AUTH_UUID|INVITE)/;
@@ -48,9 +53,23 @@ export const FORBIDDEN_NAMES = [
   "QSTASH_NEXT_SIGNING_KEY",
   "SENTRY_AUTH_TOKEN",
   "JITO_AUTH_UUID",
+  "AROMA_V1_FAUCET_KEYPAIR",
+  "TURNSTILE_SECRET_KEY",
+  "KEEPER_KEYPAIR",
+  "PYTH_API_KEY",
 ];
 /** E2E-only code that must be compiled out of production builds. */
 export const E2E_MARKERS = ["aromaE2EWallet"];
+/** Localnet-only wallet code (features/wallet/cluster.ts) that must be compiled out likewise. */
+export const LOCALNET_MARKERS = ["aromaLocalnetCluster"];
+/** A JSON array of exactly 64 integers in 0..255: the shape of a Solana secret key file. */
+const KEY_ARRAY =
+  /\[\s*(?:(?:25[0-5]|2[0-4]\d|1?\d?\d)\s*,\s*){63}(?:25[0-5]|2[0-4]\d|1?\d?\d)\s*\]/;
+
+/** True when `text` contains secret-key-shaped material (exported for tests). */
+export function containsKeyMaterial(text) {
+  return KEY_ARRAY.test(text);
+}
 
 function isSecretName(name) {
   if (PUBLIC_PREFIXES.some((prefix) => name.startsWith(prefix))) return false;
@@ -129,7 +148,7 @@ async function contents(path) {
 export async function scanClientArtifacts(
   dirs,
   secrets,
-  { forbiddenNames = [], markers = [] } = {},
+  { forbiddenNames = [], markers = [], keyMaterial = false } = {},
 ) {
   const matches = [];
   let scannedFiles = 0;
@@ -149,6 +168,7 @@ export async function scanClientArtifacts(
         ...markers
           .filter((marker) => text.includes(marker))
           .map((m) => `marker:${m}`),
+        ...(keyMaterial && containsKeyMaterial(text) ? ["key-material"] : []),
       ];
       if (variables.size || found.length)
         matches.push({ file: path, variables: [...variables].sort(), found });
@@ -172,6 +192,9 @@ async function main() {
   const allowE2E =
     args.includes("--allow-e2e") ||
     process.env.NEXT_PUBLIC_AROMA_E2E_WALLET === "true";
+  const allowLocalnet =
+    args.includes("--allow-localnet") ||
+    process.env.NEXT_PUBLIC_AROMA_LOCALNET === "true";
   if (!existsSync(nextDir)) {
     console.error(
       `check-client-secrets: ${nextDir} does not exist; run next build first.`,
@@ -194,7 +217,11 @@ async function main() {
     secrets,
     {
       forbiddenNames: FORBIDDEN_NAMES,
-      markers: allowE2E ? [] : E2E_MARKERS,
+      markers: [
+        ...(allowE2E ? [] : E2E_MARKERS),
+        ...(allowLocalnet ? [] : LOCALNET_MARKERS),
+      ],
+      keyMaterial: true,
     },
   );
   const served = result.matches.filter(
@@ -213,7 +240,8 @@ async function main() {
   }
   console.log(
     `check-client-secrets: OK. ${result.scannedFiles} files scanned, ${secrets.size} configured secret value(s), ` +
-      `${FORBIDDEN_NAMES.length} forbidden names, E2E markers ${allowE2E ? "allowed (E2E build)" : "forbidden"}.`,
+      `${FORBIDDEN_NAMES.length} forbidden names, E2E markers ${allowE2E ? "allowed (E2E build)" : "forbidden"}, ` +
+      `localnet markers ${allowLocalnet ? "allowed (localnet test build)" : "forbidden"}, key material forbidden.`,
   );
 }
 

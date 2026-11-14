@@ -42,6 +42,7 @@ function Session({ children }: { children: ReactNode }) {
     return {
       address: wallet.address,
       kind: "privy",
+      cluster: "mainnet",
       supportedTransactionVersions: versions,
       // Privy embedded wallets sign raw message bytes (Ed25519), shown in Privy's own prompt.
       async signMessage(message) {

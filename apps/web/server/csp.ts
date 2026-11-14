@@ -38,6 +38,7 @@ export const FIXED_CONNECT_SOURCES = [
 ] as const;
 
 const DEFAULT_RPC = "https://api.mainnet-beta.solana.com";
+const DEFAULT_DEVNET_RPC = "https://api.devnet.solana.com";
 
 function origin(value: string | undefined): string | null {
   if (!value) return null;
@@ -53,6 +54,15 @@ function origin(value: string | undefined): string | null {
 /** Every connect-src origin, deduplicated, from configuration plus the fixed list. */
 export function connectSources(env: Env): string[] {
   const rpc = origin(env.NEXT_PUBLIC_SOLANA_RPC_URL) ?? DEFAULT_RPC;
+  // M7: `/v1/invest` talks to devnet from the browser (wallet genesis check, confirmations).
+  const devnet =
+    origin(env.NEXT_PUBLIC_SOLANA_DEVNET_RPC_URL) ?? DEFAULT_DEVNET_RPC;
+  // M7 test builds only: the local validator (loopback), when the localnet cluster is on.
+  const localnet =
+    env.NEXT_PUBLIC_AROMA_LOCALNET === "true" &&
+    env.AROMA_V1_INVEST_CLUSTER === "localnet"
+      ? origin(env.AROMA_V1_LOCALNET_RPC_URL)
+      : null;
   const ws =
     origin(env.NEXT_PUBLIC_SOLANA_WS_URL) ??
     rpc.replace(/^https:/, "wss:").replace(/^http:/, "ws:");
@@ -62,9 +72,16 @@ export function connectSources(env: Env): string[] {
     : null;
   return [
     ...new Set(
-      ["'self'", rpc, ws, sentry, plausible, ...FIXED_CONNECT_SOURCES].filter(
-        (value): value is string => Boolean(value),
-      ),
+      [
+        "'self'",
+        rpc,
+        ws,
+        devnet,
+        localnet,
+        sentry,
+        plausible,
+        ...FIXED_CONNECT_SOURCES,
+      ].filter((value): value is string => Boolean(value)),
     ),
   ];
 }

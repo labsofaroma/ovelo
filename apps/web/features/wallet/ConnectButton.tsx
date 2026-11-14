@@ -2,6 +2,7 @@
 
 import { Button } from "@aroma/ui";
 import { shortAddress, useWallet } from "./context";
+import { WRONG_NETWORK_SHORT } from "./cluster";
 
 /** Connect / connected / wrong-network control. Shows state; never asks for anything but a click. */
 export function ConnectButton({ className }: { className?: string }) {
@@ -26,7 +27,7 @@ export function ConnectButton({ className }: { className?: string }) {
         className={className}
         onClick={wallet.disconnect}
       >
-        Wrong network: mainnet only
+        {WRONG_NETWORK_SHORT[wallet.cluster]}
       </Button>
     );
   return (

@@ -11,6 +11,9 @@ const config = {
     NEXT_PUBLIC_AROMA_E2E_WALLET:
       process.env.NEXT_PUBLIC_AROMA_E2E_WALLET === "true" ? "true" : "false",
     NEXT_PUBLIC_PRIVY_APP_ID: process.env.NEXT_PUBLIC_PRIVY_APP_ID ?? "",
+    // M7: the localnet wallet cluster (test builds only), dropped at compile time otherwise.
+    NEXT_PUBLIC_AROMA_LOCALNET:
+      process.env.NEXT_PUBLIC_AROMA_LOCALNET === "true" ? "true" : "false",
   },
   compress: true,
   // @aroma/ui ships TypeScript source and CSS Modules; Next compiles it with the app.
