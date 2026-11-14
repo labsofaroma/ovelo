@@ -119,8 +119,12 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
 
   const v1 = isV1Path(pathname);
   const api = pathname.startsWith("/api/");
+  // Solana Actions: the prototype's /api/actions/* (until M7) and v1's /api/v1/actions/* (M5b).
+  const v1Action = pathname.startsWith("/api/v1/actions/");
   const action =
-    pathname.startsWith("/api/actions/") || pathname === "/actions.json";
+    pathname.startsWith("/api/actions/") ||
+    v1Action ||
+    pathname === "/actions.json";
 
   // Nonce CSP for v1 pages and APIs; Next reads the nonce from the request's CSP header.
   const nonce = v1 ? generateNonce() : null;
@@ -179,7 +183,7 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
       response.headers.set("Access-Control-Allow-Origin", "*");
       response.headers.set(
         "X-Blockchain-Ids",
-        pathname.startsWith("/api/actions/buy-baskets/")
+        pathname.startsWith("/api/actions/buy-baskets/") || v1Action
           ? "solana:5eykt4UsFv8P8NJdTREpY1vzqKqZKvdp"
           : "solana:EtWTRABZaYq6iMfeYKouRu166VU2xqa1",
       );

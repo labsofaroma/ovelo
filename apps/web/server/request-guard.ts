@@ -53,6 +53,9 @@ const TRADE_PATHS = [
   /^\/api\/transaction\/execute$/,
   /^\/api\/bundles\//,
   /^\/api\/buy-basket$/,
+  // v1 Actions quote, build and simulate a basket order (M5b B4); the confirm callback reads
+  // a transaction back from mainnet.
+  /^\/api\/v1\/actions\//,
 ];
 
 /**
