@@ -15,16 +15,20 @@ const SEED = "mock_mint";
 const read = (variant) =>
   fs.readFileSync(path.join(root, "target/build", variant, "aroma_guard.so"));
 const has = (bytes, text) => bytes.includes(Buffer.from(text));
+// ELF e_flags (offset 48) is the SBPF version; devnet and mainnet only deploy v0 today.
+const sbpfVersion = (bytes) => bytes.readUInt32LE(48);
 const mainnet = read("mainnet");
 const devnet = read("devnet-mock");
 const report = {
   mainnet: {
+    sbpf: sbpfVersion(mainnet),
     bytes: mainnet.length,
     sha256: crypto.createHash("sha256").update(mainnet).digest("hex"),
     marker: has(mainnet, MARKER),
     mockMintSeed: has(mainnet, SEED),
   },
   "devnet-mock": {
+    sbpf: sbpfVersion(devnet),
     bytes: devnet.length,
     sha256: crypto.createHash("sha256").update(devnet).digest("hex"),
     marker: has(devnet, MARKER),
@@ -32,6 +36,12 @@ const report = {
   },
 };
 console.log(JSON.stringify(report, null, 2));
+if (report.mainnet.sbpf !== 0 || report["devnet-mock"].sbpf !== 0) {
+  console.error(
+    "Both builds must be SBPF v0 (deployable on devnet and mainnet).",
+  );
+  process.exit(1);
+}
 if (report.mainnet.marker || report.mainnet.mockMintSeed) {
   console.error("The default (mainnet) build contains devnet minting code.");
   process.exit(1);

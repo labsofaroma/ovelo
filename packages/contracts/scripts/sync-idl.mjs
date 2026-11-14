@@ -64,9 +64,10 @@ async function main() {
   }
   const idl = builtIdl();
   if (mode === "--check") {
+    // Compared as parsed JSON: formatting is not drift, content is.
     if (
       !fs.existsSync(COMMITTED_IDL) ||
-      fs.readFileSync(COMMITTED_IDL, "utf8") !== idl
+      canonical(JSON.parse(fs.readFileSync(COMMITTED_IDL, "utf8"))) !== idl
     )
       throw new Error(
         "Committed IDL differs from the Rust program. Run `pnpm --filter @aroma/contracts idl:sync`.",
