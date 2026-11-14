@@ -20,6 +20,8 @@
     "lib/sdk/baskets/**/*.ts",
     "lib/sdk/paper/**/*.ts",
     "lib/sdk/trade/**/*.ts",
+    // M6: the v1 contract client (hand-written helpers and the Codama-generated code).
+    "lib/sdk/guard/v1/**/*.ts",
     "instrumentation*.ts",
     "sentry.*.ts",
     "scripts/check-env.ts",

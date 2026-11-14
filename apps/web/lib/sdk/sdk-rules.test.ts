@@ -14,6 +14,9 @@ const PORTED = [
   "baskets",
   "paper",
   "trade",
+  // M6: the v1 contract client. Only its Codama output (`guard/v1/generated/`) is exempt from
+  // the 400-line rule; every other rule applies to it too.
+  "guard/v1",
 ];
 
 function sources(dir: string): string[] {
@@ -64,6 +67,7 @@ describe("SDK rules", () => {
     const long = files.filter(
       (file) =>
         !file.includes("/idl/") &&
+        !file.includes("/guard/v1/generated/") &&
         readFileSync(file, "utf8").split("\n").length > 400,
     );
     expect(long.map((file) => relative(WEB, file))).toEqual([]);

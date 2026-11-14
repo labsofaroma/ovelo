@@ -1,0 +1,2184 @@
+{
+  "address": "FYrrfhrysaGUwCNyTggqyKmTWqpg3vph8gzmSWt7QtTU",
+  "metadata": {
+    "name": "aroma_guard",
+    "version": "1.0.0",
+    "spec": "0.1.0",
+    "description": "Aroma Guard v1: oracle-bounded recurring investing on Solana"
+  },
+  "instructions": [
+    {
+      "name": "close_plan",
+      "discriminator": [
+        45,
+        137,
+        184,
+        220,
+        162,
+        253,
+        161,
+        8
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "plan"
+          ]
+        },
+        {
+          "name": "plan",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  108,
+                  97,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "plan.owner",
+                "account": "Plan"
+              },
+              {
+                "kind": "account",
+                "path": "plan.funding_mint",
+                "account": "Plan"
+              },
+              {
+                "kind": "account",
+                "path": "plan.nonce",
+                "account": "Plan"
+              }
+            ]
+          }
+        },
+        {
+          "name": "funding_mint",
+          "relations": [
+            "plan"
+          ]
+        },
+        {
+          "name": "funding_token_program",
+          "relations": [
+            "plan"
+          ]
+        },
+        {
+          "name": "staging",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "plan"
+              },
+              {
+                "kind": "account",
+                "path": "funding_token_program"
+              },
+              {
+                "kind": "account",
+                "path": "funding_mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "owner_funding_token",
+          "writable": true
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "create_plan",
+      "discriminator": [
+        77,
+        43,
+        141,
+        254,
+        212,
+        118,
+        41,
+        186
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "plan",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  108,
+                  97,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "owner"
+              },
+              {
+                "kind": "account",
+                "path": "funding_mint"
+              },
+              {
+                "kind": "arg",
+                "path": "args.nonce"
+              }
+            ]
+          }
+        },
+        {
+          "name": "funding_mint"
+        },
+        {
+          "name": "funding_token_program"
+        },
+        {
+          "name": "owner_funding_token"
+        },
+        {
+          "name": "staging",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "plan"
+              },
+              {
+                "kind": "account",
+                "path": "funding_token_program"
+              },
+              {
+                "kind": "account",
+                "path": "funding_mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "subscription_authority"
+        },
+        {
+          "name": "recurring_delegation"
+        },
+        {
+          "name": "associated_token_program",
+          "address": "ATokenGPvbdGVxr1b2hvZbsiqW5xWH25efTNsLJA8knL"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "args",
+          "type": {
+            "defined": {
+              "name": "CreatePlanArgs"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "execute_installment",
+      "discriminator": [
+        29,
+        61,
+        98,
+        154,
+        42,
+        48,
+        158,
+        17
+      ],
+      "accounts": [
+        {
+          "name": "keeper",
+          "docs": [
+            "The keeper (or anyone when `config.keeper_authority` is `None`); pays fees only."
+          ],
+          "signer": true
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "plan",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  108,
+                  97,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "plan.owner",
+                "account": "Plan"
+              },
+              {
+                "kind": "account",
+                "path": "plan.funding_mint",
+                "account": "Plan"
+              },
+              {
+                "kind": "account",
+                "path": "plan.nonce",
+                "account": "Plan"
+              }
+            ]
+          }
+        },
+        {
+          "name": "funding_mint",
+          "relations": [
+            "plan"
+          ]
+        },
+        {
+          "name": "funding_token_program",
+          "relations": [
+            "plan"
+          ]
+        },
+        {
+          "name": "owner_funding_token",
+          "writable": true
+        },
+        {
+          "name": "staging",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "account",
+                "path": "plan"
+              },
+              {
+                "kind": "account",
+                "path": "funding_token_program"
+              },
+              {
+                "kind": "account",
+                "path": "funding_mint"
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                140,
+                151,
+                37,
+                143,
+                78,
+                36,
+                137,
+                241,
+                187,
+                61,
+                16,
+                41,
+                20,
+                142,
+                13,
+                131,
+                11,
+                90,
+                19,
+                153,
+                218,
+                255,
+                16,
+                132,
+                4,
+                142,
+                123,
+                216,
+                219,
+                233,
+                248,
+                89
+              ]
+            }
+          }
+        },
+        {
+          "name": "treasury_token",
+          "docs": [
+            "Receives the spent funding in the devnet build (never burned)."
+          ],
+          "writable": true
+        },
+        {
+          "name": "fee_token",
+          "docs": [
+            "Required when `config.protocol_fee_bps > 0`."
+          ],
+          "writable": true,
+          "optional": true
+        },
+        {
+          "name": "subscription_authority"
+        },
+        {
+          "name": "recurring_delegation",
+          "writable": true
+        },
+        {
+          "name": "subscriptions_event_authority",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  101,
+                  118,
+                  101,
+                  110,
+                  116,
+                  95,
+                  97,
+                  117,
+                  116,
+                  104,
+                  111,
+                  114,
+                  105,
+                  116,
+                  121
+                ]
+              }
+            ],
+            "program": {
+              "kind": "const",
+              "value": [
+                187,
+                199,
+                119,
+                175,
+                186,
+                104,
+                240,
+                18,
+                62,
+                192,
+                196,
+                209,
+                183,
+                238,
+                137,
+                110,
+                147,
+                1,
+                201,
+                41,
+                197,
+                90,
+                6,
+                186,
+                149,
+                24,
+                33,
+                88,
+                37,
+                140,
+                21,
+                169
+              ]
+            }
+          }
+        },
+        {
+          "name": "subscriptions_program",
+          "address": "De1egAFMkMWZSN5rYXRj9CAdheBamobVNubTsi9avR44"
+        }
+      ],
+      "args": [
+        {
+          "name": "period",
+          "type": "u16"
+        },
+        {
+          "name": "leg_mask",
+          "type": "u32"
+        }
+      ]
+    },
+    {
+      "name": "initialize_config",
+      "docs": [
+        "Once, signed by the program's upgrade authority."
+      ],
+      "discriminator": [
+        208,
+        127,
+        21,
+        1,
+        194,
+        190,
+        196,
+        70
+      ],
+      "accounts": [
+        {
+          "name": "authority",
+          "writable": true,
+          "signer": true
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "program",
+          "address": "FYrrfhrysaGUwCNyTggqyKmTWqpg3vph8gzmSWt7QtTU"
+        },
+        {
+          "name": "program_data"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": {
+              "name": "ConfigParams"
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "pause_plan",
+      "discriminator": [
+        208,
+        200,
+        160,
+        171,
+        212,
+        94,
+        249,
+        233
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "signer": true,
+          "relations": [
+            "plan"
+          ]
+        },
+        {
+          "name": "plan",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  108,
+                  97,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "plan.owner",
+                "account": "Plan"
+              },
+              {
+                "kind": "account",
+                "path": "plan.funding_mint",
+                "account": "Plan"
+              },
+              {
+                "kind": "account",
+                "path": "plan.nonce",
+                "account": "Plan"
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "register_asset",
+      "discriminator": [
+        21,
+        80,
+        155,
+        149,
+        117,
+        207,
+        235,
+        16
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "writable": true,
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "asset",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  97,
+                  115,
+                  115,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "mint"
+              }
+            ]
+          }
+        },
+        {
+          "name": "mint"
+        },
+        {
+          "name": "token_program"
+        },
+        {
+          "name": "system_program",
+          "address": "11111111111111111111111111111111"
+        }
+      ],
+      "args": [
+        {
+          "name": "pyth_feed_id",
+          "type": {
+            "array": [
+              "u8",
+              32
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "resume_plan",
+      "discriminator": [
+        67,
+        173,
+        251,
+        42,
+        169,
+        34,
+        132,
+        161
+      ],
+      "accounts": [
+        {
+          "name": "owner",
+          "signer": true,
+          "relations": [
+            "plan"
+          ]
+        },
+        {
+          "name": "plan",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  112,
+                  108,
+                  97,
+                  110
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "plan.owner",
+                "account": "Plan"
+              },
+              {
+                "kind": "account",
+                "path": "plan.funding_mint",
+                "account": "Plan"
+              },
+              {
+                "kind": "account",
+                "path": "plan.nonce",
+                "account": "Plan"
+              }
+            ]
+          }
+        }
+      ],
+      "args": []
+    },
+    {
+      "name": "set_asset_enabled",
+      "discriminator": [
+        23,
+        10,
+        133,
+        70,
+        92,
+        118,
+        68,
+        186
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "config",
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        },
+        {
+          "name": "asset",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  97,
+                  115,
+                  115,
+                  101,
+                  116
+                ]
+              },
+              {
+                "kind": "account",
+                "path": "asset.mint",
+                "account": "Asset"
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "enabled",
+          "type": "bool"
+        }
+      ]
+    },
+    {
+      "name": "set_paused",
+      "discriminator": [
+        91,
+        60,
+        125,
+        192,
+        176,
+        225,
+        166,
+        218
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "paused",
+          "type": "bool"
+        }
+      ]
+    },
+    {
+      "name": "update_config",
+      "discriminator": [
+        29,
+        158,
+        252,
+        191,
+        10,
+        83,
+        219,
+        99
+      ],
+      "accounts": [
+        {
+          "name": "admin",
+          "signer": true,
+          "relations": [
+            "config"
+          ]
+        },
+        {
+          "name": "config",
+          "writable": true,
+          "pda": {
+            "seeds": [
+              {
+                "kind": "const",
+                "value": [
+                  99,
+                  111,
+                  110,
+                  102,
+                  105,
+                  103
+                ]
+              }
+            ]
+          }
+        }
+      ],
+      "args": [
+        {
+          "name": "params",
+          "type": {
+            "defined": {
+              "name": "ConfigParams"
+            }
+          }
+        }
+      ]
+    }
+  ],
+  "accounts": [
+    {
+      "name": "Asset",
+      "discriminator": [
+        234,
+        180,
+        241,
+        252,
+        139,
+        224,
+        160,
+        8
+      ]
+    },
+    {
+      "name": "Config",
+      "discriminator": [
+        155,
+        12,
+        170,
+        224,
+        30,
+        250,
+        204,
+        130
+      ]
+    },
+    {
+      "name": "Plan",
+      "discriminator": [
+        161,
+        231,
+        251,
+        119,
+        2,
+        12,
+        162,
+        2
+      ]
+    }
+  ],
+  "events": [
+    {
+      "name": "AssetEnabledSet",
+      "discriminator": [
+        74,
+        26,
+        231,
+        139,
+        24,
+        196,
+        85,
+        205
+      ]
+    },
+    {
+      "name": "AssetRegistered",
+      "discriminator": [
+        252,
+        56,
+        47,
+        89,
+        8,
+        180,
+        249,
+        254
+      ]
+    },
+    {
+      "name": "ConfigInitialized",
+      "discriminator": [
+        181,
+        49,
+        200,
+        156,
+        19,
+        167,
+        178,
+        91
+      ]
+    },
+    {
+      "name": "ConfigUpdated",
+      "discriminator": [
+        40,
+        241,
+        230,
+        122,
+        11,
+        19,
+        198,
+        194
+      ]
+    },
+    {
+      "name": "InstallmentExecuted",
+      "discriminator": [
+        99,
+        16,
+        149,
+        43,
+        56,
+        212,
+        224,
+        67
+      ]
+    },
+    {
+      "name": "PlanClosed",
+      "discriminator": [
+        244,
+        135,
+        44,
+        167,
+        104,
+        238,
+        207,
+        12
+      ]
+    },
+    {
+      "name": "PlanCreated",
+      "discriminator": [
+        215,
+        11,
+        135,
+        121,
+        208,
+        119,
+        149,
+        149
+      ]
+    },
+    {
+      "name": "PlanPauseSet",
+      "discriminator": [
+        99,
+        92,
+        219,
+        21,
+        69,
+        30,
+        43,
+        255
+      ]
+    },
+    {
+      "name": "ProtocolPauseSet",
+      "discriminator": [
+        88,
+        186,
+        42,
+        175,
+        234,
+        40,
+        83,
+        247
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "code": 6000,
+      "name": "NotUpgradeAuthority",
+      "msg": "Only the program's upgrade authority can initialize the config"
+    },
+    {
+      "code": 6001,
+      "name": "NotAdmin",
+      "msg": "Signer is not the config admin"
+    },
+    {
+      "code": 6002,
+      "name": "NotKeeper",
+      "msg": "Signer is not the configured keeper"
+    },
+    {
+      "code": 6003,
+      "name": "ProtocolPaused",
+      "msg": "The protocol is paused"
+    },
+    {
+      "code": 6004,
+      "name": "PlanPaused",
+      "msg": "The plan is paused by its owner"
+    },
+    {
+      "code": 6005,
+      "name": "PauseStateUnchanged",
+      "msg": "The plan is already in that pause state"
+    },
+    {
+      "code": 6006,
+      "name": "UnsupportedVersion",
+      "msg": "Unsupported account version"
+    },
+    {
+      "code": 6007,
+      "name": "InvalidConfig",
+      "msg": "Invalid config value"
+    },
+    {
+      "code": 6008,
+      "name": "AssetMismatch",
+      "msg": "Asset account does not match the output mint"
+    },
+    {
+      "code": 6009,
+      "name": "AssetDisabled",
+      "msg": "Asset is disabled"
+    },
+    {
+      "code": 6010,
+      "name": "UnsupportedTokenProgram",
+      "msg": "Mint is not owned by a supported token program"
+    },
+    {
+      "code": 6011,
+      "name": "PermanentDelegateNotAllowed",
+      "msg": "Mint has a permanent delegate that is not allow-listed"
+    },
+    {
+      "code": 6012,
+      "name": "TransferHookNotAllowed",
+      "msg": "Mint has a transfer hook program that is not allow-listed"
+    },
+    {
+      "code": 6013,
+      "name": "FreezeAuthorityNotAllowed",
+      "msg": "Mint has a freeze or pause authority that is not allow-listed"
+    },
+    {
+      "code": 6014,
+      "name": "ConfidentialTransferNotAllowed",
+      "msg": "Mint allows confidential transfers without an allow-listed approving authority"
+    },
+    {
+      "code": 6015,
+      "name": "NonTransferableMint",
+      "msg": "Mint is non-transferable"
+    },
+    {
+      "code": 6016,
+      "name": "UnsupportedExtension",
+      "msg": "Mint has an unsupported Token-2022 extension"
+    },
+    {
+      "code": 6017,
+      "name": "MintPaused",
+      "msg": "Mint is paused"
+    },
+    {
+      "code": 6018,
+      "name": "DecimalsChanged",
+      "msg": "Mint decimals changed since registration"
+    },
+    {
+      "code": 6019,
+      "name": "InvalidMultiplier",
+      "msg": "ScaledUiAmount multiplier is invalid or out of range"
+    },
+    {
+      "code": 6020,
+      "name": "MockMintAuthorityMismatch",
+      "msg": "Mint authority is not this asset's mock mint PDA"
+    },
+    {
+      "code": 6021,
+      "name": "FundingMintNotAllowed",
+      "msg": "Funding mint is not allow-listed"
+    },
+    {
+      "code": 6022,
+      "name": "InvalidSchedule",
+      "msg": "Invalid schedule"
+    },
+    {
+      "code": 6023,
+      "name": "InvalidOutputs",
+      "msg": "Outputs must be 1 to 20 distinct registered assets"
+    },
+    {
+      "code": 6024,
+      "name": "InvalidWeights",
+      "msg": "Output weights must sum to 10,000 bps and each leg must receive funds"
+    },
+    {
+      "code": 6025,
+      "name": "SlippageAboveCap",
+      "msg": "Slippage is above the configured cap"
+    },
+    {
+      "code": 6026,
+      "name": "AmountAboveCap",
+      "msg": "Installment amount is above the launch cap"
+    },
+    {
+      "code": 6027,
+      "name": "InvalidTokenAccount",
+      "msg": "Invalid token account"
+    },
+    {
+      "code": 6028,
+      "name": "InvalidSubscriptionAccount",
+      "msg": "Subscriptions account has the wrong owner, address, length, discriminator or version"
+    },
+    {
+      "code": 6029,
+      "name": "DelegationTermsMismatch",
+      "msg": "Subscriptions delegation terms do not match the plan"
+    },
+    {
+      "code": 6030,
+      "name": "UnexpectedPeriod",
+      "msg": "Not the period that can run now"
+    },
+    {
+      "code": 6031,
+      "name": "NothingDue",
+      "msg": "No period can run now"
+    },
+    {
+      "code": 6032,
+      "name": "InvalidLegMask",
+      "msg": "Invalid leg mask"
+    },
+    {
+      "code": 6033,
+      "name": "InvalidRemainingAccounts",
+      "msg": "Wrong number of remaining accounts for the leg mask"
+    },
+    {
+      "code": 6034,
+      "name": "WrongDestination",
+      "msg": "Destination is not the owner's associated token account for the output mint"
+    },
+    {
+      "code": 6035,
+      "name": "FundingBalanceMismatch",
+      "msg": "Funding debit or credit did not match the installment"
+    },
+    {
+      "code": 6036,
+      "name": "StagingNotRestored",
+      "msg": "Staging balance is not back at its starting balance"
+    },
+    {
+      "code": 6037,
+      "name": "OutputBelowMinimum",
+      "msg": "Owner's output balance increased by less than the minimum"
+    },
+    {
+      "code": 6038,
+      "name": "InvalidPriceAccount",
+      "msg": "Price account is not a Pyth PriceUpdateV2"
+    },
+    {
+      "code": 6039,
+      "name": "PriceFeedMismatch",
+      "msg": "Price feed id does not match the asset"
+    },
+    {
+      "code": 6040,
+      "name": "PriceNotFullyVerified",
+      "msg": "Price update is not fully verified"
+    },
+    {
+      "code": 6041,
+      "name": "StalePrice",
+      "msg": "Price is older than the configured maximum"
+    },
+    {
+      "code": 6042,
+      "name": "NonPositivePrice",
+      "msg": "Price is not positive"
+    },
+    {
+      "code": 6043,
+      "name": "ConfidenceTooWide",
+      "msg": "Price confidence interval is too wide"
+    },
+    {
+      "code": 6044,
+      "name": "ZeroOutput",
+      "msg": "Computed output is zero"
+    },
+    {
+      "code": 6045,
+      "name": "MathOverflow",
+      "msg": "Arithmetic overflow"
+    },
+    {
+      "code": 6046,
+      "name": "MainnetExecutionUnavailable",
+      "msg": "Mainnet execution is not available until the Jupiter path ships (M8)"
+    }
+  ],
+  "types": [
+    {
+      "name": "Asset",
+      "docs": [
+        "PDA `[\"asset\", mint]`. Only registered and enabled assets can be plan outputs."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "version",
+            "type": "u8"
+          },
+          {
+            "name": "mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "token_program",
+            "docs": [
+              "SPL Token or Token-2022."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "pyth_feed_id",
+            "docs": [
+              "Pyth feed for the underlying equity (price per share)."
+            ],
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "decimals",
+            "type": "u8"
+          },
+          {
+            "name": "enabled",
+            "type": "bool"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "extensions",
+            "docs": [
+              "Token-2022 extensions present at registration: bit `n` set = `ExtensionType` `n`."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "scaled_ui_amount",
+            "docs": [
+              "The mint has ScaledUiAmount: one token is `multiplier` shares, applied at execution."
+            ],
+            "type": "bool"
+          },
+          {
+            "name": "mock_mint_bump",
+            "docs": [
+              "Bump of `[\"mock_mint\", mint]` in the devnet build (0 in the mainnet build)."
+            ],
+            "type": "u8"
+          },
+          {
+            "name": "registered_at",
+            "type": "i64"
+          },
+          {
+            "name": "reserved",
+            "type": {
+              "array": [
+                "u8",
+                64
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "AssetEnabledSet",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "asset",
+            "type": "pubkey"
+          },
+          {
+            "name": "enabled",
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "AssetRegistered",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "asset",
+            "type": "pubkey"
+          },
+          {
+            "name": "mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "token_program",
+            "type": "pubkey"
+          },
+          {
+            "name": "pyth_feed_id",
+            "type": {
+              "array": [
+                "u8",
+                32
+              ]
+            }
+          },
+          {
+            "name": "decimals",
+            "type": "u8"
+          },
+          {
+            "name": "extensions",
+            "type": "u64"
+          },
+          {
+            "name": "scaled_ui_amount",
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Config",
+      "docs": [
+        "PDA `[\"config\"]`, one per program (CONTRACT-V1-SPEC §4). Fields after `bump` are the v1",
+        "additions the M6 decisions need (oracle confidence, devnet treasury, Token-2022 allow-lists);",
+        "`reserved` stays last for later versions."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "version",
+            "type": "u8"
+          },
+          {
+            "name": "admin",
+            "docs": [
+              "Squads multisig vault on mainnet; the owner's deployer on devnet."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "keeper_authority",
+            "docs": [
+              "`None` = anyone can execute installments."
+            ],
+            "type": {
+              "option": "pubkey"
+            }
+          },
+          {
+            "name": "paused",
+            "type": "bool"
+          },
+          {
+            "name": "allowed_funding_mints",
+            "docs": [
+              "Unused slots are `Pubkey::default()`."
+            ],
+            "type": {
+              "array": [
+                "pubkey",
+                4
+              ]
+            }
+          },
+          {
+            "name": "max_slippage_bps",
+            "docs": [
+              "Global ceiling for every output's slippage."
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "max_oracle_staleness_s",
+            "type": "u32"
+          },
+          {
+            "name": "catch_up_window_periods",
+            "type": "u16"
+          },
+          {
+            "name": "protocol_fee_bps",
+            "docs": [
+              "0 at launch."
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "fee_recipient",
+            "type": "pubkey"
+          },
+          {
+            "name": "max_installment_amount",
+            "docs": [
+              "Launch cap per installment, raw funding units."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "max_confidence_bps",
+            "docs": [
+              "Maximum `conf / price`, in bps."
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "treasury",
+            "docs": [
+              "Owner of the token accounts that receive spent funding in the devnet build."
+            ],
+            "type": "pubkey"
+          },
+          {
+            "name": "allowed_freeze_authorities",
+            "docs": [
+              "Accepted mint freeze authorities and Pausable authorities."
+            ],
+            "type": {
+              "array": [
+                "pubkey",
+                4
+              ]
+            }
+          },
+          {
+            "name": "allowed_permanent_delegates",
+            "docs": [
+              "Accepted permanent delegates and confidential-transfer authorities (issuer keys)."
+            ],
+            "type": {
+              "array": [
+                "pubkey",
+                4
+              ]
+            }
+          },
+          {
+            "name": "allowed_transfer_hook_programs",
+            "docs": [
+              "Accepted Token-2022 transfer-hook programs."
+            ],
+            "type": {
+              "array": [
+                "pubkey",
+                4
+              ]
+            }
+          },
+          {
+            "name": "reserved",
+            "type": {
+              "array": [
+                "u8",
+                128
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "ConfigInitialized",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "keeper_authority",
+            "type": {
+              "option": "pubkey"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "ConfigParams",
+      "docs": [
+        "Settable config values (`initialize_config`, `update_config`)."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "keeper_authority",
+            "type": {
+              "option": "pubkey"
+            }
+          },
+          {
+            "name": "allowed_funding_mints",
+            "type": {
+              "array": [
+                "pubkey",
+                4
+              ]
+            }
+          },
+          {
+            "name": "max_slippage_bps",
+            "type": "u16"
+          },
+          {
+            "name": "max_oracle_staleness_s",
+            "type": "u32"
+          },
+          {
+            "name": "catch_up_window_periods",
+            "type": "u16"
+          },
+          {
+            "name": "protocol_fee_bps",
+            "type": "u16"
+          },
+          {
+            "name": "fee_recipient",
+            "type": "pubkey"
+          },
+          {
+            "name": "max_installment_amount",
+            "type": "u64"
+          },
+          {
+            "name": "max_confidence_bps",
+            "type": "u16"
+          },
+          {
+            "name": "treasury",
+            "type": "pubkey"
+          },
+          {
+            "name": "allowed_freeze_authorities",
+            "type": {
+              "array": [
+                "pubkey",
+                4
+              ]
+            }
+          },
+          {
+            "name": "allowed_permanent_delegates",
+            "type": {
+              "array": [
+                "pubkey",
+                4
+              ]
+            }
+          },
+          {
+            "name": "allowed_transfer_hook_programs",
+            "type": {
+              "array": [
+                "pubkey",
+                4
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "ConfigUpdated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "admin",
+            "type": "pubkey"
+          },
+          {
+            "name": "keeper_authority",
+            "type": {
+              "option": "pubkey"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "CreatePlanArgs",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "nonce",
+            "type": "u64"
+          },
+          {
+            "name": "funding_amount",
+            "type": "u64"
+          },
+          {
+            "name": "period_seconds",
+            "type": "u64"
+          },
+          {
+            "name": "starts_at",
+            "type": "i64"
+          },
+          {
+            "name": "periods",
+            "type": "u16"
+          },
+          {
+            "name": "outputs",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "Output"
+                }
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "InstallmentExecuted",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "plan",
+            "type": "pubkey"
+          },
+          {
+            "name": "period",
+            "type": "u16"
+          },
+          {
+            "name": "legs",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "LegExecuted"
+                }
+              }
+            }
+          },
+          {
+            "name": "newly_skipped",
+            "docs": [
+              "Periods newly marked skipped when this period started (only on its first leg)."
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "period_complete",
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "LegExecuted",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "leg",
+            "type": "u8"
+          },
+          {
+            "name": "mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "amount_in",
+            "docs": [
+              "Funding spent on this leg (after any protocol fee)."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "fee",
+            "type": "u64"
+          },
+          {
+            "name": "amount_out",
+            "type": "u64"
+          },
+          {
+            "name": "min_out",
+            "type": "u64"
+          },
+          {
+            "name": "oracle_price",
+            "type": "i64"
+          },
+          {
+            "name": "oracle_expo",
+            "type": "i32"
+          },
+          {
+            "name": "oracle_publish_time",
+            "type": "i64"
+          },
+          {
+            "name": "multiplier_fp",
+            "docs": [
+              "Shares per token used for this leg, fixed point 10^12 (1.0 = 1_000_000_000_000)."
+            ],
+            "type": "u128"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Output",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "weight_bps",
+            "type": "u16"
+          },
+          {
+            "name": "max_slippage_bps",
+            "type": "u16"
+          }
+        ]
+      }
+    },
+    {
+      "name": "Plan",
+      "docs": [
+        "PDA `[\"plan\", owner, funding_mint, nonce_le_u64]` (CONTRACT-V1-SPEC §4). Every fixed-size",
+        "field comes before `outputs`, so each has a fixed offset (keeper `memcmp` filters)."
+      ],
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "version",
+            "type": "u8"
+          },
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "funding_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "nonce",
+            "type": "u64"
+          },
+          {
+            "name": "funding_amount",
+            "docs": [
+              "Per installment, raw units."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "period_seconds",
+            "type": "u64"
+          },
+          {
+            "name": "starts_at",
+            "type": "i64"
+          },
+          {
+            "name": "expires_at",
+            "docs": [
+              "End of the schedule: `starts_at + periods × period_seconds`."
+            ],
+            "type": "i64"
+          },
+          {
+            "name": "created_at",
+            "type": "i64"
+          },
+          {
+            "name": "periods",
+            "type": "u16"
+          },
+          {
+            "name": "executed_periods",
+            "type": "u16"
+          },
+          {
+            "name": "skipped_periods",
+            "type": "u16"
+          },
+          {
+            "name": "last_executed_period",
+            "docs": [
+              "`NO_PERIOD` until the first execution."
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "last_executed_at",
+            "type": "i64"
+          },
+          {
+            "name": "paused_by_owner",
+            "type": "bool"
+          },
+          {
+            "name": "leg_bitmap",
+            "docs": [
+              "Legs done in `in_progress_period` (multi-transaction execution)."
+            ],
+            "type": "u32"
+          },
+          {
+            "name": "subscription_authority",
+            "type": "pubkey"
+          },
+          {
+            "name": "recurring_delegation",
+            "type": "pubkey"
+          },
+          {
+            "name": "subscription_init_id",
+            "type": "i64"
+          },
+          {
+            "name": "bump",
+            "type": "u8"
+          },
+          {
+            "name": "funding_token_program",
+            "type": "pubkey"
+          },
+          {
+            "name": "catch_up_window_periods",
+            "docs": [
+              "Snapshot of `Config.catch_up_window_periods` at creation (the delegation terms use it)."
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "in_progress_period",
+            "docs": [
+              "Period whose legs are in flight; `NO_PERIOD` when none."
+            ],
+            "type": "u16"
+          },
+          {
+            "name": "staging_start_balance",
+            "docs": [
+              "Staging balance before the in-flight period's pull."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "outputs",
+            "type": {
+              "vec": {
+                "defined": {
+                  "name": "Output"
+                }
+              }
+            }
+          },
+          {
+            "name": "reserved",
+            "type": {
+              "array": [
+                "u8",
+                96
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "name": "PlanClosed",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "plan",
+            "type": "pubkey"
+          },
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "returned_amount",
+            "docs": [
+              "Staging balance returned to the owner."
+            ],
+            "type": "u64"
+          },
+          {
+            "name": "executed_periods",
+            "type": "u16"
+          },
+          {
+            "name": "skipped_periods",
+            "type": "u16"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PlanCreated",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "plan",
+            "type": "pubkey"
+          },
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "funding_mint",
+            "type": "pubkey"
+          },
+          {
+            "name": "nonce",
+            "type": "u64"
+          },
+          {
+            "name": "funding_amount",
+            "type": "u64"
+          },
+          {
+            "name": "period_seconds",
+            "type": "u64"
+          },
+          {
+            "name": "starts_at",
+            "type": "i64"
+          },
+          {
+            "name": "expires_at",
+            "type": "i64"
+          },
+          {
+            "name": "periods",
+            "type": "u16"
+          },
+          {
+            "name": "outputs",
+            "type": "u8"
+          }
+        ]
+      }
+    },
+    {
+      "name": "PlanPauseSet",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "plan",
+            "type": "pubkey"
+          },
+          {
+            "name": "owner",
+            "type": "pubkey"
+          },
+          {
+            "name": "paused",
+            "type": "bool"
+          }
+        ]
+      }
+    },
+    {
+      "name": "ProtocolPauseSet",
+      "type": {
+        "kind": "struct",
+        "fields": [
+          {
+            "name": "paused",
+            "type": "bool"
+          }
+        ]
+      }
+    }
+  ]
+}
