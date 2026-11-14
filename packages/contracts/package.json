@@ -15,7 +15,10 @@
     "idl:check": "node scripts/sync-idl.mjs --check",
     "e2e:local": "vite-node scripts/e2e-local.ts",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint ."
+    "lint": "eslint .",
+    "devnet:init": "vite-node scripts/init-devnet.ts --",
+    "devnet:register": "vite-node scripts/register-devnet-assets.ts --",
+    "devnet:audit": "vite-node scripts/audit-devnet.ts --"
   },
   "devDependencies": {
     "@aroma/config": "workspace:*",

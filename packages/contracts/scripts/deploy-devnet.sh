@@ -1,0 +1,35 @@
+#!/usr/bin/env bash
+# Deploys the devnet-mock build of Aroma Guard v1 to DEVNET with the owner's deployer wallet.
+# The OWNER runs this (docs/M6-DEVNET-DEPLOY.md); agents never do. Refuses any cluster but devnet.
+#   AROMA_DEPLOYER=~/.config/solana/aroma-deployer.json bash scripts/deploy-devnet.sh
+set -euo pipefail
+cd "$(dirname "$0")/.."
+
+DEVNET_GENESIS="EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG"
+EXPECTED_PROGRAM_ID="FYrrfhrysaGUwCNyTggqyKmTWqpg3vph8gzmSWt7QtTU"
+DEPLOYER="${AROMA_DEPLOYER:-$HOME/.config/solana/aroma-deployer.json}"
+PROGRAM_KEYPAIR="target/deploy/aroma_guard-keypair.json"
+URL="${AROMA_DEVNET_RPC:-https://api.devnet.solana.com}"
+die() { echo "deploy-devnet: $*" >&2; exit 1; }
+
+[ -f "$DEPLOYER" ] || die "deployer keypair not found at $DEPLOYER (CONTRACT-V1-SPEC §10, step 1)."
+[ -f "$PROGRAM_KEYPAIR" ] || die "program keypair missing at $PROGRAM_KEYPAIR."
+[ "$(solana genesis-hash --url "$URL")" = "$DEVNET_GENESIS" ] || die "$URL is not Solana devnet. Refusing."
+[ "$(solana-keygen pubkey "$PROGRAM_KEYPAIR")" = "$EXPECTED_PROGRAM_ID" ] || die "program keypair does not match $EXPECTED_PROGRAM_ID."
+DEPLOYER_PUBKEY="$(solana-keygen pubkey "$DEPLOYER")"
+echo "Deployer: $DEPLOYER_PUBKEY  balance: $(solana balance "$DEPLOYER_PUBKEY" --url "$URL")"
+
+bash scripts/build.sh
+
+solana program deploy \
+  --url "$URL" \
+  --keypair "$DEPLOYER" \
+  --upgrade-authority "$DEPLOYER" \
+  --program-id "$PROGRAM_KEYPAIR" \
+  target/build/devnet-mock/aroma_guard.so
+
+SHOW="$(solana program show "$EXPECTED_PROGRAM_ID" --url "$URL" --output json)"
+echo "$SHOW"
+AUTHORITY="$(printf '%s' "$SHOW" | node -e 'let s="";process.stdin.on("data",d=>s+=d).on("end",()=>console.log(JSON.parse(s).authority))')"
+[ "$AUTHORITY" = "$DEPLOYER_PUBKEY" ] || die "upgrade authority is $AUTHORITY, expected $DEPLOYER_PUBKEY."
+echo "OK: $EXPECTED_PROGRAM_ID deployed to devnet; upgrade authority = $DEPLOYER_PUBKEY."

@@ -44,3 +44,26 @@ export function basketSymbols(): Set<string> {
 
 export const feedBytes = (hex: string) =>
   Uint8Array.from(Buffer.from(hex.replace(/^0x/, ""), "hex"));
+
+/** `--symbols AAPL,msft` → devnet assets; refuses unknown symbols and symbols in no basket. */
+export function selectAssets(symbols: string | undefined) {
+  const wanted = symbols
+    ? [
+        ...new Set(
+          symbols
+            .split(",")
+            .map((s) => s.trim().toUpperCase())
+            .filter(Boolean),
+        ),
+      ]
+    : DEVNET_ASSETS.map((a) => a.underlying);
+  const unknown = wanted.filter(
+    (s) => !DEVNET_ASSETS.some((a) => a.underlying === s),
+  );
+  if (unknown.length)
+    throw new Error(`Not devnet assets: ${unknown.join(", ")}`);
+  const orphans = wanted.filter((s) => !basketSymbols().has(s));
+  if (orphans.length)
+    throw new Error(`Not in any canonical basket: ${orphans.join(", ")}`);
+  return DEVNET_ASSETS.filter((a) => wanted.includes(a.underlying));
+}

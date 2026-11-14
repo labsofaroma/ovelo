@@ -13,6 +13,7 @@ export {
   AromaGuardInstruction,
   getAromaGuardErrorMessage,
   isAromaGuardError,
+  getAssetDiscriminatorBytes,
   getConfigParamsEncoder,
   getOutputEncoder,
   type Asset,

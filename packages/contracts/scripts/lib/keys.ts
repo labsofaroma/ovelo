@@ -1,4 +1,5 @@
 /** Keypair files for localnet and devnet-only keys. Never used with mainnet. */
+import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { execFileSync } from "node:child_process";
@@ -38,4 +39,21 @@ export async function ensureKeypair(file: string): Promise<KeyPairSigner> {
     fs.chmodSync(file, 0o600);
   }
   return readKeypair(file);
+}
+
+/** A fresh keypair whose 64-byte secret can be checkpointed (mint accounts only). */
+export async function newExportableKeypair(): Promise<{
+  signer: KeyPairSigner;
+  secret: number[];
+}> {
+  const { publicKey, privateKey } = crypto.generateKeyPairSync("ed25519");
+  const seed = privateKey
+    .export({ format: "der", type: "pkcs8" })
+    .subarray(-32);
+  const pub = publicKey.export({ format: "der", type: "spki" }).subarray(-32);
+  const secret = [...seed, ...pub];
+  return {
+    signer: await createKeyPairSignerFromBytes(Uint8Array.from(secret)),
+    secret,
+  };
 }

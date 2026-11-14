@@ -74,6 +74,22 @@ export type MintSpec = {
   scaled: boolean;
 };
 
+/** The expected mint authority may depend on the mint address (a per-mint PDA). */
+export type MintSpecFor = Omit<MintSpec, "mintAuthority"> & {
+  mintAuthority: Address | ((mint: Address) => Promise<Address>);
+};
+
+async function resolveSpec(
+  spec: MintSpecFor,
+  mint: Address,
+): Promise<MintSpec> {
+  const mintAuthority =
+    typeof spec.mintAuthority === "function"
+      ? await spec.mintAuthority(mint)
+      : spec.mintAuthority;
+  return { ...spec, mintAuthority };
+}
+
 /** A mint that already exists is reused only if it is exactly what we would create. */
 export function validateExistingMint(f: MintFacts, spec: MintSpec): void {
   const problems = [
@@ -120,17 +136,21 @@ export async function ensureMint(
   state: ProvisionState,
   put: (record: MintRecord) => void,
   record: MintRecord | undefined,
-  spec: MintSpec,
+  specFor: MintSpecFor,
   payer: TransactionSigner,
   build: (mint: KeyPairSigner) => Promise<Instruction[]>,
 ): Promise<MintRecord> {
+  const spec = { ...specFor, mintAuthority: "" as Address };
   if (record?.status === "created") {
     const account = await deps.readAccount(record.mint);
     if (!account)
       throw new Error(
         `${spec.label}: recorded mint ${record.mint} is missing on chain; refusing to create another. Remove it from the state file to start over.`,
       );
-    validateExistingMint(parseMintFacts(account.owner, account.data), spec);
+    validateExistingMint(
+      parseMintFacts(account.owner, account.data),
+      await resolveSpec(specFor, record.mint),
+    );
     return record;
   }
   let signer: KeyPairSigner;
@@ -158,7 +178,10 @@ export async function ensureMint(
   const account = existing ?? (await deps.readAccount(signer.address));
   if (!account)
     throw new Error(`${spec.label}: mint ${signer.address} was not created.`);
-  validateExistingMint(parseMintFacts(account.owner, account.data), spec);
+  validateExistingMint(
+    parseMintFacts(account.owner, account.data),
+    await resolveSpec(specFor, signer.address),
+  );
   const created: MintRecord = { mint: signer.address, status: "created" };
   put(created);
   await deps.save(state);
