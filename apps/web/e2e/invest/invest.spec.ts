@@ -121,7 +121,8 @@ for (const theme of THEMES)
     await expect(disclosure).toContainText("test tokens of no value");
     await expect(disclosure.getByTestId("sign-and-create")).toBeVisible();
     await expect(
-      page.getByText("Devnet: test tokens, no real value").first(),
+      // The cluster label (devnet, or localnet in this local-validator build) stays visible.
+      page.getByText(/test tokens, no real value/).first(),
     ).toBeVisible();
     await expectNoAxeViolations(page);
   });

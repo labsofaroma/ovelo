@@ -15,6 +15,8 @@ export default defineConfig({
   use: {
     baseURL: process.env.E2E_BASE_URL ?? "http://127.0.0.1:3300",
     ...devices["Desktop Chrome"],
+    // M9 compliance gate: an allowed country, trusted because run.ts sets AROMA_TRUST_PROXY.
+    extraHTTPHeaders: { "x-vercel-ip-country": "DE" },
   },
   projects: [{ name: "chromium" }],
 });

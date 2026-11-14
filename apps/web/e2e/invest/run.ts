@@ -208,6 +208,10 @@ async function main() {
       UPSTASH_REDIS_REST_URL: REDIS.url,
       UPSTASH_REDIS_REST_TOKEN: REDIS.token,
       LOG_LEVEL: "info",
+      // M9's compliance gate blocks devnet plans and the faucet without a TRUSTED country (fail
+      // closed). As in the trade E2E, the app trusts the proxy headers and the browser sends an
+      // allowed country (invest.config.ts). Found in Phase A: the faucet claim was geo-refused.
+      AROMA_TRUST_PROXY: "true",
     },
     WEB,
     join(WORK, "web.log"),
