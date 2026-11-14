@@ -23,6 +23,12 @@ const quoteBody = {
   supportedTransactionVersions: [0],
 };
 
+/**
+ * Its own client IP (the fork app trusts x-real-ip behind its trusted proxy, as on Vercel), so
+ * this spec's quotes do not use up the trade rate-limit window the purchase specs share.
+ */
+const OWN_IP = { "x-real-ip": "203.0.113.90" };
+
 const ticketOf = (page: Page) =>
   page.locator("section", {
     has: page.getByRole("heading", { name: /^Buy / }),
@@ -40,7 +46,7 @@ async function openConnected(page: Page) {
 }
 
 test.describe("blocked country (US)", () => {
-  test.use({ extraHTTPHeaders: { "x-vercel-ip-country": "US" } });
+  test.use({ extraHTTPHeaders: { "x-vercel-ip-country": "US", ...OWN_IP } });
 
   test("cannot quote: honest notice in the ticket, 451 from the API, Action disabled", async ({
     page,
@@ -89,7 +95,7 @@ test.describe("blocked country (US)", () => {
 });
 
 test.describe("allowed country (DE)", () => {
-  test.use({ extraHTTPHeaders: { "x-vercel-ip-country": "DE" } });
+  test.use({ extraHTTPHeaders: { "x-vercel-ip-country": "DE", ...OWN_IP } });
 
   for (const theme of THEMES)
     test(`terms step has no axe violations (${theme})`, async ({ page }) => {
