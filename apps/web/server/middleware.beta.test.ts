@@ -114,7 +114,15 @@ describe("beta gate in middleware", () => {
     ).toBe("pass");
     // A forged token names no verified wallet: the handler refuses it (AUTHORIZATION_INVALID,
     // features/beta/routes.test.ts) and the edge does not pretend to know the wallet.
-    const forged = token(OTHER).replace(/.$/, (c) => (c === "A" ? "B" : "A"));
+    // Change the MAC's FIRST character: its final one also carries 2 padding bits, and a change
+    // there can decode to the same bytes (then the token is not forged at all).
+    const [version, kid, body, mac] = token(OTHER).split(".") as [
+      string,
+      string,
+      string,
+      string,
+    ];
+    const forged = `${version}.${kid}.${body}.${mac[0] === "A" ? "B" : "A"}${mac.slice(1)}`;
     expect(
       await code(await post("/api/v1/trade/submit", { authorization: forged })),
     ).toBe("pass");

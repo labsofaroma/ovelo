@@ -167,6 +167,14 @@ describe("plan authorizations (pa1)", () => {
           fc.pre(authorization[i] !== c);
           const tampered =
             authorization.slice(0, i) + c + authorization.slice(i + 1);
+          // base64url can spell the same bytes two ways in its final padding bits; a change there
+          // that decodes to identical bytes is not a tamper (as in trade.property.test.ts).
+          const bytes = (t: string) =>
+            t
+              .split(".")
+              .map((part) => Buffer.from(part, "base64url").toString("hex"))
+              .join(".");
+          fc.pre(bytes(tampered) !== bytes(authorization));
           expect(() =>
             openPlanAuthorization(tampered, keyring, { now: NOW }),
           ).toThrow();
