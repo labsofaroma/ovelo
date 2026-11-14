@@ -134,6 +134,18 @@ With one maintainer, a required review means a second person (or an org member) 
 
 Secrets to add on GitHub: **`TURBO_TOKEN`** (optional), **`JUPITER_API_KEY`** (optional, for the fork E2E; only if the workflow is changed to read it). No deploy key, RPC key or wallet secret belongs in GitHub Actions.
 
-## 6. Pre-push baseline (local, this branch)
+## 6. Pre-push baseline (local, `launch-prep`, 2026-11-14)
 
-See section 7 of [PRODUCTION-ENV.md](./PRODUCTION-ENV.md#7-pre-push-local-gate-baseline) for the recorded counts.
+Run on macOS (Node 24.21.0, pnpm 10.31.0), branch `launch-prep` on top of `m7-recurring-devnet` (M8 not yet stacked). **Local only; CI not verified.**
+
+| Gate | Result |
+|---|---|
+| `pnpm typecheck` | pass (6/6 tasks) |
+| `pnpm lint` | pass: 0 errors (140 warnings, all in legacy prototype paths) |
+| `pnpm format:check` | pass |
+| `pnpm test` | pass: web 1200 passed + 1 skipped (163 files) and 275 legacy `node:test` passed (276 total, 0 failed; 1 is reported as skipped/todo); ui 210; guard 81; keeper 29; contracts 18; config 2 |
+| `pnpm build:web` (flag off) | pass; `check-client-secrets: OK` (633 files) |
+| `pnpm build:web` (flag on, `.env.example` placeholders) | pass; `env check: ok`; `check-client-secrets: OK` (633 files) |
+| `pnpm test:contracts` | pass: cargo 25 + 25, clippy clean, both builds, `idl:check` "IDL and generated client match the Rust program", vitest 18, LiteSVM 62 |
+| Fork E2E (`E2E_STOCK=TSLA pnpm --filter @aroma/web e2e:fork`) | 26/26 passed (8 compliance, 9 buy, 9 creator). With the default stock (AAPLx) the recorded route's simulation failed on the fork (`HADRo…` program error 0x25): an environment issue with that route, not the app |
+| `actionlint` | 0 errors; 2 shellcheck info notes |
