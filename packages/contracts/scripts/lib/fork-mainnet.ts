@@ -58,7 +58,10 @@ export type RecordedBuild = {
   swapInstruction: { programId: string; accounts: { pubkey: string }[] };
   addressesByLookupTableAddress?: Record<string, string[]> | null;
   outAmount: string;
-  routePlan: { swapInfo: { label: string } }[];
+  routePlan: {
+    swapInfo: { label: string; inputMint: string; outputMint: string };
+    percent?: number;
+  }[];
 };
 
 /**
@@ -82,6 +85,7 @@ export async function recordBuild(leg: {
     slippageBps: String(leg.slippageBps),
     maxAccounts: "32",
     wrapAndUnwrapSol: "false",
+    // The keeper also asks for direct routes; recording additionally pins Orca Whirlpool.
     dexes: "Whirlpool",
     onlyDirectRoutes: "true",
   });

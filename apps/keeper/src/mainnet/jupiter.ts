@@ -49,7 +49,25 @@ type BuildResponse = {
     data: string;
   };
   addressesByLookupTableAddress?: Record<string, string[]> | null;
+  routePlan?: { swapInfo?: { inputMint?: string; outputMint?: string } }[];
 };
+
+/** Every step must swap the leg's input mint for its output mint (splits across pools are fine). */
+export function directRoute(
+  plan: BuildResponse["routePlan"],
+  inputMint: string,
+  outputMint: string,
+): boolean {
+  return (
+    Array.isArray(plan) &&
+    plan.length > 0 &&
+    plan.every(
+      (step) =>
+        step.swapInfo?.inputMint === inputMint &&
+        step.swapInfo?.outputMint === outputMint,
+    )
+  );
+}
 
 /** Jupiter's own slippage guard (M4 accepts 1–300 bps); the program's oracle floor is separate. */
 export const jupiterSlippage = (planSlippageBps: number) =>
@@ -78,6 +96,9 @@ export function jupiterClient(o: {
         slippageBps: String(slippageBps),
         maxAccounts: "32",
         wrapAndUnwrapSol: "false",
+        // The program lets a route write only the swap authority's source and transit accounts,
+        // so routes through an intermediate mint (which need a third authority account) fail.
+        onlyDirectRoutes: "true",
       });
       let response: Response | null = null;
       for (let attempt = 0; attempt < (o.maxAttempts ?? 4); attempt += 1) {
@@ -115,6 +136,11 @@ export function jupiterClient(o: {
         throw new JupiterUnavailable(
           "invalid",
           "Jupiter build without a swap instruction",
+        );
+      if (!directRoute(body.routePlan, leg.inputMint, leg.outputMint))
+        throw new JupiterUnavailable(
+          "invalid",
+          "Jupiter returned a route through an intermediate mint; only direct routes can execute",
         );
       const data = Uint8Array.from(Buffer.from(ix.data, "base64"));
       try {

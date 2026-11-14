@@ -81,6 +81,12 @@ export function fakeJupiterFetch(
           data: data.toString("base64"),
         },
         addressesByLookupTableAddress: o.lookupTables ?? null,
+        routePlan: [
+          {
+            swapInfo: { label: "Whirlpool", inputMint, outputMint: mint },
+            percent: 100,
+          },
+        ],
       }),
     );
   }) as typeof fetch;

@@ -10,6 +10,7 @@ import { fakeKeeperChain } from "../test/chain";
 import { fakeJupiterFetch, QUOTED, type BuildCall } from "../test/jupiter";
 import { JITO_TIP_ACCOUNTS, jitoSubmitter, jitoTipInstruction } from "./jito";
 import {
+  directRoute,
   jupiterClient,
   jupiterSlippage,
   type JupiterUnavailable,
@@ -114,6 +115,27 @@ describe("Jupiter build client", () => {
       return wrong(u.toString());
     }) as typeof fetch;
     expect(await kind(redirect)).toBe("invalid");
+  });
+
+  it("asks for direct routes and refuses a route through an intermediate mint", async () => {
+    const calls: BuildCall[] = [];
+    const leg = await request();
+    const plain = fakeJupiterFetch({ calls });
+    await jupiterClient({ baseUrl: "x://j", fetch: plain }).build(leg);
+    expect(calls[0]!.onlyDirectRoutes).toBe("true");
+    const hop = (async (url: string) => {
+      const body = (await (await plain(url)).json()) as Record<string, unknown>;
+      body.routePlan = [
+        { swapInfo: { inputMint: USDC, outputMint: TOKEN_PROGRAM_ID } },
+        { swapInfo: { inputMint: TOKEN_PROGRAM_ID, outputMint: STOCK } },
+      ];
+      return new Response(JSON.stringify(body));
+    }) as typeof fetch;
+    await expect(
+      jupiterClient({ baseUrl: "x://j", fetch: hop }).build(leg),
+    ).rejects.toThrow(/intermediate mint/);
+    expect(directRoute([], USDC, STOCK)).toBe(false);
+    expect(directRoute(undefined, USDC, STOCK)).toBe(false);
   });
 
   it("clamps Jupiter's own slippage to M4's reviewed range", () => {
