@@ -9,10 +9,8 @@ export { TURNSTILE_TEST_SECRETS } from "./env.rules";
  * Pure environment schema (no `server-only`, no I/O) so it can be reused by the boot hook,
  * the build-time check script and unit tests. Values are NEVER included in error output.
  *
- * Variables are grouped as public, server, devnet and keeper. The v1 foundation is gated by
- * AROMA_V1_ENABLED: the deployed prototype has none of the v1 services configured, so the
- * "required" rules below only apply once that flag is on. Format rules always apply to any
- * variable that is set.
+ * Variables are grouped as public, server, devnet and keeper. The REQUIRED variables always apply
+ * (M9: the AROMA_V1_ENABLED flag is gone); format rules apply to any variable that is set.
  */
 
 const optionalText = z.string().min(1).optional();
@@ -68,7 +66,8 @@ const serverShape = {
   NODE_ENV: z
     .enum(["development", "test", "production"])
     .default("development"),
-  AROMA_V1_ENABLED: bool.default(false),
+  /** M9 emergency stop: `off` refuses every mainnet trading entry point (503). Default on. */
+  AROMA_TRADING: z.enum(["on", "off"]).default("on"),
   LOG_LEVEL: z
     .enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"])
     .default("info"),
@@ -107,7 +106,6 @@ const serverShape = {
   AROMA_TRUST_PROXY: bool.default(false),
   JUPITER_API_KEY: optionalText,
   PYTH_API_KEY: optionalText,
-  CREATOR_AUTH_SECRET: secret32.optional(),
   /** Bearer secret for POST /api/v1/revalidate (M3). Unset: the route answers 503. */
   AROMA_REVALIDATE_SECRET: secret32.optional(),
   SENTRY_DSN: sentryDsn.optional(),
@@ -153,8 +151,6 @@ const base58Hash = z
 const devnetShape = {
   /** Server devnet RPC (prototype and, from M7, `/invest` on devnet). Genesis-checked per client. */
   AROMA_RECURRING_RPC_URL: z.url().optional(),
-  AROMA_RECURRING_AUTH_SECRET: secret32.optional(),
-  AROMA_FAUCET_SECRET_KEY: optionalText,
   /**
    * M7: the cluster `/invest` runs on. `localnet` (a local validator) is for test builds only:
    * it needs test switches and the localnet build flag, and is refused in production.
@@ -212,8 +208,8 @@ for (const key of Object.keys(keeperShape)) GROUP_OF[key] = "keeper";
 /** Every variable the v1 schema reads (check:prod-env's beta profile flags the others). */
 export const SCHEMA_VARIABLES: readonly string[] = Object.keys(flatShape);
 
-/** Required once AROMA_V1_ENABLED=true. */
-export const V1_REQUIRED = [
+/** Always required (M9: no feature flag; AROMA_SKIP_ENV_CHECK only for local builds). */
+export const REQUIRED = [
   "SOLANA_RPC_URL",
   "DATABASE_URL",
   "UPSTASH_REDIS_REST_URL",
@@ -295,13 +291,12 @@ const flatSchema = z.object(flatShape).superRefine((env, ctx) => {
       message: "must differ from AROMA_TRADE_SECRET",
     });
   }
-  if (!env.AROMA_V1_ENABLED) return;
-  for (const key of V1_REQUIRED) {
+  for (const key of REQUIRED) {
     if (env[key] === undefined) {
       ctx.addIssue({
         code: "custom",
         path: [key],
-        message: "is required when AROMA_V1_ENABLED=true",
+        message: "is required",
       });
     }
   }

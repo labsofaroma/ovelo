@@ -4,7 +4,6 @@ import { DataNotice } from "@/features/shared/components/DataNotice";
 import { v1Metadata } from "@/features/shared/metadata";
 import { routes } from "@/features/shared/routes";
 import { pageContainer } from "@/features/shared/styles";
-import { assertV1Enabled } from "@/features/shared/v1";
 import { WatchlistSync } from "@/features/watchlist/components/WatchlistSync";
 import { parseWatchlistParam } from "@/features/watchlist/schema";
 import { getWatchlist } from "@/features/watchlist/server";
@@ -22,7 +21,6 @@ type Props = {
 };
 
 export default async function WatchlistPage({ searchParams }: Props) {
-  assertV1Enabled();
   const mints = parseWatchlistParam((await searchParams).m);
   const result = mints.length ? await getWatchlist(mints) : null;
 

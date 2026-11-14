@@ -25,7 +25,6 @@ export const WEB_PRODUCTION: readonly {
   level: Level;
   milestone: string;
 }[] = [
-  { name: "AROMA_V1_ENABLED", level: "required", milestone: "M9" },
   { name: "AROMA_SITE_URL", level: "required", milestone: "M9" },
   { name: "SOLANA_RPC_URL", level: "required", milestone: "M9" },
   // M9 failover (PRODUCTION-ENV §3): a second provider; trading still works without it.
@@ -122,8 +121,8 @@ export function staticFindings(env: Env): Finding[] {
         `${item.level} for ${item.milestone}; not set`,
       );
   }
-  if (env.AROMA_V1_ENABLED?.trim() && env.AROMA_V1_ENABLED.trim() !== "true")
-    add("AROMA_V1_ENABLED", "invalid", "must be true in production");
+  if (env.AROMA_TRADING?.trim().toLowerCase() === "off")
+    add("AROMA_TRADING", "warning", "trading is paused (emergency stop)");
 
   // 3. Test and local switches.
   for (const name of FORBIDDEN_TRUE)

@@ -5,7 +5,6 @@ import { loadInvestPage } from "@/features/invest/page-data";
 import { v1Metadata } from "@/features/shared/metadata";
 import { routes } from "@/features/shared/routes";
 import { pageContainer } from "@/features/shared/styles";
-import { assertV1Enabled } from "@/features/shared/v1";
 
 export const dynamic = "force-dynamic";
 
@@ -18,7 +17,6 @@ export const metadata: Metadata = v1Metadata({
 });
 
 export default async function InvestPage() {
-  assertV1Enabled();
   const page = await loadInvestPage();
   return (
     <main

@@ -1,6 +1,10 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { stubBaseEnv } from "@/server/test/base-env";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { resetEnvCacheForTests } from "@/server/env";
 import { expectedOrigin, memoryChallengeStore } from "./http";
+
+// M9: no feature flag, so every environment needs the required variables.
+beforeEach(() => stubBaseEnv());
 
 /**
  * The origin a creator challenge is bound to. Cross-site refusal itself is middleware's job

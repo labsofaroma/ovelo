@@ -24,9 +24,6 @@ const PUBLIC_PREFIXES = ["NEXT_PUBLIC_", "EXPO_PUBLIC_"];
 /** Variables whose value is a secret even when the name does not say so. */
 const ALWAYS_SECRET = new Set([
   "DATABASE_URL",
-  "BOT_KEYPAIR",
-  "CREATOR_INVITE_CODES",
-  "AROMA_FAUCET_SECRET_KEY",
   "AROMA_V1_FAUCET_KEYPAIR",
   "KEEPER_KEYPAIR",
   "KEEPER_MAINNET_KEYPAIR",
@@ -58,6 +55,9 @@ export const FORBIDDEN_NAMES = [
   "KEEPER_KEYPAIR",
   "KEEPER_MAINNET_KEYPAIR",
   "PYTH_API_KEY",
+  // M9: the prototype's variables are gone; their names stay forbidden in any client artifact.
+  "BOT_KEYPAIR",
+  "CREATOR_INVITE_CODES",
 ];
 /** E2E-only code that must be compiled out of production builds. */
 export const E2E_MARKERS = ["aromaE2EWallet"];

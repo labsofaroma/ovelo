@@ -10,7 +10,7 @@ Set these in the deployment environment (never in git). `pnpm build:web` and boo
 
 | Variable | Required | What it is | Notes |
 |---|---|---|---|
-| `AROMA_V1_ENABLED` | yes (`true`) | turns v1 on | builds and boots fail closed on any invalid v1 variable |
+| ~~`AROMA_V1_ENABLED`~~ | removed in M9 | — | builds and boots always validate the environment; `AROMA_TRADING=off` is the emergency stop |
 | `SOLANA_RPC_URL` | yes | server mainnet RPC (HTTPS, no credentials in the URL) | genesis is verified on every trade operation; a devnet URL is refused |
 | `NEXT_PUBLIC_SOLANA_RPC_URL` | recommended | browser RPC for the wallet stack | the wallet refuses an RPC that is not mainnet; it also becomes a `connect-src` entry |
 | `JUPITER_API_KEY` | **yes for production** | Jupiter Swap API v2 `/build` and Price v3 | comma-separated keys rotate. Without a key, production quotes return `TRADING_UNAVAILABLE`, and the keyless catalog is rate-limited (M3 finding 4). `/api/v1/health` reports `jupiter: degraded` when keyless |

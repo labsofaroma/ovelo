@@ -8,7 +8,6 @@ import { plural } from "@/features/shared/fixed";
 import { formatObservedAt } from "@/features/shared/freshness";
 import { v1Metadata } from "@/features/shared/metadata";
 import { linkButton, pageContainer } from "@/features/shared/styles";
-import { assertV1Enabled } from "@/features/shared/v1";
 
 // Read on every request: a newly published basket must appear immediately, and the database is
 // never touched at build time.
@@ -22,7 +21,6 @@ export const metadata: Metadata = v1Metadata({
 });
 
 export default async function CreatorsPage() {
-  assertV1Enabled();
   const directory = await getDirectory();
   return (
     <main

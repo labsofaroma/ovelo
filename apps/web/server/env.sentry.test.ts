@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { BASE_ENV } from "@/server/test/base-env";
 import { connectSources } from "./csp";
 import { parseEnv } from "./env.schema";
 import { isSentryDsn } from "./env.sentry";
@@ -14,7 +15,7 @@ describe("sentryDsn (W4)", () => {
   ])("accepts a real-shaped DSN %#", (dsn) => {
     expect(isSentryDsn(dsn)).toBe(true);
     for (const name of ["SENTRY_DSN", "NEXT_PUBLIC_SENTRY_DSN"]) {
-      expect(parseEnv({ [name]: dsn }).ok).toBe(true);
+      expect(parseEnv({ ...BASE_ENV, [name]: dsn }).ok).toBe(true);
     }
   });
 
@@ -46,7 +47,7 @@ describe("sentryDsn (W4)", () => {
     ["not a URL", "not-a-dsn"],
   ])("refuses %s", (_label, dsn) => {
     expect(isSentryDsn(dsn)).toBe(false);
-    const result = parseEnv({ SENTRY_DSN: dsn });
+    const result = parseEnv({ ...BASE_ENV, SENTRY_DSN: dsn });
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.error.issues[0]?.variable).toBe("SENTRY_DSN");

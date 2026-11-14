@@ -1,14 +1,7 @@
 import { randomBytes } from "node:crypto";
+import { stubBaseEnv } from "@/server/test/base-env";
 import { getAddressDecoder } from "@solana/kit";
-import {
-  afterAll,
-  beforeAll,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  vi,
-} from "vitest";
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { POST as baskets } from "@/app/api/v1/creators/baskets/route";
 import { POST as challenge } from "@/app/api/v1/creators/challenge/route";
 import { DESCRIPTION_MAX, MAX_LEGS, NAME_MAX } from "../schema";
@@ -42,7 +35,7 @@ afterAll(async () => {
   await h.client.close();
 });
 beforeEach(() => {
-  vi.stubEnv("AROMA_V1_ENABLED", "true");
+  stubBaseEnv();
   h.state.registry = new Map(
     mints.map((mint, i) => [mint, { symbol: `S${i}x` }]),
   );

@@ -1,12 +1,5 @@
-import {
-  afterAll,
-  beforeAll,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  vi,
-} from "vitest";
+import { stubBaseEnv } from "@/server/test/base-env";
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { GET as stats } from "@/app/api/v1/creators/[wallet]/stats/route";
 import {
   DELETE as archive,
@@ -43,7 +36,7 @@ afterAll(async () => {
   await h.client.close();
 });
 beforeEach(() => {
-  vi.stubEnv("AROMA_V1_ENABLED", "true");
+  stubBaseEnv();
   h.state.now = NOW;
   h.state.registry = new Map([
     [MINT_A, { symbol: "AAPLx" }],
@@ -242,14 +235,6 @@ describe("POST /api/v1/creators/baskets", () => {
     const clash = await submit(other, "publish", { ...basket });
     expect(clash.response.status).toBe(409);
   });
-
-  it("is 404 when the flag is off", async () => {
-    vi.stubEnv("AROMA_V1_ENABLED", "false");
-    const response = await baskets(
-      jsonRequest("/api/v1/creators/baskets", "POST", {}),
-    );
-    expect(response.status).toBe(404);
-  });
 });
 
 describe("GET and DELETE /api/v1/creators/baskets/:id", () => {
@@ -292,34 +277,6 @@ describe("GET and DELETE /api/v1/creators/baskets/:id", () => {
     );
     expect(late.status).toBe(401);
   });
-
-  it("404s unknown and malformed ids, and everything when the flag is off", async () => {
-    for (const id of [crypto.randomUUID(), "not-a-uuid"]) {
-      const response = await read(
-        jsonRequest(`/api/v1/creators/baskets/${id}`, "GET"),
-        params({ id }),
-      );
-      expect(response.status).toBe(404);
-    }
-    vi.stubEnv("AROMA_V1_ENABLED", "false");
-    const id = crypto.randomUUID();
-    expect(
-      (
-        await read(
-          jsonRequest(`/api/v1/creators/baskets/${id}`, "GET"),
-          params({ id }),
-        )
-      ).status,
-    ).toBe(404);
-    expect(
-      (
-        await archive(
-          jsonRequest(`/api/v1/creators/baskets/${id}`, "DELETE", {}),
-          params({ id }),
-        )
-      ).status,
-    ).toBe(404);
-  });
 });
 
 describe("GET /api/v1/creators/:wallet/stats", () => {
@@ -342,8 +299,20 @@ describe("GET /api/v1/creators/:wallet/stats", () => {
     );
     expect(JSON.stringify(body.usage)).not.toMatch(/"(buyers|volume)/);
   });
+});
 
-  it("404s non-creators, malformed wallets and the disabled flag", async () => {
+describe("unknown ids and wallets (M9: no feature flag left to test)", () => {
+  it("404s unknown and malformed basket ids", async () => {
+    for (const id of [crypto.randomUUID(), "not-a-uuid"]) {
+      const response = await read(
+        jsonRequest(`/api/v1/creators/baskets/${id}`, "GET"),
+        params({ id }),
+      );
+      expect(response.status).toBe(404);
+    }
+  });
+
+  it("404s non-creators and malformed wallets", async () => {
     const outsider = await makeSigner();
     for (const wallet of [outsider.wallet, "nope"]) {
       const response = await stats(
@@ -352,11 +321,5 @@ describe("GET /api/v1/creators/:wallet/stats", () => {
       );
       expect(response.status).toBe(404);
     }
-    vi.stubEnv("AROMA_V1_ENABLED", "false");
-    const response = await stats(
-      jsonRequest(`/api/v1/creators/${creator.wallet}/stats`, "GET"),
-      params({ wallet: creator.wallet }),
-    );
-    expect(response.status).toBe(404);
   });
 });

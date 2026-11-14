@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { BASE_ENV } from "@/server/test/base-env";
 
 const warn = vi.hoisted(() => vi.fn());
 vi.mock("@/server/logger", () => ({
@@ -77,6 +78,7 @@ describe("testSwitchesAllowed and the env schema", () => {
 
   it("rejects AROMA_V1_ALLOW_TEST_SWITCHES on a Vercel production deployment", () => {
     const result = parseEnv({
+      ...BASE_ENV,
       VERCEL_ENV: "production",
       AROMA_V1_ALLOW_TEST_SWITCHES: "true",
     });
@@ -87,8 +89,11 @@ describe("testSwitchesAllowed and the env schema", () => {
       );
     }
     expect(
-      parseEnv({ VERCEL_ENV: "preview", AROMA_V1_ALLOW_TEST_SWITCHES: "true" })
-        .ok,
+      parseEnv({
+        ...BASE_ENV,
+        VERCEL_ENV: "preview",
+        AROMA_V1_ALLOW_TEST_SWITCHES: "true",
+      }).ok,
     ).toBe(true);
   });
 });

@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { stubBaseEnv } from "@/server/test/base-env";
 import type * as TradeAuth from "@/server/auth/trade";
 
 /** Route-handler contract (REWRITE-PLAN §8): gate, origin, parse, mapError → `{ code, message }`. */
@@ -76,26 +77,10 @@ const quoteBody = {
 
 describe("v1 trade routes", () => {
   beforeEach(() => {
-    vi.stubEnv("AROMA_V1_ENABLED", "true");
+    stubBaseEnv();
     service.quoteTrade.mockReset();
   });
   afterEach(() => vi.unstubAllEnvs());
-
-  it("404 for every route while the v1 flag is off", async () => {
-    vi.stubEnv("AROMA_V1_ENABLED", "false");
-    const responses = await Promise.all([
-      quote.POST(post("/api/v1/trade/quote", quoteBody)),
-      submit.POST(post("/api/v1/trade/submit", {})),
-      status.GET(new Request(`${URL_BASE}/api/v1/trade/x`), {
-        params: Promise.resolve({ id: "x" }),
-      }),
-      portfolio.GET(new Request(`${URL_BASE}/api/v1/portfolio/x`), {
-        params: Promise.resolve({ wallet: "x" }),
-      }),
-    ]);
-    expect(responses.map((r) => r.status)).toEqual([404, 404, 404, 404]);
-    expect(service.quoteTrade).not.toHaveBeenCalled();
-  });
 
   it("rejects a cross-origin Origin on state-changing routes (AUDIT M-6)", async () => {
     const response = await submit.POST(

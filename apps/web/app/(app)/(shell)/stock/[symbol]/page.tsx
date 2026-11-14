@@ -7,7 +7,6 @@ import { STALE_AFTER_MS } from "@/features/shared/freshness";
 import { v1Metadata } from "@/features/shared/metadata";
 import { routes } from "@/features/shared/routes";
 import { pageContainer, textLink } from "@/features/shared/styles";
-import { assertV1Enabled } from "@/features/shared/v1";
 import { PriceChartLazy } from "@/features/stock/components/PriceChartLazy";
 import { ResearchTabs } from "@/features/stock/components/ResearchTabs";
 import { StockHeader } from "@/features/stock/components/StockHeader";
@@ -36,7 +35,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function StockPage({ params }: Props) {
-  assertV1Enabled();
   const { symbol } = await params;
   const page = await getStockPage(symbol);
   if (page.state === "not-found") notFound();

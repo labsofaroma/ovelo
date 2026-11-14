@@ -153,5 +153,6 @@ describe("AssetPicker", () => {
       name: new RegExp(assets[MAX_LEGS]!.symbol),
     });
     expect(extra).toHaveProperty("disabled", true);
-  });
+    // MAX_LEGS user-event clicks: well under 5 s alone, slower in the full parallel suite.
+  }, 30_000);
 });

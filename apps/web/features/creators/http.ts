@@ -3,7 +3,7 @@ import type { Redis } from "@upstash/redis";
 import { getMarkets } from "@/features/markets/server";
 import type { ChallengeStore } from "@/server/auth/creator";
 import { getDb } from "@/server/db/client";
-import { isV1Enabled, tryGetEnv } from "@/server/env";
+import { tryGetEnv } from "@/server/env";
 import { AppError } from "@/server/errors";
 import { errorResponse } from "@/server/http";
 import { requireRedis } from "@/server/redis";
@@ -132,8 +132,6 @@ export function creatorRoute<C>(
 ): Handler<C> {
   return async (request, context) => {
     try {
-      if (!isV1Enabled())
-        throw new AppError("NOT_FOUND", { detail: "v1 disabled" });
       return await handler(request, context);
     } catch (error) {
       return errorResponse(

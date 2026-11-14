@@ -1,3 +1,4 @@
+import { stubBaseEnv } from "@/server/test/base-env";
 import { NextRequest } from "next/server";
 import fc from "fast-check";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
@@ -32,6 +33,7 @@ const ALLOWED = "4Nd1mYQzvgp7uVDYiHn9wrpTkMtZpZyV9pR9ZJ2q5vPz";
 const OTHER = "9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin";
 
 beforeEach(() => {
+  stubBaseEnv();
   vi.stubEnv("NODE_ENV", "development");
   vi.stubEnv("AROMA_TRUST_PROXY", "true");
   vi.stubEnv("AROMA_BETA_GATE", "on");

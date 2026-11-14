@@ -48,7 +48,7 @@ Before inviting testers, with your own funded wallet and small amounts (M4-DEPLO
 
 **Rollback a bad deploy:** Vercel → Deployments → the previous good deployment → *Instant Rollback*. Migrations `0005` and `0006` are additive, so an older build runs on the newer schema; never roll the database back.
 
-**Emergency stop of trading:** either set `AROMA_V1_ENABLED=false` and redeploy (every v1 route answers 404; the prototype's own trading routes are already closed while the gate is on), or remove access for wallets with `DELETE FROM beta_access WHERE wallet = '<address>'` and remove them from `AROMA_BETA_WALLETS`. Trading also stops by itself, fail closed, if Postgres is unreachable (503 `BETA_ACCESS_UNAVAILABLE`).
+**Emergency stop of trading:** set `AROMA_TRADING=off` and redeploy: every mainnet trading entry point (quote, submit, Action POST) answers 503 `TRADING_UNAVAILABLE` in middleware and in each route, while browsing, receipts and plan closes stay open (M9; it replaced the old `AROMA_V1_ENABLED=false` stop). Or remove access for wallets with `DELETE FROM beta_access WHERE wallet = '<address>'` and remove them from `AROMA_BETA_WALLETS`. Trading also stops by itself, fail closed, if Postgres is unreachable (503 `BETA_ACCESS_UNAVAILABLE`).
 
 **Phase B (public spot launch, M9):**
 

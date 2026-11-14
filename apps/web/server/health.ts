@@ -1,6 +1,6 @@
 import "server-only";
 import { pingDb } from "./db/client";
-import { isV1Enabled, tryGetEnv } from "./env";
+import { tryGetEnv } from "./env";
 import { logger } from "./logger";
 import { getRedis } from "./redis";
 import { jupiterProbe, pythProbe } from "./health-providers";
@@ -97,9 +97,9 @@ export function classifyRpcLag(lagSeconds: number): CheckStatus {
   return "ok";
 }
 
-/** A probe whose dependency is not configured: skipped while v1 is off, failed once it is on. */
+/** A probe whose dependency is not configured: failed (M9: it is always required). */
 function unconfigured(): { status: CheckStatus } {
-  return { status: isV1Enabled() ? "fail" : "skipped" };
+  return { status: "fail" };
 }
 
 /**

@@ -1,4 +1,5 @@
 import type { PGlite } from "@electric-sql/pglite";
+import { stubBaseEnv } from "@/server/test/base-env";
 import {
   afterAll,
   afterEach,
@@ -88,7 +89,7 @@ beforeAll(async () => {
 afterAll(async () => client.close());
 
 beforeEach(() => {
-  vi.stubEnv("AROMA_V1_ENABLED", "true");
+  stubBaseEnv();
   vi.stubEnv("AROMA_SITE_URL", SITE);
   vi.stubEnv("AROMA_TRUST_PROXY", "true");
   vi.stubEnv("AROMA_BETA_GATE", "on");

@@ -15,7 +15,6 @@ import { DataNotice } from "@/features/shared/components/DataNotice";
 import { v1Metadata } from "@/features/shared/metadata";
 import { routes } from "@/features/shared/routes";
 import { pageContainer } from "@/features/shared/styles";
-import { assertV1Enabled } from "@/features/shared/v1";
 
 export const metadata: Metadata = v1Metadata({
   title: "Markets",
@@ -33,7 +32,6 @@ type Props = {
  * data cache (features/markets/server.ts), so filtering never refetches providers.
  */
 export default async function MarketsPage({ searchParams }: Props) {
-  assertV1Enabled();
   const filters = parseMarketFilters(await searchParams);
   const markets = await getMarkets();
 

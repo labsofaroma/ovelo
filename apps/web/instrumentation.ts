@@ -5,8 +5,7 @@ import type { Instrumentation } from "next";
 
 export async function register(): Promise<void> {
   if (process.env.NEXT_RUNTIME === "nodejs") {
-    // Throws EnvValidationError (variable names only) when AROMA_V1_ENABLED=true and the
-    // environment is incomplete or invalid. Does nothing while v1 is off (the prototype).
+    // Exits with the variable names (never values) when the environment is incomplete or invalid.
     const { assertBootEnv } = await import("./server/env");
     assertBootEnv();
   }

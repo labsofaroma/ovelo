@@ -1,12 +1,5 @@
-import {
-  afterAll,
-  beforeAll,
-  beforeEach,
-  describe,
-  expect,
-  it,
-  vi,
-} from "vitest";
+import { stubBaseEnv } from "@/server/test/base-env";
+import { afterAll, beforeAll, beforeEach, describe, expect, it } from "vitest";
 import { POST as challenge } from "@/app/api/v1/creators/challenge/route";
 import { POST as redeem } from "@/app/api/v1/creators/invites/redeem/route";
 import { CHALLENGE_TTL_SECONDS } from "@/server/auth/creator";
@@ -33,7 +26,7 @@ afterAll(async () => {
   await h.client.close();
 });
 beforeEach(() => {
-  vi.stubEnv("AROMA_V1_ENABLED", "true");
+  stubBaseEnv();
   h.state.now = NOW;
 });
 
@@ -84,18 +77,6 @@ describe("POST /api/v1/creators/challenge", () => {
     expect(body.expiresAt).toBe(
       new Date(NOW.getTime() + CHALLENGE_TTL_SECONDS * 1000).toISOString(),
     );
-  });
-
-  it("is 404 when AROMA_V1_ENABLED is off", async () => {
-    vi.stubEnv("AROMA_V1_ENABLED", "false");
-    const response = await challenge(
-      jsonRequest("/api/v1/creators/challenge", "POST", {}),
-    );
-    expect(response.status).toBe(404);
-    expect(await json(response)).toEqual({
-      code: "NOT_FOUND",
-      message: "The resource was not found.",
-    });
   });
 
   it("validates the body: invalid weights, PDA wallets and unknown purposes are 400", async () => {
@@ -193,13 +174,5 @@ describe("POST /api/v1/creators/invites/redeem", () => {
       profile: { displayName: "Someone else" },
     });
     expect(response.status).toBe(401);
-  });
-
-  it("is 404 when the flag is off", async () => {
-    vi.stubEnv("AROMA_V1_ENABLED", "");
-    const response = await redeem(
-      jsonRequest("/api/v1/creators/invites/redeem", "POST", {}),
-    );
-    expect(response.status).toBe(404);
   });
 });

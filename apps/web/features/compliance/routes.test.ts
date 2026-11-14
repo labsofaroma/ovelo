@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { stubBaseEnv } from "@/server/test/base-env";
 import { toMarketsView } from "@/features/markets/normalize";
 import { snapshot } from "@/features/test/fixtures";
 import { resetEnvCacheForTests } from "@/server/env";
@@ -63,7 +64,7 @@ const quoteBody = (taker: string) => ({
 
 let terms: ReturnType<typeof memoryTermsStore>;
 beforeEach(() => {
-  vi.stubEnv("AROMA_V1_ENABLED", "true");
+  stubBaseEnv();
   vi.stubEnv("AROMA_SITE_URL", SITE);
   vi.stubEnv("AROMA_TRUST_PROXY", "true");
   resetEnvCacheForTests();

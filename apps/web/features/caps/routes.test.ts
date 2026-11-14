@@ -1,4 +1,5 @@
 import type { PGlite } from "@electric-sql/pglite";
+import { stubBaseEnv } from "@/server/test/base-env";
 import {
   afterAll,
   afterEach,
@@ -83,7 +84,7 @@ beforeAll(async () => {
 });
 afterAll(async () => client.close());
 beforeEach(() => {
-  vi.stubEnv("AROMA_V1_ENABLED", "true");
+  stubBaseEnv();
   vi.stubEnv("AROMA_TRADE_SECRET", "s".repeat(40));
   vi.stubEnv("SOLANA_RPC_URL", "https://rpc.example.test");
   vi.stubEnv("DATABASE_URL", "postgres://u:p@db.example.test/aroma");

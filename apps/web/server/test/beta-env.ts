@@ -1,7 +1,6 @@
 /** A complete, real-looking `beta.<domain>` profile for the check:prod-env beta tests. */
 const secret = (c: string) => c.repeat(40);
 export const BETA_GOOD = {
-  AROMA_V1_ENABLED: "true",
   AROMA_SITE_URL: "https://beta.aroma.trade",
   SOLANA_RPC_URL: "https://mainnet.helius-rpc.com/?api-key=k",
   NEXT_PUBLIC_SOLANA_RPC_URL: "https://rpc.aroma.trade",

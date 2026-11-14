@@ -11,7 +11,6 @@ import {
 /** P3: `pnpm check:prod-env` refuses an incomplete, placeholder or test production profile. */
 const secret = (c: string) => c.repeat(40);
 const GOOD = {
-  AROMA_V1_ENABLED: "true",
   AROMA_SITE_URL: "https://aroma.trade",
   SOLANA_RPC_URL: "https://mainnet.helius-rpc.com/?api-key=k",
   SOLANA_RPC_FALLBACK_URL: "https://aroma.mainnet.rpcpool.com/k",

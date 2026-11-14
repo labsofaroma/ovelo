@@ -1,8 +1,6 @@
 import "server-only";
 import type { Address } from "@solana/kit";
 import type { TradeKeyring } from "@/server/auth/trade";
-import { isV1Enabled } from "@/server/env";
-import { AppError } from "@/server/errors";
 import {
   assertSameOrigin,
   errorResponse,
@@ -47,7 +45,6 @@ const json = (body: unknown, status = 200) =>
   Response.json(body, { status, headers: { "Cache-Control": "no-store" } });
 
 function gate(request: Request, post: boolean): void {
-  if (!isV1Enabled()) throw new AppError("NOT_FOUND");
   if (post) assertSameOrigin(request);
 }
 

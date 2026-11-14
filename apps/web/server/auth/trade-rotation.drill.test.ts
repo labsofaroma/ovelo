@@ -1,5 +1,6 @@
+import { stubBaseEnv } from "@/server/test/base-env";
 import { randomBytes, randomUUID } from "node:crypto";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { parseEnv } from "../env.schema";
 import { resetEnvCacheForTests } from "../env";
 import {
@@ -9,6 +10,9 @@ import {
   sealAuthorization,
   type TradePayload,
 } from "./trade";
+
+// M9: no feature flag, so every environment needs the required variables.
+beforeEach(() => stubBaseEnv());
 
 /**
  * P4 trade-secret rotation drill (docs/launch/KEY-CUSTODY.md §3, M4-DEPLOY.md §2), through the

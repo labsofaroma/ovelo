@@ -6,7 +6,7 @@ Rules for human contributors and AI coding agents. _Referenced by `.21st/DESIGN.
 ```bash
 pnpm install && pnpm dev:web
 ```
-Node 24.12.0, pnpm 10.31.0. Copy `apps/web/.env.example` to `apps/web/.env.local`; with `AROMA_V1_ENABLED=true` a missing or invalid variable stops boot and `pnpm build:web` with a list of names. Never commit `.env*` files except `.env.example`.
+Node 24.12.0, pnpm 10.31.0. Copy `apps/web/.env.example` to `apps/web/.env.local`; a missing or invalid variable stops boot and `pnpm build:web` with a list of names (`AROMA_SKIP_ENV_CHECK=1` skips the build check for a local build only; refused in production). Never commit `.env*` files except `.env.example`.
 
 ## Where things go
 - Server-only code → `apps/web/server/` (v1: env, logger, errors, http, redis, ratelimit, rpc, db). Import `server-only`; never import it from a client component. Prototype server code still lives in `apps/web/lib/server/` until it is ported (REWRITE-PLAN §5.2).

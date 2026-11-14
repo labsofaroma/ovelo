@@ -1,4 +1,5 @@
 import fc from "fast-check";
+import { BASE_ENV } from "@/server/test/base-env";
 import { describe, expect, it } from "vitest";
 import { parseEnv } from "@/server/env.schema";
 import { betaConfig, betaGateOn } from "./config";
@@ -22,16 +23,17 @@ describe("beta gate config (W2)", () => {
       betaGateOn({ NODE_ENV: "development", AROMA_BETA_GATE: "Off" }),
     ).toBe(true);
     expect(betaGateOn({ AROMA_BETA_GATE: "false" })).toBe(true);
-    expect(parseEnv({ AROMA_BETA_GATE: "false" }).ok).toBe(false);
+    expect(parseEnv({ ...BASE_ENV, AROMA_BETA_GATE: "false" }).ok).toBe(false);
   });
 
   it("validates the wallet allowlist at boot and grants nothing when malformed", () => {
-    expect(parseEnv({ AROMA_BETA_WALLETS: `${WALLET}, ${WALLET}` }).ok).toBe(
-      true,
-    );
-    expect(parseEnv({ AROMA_BETA_WALLETS: `${WALLET},not-a-wallet` }).ok).toBe(
-      false,
-    );
+    expect(
+      parseEnv({ ...BASE_ENV, AROMA_BETA_WALLETS: `${WALLET}, ${WALLET}` }).ok,
+    ).toBe(true);
+    expect(
+      parseEnv({ ...BASE_ENV, AROMA_BETA_WALLETS: `${WALLET},not-a-wallet` })
+        .ok,
+    ).toBe(false);
     expect(
       betaConfig({ AROMA_BETA_GATE: "on", AROMA_BETA_WALLETS: `${WALLET},x` })
         .wallets.size,

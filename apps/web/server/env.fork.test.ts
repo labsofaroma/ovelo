@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { BASE_ENV } from "@/server/test/base-env";
 import { parseEnv } from "./env.schema";
 
 /** M4: rules for the E2E local-fork switches and trade-key rotation. */
@@ -8,10 +9,13 @@ const variables = (result: ReturnType<typeof parseEnv>) =>
 describe("env schema (M4)", () => {
   it("SOLANA_RPC_URL must be https unless it is loopback AND a fork genesis is declared", () => {
     expect(
-      variables(parseEnv({ SOLANA_RPC_URL: "http://127.0.0.1:8899" })),
+      variables(
+        parseEnv({ ...BASE_ENV, SOLANA_RPC_URL: "http://127.0.0.1:8899" }),
+      ),
     ).toContain("SOLANA_RPC_URL");
     expect(
       parseEnv({
+        ...BASE_ENV,
         SOLANA_RPC_URL: "http://127.0.0.1:8899",
         AROMA_V1_TEST_FORK_GENESIS:
           "EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG",
@@ -20,6 +24,7 @@ describe("env schema (M4)", () => {
     expect(
       variables(
         parseEnv({
+          ...BASE_ENV,
           SOLANA_RPC_URL: "http://rpc.example.test",
           AROMA_V1_TEST_FORK_GENESIS:
             "EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG",
@@ -27,13 +32,19 @@ describe("env schema (M4)", () => {
       ),
     ).toContain("SOLANA_RPC_URL");
     expect(
-      variables(parseEnv({ SOLANA_RPC_URL: "https://u:p@rpc.example.test" })),
+      variables(
+        parseEnv({
+          ...BASE_ENV,
+          SOLANA_RPC_URL: "https://u:p@rpc.example.test",
+        }),
+      ),
     ).toContain("SOLANA_RPC_URL");
   });
 
   it("every E2E switch is rejected on a Vercel production deployment", () => {
     const issues = variables(
       parseEnv({
+        ...BASE_ENV,
         VERCEL_ENV: "production",
         AROMA_V1_TEST_FORK_GENESIS:
           "EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG",
@@ -47,7 +58,12 @@ describe("env schema (M4)", () => {
       ]),
     );
     expect(
-      variables(parseEnv({ AROMA_V1_TEST_JUPITER_URL: "https://api.jup.ag" })),
+      variables(
+        parseEnv({
+          ...BASE_ENV,
+          AROMA_V1_TEST_JUPITER_URL: "https://api.jup.ag",
+        }),
+      ),
     ).toContain("AROMA_V1_TEST_JUPITER_URL");
   });
 
@@ -56,16 +72,19 @@ describe("env schema (M4)", () => {
     expect(
       variables(
         parseEnv({
+          ...BASE_ENV,
           AROMA_TRADE_SECRET: secret,
           AROMA_TRADE_SECRET_PREVIOUS: secret,
         }),
       ),
     ).toContain("AROMA_TRADE_SECRET_PREVIOUS");
     expect(
-      variables(parseEnv({ AROMA_TRADE_SECRET_PREVIOUS: "short" })),
+      variables(
+        parseEnv({ ...BASE_ENV, AROMA_TRADE_SECRET_PREVIOUS: "short" }),
+      ),
     ).toContain("AROMA_TRADE_SECRET_PREVIOUS");
-    expect(variables(parseEnv({ JITO_MAX_TIP_LAMPORTS: "999" }))).toContain(
-      "JITO_MAX_TIP_LAMPORTS",
-    );
+    expect(
+      variables(parseEnv({ ...BASE_ENV, JITO_MAX_TIP_LAMPORTS: "999" })),
+    ).toContain("JITO_MAX_TIP_LAMPORTS");
   });
 });

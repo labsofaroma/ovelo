@@ -1,3 +1,4 @@
+import { stubBaseEnv } from "@/server/test/base-env";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { resetEnvCacheForTests } from "@/server/env";
 import { resetRedisForTests } from "@/server/redis";
@@ -15,6 +16,7 @@ const service = await import("./service");
 
 const SECRET = "wiring-test-trade-secret-at-least-32-characters";
 beforeEach(() => {
+  stubBaseEnv();
   vi.stubEnv("AROMA_TRADE_SECRET", SECRET);
   resetEnvCacheForTests();
   resetRedisForTests();

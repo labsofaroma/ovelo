@@ -17,11 +17,8 @@
         "LOG_LEVEL",
         "JUPITER_API_KEY",
         "PYTH_API_KEY",
-        "PRIVY_APP_SECRET",
-        "CREATOR_*",
         "KEEPER_*",
         "JITO_*",
-        "BOT_KEYPAIR",
         "VERCEL_ENV"
       ],
       "inputs": ["$TURBO_DEFAULT$", ".env.example"],

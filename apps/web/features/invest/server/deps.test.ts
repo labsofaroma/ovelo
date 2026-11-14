@@ -1,5 +1,9 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { stubBaseEnv } from "@/server/test/base-env";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { resetEnvCacheForTests } from "@/server/env";
+
+// M9: no feature flag, so every environment needs the required variables.
+beforeEach(() => stubBaseEnv());
 
 /** Production wiring with every external client mocked (no network, no database). */
 const fakeRedis = {

@@ -40,7 +40,7 @@ import { disclosureSentence } from "@/features/compliance/disclosures";
  * authorized message hash, fee payer and wallet. A client that does not call back is not
  * counted (never guessed).
  *
- * Paths: /api/v1/actions/baskets/:id (gated by AROMA_V1_ENABLED). The prototype's
+ * Paths: /api/v1/actions/baskets/:id. The prototype's
  * /api/actions/* paths are untouched until M7, when this moves to /api/actions/baskets/:id
  * and actions.json maps /basket/* to it (docs/M4-DEPLOY.md, M5 section).
  */

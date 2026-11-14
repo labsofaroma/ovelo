@@ -45,10 +45,10 @@ jobs:
           cache: pnpm
       - run: pnpm install --frozen-lockfile
       - run: pnpm --filter @aroma/web exec playwright install --with-deps chromium
-      - name: Build with v1 on (placeholder env, connects to nothing)
+      - name: Build (placeholder env, connects to nothing)
         run: |
           set -a; . apps/web/.env.example; set +a
-          AROMA_V1_ENABLED=true pnpm build:web
+          pnpm build:web
       - name: Playwright smoke + axe
         run: |
           set -a; . apps/web/.env.example; set +a

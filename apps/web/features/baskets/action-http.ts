@@ -1,7 +1,5 @@
 import "server-only";
 import { expectedOrigin } from "@/features/creators/http";
-import { isV1Enabled } from "@/server/env";
-import { AppError } from "@/server/errors";
 import { errorResponse } from "@/server/http";
 import { actionHeaders } from "./actions-headers";
 
@@ -20,8 +18,6 @@ export function actionRoute<C>(route: string, handler: Handler<C>): Handler<C> {
   return async (request, context) => {
     let response: Response;
     try {
-      if (!isV1Enabled())
-        throw new AppError("NOT_FOUND", { detail: "v1 disabled" });
       response = await handler(request, context);
     } catch (error) {
       response = errorResponse(error, { route });

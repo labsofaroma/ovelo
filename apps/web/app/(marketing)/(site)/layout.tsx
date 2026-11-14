@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 import { SiteFooter } from "@/features/shared/components/SiteFooter";
 import { SiteHeader } from "@/features/shared/components/SiteHeader";
-import { assertV1Enabled } from "@/features/shared/v1";
 
 /**
  * Marketing pages (landing, privacy, terms; M9: at the root, formerly under `/v1`). The `(marketing)`
@@ -12,7 +11,6 @@ export default function V1MarketingLayout({
 }: {
   children: ReactNode;
 }) {
-  assertV1Enabled();
   return (
     <div className="flex min-h-dvh flex-col bg-bg text-ink">
       <SiteHeader />

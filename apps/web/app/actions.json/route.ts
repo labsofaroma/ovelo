@@ -1,7 +1,6 @@
 import { NextResponse } from "next/server";
 import { actionHeaders } from "@/features/baskets/actions-headers";
 import { actionsJsonRules } from "@/features/baskets/actions-json";
-import { isV1Enabled } from "@/server/env";
 
 export const runtime = "nodejs";
 // Read the flag per request (it decides the v1 rule), not once at build time.
@@ -12,7 +11,7 @@ const ACTIONS_JSON_CHAIN = "mainnet" as const;
 
 export function GET() {
   return NextResponse.json(
-    { rules: actionsJsonRules(isV1Enabled()) },
+    { rules: actionsJsonRules() },
     {
       headers: {
         ...actionHeaders(ACTIONS_JSON_CHAIN),

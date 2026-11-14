@@ -39,10 +39,10 @@ const DEMO_ROWS = [
 
 /**
  * M1 wiring proof: a server component rendering @aroma/ui through the Tailwind v4 entry.
- * Gated by AROMA_V1_ENABLED so the deployed prototype never exposes it.
+ * A design-system preview: never served on a production deployment (M9).
  */
 export default function UiPreviewPage() {
-  if (process.env.AROMA_V1_ENABLED !== "true") notFound();
+  if (process.env.VERCEL_ENV === "production") notFound();
   return (
     <main className="mx-auto flex max-w-3xl flex-col gap-6 bg-bg p-6 text-ink">
       <header className="flex items-center justify-between">

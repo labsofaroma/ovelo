@@ -194,7 +194,6 @@ async function main() {
     {
       ...buildEnv,
       NODE_ENV: "production",
-      AROMA_V1_ENABLED: "true",
       AROMA_V1_ALLOW_TEST_SWITCHES: "true",
       AROMA_V1_INVEST_CLUSTER: "localnet",
       AROMA_V1_LOCALNET_RPC_URL: s.rpcUrl,

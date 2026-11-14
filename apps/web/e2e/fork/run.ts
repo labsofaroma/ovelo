@@ -326,7 +326,6 @@ async function main() {
   );
   const appEnv: Record<string, string> = {
     ...placeholders,
-    AROMA_V1_ENABLED: "true",
     AROMA_V1_ALLOW_TEST_SWITCHES: "true",
     AROMA_V1_TEST_FORK_GENESIS: genesis,
     AROMA_V1_TEST_JUPITER_URL: `http://127.0.0.1:${JUPITER_PORT}`,

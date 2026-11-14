@@ -53,13 +53,12 @@ type Ctx = {
 export function capRules(
   env: {
     VERCEL_ENV?: string;
-    AROMA_V1_ENABLED?: boolean;
     AROMA_MAX_TRADE_USDC_RAW?: string;
     AROMA_MAX_DAILY_USDC_RAW?: string;
   },
   ctx: Ctx,
 ): void {
-  if (env.VERCEL_ENV === "production" && env.AROMA_V1_ENABLED)
+  if (env.VERCEL_ENV === "production")
     for (const key of [
       "AROMA_MAX_TRADE_USDC_RAW",
       "AROMA_MAX_DAILY_USDC_RAW",

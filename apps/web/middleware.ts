@@ -11,6 +11,8 @@ import { buildCsp, generateNonce, HSTS } from "./server/csp";
 import { testSwitchesAllowed } from "./server/env.schema";
 import { ERROR_CODES, type ErrorCode } from "./server/errors";
 import { goneResponse, isGonePath } from "./server/gone";
+import { tradingOff } from "./server/trading-switch";
+import { gatedSurface } from "./features/compliance/jurisdiction";
 import { createRateLimiter, type RateLimiter } from "./server/ratelimit";
 import { getRedis } from "./server/redis";
 import {
@@ -39,9 +41,8 @@ import {
  * Runs on the Node.js runtime so it can use the server modules (pino, Upstash).
  */
 
-const required =
-  process.env.AROMA_V1_ENABLED?.trim() === "true" &&
-  !testSwitchesAllowed(process.env);
+// Redis-backed limits are required, except for local runs with test switches (E2E).
+const required = !testSwitchesAllowed(process.env);
 let limiters: Record<Bucket, RateLimiter> | null = null;
 function limiter(bucket: Bucket): RateLimiter {
   limiters ??= {
@@ -196,6 +197,12 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
           maxBodyBytes(pathname)
       )
         response = reject("PAYLOAD_TOO_LARGE");
+      // M9 emergency stop: AROMA_TRADING=off closes every mainnet trading entry point.
+      else if (
+        tradingOff(env) &&
+        gatedSurface(gatePath, request.method) === "trade"
+      )
+        response = reject("TRADING_UNAVAILABLE");
       // --- M9 compliance gate (additive): geo-blocking on every trading entry point. ---
       else {
         const refusal = edgeRefusal(

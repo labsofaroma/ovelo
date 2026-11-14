@@ -3,7 +3,6 @@ import { PortfolioIsland } from "@/features/portfolio/components/PortfolioIsland
 import { v1Metadata } from "@/features/shared/metadata";
 import { routes } from "@/features/shared/routes";
 import { pageContainer } from "@/features/shared/styles";
-import { assertV1Enabled } from "@/features/shared/v1";
 
 export const metadata: Metadata = v1Metadata({
   title: "Portfolio",
@@ -15,7 +14,6 @@ export const metadata: Metadata = v1Metadata({
 });
 
 export default function PortfolioPage() {
-  assertV1Enabled();
   return (
     <main
       id="main-content"

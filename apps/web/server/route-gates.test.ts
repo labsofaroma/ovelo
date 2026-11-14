@@ -39,14 +39,19 @@ const APIS: Record<string, Api> = {
     methods: { POST: "trade" },
     geo: "trade",
     beta: "quote",
-    handler: ["assertTradeAccess", "checkQuoteCaps"],
+    handler: ["assertTradingOpen", "assertTradeAccess", "checkQuoteCaps"],
   },
   "/api/v1/trade/submit": {
     sample: "/api/v1/trade/submit",
     methods: { POST: "trade" },
     geo: "trade",
     beta: "submit",
-    handler: ["assertJurisdiction", "assertBetaAccess", "reserveForSubmit"],
+    handler: [
+      "assertTradingOpen",
+      "assertJurisdiction",
+      "assertBetaAccess",
+      "reserveForSubmit",
+    ],
   },
   "/api/v1/trade/[id]": {
     sample: "/api/v1/trade/abc",
@@ -57,7 +62,12 @@ const APIS: Record<string, Api> = {
     methods: { GET: "read", POST: "trade" },
     geo: "trade",
     beta: "action",
-    handler: ["assertTradeAccess", "reserveActionQuote", "requestJurisdiction"],
+    handler: [
+      "assertTradingOpen",
+      "assertTradeAccess",
+      "reserveActionQuote",
+      "requestJurisdiction",
+    ],
   },
   // The receipt callback for a transaction already sent: never gated (a receipt is never lost).
   "/api/v1/actions/baskets/[id]/confirm": {

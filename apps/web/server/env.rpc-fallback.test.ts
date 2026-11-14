@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { BASE_ENV } from "@/server/test/base-env";
 import { parseEnv } from "./env.schema";
 import { genesisFindings, MAINNET_GENESIS, staticFindings } from "./prod-env";
 
@@ -14,12 +15,13 @@ const FORK = "EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG";
 
 describe("boot schema", () => {
   it("is optional", () => {
-    expect(parseEnv({ SOLANA_RPC_URL: PRIMARY }).ok).toBe(true);
+    expect(parseEnv({ ...BASE_ENV, SOLANA_RPC_URL: PRIMARY }).ok).toBe(true);
   });
 
   it("accepts a second HTTPS provider", () => {
     expect(
       parseEnv({
+        ...BASE_ENV,
         SOLANA_RPC_URL: PRIMARY,
         SOLANA_RPC_FALLBACK_URL: "https://aroma.mainnet.rpcpool.com/k",
       }).ok,
@@ -34,21 +36,22 @@ describe("boot schema", () => {
   ])("refuses %s", (_label, url) => {
     expect(
       variables(
-        parseEnv({ SOLANA_RPC_URL: PRIMARY, SOLANA_RPC_FALLBACK_URL: url }),
+        parseEnv({
+          ...BASE_ENV,
+          SOLANA_RPC_URL: PRIMARY,
+          SOLANA_RPC_FALLBACK_URL: url,
+        }),
       ),
     ).toContain("SOLANA_RPC_FALLBACK_URL");
   });
 
-  it("must differ from SOLANA_RPC_URL (also from the default public endpoint)", () => {
-    expect(
-      variables(
-        parseEnv({ SOLANA_RPC_URL: PRIMARY, SOLANA_RPC_FALLBACK_URL: PRIMARY }),
-      ),
-    ).toContain("SOLANA_RPC_FALLBACK_URL");
+  it("must differ from SOLANA_RPC_URL", () => {
     expect(
       variables(
         parseEnv({
-          SOLANA_RPC_FALLBACK_URL: "https://api.mainnet-beta.solana.com/",
+          ...BASE_ENV,
+          SOLANA_RPC_URL: PRIMARY,
+          SOLANA_RPC_FALLBACK_URL: PRIMARY,
         }),
       ),
     ).toContain("SOLANA_RPC_FALLBACK_URL");
@@ -58,6 +61,7 @@ describe("boot schema", () => {
     expect(
       variables(
         parseEnv({
+          ...BASE_ENV,
           SOLANA_RPC_URL: PRIMARY,
           SOLANA_RPC_FALLBACK_URL: "http://127.0.0.1:18902",
           AROMA_V1_TEST_FORK_GENESIS: FORK,
@@ -69,6 +73,7 @@ describe("boot schema", () => {
   it("loopback is accepted only for the declared E2E fork", () => {
     expect(
       parseEnv({
+        ...BASE_ENV,
         SOLANA_RPC_URL: "http://127.0.0.1:18899",
         SOLANA_RPC_FALLBACK_URL: "http://127.0.0.1:18898",
         AROMA_V1_TEST_FORK_GENESIS: FORK,
@@ -137,6 +142,8 @@ describe("check:prod-env", () => {
 
 describe("a value that is not a URL is reported, never thrown", () => {
   it.each(["SOLANA_RPC_URL", "SOLANA_RPC_FALLBACK_URL"])("%s", (name) => {
-    expect(variables(parseEnv({ [name]: "rpc.example.test" }))).toContain(name);
+    expect(
+      variables(parseEnv({ ...BASE_ENV, [name]: "rpc.example.test" })),
+    ).toContain(name);
   });
 });

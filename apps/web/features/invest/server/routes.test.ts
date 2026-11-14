@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { stubBaseEnv } from "@/server/test/base-env";
 import { createKeyring } from "@/server/auth/trade";
 import { AppError } from "@/server/errors";
 import { investHandlers, type InvestServices } from "./routes";
@@ -48,40 +49,10 @@ async function expectError(response: Response, status: number, code: string) {
   expect(response.headers.get("cache-control")).toBe("no-store");
 }
 
-beforeEach(() => vi.stubEnv("AROMA_V1_ENABLED", "true"));
+beforeEach(() => stubBaseEnv());
 afterEach(() => vi.unstubAllEnvs());
 
 describe("invest routes", () => {
-  it("every route is 404 while v1 is off", async () => {
-    vi.stubEnv("AROMA_V1_ENABLED", "false");
-    const h = investHandlers(await services());
-    await expectError(
-      await h.prepareCreate(post("/api/v1/plans/prepare-create", {})),
-      404,
-      "NOT_FOUND",
-    );
-    await expectError(
-      await h.prepareClose(post("/api/v1/plans/x/prepare-close", {}), OWNER),
-      404,
-      "NOT_FOUND",
-    );
-    await expectError(
-      await h.submit(post("/api/v1/plans/submit", {})),
-      404,
-      "NOT_FOUND",
-    );
-    await expectError(
-      await h.faucet(post("/api/v1/faucet", {})),
-      404,
-      "NOT_FOUND",
-    );
-    await expectError(
-      await h.list(new Request(`${SITE}/api/v1/plans?owner=${OWNER}`)),
-      404,
-      "NOT_FOUND",
-    );
-  });
-
   it("cross-site POSTs are refused before any work", async () => {
     const context = vi.fn();
     const h = investHandlers(await services({ context }));

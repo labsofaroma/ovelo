@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { stubBaseEnv } from "@/server/test/base-env";
 import { AppError } from "@/server/errors";
 
 /**
@@ -129,19 +130,8 @@ describe("creatorDeps defaults", () => {
 describe("creatorRoute", () => {
   const options = { route: "test", mutation: false };
 
-  it("is 404 when v1 is disabled, without running the handler", async () => {
-    vi.stubEnv("AROMA_V1_ENABLED", "false");
-    const handler = vi.fn(async () => new Response("ok"));
-    const response = await http.creatorRoute(
-      options,
-      handler,
-    )(new Request("http://localhost/api/v1/creators/x"));
-    expect(response.status).toBe(404);
-    expect(handler).not.toHaveBeenCalled();
-  });
-
   it("passes the request and context through when v1 is on", async () => {
-    vi.stubEnv("AROMA_V1_ENABLED", "true");
+    stubBaseEnv();
     const handler = vi.fn(
       async (_request: Request, context: { id: string }) =>
         new Response(context.id),
@@ -154,7 +144,7 @@ describe("creatorRoute", () => {
   });
 
   it("maps an unreachable database to 503 SERVICE_UNAVAILABLE", async () => {
-    vi.stubEnv("AROMA_V1_ENABLED", "true");
+    stubBaseEnv();
     const response = await http.creatorRoute(options, async () => {
       throw Object.assign(new Error("connect ECONNREFUSED"), {
         code: "ECONNREFUSED",
@@ -167,7 +157,7 @@ describe("creatorRoute", () => {
   });
 
   it("never sends an internal error message to the client", async () => {
-    vi.stubEnv("AROMA_V1_ENABLED", "true");
+    stubBaseEnv();
     const response = await http.creatorRoute(options, async () => {
       throw new Error("secret internal detail");
     })(new Request("http://localhost/api/v1/creators/x"));

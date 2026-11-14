@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { BASE_ENV } from "@/server/test/base-env";
 import { parseEnv, TURNSTILE_TEST_SECRETS } from "./env.schema";
 
 const LOCALNET: Record<string, string> = {
@@ -11,7 +12,7 @@ const LOCALNET: Record<string, string> = {
 };
 
 function problems(source: Record<string, string>): string[] {
-  const result = parseEnv(source);
+  const result = parseEnv({ ...BASE_ENV, ...source });
   return result.ok
     ? []
     : result.error.issues.map((i) => `${i.variable}: ${i.problem}`);
@@ -19,7 +20,7 @@ function problems(source: Record<string, string>): string[] {
 
 describe("M7 invest environment", () => {
   it("defaults to devnet and accepts a full localnet test configuration", () => {
-    const devnet = parseEnv({});
+    const devnet = parseEnv({ ...BASE_ENV });
     expect(devnet.ok && devnet.env.devnet.AROMA_V1_INVEST_CLUSTER).toBe(
       "devnet",
     );

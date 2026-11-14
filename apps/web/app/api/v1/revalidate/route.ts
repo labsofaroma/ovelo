@@ -3,8 +3,7 @@ import {
   assertRevalidateAuthorized,
   revalidateBodySchema,
 } from "@/features/shared/revalidate";
-import { isV1Enabled, tryGetEnv } from "@/server/env";
-import { AppError } from "@/server/errors";
+import { tryGetEnv } from "@/server/env";
 import { errorResponse, parse } from "@/server/http";
 
 export const dynamic = "force-dynamic";
@@ -18,7 +17,6 @@ export const runtime = "nodejs";
  */
 export async function POST(request: Request): Promise<Response> {
   try {
-    if (!isV1Enabled()) throw new AppError("NOT_FOUND");
     const env = tryGetEnv();
     assertRevalidateAuthorized(
       request.headers.get("authorization"),

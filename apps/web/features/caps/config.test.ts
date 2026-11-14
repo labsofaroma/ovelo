@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { BASE_ENV } from "@/server/test/base-env";
 import { parseEnv } from "@/server/env.schema";
 import {
   BETA_DEFAULT_DAILY_RAW,
@@ -61,13 +62,19 @@ describe("W3 caps config", () => {
     },
   );
 
-  it("boot: production with v1 on requires both caps; 0 and decimals are refused anywhere", () => {
+  it("boot: production requires both caps; 0 and decimals are refused anywhere", () => {
     const base = { VERCEL_ENV: "production" };
     const issues = (env: Record<string, string>) => {
-      const result = parseEnv(env);
+      // Everything required except the caps under test.
+      const {
+        AROMA_MAX_TRADE_USDC_RAW: _trade,
+        AROMA_MAX_DAILY_USDC_RAW: _daily,
+        ...required
+      } = BASE_ENV;
+      const result = parseEnv({ ...required, ...env });
       return result.ok ? [] : result.error.issues.map((i) => i.variable);
     };
-    expect(issues({ ...base, AROMA_V1_ENABLED: "true" })).toEqual(
+    expect(issues(base)).toEqual(
       expect.arrayContaining([
         "AROMA_MAX_TRADE_USDC_RAW",
         "AROMA_MAX_DAILY_USDC_RAW",

@@ -1,3 +1,4 @@
+import { BASE_ENV } from "@/server/test/base-env";
 import type * as GuardExports from "@aroma/guard";
 import { DEVNET_GENESIS_HASH, MAINNET_GENESIS_HASH } from "@aroma/guard";
 import { describe, expect, it, vi } from "vitest";
@@ -8,7 +9,8 @@ type GuardModule = typeof GuardExports;
 
 const LOCAL = "4uhcVJyU9pJkvQyS88uRDiswHXSCkY3zQawwpjk2NsNY";
 const env = (source: Record<string, string>): Env => {
-  const result = parseEnv(source);
+  // M9: every environment carries the always-required variables.
+  const result = parseEnv({ ...BASE_ENV, ...source });
   if (!result.ok) throw result.error;
   return result.env;
 };

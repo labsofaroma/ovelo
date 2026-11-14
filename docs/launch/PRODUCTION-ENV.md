@@ -18,7 +18,7 @@ Milestone = when it is needed: **M9** spot and baskets live; **M10** mainnet rec
 
 | Service | Variable(s) | What it is | Where to get it | Recommended plan | Needed |
 |---|---|---|---|---|---|
-| Feature flag | `AROMA_V1_ENABLED=true` | turns v1 on; boot fails closed on any invalid v1 variable | — | — | M9 |
+| Emergency stop | `AROMA_TRADING` | `on` (default) or `off`: `off` refuses every mainnet trading entry point with 503, nothing else (M9; replaces the removed `AROMA_V1_ENABLED` flag; boot now always validates the environment) | — | — | M9 |
 | Domain | `AROMA_SITE_URL` | canonical `https://` origin: HTTPS redirect, metadata, the `Site:` line of every wallet challenge, Action links | Vercel project → Domains; DNS at the registrar | — | M9 |
 | Vercel | `VERCEL`, `VERCEL_ENV` (set by Vercel) | platform detection; `VERCEL=1` makes the proxy and `x-vercel-ip-country` trusted | Vercel project (Git integration on `main` only) | **Pro** (team, protection, analytics, longer functions; `maxDuration` 60 s routes) | M9 |
 | Vercel | `AROMA_TRUST_PROXY` | only off Vercel, behind a proxy that overwrites forwarding and geo headers | — | leave `false` on Vercel | — |
@@ -99,7 +99,7 @@ Every variable the owner sets for `beta.<domain>`:
 
 | Service | Variable(s) | Value / where | Required |
 |---|---|---|---|
-| Feature flag | `AROMA_V1_ENABLED` | `true` | yes |
+| Emergency stop | `AROMA_TRADING` | `on` (unset = on); `off` pauses trading | no |
 | Domain | `AROMA_SITE_URL` | `https://beta.<domain>` | yes |
 | Mainnet RPC (server) | `SOLANA_RPC_URL` | paid Helius or Triton key (path/query, never `user:pass@`) | yes |
 | Mainnet RPC (browser) | `NEXT_PUBLIC_SOLANA_RPC_URL`, `NEXT_PUBLIC_SOLANA_WS_URL` | a separate, origin-locked key for `beta.<domain>` | yes (WS optional) |

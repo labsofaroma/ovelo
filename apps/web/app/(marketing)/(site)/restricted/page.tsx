@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { routes } from "@/features/shared/routes";
 import { pageContainer, textLink } from "@/features/shared/styles";
-import { assertV1Enabled } from "@/features/shared/v1";
 
 // Rendered per request (nonce CSP), like every v1 page.
 export const dynamic = "force-dynamic";
@@ -18,7 +17,6 @@ export const metadata: Metadata = {
  * Copy is placeholder pending counsel's final text.
  */
 export default function RestrictedPage() {
-  assertV1Enabled();
   return (
     <main id="main-content" className={`${pageContainer} py-12`}>
       <h1 className="text-page font-semibold max-md:text-page-mobile">

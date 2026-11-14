@@ -23,6 +23,7 @@ import {
 import { routes } from "@/features/shared/routes";
 import { quoteTrade } from "@/features/trade/server/service";
 import { readLimitedJson } from "@/server/http";
+import { assertTradingOpen } from "@/server/trading-switch";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -34,7 +35,7 @@ type Context = { params: Promise<{ id: string }> };
  * Solana Action for a v1 basket (curated or published creator basket), M5b B4.
  * GET → Action metadata. POST ?amount= { account } → one unsigned mainnet transaction for that
  * account, quoted and simulated by M4's trade server, plus a `links.next` callback that records
- * the receipt once the transaction confirms. 404 when AROMA_V1_ENABLED is off.
+ * the receipt once the transaction confirms. AROMA_TRADING=off refuses the POST (503).
  */
 export const GET = actionRoute<Context>(
   "v1/actions/baskets/:id",
@@ -67,6 +68,7 @@ export const GET = actionRoute<Context>(
 export const POST = actionRoute<Context>(
   "v1/actions/baskets/:id",
   async (request, context) => {
+    assertTradingOpen();
     const basket = await resolveActionBasket((await context.params).id);
     const input = parseActionPost(
       new URL(request.url).searchParams,

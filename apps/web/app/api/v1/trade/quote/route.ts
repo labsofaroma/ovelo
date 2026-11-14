@@ -5,8 +5,7 @@ import { capsDeps } from "@/features/caps/server/deps";
 import { complianceDeps } from "@/features/compliance/server/deps";
 import { quoteRequestSchema } from "@/features/trade/schema";
 import { quoteTrade } from "@/features/trade/server/service";
-import { isV1Enabled } from "@/server/env";
-import { AppError } from "@/server/errors";
+import { assertTradingOpen } from "@/server/trading-switch";
 import { assertSameOrigin, errorResponse, parse } from "@/server/http";
 
 export const dynamic = "force-dynamic";
@@ -21,7 +20,7 @@ export const maxDuration = 60;
  */
 export async function POST(request: Request): Promise<Response> {
   try {
-    if (!isV1Enabled()) throw new AppError("NOT_FOUND");
+    assertTradingOpen();
     assertSameOrigin(request);
     const body = await parse(quoteRequestSchema, { maxBytes: 4_096 })(request);
     // M9 compliance gate + Phase A beta gate (again, after middleware): location, then beta

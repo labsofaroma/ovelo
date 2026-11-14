@@ -14,7 +14,6 @@ import { DataNotice } from "@/features/shared/components/DataNotice";
 import { v1Metadata } from "@/features/shared/metadata";
 import { routes } from "@/features/shared/routes";
 import { pageContainer, textLink } from "@/features/shared/styles";
-import { assertV1Enabled } from "@/features/shared/v1";
 import { lookupCreatorBasket } from "@/features/creators/basket-page";
 import { CreatorBasketDetails } from "@/features/creators/components/CreatorBasketDetails";
 import { creatorBasketId } from "@/features/trade/server/creator-target";
@@ -54,7 +53,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
 }
 
 export default async function BasketPage({ params, searchParams }: Props) {
-  assertV1Enabled();
   const { id } = await params;
   const range = parseRange((await searchParams).range);
   const creatorId = creatorBasketId(id);

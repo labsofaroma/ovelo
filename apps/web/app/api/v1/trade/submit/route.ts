@@ -14,8 +14,7 @@ import {
   submitSignedTrade,
 } from "@/features/trade/server/service";
 import { keyringFromEnv, openAuthorization } from "@/server/auth/trade";
-import { isV1Enabled } from "@/server/env";
-import { AppError } from "@/server/errors";
+import { assertTradingOpen } from "@/server/trading-switch";
 import { assertSameOrigin, errorResponse, parse } from "@/server/http";
 
 export const dynamic = "force-dynamic";
@@ -30,7 +29,7 @@ export const maxDuration = 60;
  */
 export async function POST(request: Request): Promise<Response> {
   try {
-    if (!isV1Enabled()) throw new AppError("NOT_FOUND");
+    assertTradingOpen();
     assertSameOrigin(request);
     // M9 compliance gate: the location is checked again at submit (the terms were checked at quote).
     assertJurisdiction(request, "trade", complianceDeps().policy());

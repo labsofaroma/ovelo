@@ -1,6 +1,5 @@
 import { ImageResponse } from "next/og";
 import { OG_SIZE } from "@/features/shared/og";
-import { isV1Enabled } from "@/server/env";
 
 /**
  * GET /og.png: generated social preview for every v1 route (closes AUDIT L-2 for v1).
@@ -20,8 +19,6 @@ const CREAM = "#f6f5ef";
 const LIME = "#d5f478";
 
 export function GET(): Response {
-  // Route handlers skip layouts, so the v1 gate is repeated here (evaluated at build time).
-  if (!isV1Enabled()) return new Response("Not found", { status: 404 });
   return new ImageResponse(
     <div
       style={{

@@ -7,7 +7,6 @@ import { STALE_AFTER_MS } from "@/features/shared/freshness";
 import { v1Metadata } from "@/features/shared/metadata";
 import { routes } from "@/features/shared/routes";
 import { pageContainer } from "@/features/shared/styles";
-import { assertV1Enabled } from "@/features/shared/v1";
 
 /** M4: rendered per request (per-request CSP nonce); data comes from the Next data cache. */
 
@@ -19,7 +18,6 @@ export const metadata: Metadata = v1Metadata({
 });
 
 export default async function BasketsPage() {
-  assertV1Enabled();
   const markets = await getMarkets();
   return (
     <main

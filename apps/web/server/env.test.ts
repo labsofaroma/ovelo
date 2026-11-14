@@ -3,7 +3,6 @@ import { assertBootEnv, resetEnvCacheForTests } from "./env";
 import { EnvValidationError, parseEnv, validateEnv } from "./env.schema";
 
 const V1: Record<string, string> = {
-  AROMA_V1_ENABLED: "true",
   SOLANA_RPC_URL: "https://mainnet.example.com/rpc",
   DATABASE_URL: "postgres://user:pw@db.example.com/aroma",
   UPSTASH_REDIS_REST_URL: "https://redis.example.com",
@@ -12,10 +11,10 @@ const V1: Record<string, string> = {
 };
 
 describe("validateEnv", () => {
-  it("accepts an empty environment while v1 is off (the prototype keeps booting)", () => {
-    const env = validateEnv({});
-    expect(env.server.AROMA_V1_ENABLED).toBe(false);
-    expect(env.server.NODE_ENV).toBe("development");
+  it("refuses an empty environment (M9: no feature flag; the required variables always apply)", () => {
+    expect(() => validateEnv({})).toThrow(EnvValidationError);
+    expect(validateEnv(V1).server.NODE_ENV).toBe("development");
+    expect(validateEnv(V1).server.AROMA_TRADING).toBe("on");
   });
 
   it("groups variables as public, server, devnet and keeper", () => {
@@ -31,8 +30,8 @@ describe("validateEnv", () => {
     expect(env.keeper.QSTASH_TOKEN).toBe("q");
   });
 
-  it("names every missing required variable when v1 is enabled", () => {
-    const result = parseEnv({ AROMA_V1_ENABLED: "true" });
+  it("names every missing required variable", () => {
+    const result = parseEnv({});
     expect(result.ok).toBe(false);
     if (result.ok) return;
     const names = result.error.issues.map((i) => i.variable);
@@ -46,7 +45,7 @@ describe("validateEnv", () => {
       ]),
     );
     expect(result.error.message).toContain(
-      "DATABASE_URL (server): is required when AROMA_V1_ENABLED=true",
+      "DATABASE_URL (server): is required",
     );
   });
 
@@ -87,10 +86,9 @@ describe("validateEnv", () => {
     ).toBe(false);
   });
 
-  it("still validates formats of set variables when v1 is off", () => {
-    expect(parseEnv({ AROMA_RECURRING_AUTH_SECRET: "tooshort" }).ok).toBe(
-      false,
-    );
+  it("AROMA_TRADING accepts only on and off (the emergency stop)", () => {
+    expect(parseEnv({ ...V1, AROMA_TRADING: "off" }).ok).toBe(true);
+    expect(parseEnv({ ...V1, AROMA_TRADING: "paused" }).ok).toBe(false);
   });
 });
 
@@ -120,7 +118,7 @@ describe("assertBootEnv", () => {
     };
   }
 
-  it("exits 1 and names the variable when v1 is on and a required secret is missing", () => {
+  it("exits 1 and names the variable when a required secret is missing", () => {
     const { exit, output } = boot({ ...V1, AROMA_TRADE_SECRET: undefined });
     expect(exit).toHaveBeenCalledWith(1);
     expect(output).toContain("AROMA_TRADE_SECRET");
@@ -130,12 +128,11 @@ describe("assertBootEnv", () => {
     expect(boot(V1).exit).not.toHaveBeenCalled();
   });
 
-  it("does nothing while v1 is off, even with no v1 variables (the prototype)", () => {
+  it("exits even with no variables at all (M9: there is no prototype mode to fall back to)", () => {
     const { exit } = boot({
-      AROMA_V1_ENABLED: undefined,
       DATABASE_URL: undefined,
       AROMA_TRADE_SECRET: undefined,
     });
-    expect(exit).not.toHaveBeenCalled();
+    expect(exit).toHaveBeenCalledWith(1);
   });
 });

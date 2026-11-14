@@ -1,7 +1,6 @@
 import type { ReactNode } from "react";
 import { notFound } from "next/navigation";
 import { getAsset } from "@/features/markets/server";
-import { assertV1Enabled } from "@/features/shared/v1";
 import { symbolParamSchema } from "@/features/stock/schema";
 
 /**
@@ -16,8 +15,6 @@ export default async function StockLayout({
   children: ReactNode;
   params: Promise<{ symbol: string }>;
 }) {
-  // Gate before any data access: with the flag off nothing may reach the markets server.
-  assertV1Enabled();
   const parsed = symbolParamSchema.safeParse((await params).symbol);
   if (!parsed.success) notFound();
   const lookup = await getAsset(parsed.data);
