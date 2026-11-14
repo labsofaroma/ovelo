@@ -18,8 +18,8 @@ export interface AssetPickerProps {
 
 /**
  * Search the market snapshot and add assets. Each option is a toggle button (aria-pressed) with
- * its token price, price source and observation time. Assets that are not registered, halted or
- * unpriced are listed as unavailable with the reason, and cannot be added.
+ * its token price, price source and observation time when one was observed. Assets that are not
+ * registered or are halted are listed as unavailable with the reason, and cannot be added.
  */
 export function AssetPicker({
   assets,
@@ -55,7 +55,7 @@ export function AssetPicker({
       />
       <p id={`${id}-count`} role="status" className="text-caption text-muted">
         {results.length === 0
-          ? "No priced asset matches this search."
+          ? "No listed asset matches this search."
           : `Showing ${results.length} of ${assets.length} assets. ${selected.size} of ${MAX_LEGS} selected.`}
         {full ? " The basket is full; remove an asset to add another." : ""}
       </p>
@@ -103,6 +103,8 @@ export function AssetPicker({
                       {observed ? ` · ${observed}` : ""}
                     </span>
                   </span>
+                ) : asset.selectable ? (
+                  <Badge tone="neutral">No token price observed</Badge>
                 ) : (
                   <Badge tone="warning">{asset.reason ?? "Unavailable"}</Badge>
                 )}

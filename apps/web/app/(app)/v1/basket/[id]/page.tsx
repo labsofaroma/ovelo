@@ -15,6 +15,9 @@ import { v1Metadata } from "@/features/shared/metadata";
 import { routes } from "@/features/shared/routes";
 import { pageContainer, textLink } from "@/features/shared/styles";
 import { assertV1Enabled } from "@/features/shared/v1";
+import { lookupCreatorBasket } from "@/features/creators/basket-page";
+import { CreatorBasketDetails } from "@/features/creators/components/CreatorBasketDetails";
+import { creatorBasketId } from "@/features/trade/server/creator-target";
 import { TradeUnavailable } from "@/features/stock/components/TradePlaceholder";
 import { TradeIsland } from "@/features/trade/components/TradeIsland";
 
@@ -25,6 +28,21 @@ type Props = {
 
 export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { id } = await params;
+  const creatorId = creatorBasketId(id);
+  if (creatorId) {
+    const basket = await lookupCreatorBasket(creatorId);
+    if (!basket || basket === "unavailable")
+      return {
+        title: "Creator basket",
+        robots: { index: false, follow: false },
+      };
+    return v1Metadata({
+      title: `${basket.name} creator basket`,
+      description: `${basket.name} (${basket.ticker}): a creator-published basket of tokenized stocks, with the weights its creator signed.`,
+      path: routes.basket(basket.id),
+      noindex: basket.status !== "published",
+    });
+  }
   const page = await getBasketPage(id);
   if (page.state !== "ok")
     return { title: "Basket", robots: { index: false, follow: false } };
@@ -39,6 +57,8 @@ export default async function BasketPage({ params, searchParams }: Props) {
   assertV1Enabled();
   const { id } = await params;
   const range = parseRange((await searchParams).range);
+  const creatorId = creatorBasketId(id);
+  if (creatorId) return <CreatorBasketDetails id={creatorId} range={range} />;
   const page = await getBasketPage(id);
   if (page.state === "not-found") notFound();
 

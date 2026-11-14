@@ -18,6 +18,7 @@ const ITEMS = [
   },
   { href: routes.watchlist, label: "Watchlist", match: ["/v1/watchlist"] },
   { href: routes.portfolio, label: "Portfolio", match: ["/v1/portfolio"] },
+  { href: routes.creators, label: "Creators", match: ["/v1/creators"] },
 ] as const;
 
 /** Primary nav. Client only for `aria-current`; links work without JavaScript. */

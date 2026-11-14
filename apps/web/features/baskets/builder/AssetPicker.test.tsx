@@ -54,7 +54,7 @@ function Harness({ assets }: { assets: PickerAsset[] }) {
 }
 
 describe("selectableRows", () => {
-  it("keeps only registered, tradable, priced rows and counts the rest by reason", () => {
+  it("keeps registered, unhalted rows (priced or not, the trade rule) and counts the rest by reason", () => {
     const { rows, excluded } = selectableRows([
       row(2),
       row(1),
@@ -62,7 +62,8 @@ describe("selectableRows", () => {
       row(4, { tradingHalted: true }),
       row(5, { price: null, priceSource: null }),
     ]);
-    expect(rows.map((r) => r.symbol)).toEqual(["S1x", "S2x"]);
+    expect(rows.map((r) => r.symbol)).toEqual(["S1x", "S2x", "S5x"]);
+    // `unpriced` counts kept rows without an observed price (shown, not excluded).
     expect(excluded).toEqual({ unverified: 1, halted: 1, unpriced: 1 });
   });
 });
@@ -102,15 +103,34 @@ describe("AssetPicker", () => {
         assets={[
           row(1, { price: null, priceSource: null }),
           row(2, { verified: false }),
+          row(3, { tradingHalted: true }),
         ].map(toPickerAsset)}
       />,
     );
-    const unpriced = screen.getByRole("button", { name: /S1x/ });
-    expect(unpriced).toHaveProperty("disabled", true);
-    expect(within(unpriced).getByText("No token price observed")).toBeTruthy();
-    expect(screen.getByText("Not verified by the issuer")).toBeTruthy();
-    await user.click(unpriced);
+    const unverified = screen.getByRole("button", { name: /S2x/ });
+    expect(unverified).toHaveProperty("disabled", true);
+    expect(
+      within(unverified).getByText("Not verified by the issuer"),
+    ).toBeTruthy();
+    expect(screen.getByText("Trading halted")).toBeTruthy();
+    await user.click(unverified);
     expect(toggled).toEqual([]);
+  });
+
+  it("an asset without an observed token price can be added, and says so (never a made-up price)", async () => {
+    toggled = [];
+    const user = userEvent.setup();
+    render(
+      <Harness
+        assets={[row(1, { price: null, priceSource: null })].map(toPickerAsset)}
+      />,
+    );
+    const unpriced = screen.getByRole("button", { name: /S1x/ });
+    expect(unpriced).toHaveProperty("disabled", false);
+    expect(within(unpriced).getByText("No token price observed")).toBeTruthy();
+    expect(unpriced.textContent).not.toContain("$");
+    await user.click(unpriced);
+    expect(toggled).toEqual(["S1x"]);
   });
 
   it(`stops at ${MAX_LEGS} assets`, async () => {

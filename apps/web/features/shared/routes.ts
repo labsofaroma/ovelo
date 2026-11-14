@@ -7,6 +7,8 @@ export const routes = {
   baskets: `${V1}/baskets`,
   watchlist: `${V1}/watchlist`,
   portfolio: `${V1}/portfolio`,
+  creators: `${V1}/creators`,
+  builder: `${V1}/basket/new`,
   privacy: `${V1}/privacy`,
   terms: `${V1}/terms`,
   stock: (symbol: string) => `${V1}/stock/${encodeURIComponent(symbol)}`,

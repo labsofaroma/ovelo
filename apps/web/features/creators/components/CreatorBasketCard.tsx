@@ -1,4 +1,6 @@
 import { Badge, Card } from "@aroma/ui";
+import Link from "next/link";
+import { routes } from "../../shared/routes";
 import { formatBps, plural } from "../../shared/fixed";
 import { formatDay } from "../../shared/freshness";
 import type { CreatorBasketView } from "../schema";
@@ -15,7 +17,12 @@ export function CreatorBasketCard({ basket }: { basket: CreatorBasketView }) {
       <Card className="flex h-full flex-col gap-3 p-4">
         <div className="flex items-start justify-between gap-3">
           <h2 id={headingId} className="text-title font-semibold">
-            {basket.name}
+            <Link
+              href={routes.basket(basket.id)}
+              className="underline-offset-4 hover:underline focus-ring"
+            >
+              {basket.name}
+            </Link>
           </h2>
           <Badge tone="neutral">{basket.ticker}</Badge>
         </div>

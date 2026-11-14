@@ -54,7 +54,8 @@ export function BuilderPreview({
         <p className="text-small text-muted">
           {basket.name}
           {basket.ticker ? ` (${basket.ticker})` : ""}. This is how the
-          allocation will appear to buyers. Nothing is published from this page.
+          allocation will appear to buyers. Publishing asks your wallet to sign
+          exactly this allocation.
         </p>
       </div>
       {rows.length ? (

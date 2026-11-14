@@ -1,6 +1,7 @@
 "use client";
 
 import { Button, Field, Input } from "@aroma/ui";
+import { PublishPanel } from "../../creators/components/PublishPanel";
 import { useEffect, useMemo, useState } from "react";
 import {
   basketPublishSchema,
@@ -18,12 +19,22 @@ import { equalWeights } from "./weights";
 import { type WeightRow, WeightEditor } from "./WeightEditor";
 
 export interface BuilderFormProps {
-  /** Selectable rows of the market snapshot (registered, tradable, priced). */
+  /** Selectable rows of the market snapshot (listed, verified, not halted). */
   market: readonly MarketRow[];
   asOf: string;
+  /** A published basket of the connected creator, to publish its next version (`?from=`). */
+  initial?: {
+    basketId: string;
+    name: string;
+    ticker: string;
+    description: string;
+    rows: WeightRow[];
+    version: number;
+  };
 }
 
-type Storage = "loading" | "saved" | "restored" | "unavailable" | "discarded";
+type Storage =
+  "loading" | "saved" | "restored" | "unavailable" | "discarded" | "editing";
 
 const STORAGE_TEXT: Record<Storage, string> = {
   loading: "Checking this browser for a saved draft…",
@@ -32,6 +43,8 @@ const STORAGE_TEXT: Record<Storage, string> = {
   unavailable:
     "This browser is not letting Aroma save, so the draft will be lost when you leave.",
   discarded: "A saved draft could not be read and was ignored.",
+  editing:
+    "Editing a published basket. Your browser draft is left untouched; publishing creates the next version.",
 };
 
 /** Human-readable reasons the draft cannot be published yet, from the shared zod schema. */
@@ -66,15 +79,18 @@ export function publishProblems(draft: {
   return [...problems];
 }
 
-export function BuilderForm({ market, asOf }: BuilderFormProps) {
-  const [name, setName] = useState("");
-  const [ticker, setTicker] = useState("");
-  const [description, setDescription] = useState("");
-  const [rows, setRows] = useState<WeightRow[]>([]);
-  const [storage, setStorage] = useState<Storage>("loading");
+export function BuilderForm({ market, asOf, initial }: BuilderFormProps) {
+  const [name, setName] = useState(initial?.name ?? "");
+  const [ticker, setTicker] = useState(initial?.ticker ?? "");
+  const [description, setDescription] = useState(initial?.description ?? "");
+  const [rows, setRows] = useState<WeightRow[]>(initial?.rows ?? []);
+  const [storage, setStorage] = useState<Storage>(
+    initial ? "editing" : "loading",
+  );
 
   // Restore once on mount; storage is browser-only and may be blocked.
   useEffect(() => {
+    if (initial) return;
     const loaded = loadDraft();
     if (loaded.state === "loaded") {
       setName(loaded.draft.name);
@@ -85,10 +101,11 @@ export function BuilderForm({ market, asOf }: BuilderFormProps) {
     } else if (loaded.state === "unavailable") setStorage("unavailable");
     else if (loaded.state === "invalid") setStorage("discarded");
     else setStorage("saved");
+    // eslint-disable-next-line react-hooks/exhaustive-deps -- once, on mount
   }, []);
 
   useEffect(() => {
-    if (storage === "loading") return;
+    if (storage === "loading" || storage === "editing") return;
     const ok = saveDraft({
       ...EMPTY_DRAFT,
       name,
@@ -208,33 +225,39 @@ export function BuilderForm({ market, asOf }: BuilderFormProps) {
           ) : (
             <p className="text-small">The allocation is complete.</p>
           )}
-          <div className="flex flex-wrap items-center gap-3">
-            <Button
-              type="button"
-              disabled
-              aria-describedby="builder-publish-help"
-            >
-              Publish (connect wallet)
-            </Button>
-            <Button
-              type="button"
-              variant="ghost"
-              onClick={() => {
-                clearDraft();
-                setName("");
-                setTicker("");
-                setDescription("");
-                setRows([]);
-              }}
-            >
-              Clear draft
-            </Button>
-          </div>
-          <p id="builder-publish-help" className="text-caption text-muted">
-            Publishing needs an invited creator wallet to sign the basket.
-            Wallet connection is not available on this page yet, so nothing
-            leaves your browser.
-          </p>
+          <PublishPanel
+            problems={problems}
+            basket={{
+              name,
+              ticker,
+              description,
+              allocations: rows.map(({ mint, weightBps }) => ({
+                mint,
+                weightBps,
+              })),
+            }}
+            {...(initial ? { basketId: initial.basketId } : {})}
+            onPublished={() => {
+              if (!initial) clearDraft();
+            }}
+          />
+          {initial ? null : (
+            <div>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => {
+                  clearDraft();
+                  setName("");
+                  setTicker("");
+                  setDescription("");
+                  setRows([]);
+                }}
+              >
+                Clear draft
+              </Button>
+            </div>
+          )}
           <p role="status" className="text-caption text-muted">
             {STORAGE_TEXT[storage]}
           </p>

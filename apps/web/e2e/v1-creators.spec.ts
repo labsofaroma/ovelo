@@ -74,7 +74,7 @@ test("builder is dynamic: nonce CSP header, nonced scripts, and the island hydra
   expect(errors).toEqual([]);
 });
 
-test("builder: pick assets, weights reach 100%, preview renders, draft survives a reload, publish stays disabled", async ({
+test("builder: pick assets, weights reach 100%, preview renders, draft survives a reload, publishing asks for a wallet first", async ({
   page,
 }) => {
   await useTheme(page, "light");
@@ -109,10 +109,11 @@ test("builder: pick assets, weights reach 100%, preview renders, draft survives 
   await expect(preview.locator("tbody tr")).toHaveCount(2);
   await expect(preview).toContainText("Smoke basket (SMOKE)");
 
-  const publish = page.getByRole("button", {
-    name: "Publish (connect wallet)",
-  });
-  await expect(publish).toBeDisabled();
+  // Without a wallet, publishing starts by connecting one (nothing is sent before that).
+  const publishSection = page.getByRole("region", { name: "Publish" });
+  await expect(
+    publishSection.getByRole("button", { name: "Connect wallet" }),
+  ).toBeVisible();
   await expect(page.getByText("The allocation is complete.")).toBeVisible();
 
   await page.reload();

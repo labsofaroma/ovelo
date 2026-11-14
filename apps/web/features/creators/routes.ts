@@ -1,10 +1,10 @@
-import { V1 } from "../shared/routes";
+import { routes } from "../shared/routes";
 
-/**
- * Creator routes, kept here rather than in features/shared/routes.ts so M5a stays additive while
- * M4 is in flight. Fold into `routes` when the branches meet.
- */
+/** Creator routes (folded into features/shared/routes.ts in M5b; kept as named aliases). */
 export const creatorRoutes = {
-  directory: `${V1}/creators`,
-  builder: `${V1}/basket/new`,
+  directory: routes.creators,
+  builder: routes.builder,
+  basket: routes.basket,
+  /** The builder pre-filled with a published basket, to publish its next version. */
+  edit: (id: string) => `${routes.builder}?from=${encodeURIComponent(id)}`,
 } as const;

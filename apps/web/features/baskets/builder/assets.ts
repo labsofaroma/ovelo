@@ -3,8 +3,10 @@ import { ISSUER_LABEL, PRICE_SOURCE_LABEL } from "../../markets/labels";
 import type { MarketRow } from "../../markets/schema";
 
 /**
- * What the asset picker shows for one asset. Only registered (listed and verified by the issuer),
- * tradable and priced assets are selectable; the price keeps its source and observation time.
+ * What the asset picker shows for one asset. Registered (listed and verified by the issuer) and
+ * unhalted assets are selectable: the same rule the trade server applies to a live basket (M4
+ * decision 4). A catalog token price is shown, with its source and observation time, when one was
+ * observed; it is not required, because the Jupiter quote and the simulation price the order.
  */
 export type PickerAsset = {
   mint: string;
@@ -28,7 +30,6 @@ export type Exclusions = {
 export function unselectableReason(row: MarketRow): string | null {
   if (!row.verified) return "Not verified by the issuer";
   if (row.tradingHalted) return "Trading halted";
-  if (!row.price) return "No token price observed";
   return null;
 }
 
@@ -47,7 +48,10 @@ export function toPickerAsset(row: MarketRow): PickerAsset {
   };
 }
 
-/** Split a snapshot into the rows the builder may use, and counts of what was left out and why. */
+/**
+ * Split a snapshot into the rows the builder may use, and counts of what was left out and why.
+ * `unpriced` counts selectable rows without an observed token price (shown, not excluded).
+ */
 export function selectableRows(rows: readonly MarketRow[]): {
   rows: MarketRow[];
   excluded: Exclusions;
@@ -57,8 +61,10 @@ export function selectableRows(rows: readonly MarketRow[]): {
   for (const row of rows) {
     if (!row.verified) excluded.unverified += 1;
     else if (row.tradingHalted) excluded.halted += 1;
-    else if (!row.price) excluded.unpriced += 1;
-    else kept.push(row);
+    else {
+      if (!row.price) excluded.unpriced += 1;
+      kept.push(row);
+    }
   }
   kept.sort(
     (a, b) => a.symbol.localeCompare(b.symbol) || a.mint.localeCompare(b.mint),
