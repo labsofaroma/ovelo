@@ -160,3 +160,17 @@ describe("risk disclosure on every trade review", () => {
     ]);
   });
 });
+
+describe("review markup (axe definition-list, found by the M9 fork E2E)", () => {
+  it("every child of the review <dl> is a div holding exactly a dt and a dd", () => {
+    renderReview(liveQuote("basket", "sol-core"));
+    const dl = document.querySelector("dl")!;
+    for (const child of Array.from(dl.children)) {
+      expect(child.tagName).toBe("DIV");
+      expect(Array.from(child.children).map((c) => c.tagName)).toEqual([
+        "DT",
+        "DD",
+      ]);
+    }
+  });
+});

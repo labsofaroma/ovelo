@@ -1,6 +1,6 @@
 import { Badge, Button } from "@aroma/ui";
 import { formatUnits } from "@aroma/ui/format";
-import { useEffect, useState } from "react";
+import { Fragment, useEffect, useState } from "react";
 import { quoteClock, type AnyQuote } from "../flow";
 // --- M9 compliance gate (additive) ---
 import { RiskDisclosure } from "../../compliance/components/RiskDisclosure";
@@ -24,9 +24,20 @@ const units = (raw: string, decimals: number) =>
   formatUnits(BigInt(raw), decimals, { fractionDigits: decimals }).text;
 const sol = (lamports: string) => units(lamports, 9);
 
-function Row({ label, value }: { label: string; value: string }) {
+function Row({
+  label,
+  value,
+  first = false,
+}: {
+  label: string;
+  value: string;
+  /** Starts a leg: a divider above (dl > div > dt|dd stays valid, axe definition-list). */
+  first?: boolean;
+}) {
   return (
-    <div className="flex justify-between gap-4 py-1">
+    <div
+      className={`flex justify-between gap-4 py-1${first ? " mt-1 border-t border-line pt-2" : ""}`}
+    >
       <dt className="text-muted">{label}</dt>
       <dd className="text-right tabular-nums">{value}</dd>
     </div>
@@ -81,8 +92,10 @@ export function ReviewPanel({
               value={`${units(quote.quote.maxDebit, quote.quote.inputDecimals)} ${quote.quote.inputSymbol || "funding token"}`}
             />
             {quote.quote.legs.map((leg) => (
-              <div key={leg.mint} className="border-t border-line py-1">
+              // M9 a11y fix: the leg's rows are direct children of the <dl> (no nested div).
+              <Fragment key={leg.mint}>
                 <Row
+                  first
                   label={`${leg.symbol} expected`}
                   value={units(leg.outAmount, leg.decimals)}
                 />
@@ -106,7 +119,7 @@ export function ReviewPanel({
                       : `${(Number(leg.priceImpactPct) * 100).toFixed(3)}%`
                   }
                 />
-              </div>
+              </Fragment>
             ))}
             <Row
               label="Slippage limit"
