@@ -81,6 +81,8 @@ The SDK still ships Raydium CPMM helpers (`DEVNET_RAYDIUM_CPMM_PROGRAM`, `decode
 `/api/faucet` has no authentication or CAPTCHA. Its only guard is a **15-second, in-memory, per-wallet cooldown** (`lib/server/faucet.ts`). Generating fresh wallets bypasses it completely, and each claim sends up to 1,000 KUSD + 0.1 SOL. The SOL top-up also swallows every error silently.
 - Fix: cooldowns stored in Redis by wallet **and** IP, the Cloudflare Turnstile you already allow in the CSP, a daily budget, and a lower SOL top-up.
 
+**Status: Addressed for v1 on devnet (M7); prototype `/api/faucet` unchanged until M9.** `POST /api/v1/faucet` needs a wallet-signed claim (AGENTS.md rule 2) and a Cloudflare Turnstile token verified server-side; Redis limits one claim per wallet per 24 hours, three per IP per UTC day, and a global daily budget, taken atomically and released when a send fails. It mints a fixed 100 test USD with a devnet-only faucet key that holds the test USD mint authority (never the deployer) and tops up 0.05 SOL only for a low wallet. Every error is logged and returned as `{ code, message }`. Tested in `features/invest/server/faucet.test.ts` and the local-validator E2E (a second claim is refused). Not verified: real Turnstile keys and Upstash on devnet (owner).
+
 ### H-6 (High): permissive CSP
 `script-src 'self' 'unsafe-inline'` cancels most XSS protection on a page that signs wallet transactions. `connect-src https: wss:` allows exfiltration to any host. `img-src https:` is broad. Move to nonce-based scripts (Next.js middleware nonces) and an explicit list of connect hosts (RPC, Jupiter, Pyth, Privy, Jito, Upstash is server-side only).
 
@@ -153,7 +155,7 @@ As a result `pnpm typecheck`, `pnpm test`, `pnpm test:upgrade` and the cron work
 **Milestone: M7.**
 The GitHub Action runs every 10 minutes, fails at `scripts/bot.ts` and burns Actions minutes. GitHub cron is also best-effort; delays of 10–60 minutes are common. Combined with H-1, users lose installments. Use Vercel Cron or Upstash QStash calling `GET /api/recurring/collect` with the bearer secret, plus alerting.
 
-**Status: Partial.** The broken `recurring-bot.yml` workflow is deleted, so it no longer burns Actions minutes (after the branch is pushed and merged; the scheduled run on GitHub keeps failing until then). **Pending (M7):** the real collector, `apps/keeper` on QStash with alerting. `apps/keeper` is an empty placeholder today, so **nothing collects recurring plans**, as before.
+**Status: Addressed for v1 on devnet in code (M7); real devnet run pending the owner's deploy and accounts.** The broken `recurring-bot.yml` workflow is deleted. `apps/keeper` is a QStash-triggered service (signature verified with the current and next keys) that executes due v1 plans oldest period first, posts fresh, fully verified Pyth prices, and records skipped periods instead of losing them silently; leases, retries with backoff, a dead-letter list with a CLI, and de-duplicated alerts (failed, skipped, low balance, Hermes, RPC, dead-letter growth) to a Slack or Discord webhook. Verified on a local validator (`pnpm --filter @aroma/web e2e:invest`); see [keeper-operations.md](./keeper-operations.md). The prototype collector route still serves the prototype until M9.
 
 ### H-7 (High): no version control history
 Nothing is committed. There is no rollback, no review and no blame. Make a first commit now.

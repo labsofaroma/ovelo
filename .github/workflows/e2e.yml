@@ -14,6 +14,9 @@ on:
       - "apps/web/server/auth/**"
       - "apps/web/middleware.ts"
       - "apps/web/e2e/**"
+      - "apps/web/features/invest/**"
+      - "apps/keeper/**"
+      - "packages/guard/**"
 
 concurrency:
   group: e2e-${{ github.ref }}
@@ -92,3 +95,51 @@ jobs:
         run: |
           set -a; . apps/web/.env.example; set +a
           pnpm build:web
+
+  e2e-invest:
+    name: Recurring plan on a local validator with the keeper (M7)
+    # AUTHORED IN M7, NEVER RUN ON GITHUB. Everything is local to the runner: a validator, Docker
+    # Postgres and Redis, a fake Hermes signed by a runtime test guardian, Cloudflare's published
+    # Turnstile TEST keys. No secret, no devnet or mainnet transaction.
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      AGAVE_VERSION: "3.1.10"
+      ANCHOR_VERSION: "1.2.1"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: packages/contracts
+      - name: Install Agave ${{ env.AGAVE_VERSION }}
+        run: |
+          sh -c "$(curl -sSfL https://release.anza.xyz/v${AGAVE_VERSION}/install)"
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> "$GITHUB_PATH"
+      - name: Install anchor-cli ${{ env.ANCHOR_VERSION }}
+        run: cargo install anchor-cli --version "${ANCHOR_VERSION}" --locked
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.31.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter @aroma/web exec playwright install --with-deps chromium
+      - name: Build Aroma Guard v1 (devnet-mock) and fetch the pinned upstream binaries
+        run: |
+          pnpm --filter @aroma/contracts build
+          pnpm --filter @aroma/contracts test:fixtures
+      - name: Faucet, create, 3 installments + 1 skip, timeline, close + revoke, alerts, negatives, axe
+        run: pnpm --filter @aroma/web e2e:invest
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-invest-logs
+          path: |
+            .e2e-invest/keeper.log
+            .e2e-invest/keeper-evidence.log
+            .e2e-invest/alerts.json
+            .e2e-invest/web.log
+            apps/web/test-results

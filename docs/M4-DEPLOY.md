@@ -121,3 +121,45 @@ Behind a proxy other than Vercel, `AROMA_TRUST_PROXY=true` is required for per-c
 - A Blink client fetching the v1 Action, signing and sending on mainnet, and calling the confirm callback.
 - Receipts and creator stats in Neon (verified on PGlite and on local Docker Postgres through the Neon driver).
 - Upstash for creator challenges and the `creator` bucket (E2E and tests used in-process stores).
+
+## 6. M7: recurring investing on devnet (`/v1/invest`), the keeper and the faucet
+
+Nothing below is configured or verified on a real deployment yet (see §7.5). Every value is devnet-only.
+
+### 6.1 Web app (`apps/web`)
+| Variable | Notes |
+|---|---|
+| `AROMA_V1_INVEST_CLUSTER` | `devnet` (default). `localnet` is for the local E2E only; refused in production. |
+| `AROMA_RECURRING_RPC_URL` | server devnet RPC; genesis-checked per client (devnet's genesis or refused) |
+| `NEXT_PUBLIC_SOLANA_DEVNET_RPC_URL` | browser devnet RPC (the wallet must report devnet's genesis); also added to `connect-src` |
+| `AROMA_V1_FAUCET_KEYPAIR` | the devnet-only faucet key (64-byte JSON array) that holds the **test USD mint authority**; created by `init-devnet` in `packages/contracts/.keys/devnet-faucet.json`. Never the deployer. |
+| `TURNSTILE_SECRET_KEY`, `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | Cloudflare Turnstile (owner creates the widget). Production refuses Cloudflare's test secrets. |
+| `AROMA_V1_FAUCET_DAILY_CLAIMS` | global claims per UTC day (default 200) |
+| `UPSTASH_REDIS_REST_URL/TOKEN`, `DATABASE_URL`, `AROMA_TRADE_SECRET` | as in §1 (idempotency, faucet limits; plans_index and receipts; plan authorizations use a key derived from the trade secret) |
+
+The page and every `/api/v1/plans*` and `/api/v1/faucet` route answer "not available on devnet yet" while `V1_DEPLOYMENTS.devnet` (`packages/guard/src/v1/deployments.ts`) is `null`; fill it from the owner's deploy output (M6-DEVNET-DEPLOY.md).
+
+### 6.2 Keeper (`apps/keeper`, a separate Node service)
+| Variable | Notes |
+|---|---|
+| `KEEPER_KEYPAIR` | the devnet keeper key (`.keys/devnet-keeper.json`), = `config.keeper_authority`. Devnet only; refused on any other genesis. |
+| `KEEPER_RPC_URL` | HTTPS devnet RPC |
+| `QSTASH_CURRENT_SIGNING_KEY`, `QSTASH_NEXT_SIGNING_KEY` | both required (rotation) |
+| `KEEPER_PUBLIC_URL` | the `/run` URL QStash calls (signature `sub` check) |
+| `HERMES_URL`, `PYTH_API_KEY` | Hermes needs a key (401 without one) |
+| `UPSTASH_REDIS_REST_URL/TOKEN`, `DATABASE_URL` | the same Redis and Postgres as the web app |
+| `KEEPER_ALERT_WEBHOOK_URL`, `KEEPER_ALERT_FORMAT` | Slack (default) or Discord webhook |
+| `KEEPER_MIN_SOL_LAMPORTS`, `KEEPER_MAX_PLANS_PER_RUN`, `KEEPER_MAX_ATTEMPTS`, `KEEPER_DLQ_ALERT_THRESHOLD`, `KEEPER_PRIORITY_MICROLAMPORTS`, `KEEPER_PORT` | limits with safe defaults |
+
+Start: `pnpm --filter @aroma/keeper start` (validates env and the RPC genesis before listening). Operations: [keeper-operations.md](./keeper-operations.md).
+
+### 6.3 QStash schedule (owner)
+Create a schedule that POSTs `{}` to `KEEPER_PUBLIC_URL` every 1–5 minutes; copy its current and next signing keys into the keeper env.
+
+### 6.4 Before switching traffic (additions)
+- Faucet key funded with devnet SOL and holding the test USD mint authority (`devnet:audit` shows `testUsdAuthorityIsFaucet`).
+- Keeper key funded with devnet SOL; `config.keeper_authority` equals it.
+- One manual signed run (`pnpm --filter @aroma/keeper cli run <url>`) returns 200 and a report.
+
+### 6.5 Not verified on real devnet (M7)
+The devnet program deploy (owner), a Hermes API key, a QStash schedule, Turnstile keys, the alert webhook, Upstash and Neon for devnet. Everything was verified on a local validator only (REWRITE-PLAN, M7 status).

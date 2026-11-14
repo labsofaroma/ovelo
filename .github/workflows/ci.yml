@@ -59,6 +59,13 @@ jobs:
       - name: Unit tests
         run: pnpm test
 
+      # M7: coverage gates of the shared client (85%) and the keeper (80%). The web app's gates
+      # (features/*/server 80%) run in its own coverage step below.
+      - name: Coverage gates (@aroma/guard, @aroma/keeper)
+        run: |
+          pnpm --filter @aroma/guard test:coverage
+          pnpm --filter @aroma/keeper test:coverage
+
       - name: Load placeholder environment for the build
         # .env.example holds placeholders only. The build validates them exactly like a real deploy.
         run: grep -E '^[A-Z][A-Z0-9_]*=' apps/web/.env.example >> "$GITHUB_ENV"
