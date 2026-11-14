@@ -14,7 +14,8 @@ export function ConnectButton({ className }: { className?: string }) {
         size="sm"
         className={className}
         onClick={wallet.disconnect}
-        aria-label={`Disconnect wallet ${wallet.signer.address}`}
+        // The accessible name starts with the visible text (WCAG 2.5.3), then the full address.
+        aria-label={`${shortAddress(wallet.signer.address)} · Disconnect wallet ${wallet.signer.address}`}
       >
         {shortAddress(wallet.signer.address)} · Disconnect
       </Button>
