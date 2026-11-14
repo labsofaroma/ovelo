@@ -1,5 +1,6 @@
+import { betaDeps } from "@/features/beta/server/deps";
+import { assertTradeAccess } from "@/features/beta/server/gate";
 import { complianceDeps } from "@/features/compliance/server/deps";
-import { assertTradeCompliance } from "@/features/compliance/server/gate";
 import { quoteRequestSchema } from "@/features/trade/schema";
 import { quoteTrade } from "@/features/trade/server/service";
 import { isV1Enabled } from "@/server/env";
@@ -21,8 +22,12 @@ export async function POST(request: Request): Promise<Response> {
     if (!isV1Enabled()) throw new AppError("NOT_FOUND");
     assertSameOrigin(request);
     const body = await parse(quoteRequestSchema, { maxBytes: 4_096 })(request);
-    // M9 compliance gate: allowed location (again, after middleware) and current terms accepted.
-    await assertTradeCompliance(request, body.taker, complianceDeps());
+    // M9 compliance gate + Phase A beta gate (again, after middleware): location, then beta
+    // access, then current terms accepted.
+    await assertTradeAccess(request, body.taker, {
+      compliance: complianceDeps(),
+      beta: betaDeps(),
+    });
     const prepared = await quoteTrade(body);
     return Response.json(prepared, {
       headers: { "Cache-Control": "no-store" },

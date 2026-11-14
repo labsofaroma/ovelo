@@ -48,8 +48,13 @@ function renderGate(s: Signer | null, live = true) {
 }
 
 function mockFetch(handler: (url: string, init?: RequestInit) => unknown) {
+  // Phase A: the beta gate is off here (its own states: features/beta/components tests).
   const fetch = vi.fn(async (url: string, init?: RequestInit) =>
-    Response.json(handler(url, init)),
+    Response.json(
+      url.startsWith("/api/v1/beta/status")
+        ? { gate: false, access: true }
+        : handler(url, init),
+    ),
   );
   vi.stubGlobal("fetch", fetch);
   return fetch;

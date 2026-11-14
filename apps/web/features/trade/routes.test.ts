@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import type * as TradeAuth from "@/server/auth/trade";
 
 /** Route-handler contract (REWRITE-PLAN §8): gate, origin, parse, mapError → `{ code, message }`. */
 const service = vi.hoisted(() => ({
@@ -15,6 +16,21 @@ vi.mock("@/features/compliance/server/gate", () => ({
 }));
 vi.mock("@/features/compliance/server/deps", () => ({
   complianceDeps: () => ({ policy: () => ({}) }),
+}));
+// Phase A: the beta gate has its own route tests (features/beta/routes.test.ts).
+vi.mock("@/features/beta/server/gate", () => ({
+  assertTradeAccess: vi.fn(async () => {}),
+  assertBetaAccess: vi.fn(async () => {}),
+}));
+vi.mock("@/server/auth/trade", async (importOriginal) => ({
+  ...(await importOriginal<typeof TradeAuth>()),
+  keyringFromEnv: () => ({
+    current: { kid: "k", secret: "s" },
+    previous: null,
+  }),
+  openAuthorization: () => ({
+    taker: "4Nd1mYQzvgp7uVDYiHn9wrpTkMtZpZyV9pR9ZJ2q5vPz",
+  }),
 }));
 vi.mock("@/features/trade/server/service", () => service);
 vi.mock("@/features/portfolio/service", () => ({ loadPortfolio: vi.fn() }));

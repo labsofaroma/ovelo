@@ -13,6 +13,16 @@ export function creatorEnabled(): boolean {
   return process.env.E2E_CREATOR !== "0";
 }
 
+/**
+ * The env both the app and Playwright get: the local Postgres when the creator suite runs, and
+ * (Phase A) the private-beta gate, on exactly when that database is there (beta-gate.spec.ts).
+ */
+export function localDbEnv(web: string): Record<string, string> {
+  if (!creatorEnabled())
+    return { AROMA_BETA_GATE: "off", E2E_BETA_GATE: "off" };
+  return { ...startLocalDb(web), AROMA_BETA_GATE: "on", E2E_BETA_GATE: "on" };
+}
+
 export function startLocalDb(web: string): Record<string, string> {
   const script = join(web, "scripts/local-db.sh");
   execFileSync(script, ["reset"], { cwd: web, stdio: "inherit" });

@@ -6,7 +6,7 @@ import {
 } from "./schema";
 
 /** Client fetchers for /api/v1/compliance/* (zod-parsed; errors carry the server's `{ code, message }`). */
-async function call<T>(
+export async function call<T>(
   url: string,
   parse: (body: unknown) => T,
   init?: RequestInit,
@@ -40,7 +40,7 @@ async function call<T>(
   }
 }
 
-const post = (body: unknown): RequestInit => ({
+export const post = (body: unknown): RequestInit => ({
   method: "POST",
   headers: { "Content-Type": "application/json" },
   body: JSON.stringify(body),

@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { BetaBanner } from "@/features/beta/components/BetaBanner";
 import { SiteFooter } from "@/features/shared/components/SiteFooter";
 import { SiteHeader } from "@/features/shared/components/SiteHeader";
 import { assertV1Enabled } from "@/features/shared/v1";
@@ -11,6 +12,7 @@ export default function V1AppLayout({ children }: { children: ReactNode }) {
   assertV1Enabled();
   return (
     <div className="flex min-h-dvh flex-col bg-bg text-ink">
+      <BetaBanner />
       <SiteHeader />
       <div className="flex-1">{children}</div>
       <SiteFooter />

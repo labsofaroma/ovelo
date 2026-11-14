@@ -13,6 +13,10 @@ vi.mock("@/features/compliance/server/gate", () => ({
   assertJurisdiction: vi.fn(),
   requestJurisdiction: vi.fn(() => ({ status: "allowed", country: "DE" })),
 }));
+// Phase A: the beta gate has its own route tests (features/beta/routes.test.ts).
+vi.mock("@/features/beta/server/gate", () => ({
+  assertTradeAccess: vi.fn(async () => {}),
+}));
 vi.mock("@/features/compliance/server/deps", () => ({
   complianceDeps: () => ({ policy: () => ({}) }),
 }));

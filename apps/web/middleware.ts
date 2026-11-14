@@ -4,6 +4,9 @@ import {
   edgeRefusal,
   RESTRICTED_PAGE,
 } from "./features/compliance/edge";
+import { betaDeps } from "./features/beta/server/deps";
+import { betaEdgeRefusal } from "./features/beta/server/edge";
+import { normalizePath } from "./features/beta/paths";
 import { buildCsp, generateNonce, HSTS, isV1Path } from "./server/csp";
 import { testSwitchesAllowed } from "./server/env.schema";
 import { ERROR_CODES, type ErrorCode } from "./server/errors";
@@ -128,12 +131,15 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
     }
   }
 
-  const v1 = isV1Path(pathname);
-  const api = pathname.startsWith("/api/");
+  // Phase A: the API guards (origin, limits, geo, beta) match a NORMALISED spelling too, so a
+  // variant such as `//api/v1/trade/quote` or `/api/v1/trade/%71uote` cannot skip them.
+  const gatePath = normalizePath(pathname);
+  const v1 = isV1Path(pathname) || isV1Path(gatePath);
+  const api = pathname.startsWith("/api/") || gatePath.startsWith("/api/");
   // Solana Actions: the prototype's /api/actions/* (until M7) and v1's /api/v1/actions/* (M5b).
-  const v1Action = pathname.startsWith("/api/v1/actions/");
+  const v1Action = gatePath.startsWith("/api/v1/actions/");
   const action =
-    pathname.startsWith("/api/actions/") ||
+    gatePath.startsWith("/api/actions/") ||
     v1Action ||
     pathname === "/actions.json";
 
@@ -197,16 +203,26 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
       // --- M9 compliance gate (additive): geo-blocking on every trading entry point. ---
       else {
         const refusal = edgeRefusal(
-          pathname,
+          gatePath,
           request.method,
           request.headers,
           env,
         );
-        if (refusal)
+        // --- Phase A private beta (W2, additive): location first, then beta access. ---
+        const beta = refusal
+          ? null
+          : await betaEdgeRefusal(
+              request,
+              pathname,
+              betaDeps(),
+              maxBodyBytes(pathname),
+            );
+        const refused = refusal ?? beta;
+        if (refused)
           response = NextResponse.json(
-            v1 || action ? refusal.body : { error: refusal.body.message },
+            v1 || action ? refused.body : { error: refused.body.message },
             {
-              status: refusal.status,
+              status: refused.status,
               headers: { "Cache-Control": "no-store" },
             },
           );

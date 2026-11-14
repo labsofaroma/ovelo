@@ -136,6 +136,22 @@ export const ERROR_CODES = {
     message:
       "Accept the current terms with your wallet before your first trade. Nothing was quoted.",
   },
+  // Phase A private beta (REWRITE-PLAN §7.3 W2, additive).
+  BETA_ACCESS_REQUIRED: {
+    status: 403,
+    message:
+      "Aroma is in private beta. Redeem an invite with this wallet before buying. Nothing was quoted or sent.",
+  },
+  BETA_ACCESS_UNAVAILABLE: {
+    status: 503,
+    message:
+      "Beta access could not be checked right now, so trading is paused. Nothing was quoted or sent.",
+  },
+  BETA_INVITE_INVALID: {
+    status: 403,
+    message:
+      "This beta invite code is not valid, has expired or was already used.",
+  },
 } as const;
 
 export type ErrorCode = keyof typeof ERROR_CODES;

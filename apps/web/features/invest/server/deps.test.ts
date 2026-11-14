@@ -43,23 +43,29 @@ afterEach(() => {
 });
 
 describe("invest production wiring", () => {
-  it("baskets come from the markets view and published creator baskets", async () => {
-    const { productionServices } = await import("./deps");
-    expect(await productionServices.baskets()).toEqual([
-      {
-        id: "two",
-        name: "Two",
-        kind: "curated",
-        members: [{ mint: "m", symbol: "AAPLx", weightBps: 10_000 }],
-      },
-      {
-        id: "c1",
-        name: "Creator",
-        kind: "creator",
-        members: [{ mint: "m", symbol: "MSFTx", weightBps: 10_000 }],
-      },
-    ]);
-  });
+  // The first test pays the cold dynamic import of the whole wiring graph (about 3 s alone);
+  // 5 s was too tight when the full suite runs in parallel (seen as a timeout in Phase A).
+  it(
+    "baskets come from the markets view and published creator baskets",
+    { timeout: 30_000 },
+    async () => {
+      const { productionServices } = await import("./deps");
+      expect(await productionServices.baskets()).toEqual([
+        {
+          id: "two",
+          name: "Two",
+          kind: "curated",
+          members: [{ mint: "m", symbol: "AAPLx", weightBps: 10_000 }],
+        },
+        {
+          id: "c1",
+          name: "Creator",
+          kind: "creator",
+          members: [{ mint: "m", symbol: "MSFTx", weightBps: 10_000 }],
+        },
+      ]);
+    },
+  );
 
   it("the Upstash adapter maps every command", async () => {
     const { productionServices } = await import("./deps");

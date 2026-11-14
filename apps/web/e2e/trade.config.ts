@@ -19,12 +19,18 @@ export default defineConfig({
     // country is the default so the purchase specs can quote. compliance.spec.ts overrides it.
     extraHTTPHeaders: { "x-vercel-ip-country": "DE" },
   },
-  // M9: the compliance spec runs first, while the shared test wallet has not accepted the terms.
+  // Phase A: the beta-gate spec runs first (no beta access yet), then M9's compliance spec
+  // (beta access, no terms yet), then the purchase specs.
   projects: [
-    { name: "compliance", testMatch: /compliance\.spec\.ts$/ },
+    { name: "beta", testMatch: /beta-gate\.spec\.ts$/ },
+    {
+      name: "compliance",
+      testMatch: /compliance\.spec\.ts$/,
+      dependencies: ["beta"],
+    },
     {
       name: "chromium",
-      testIgnore: /compliance\.spec\.ts$/,
+      testIgnore: /(compliance|beta-gate)\.spec\.ts$/,
       dependencies: ["compliance"],
     },
   ],

@@ -36,7 +36,7 @@ import {
   USDC,
   walletJson,
 } from "./accounts";
-import { creatorEnabled, creatorLegs, startLocalDb } from "./creator-env";
+import { creatorLegs, localDbEnv } from "./creator-env";
 
 // pnpm runs this from apps/web (the package root).
 const WEB = process.cwd();
@@ -317,7 +317,7 @@ async function main() {
   );
   writeFileSync(join(WORK, "routes.json"), JSON.stringify(routes, null, 2));
   // M5b: the creator suite needs Postgres; reset the local one before the app starts.
-  const creatorDb = creatorEnabled() ? startLocalDb(WEB) : {};
+  const creatorDb = localDbEnv(WEB);
   const genesis = await startFork(routes);
   log(`fork genesis ${genesis}`);
   const stand = startJupiterStandIn(routes);

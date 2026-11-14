@@ -52,7 +52,7 @@ afterAll(async () => {
 });
 
 describe("migrations", () => {
-  it("create the eight tables from REWRITE-PLAN §6, plus basket_versions (M5b, 0002) and terms_acceptances (M9, 0004)", async () => {
+  it("create the eight tables from REWRITE-PLAN §6, plus basket_versions (M5b, 0002), terms_acceptances (M9, 0004) and the beta tables (Phase A, 0005)", async () => {
     const { rows } = await db.query<{ table_name: string }>(
       `SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name NOT LIKE '\\_\\_%' ORDER BY 1`,
     );
@@ -60,6 +60,9 @@ describe("migrations", () => {
       "basket_allocations",
       "basket_versions",
       "baskets",
+      // Phase A private beta (0005).
+      "beta_access",
+      "beta_invites",
       "creators",
       "invites",
       "notifications",

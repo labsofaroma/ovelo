@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { betaShape } from "./env.beta";
 import { complianceShape } from "./env.compliance";
 import { localnetRules } from "./env.rules";
 import { sentryDsn } from "./env.sentry";
@@ -127,6 +128,8 @@ const serverShape = {
   // --- M9 compliance gate (additive) ---
   ...complianceShape,
   // --- end M9 compliance gate ---
+  // --- Phase A private beta (W2, W3) ---
+  ...betaShape,
 };
 
 const loopbackHttp = z

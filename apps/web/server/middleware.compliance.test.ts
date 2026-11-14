@@ -55,6 +55,20 @@ describe("geo gate in middleware", () => {
     expect((await post(path, country("DE"))).status).toBe(200);
   });
 
+  it.each([
+    "//api/v1/trade/quote",
+    "/api/v1//trade/submit",
+    "/api/v1/trade/%71uote",
+    "/api/v1/x/../trade/quote",
+  ])(
+    "a path spelling (%s) cannot skip the geo gate (found in Phase A)",
+    async (path) => {
+      const response = await post(path, country("US"));
+      expect(response.status).toBe(451);
+      expect((await response.json()).code).toBe("JURISDICTION_RESTRICTED");
+    },
+  );
+
   it("a missing country fails closed on trade routes", async () => {
     const response = await post("/api/v1/trade/quote");
     expect(response.status).toBe(451);

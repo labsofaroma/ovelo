@@ -310,3 +310,6 @@ export const termsAcceptances = pgTable(
     ),
   ],
 );
+
+// Phase A private beta (REWRITE-PLAN §7.3 W2): beta_invites, beta_access (migration 0005).
+export * from "./schema.beta";

@@ -36,6 +36,13 @@
       "when": 1794663175552,
       "tag": "0004_terms_acceptances",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "7",
+      "when": 1794675591034,
+      "tag": "0005_beta_access",
+      "breakpoints": true
     }
   ]
 }

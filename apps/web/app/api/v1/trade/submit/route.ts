@@ -1,3 +1,5 @@
+import { betaDeps } from "@/features/beta/server/deps";
+import { assertBetaAccess } from "@/features/beta/server/gate";
 import { complianceDeps } from "@/features/compliance/server/deps";
 import { assertJurisdiction } from "@/features/compliance/server/gate";
 import { submitRequestSchema } from "@/features/trade/schema";
@@ -5,6 +7,7 @@ import {
   publicRecord,
   submitSignedTrade,
 } from "@/features/trade/server/service";
+import { keyringFromEnv, openAuthorization } from "@/server/auth/trade";
 import { isV1Enabled } from "@/server/env";
 import { AppError } from "@/server/errors";
 import { assertSameOrigin, errorResponse, parse } from "@/server/http";
@@ -29,6 +32,12 @@ export async function POST(request: Request): Promise<Response> {
     const body = await parse(submitRequestSchema, { maxBytes: 32_768 })(
       request,
     );
+    // Phase A beta gate (again, after middleware): the wallet named by the VERIFIED
+    // authorization. Expiry and the signed bytes are checked by submitSignedTrade.
+    const { taker } = openAuthorization(body.authorization, keyringFromEnv(), {
+      allowExpired: true,
+    });
+    await assertBetaAccess(betaDeps(), taker);
     const record = await submitSignedTrade(body);
     return Response.json(publicRecord(record), {
       status:

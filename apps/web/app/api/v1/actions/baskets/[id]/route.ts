@@ -10,11 +10,10 @@ import {
   parseActionPost,
   resolveActionBasket,
 } from "@/features/baskets/actions";
+import { betaDeps } from "@/features/beta/server/deps";
+import { assertTradeAccess } from "@/features/beta/server/gate";
 import { complianceDeps } from "@/features/compliance/server/deps";
-import {
-  assertTradeCompliance,
-  requestJurisdiction,
-} from "@/features/compliance/server/gate";
+import { requestJurisdiction } from "@/features/compliance/server/gate";
 import {
   surfaceAllowed,
   restrictedMessage,
@@ -49,6 +48,16 @@ export const GET = actionRoute<Context>(
         disabled: true,
         error: { message: restrictedMessage(jurisdiction) },
       });
+    // Phase A beta gate: an Action GET names no wallet, so while the gate is on it is shown
+    // disabled for everyone, with where to go instead.
+    if (betaDeps().config().gate)
+      return Response.json({
+        ...metadata,
+        disabled: true,
+        error: {
+          message: `Aroma is in private beta. Invited wallets can buy this basket at ${actionOrigin(request)}${routes.basket(basket.id)}.`,
+        },
+      });
     return Response.json(metadata);
   },
 );
@@ -61,10 +70,18 @@ export const POST = actionRoute<Context>(
       new URL(request.url).searchParams,
       await readLimitedJson(request, 2_048),
     );
-    // M9 compliance gate: location (again, after middleware) and the account's terms acceptance.
-    await assertTradeCompliance(request, input.account, complianceDeps(), {
-      termsMessage: `Accept Aroma's current terms with this wallet before your first purchase: open ${actionOrigin(request)}${routes.basket(basket.id)}, connect this wallet and sign the terms. Nothing was quoted.`,
-    });
+    // M9 compliance gate + Phase A beta gate (again, after middleware): location, beta access,
+    // then the account's terms acceptance.
+    const site = `${actionOrigin(request)}${routes.basket(basket.id)}`;
+    await assertTradeAccess(
+      request,
+      input.account,
+      { compliance: complianceDeps(), beta: betaDeps() },
+      {
+        beta: `Aroma is in private beta. Redeem an invite with this wallet at ${site} before buying. Nothing was quoted.`,
+        terms: `Accept Aroma's current terms with this wallet before your first purchase: open ${site}, connect this wallet and sign the terms. Nothing was quoted.`,
+      },
+    );
     const prepared = await quoteTrade(actionQuoteRequest(basket.id, input));
     return Response.json(
       actionTransaction(prepared, basket, actionOrigin(request)),
