@@ -32,7 +32,7 @@ Sizes are explicit constants with a unit test that `INIT_SPACE` matches them (`t
 | Field | Type | Notes |
 |---|---|---|
 | version | u8 | 1 |
-| admin | Pubkey | Squads vault on mainnet (M10); the deployer on devnet |
+| admin | Pubkey | Squads vault on mainnet (M12); the deployer on devnet |
 | keeper_authority | Option<Pubkey> | `None` = anyone can execute |
 | paused | bool | blocks `create_plan` and `execute_installment`; closing always works |
 | allowed_funding_mints | [Pubkey; 4] | unused slots are the default key |
@@ -163,7 +163,7 @@ Run by `register_asset` and again at every execution.
 | ScaledUiAmount multiplier | 1 for AMD, AMZN, GLD, NOW, PLTR, TSLA (no dividends); above 1 for dividend payers, up to 1.0296 (CVX); 29 of 40 ≠ 1 |
 | Mint authority | `7pt9tkctJPK7PPNQJ77GKg8ZffSF6QxoMiCFYHxrtaCj` |
 
-So one token is `multiplier` shares (a cumulative dividend factor), which is why the program divides by it. With the two issuer keys on the allow-lists, all six xStocks in the test fixtures register (`tests/litesvm/policy.test.ts`); with empty lists, all are refused. Mainnet registration is M10.
+So one token is `multiplier` shares (a cumulative dividend factor), which is why the program divides by it. With the two issuer keys on the allow-lists, all six xStocks in the test fixtures register (`tests/litesvm/policy.test.ts`); with empty lists, all are refused. Mainnet registration is M12.
 
 ## Oracle feeds on devnet
 
@@ -178,7 +178,7 @@ The sponsored Pyth push accounts for the equity feeds exist on devnet (10 of the
 - `security.txt` embedded. `#![deny(clippy::all)]`; the one crate-level allow (`result_large_err`) is for Anchor's error type.
 - Mainnet build: Jupiter is called by a program-wide swap authority, never by the plan PDA (the Subscriptions delegatee); every swap is accepted on the oracle floor and balance changes only.
 - Verifiable build: `scripts/verify-build.sh`, hashes in `packages/contracts/verifiable-build.json` (local hash recorded in M8; the Docker hash is an owner step).
-- Open: published Docker-verifiable hash, Squads multisig upgrade authority (M10), external audit (M10).
+- Open: published Docker-verifiable hash, Squads multisig upgrade authority (M12), external audit (M12).
 
 ## Tests
 

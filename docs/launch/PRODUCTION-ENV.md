@@ -15,7 +15,7 @@ It validates the production profile with the real boot schema (forced to `VERCEL
 
 ## 1. Web app (Vercel), by service
 
-Milestone = when it is needed: **M9** spot and baskets live; **M10** mainnet recurring (keeper, Hermes, QStash); **M7** the devnet test surfaces that ship with the app.
+Milestone = when it is needed: **M9** spot and baskets live; **M10** mainnet recurring through Jupiter DCA (no keeper, no program deploy; REWRITE-PLAN §7.2); **M12** Aroma Guard on mainnet when funded (keeper, Hermes, QStash); **M7** the devnet test surfaces that ship with the app.
 
 | Service | Variable(s) | What it is | Where to get it | Recommended plan | Needed |
 |---|---|---|---|---|---|
@@ -35,7 +35,7 @@ Milestone = when it is needed: **M9** spot and baskets live; **M10** mainnet rec
 | Sentry | `SENTRY_DSN`, `NEXT_PUBLIC_SENTRY_DSN`, `SENTRY_ENVIRONMENT`, `SENTRY_AUTH_TOKEN` (build only) | errors and trade breadcrumbs (scrubbed); the auth token uploads source maps | sentry.io project; the auth token is a Vercel build-time secret | **Team** | M9 (see the DSN blocker above) |
 | Privy | `NEXT_PUBLIC_PRIVY_APP_ID` (build-time), `PRIVY_APP_SECRET` (unused by v1 code today) | embedded email wallets (Solana enabled in the dashboard) | dashboard.privy.io; restrict allowed origins to the domain | plan sized for MAU | M9 (recommended) |
 | Revalidate | `AROMA_REVALIDATE_SECRET` | bearer for `POST /api/v1/revalidate`; unset = 503 | `openssl rand -base64 48` | — | M9 (recommended) |
-| Pyth | `PYTH_API_KEY` | Hermes (prices, health probe); Hermes answers 401 without a key | Pyth Pro / Hermes access | per provider | M10 (web: recommended at M9) |
+| Pyth | `PYTH_API_KEY` | Hermes (prices, health probe); Hermes answers 401 without a key | Pyth Pro / Hermes access | per provider | M12 (web: recommended at M9) |
 | Analytics | `NEXT_PUBLIC_PLAUSIBLE_DOMAIN` | consent-gated analytics | plausible.io | — | optional |
 | Operator | `AROMA_OPERATOR_NAME`, `AROMA_SUPPORT_EMAIL` | legal pages' contact block | owner | — | M9 |
 | Compliance | `AROMA_COMPLIANCE_*`, `AROMA_TERMS_VERSION` | jurisdiction policy overrides ([COMPLIANCE.md §2](./COMPLIANCE.md#2-configuration-not-code)); leave unset for the defaults; never `MISSING_COUNTRY=allow` | counsel's final list | — | M9 |
@@ -46,21 +46,21 @@ Milestone = when it is needed: **M9** spot and baskets live; **M10** mainnet rec
 
 Prototype-only variables (`AROMA_RECURRING_AUTH_SECRET`, `AROMA_FAUCET_SECRET_KEY`, `CREATOR_AUTH_SECRET`, `CREATOR_INVITE_CODES`, `BOT_KEYPAIR`) are removed with the prototype in M9; do not set them for v1.
 
-## 2. Keeper (`apps/keeper`), M10
+## 2. Keeper (`apps/keeper`), M12
 
 The keeper is **devnet-only** today (`KEEPER_CLUSTER` is `devnet` or `localnet`; the mainnet path is M8's work). This table lists what the mainnet keeper will need; `check:prod-env` does not validate the keeper yet (the mainnet keeper schema does not exist until M8 lands).
 
 | Service | Variable(s) | What it is | Where | Recommended plan | Needed |
 |---|---|---|---|---|---|
-| Host | `KEEPER_PORT`, `KEEPER_PUBLIC_URL` | the `POST /run` URL QStash calls (checked against the signature `sub`) | Railway, Fly or a container host with a secret store | always-on small instance | M10 |
-| Keeper key | `KEEPER_KEYPAIR` | the mainnet keeper signer; `keeper_authority` in config; holds only fee SOL | generated offline by the owner ([KEY-CUSTODY.md](./KEY-CUSTODY.md)) | — | M10 |
-| RPC | `KEEPER_RPC_URL` | mainnet RPC with the genesis guard | paid RPC (separate key from the web app) | | M10 |
-| Hermes | `HERMES_URL`, `PYTH_API_KEY` | price updates for installments | Pyth | | M10 |
-| QStash | `QSTASH_TOKEN` (web, to schedule), `QSTASH_CURRENT_SIGNING_KEY`, `QSTASH_NEXT_SIGNING_KEY` | schedule every 1–5 minutes; signature verification with rotation | console.upstash.com → QStash | **Pay as you go** | M10 |
-| Redis, Postgres | `UPSTASH_REDIS_REST_URL`/`_TOKEN`, `DATABASE_URL` | leases, dead letters, `plans_index`, receipts | the same Upstash and Neon projects (separate credentials if possible) | | M10 |
-| Alerts | `KEEPER_ALERT_WEBHOOK_URL`, `KEEPER_ALERT_FORMAT` | failed/skipped installments, low balance, DLQ | Slack or Discord incoming webhook | | M10 |
-| Tuning | `KEEPER_MIN_SOL_LAMPORTS`, `KEEPER_PRIORITY_MICROLAMPORTS`, `KEEPER_MAX_PLANS_PER_RUN`, `KEEPER_DLQ_ALERT_THRESHOLD`, `KEEPER_MAX_ATTEMPTS` | defaults are documented in `env.ts` | — | | M10 |
-| Collector | `AROMA_RECURRING_EXECUTOR_SECRET` | bearer for the collector endpoint; separate from every other secret | `openssl rand -base64 48` | | M10 |
+| Host | `KEEPER_PORT`, `KEEPER_PUBLIC_URL` | the `POST /run` URL QStash calls (checked against the signature `sub`) | Railway, Fly or a container host with a secret store | always-on small instance | M12 |
+| Keeper key | `KEEPER_KEYPAIR` | the mainnet keeper signer; `keeper_authority` in config; holds only fee SOL | generated offline by the owner ([KEY-CUSTODY.md](./KEY-CUSTODY.md)) | — | M12 |
+| RPC | `KEEPER_RPC_URL` | mainnet RPC with the genesis guard | paid RPC (separate key from the web app) | | M12 |
+| Hermes | `HERMES_URL`, `PYTH_API_KEY` | price updates for installments | Pyth | | M12 |
+| QStash | `QSTASH_TOKEN` (web, to schedule), `QSTASH_CURRENT_SIGNING_KEY`, `QSTASH_NEXT_SIGNING_KEY` | schedule every 1–5 minutes; signature verification with rotation | console.upstash.com → QStash | **Pay as you go** | M12 |
+| Redis, Postgres | `UPSTASH_REDIS_REST_URL`/`_TOKEN`, `DATABASE_URL` | leases, dead letters, `plans_index`, receipts | the same Upstash and Neon projects (separate credentials if possible) | | M12 |
+| Alerts | `KEEPER_ALERT_WEBHOOK_URL`, `KEEPER_ALERT_FORMAT` | failed/skipped installments, low balance, DLQ | Slack or Discord incoming webhook | | M12 |
+| Tuning | `KEEPER_MIN_SOL_LAMPORTS`, `KEEPER_PRIORITY_MICROLAMPORTS`, `KEEPER_MAX_PLANS_PER_RUN`, `KEEPER_DLQ_ALERT_THRESHOLD`, `KEEPER_MAX_ATTEMPTS` | defaults are documented in `env.ts` | — | | M12 |
+| Collector | `AROMA_RECURRING_EXECUTOR_SECRET` | bearer for the collector endpoint; separate from every other secret | `openssl rand -base64 48` | | M12 |
 
 ## 3. RPC failover (design note, for M9)
 
