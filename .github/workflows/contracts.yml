@@ -1,16 +1,19 @@
 name: Contracts
 
-# Runs only when the on-chain program, its generated client, or this workflow changes.
+# Runs only when an on-chain program, its generated client, or this workflow changes.
+# M6: authored only; not yet run on GitHub (CI not verified).
 on:
   push:
     branches: [main]
     paths:
       - "packages/anchor/**"
+      - "packages/contracts/**"
       - "apps/web/lib/sdk/guard/**"
       - ".github/workflows/contracts.yml"
   pull_request:
     paths:
       - "packages/anchor/**"
+      - "packages/contracts/**"
       - "apps/web/lib/sdk/guard/**"
       - ".github/workflows/contracts.yml"
 
@@ -23,7 +26,7 @@ permissions:
 
 jobs:
   contracts:
-    name: cargo test and IDL drift
+    name: packages/anchor - cargo test and IDL drift
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
@@ -65,3 +68,62 @@ jobs:
             echo "::error::idl:sync produced files that are not committed."
             exit 1
           fi
+
+  v1:
+    name: packages/contracts - cargo test, clippy, both builds, LiteSVM, IDL and Codama drift
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    env:
+      AGAVE_VERSION: "3.1.10"
+      ANCHOR_VERSION: "1.2.1"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: packages/contracts
+
+      - name: Install Agave ${{ env.AGAVE_VERSION }} (pinned in packages/contracts/Anchor.toml)
+        run: |
+          sh -c "$(curl -sSfL https://release.anza.xyz/v${AGAVE_VERSION}/install)"
+          echo "$HOME/.local/share/solana/install/active_release/bin" >> "$GITHUB_PATH"
+
+      - name: Install anchor-cli ${{ env.ANCHOR_VERSION }}
+        run: cargo install anchor-cli --version "${ANCHOR_VERSION}" --locked
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10.31.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: pnpm
+
+      - name: Install (frozen lockfile)
+        run: pnpm install --frozen-lockfile
+
+      - name: cargo test (default and devnet-mock), including proptests
+        run: pnpm --filter @aroma/contracts test:native
+
+      - name: cargo clippy -D warnings (both features)
+        run: pnpm --filter @aroma/contracts test:clippy
+
+      - name: anchor build, both variants, SBPF v0, no minting code in the default build
+        run: pnpm --filter @aroma/contracts build
+
+      - name: IDL and generated client match the Rust program (AGENTS.md rule 6)
+        run: pnpm --filter @aroma/contracts idl:check
+
+      - name: Codama drift and script unit tests
+        run: pnpm --filter @aroma/contracts test
+
+      - name: Pinned Subscriptions and Pyth receiver binaries (read-only devnet fetch, SHA-256 checked)
+        run: pnpm --filter @aroma/contracts test:fixtures
+
+      - name: LiteSVM suite
+        run: pnpm --filter @aroma/contracts test:litesvm

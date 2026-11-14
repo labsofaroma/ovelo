@@ -3,6 +3,7 @@
 # switch to @aromalabs/<team> once teams exist.
 *                                   @labsofaroma
 /packages/anchor/                   @labsofaroma
+/packages/contracts/                @labsofaroma
 /apps/web/lib/sdk/guard/            @labsofaroma
 /apps/web/server/                   @labsofaroma
 /apps/web/lib/server/               @labsofaroma

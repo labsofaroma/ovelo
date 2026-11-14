@@ -20,7 +20,9 @@
     "db:generate": "pnpm --filter @aroma/web db:generate",
     "db:migrate": "pnpm --filter @aroma/web db:migrate",
     "test:anchor": "pnpm --filter @aroma/anchor test",
-    "build:anchor": "cd packages/anchor && anchor build"
+    "build:anchor": "cd packages/anchor && anchor build",
+    "build:contracts": "pnpm --filter @aroma/contracts build",
+    "test:contracts": "pnpm --filter @aroma/contracts test:native && pnpm --filter @aroma/contracts test:clippy && pnpm --filter @aroma/contracts build && pnpm --filter @aroma/contracts idl:check && pnpm --filter @aroma/contracts test && pnpm --filter @aroma/contracts test:fixtures && pnpm --filter @aroma/contracts test:litesvm"
   },
   "devDependencies": {
     "prettier": "^3.6.2",

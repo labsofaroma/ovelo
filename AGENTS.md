@@ -11,7 +11,7 @@ Node 24.12.0, pnpm 10.31.0. Copy `apps/web/.env.example` to `apps/web/.env.local
 ## Where things go
 - Server-only code → `apps/web/server/` (v1: env, logger, errors, http, redis, ratelimit, rpc, db). Import `server-only`; never import it from a client component. Prototype server code still lives in `apps/web/lib/server/` until it is ported (REWRITE-PLAN §5.2).
 - Chain, market and basket helpers → `apps/web/lib/sdk/` (import as `@/lib/sdk`). There is no separate SDK package; no build step.
-- Contract changes → `packages/anchor/programs/aroma_guard/`. Then run `pnpm --filter @aroma/anchor idl:sync` (it writes into `apps/web/lib/sdk/guard/`).
+- Contract changes → `packages/contracts/programs/aroma_guard/` (Aroma Guard v1, [docs/aroma-guard-v1.md](docs/aroma-guard-v1.md)). Then run `pnpm build:contracts && pnpm --filter @aroma/contracts idl:sync` (it writes the IDL and the Codama client into `apps/web/lib/sdk/guard/v1/`). `packages/anchor` is unused code, removed in M9; do not extend it.
 - Design tokens → `apps/web/styles/foundation.css`. Design context → `.21st/DESIGN.md`.
 - New (v1) code uses `packages/ui/tokens.css` through `@aroma/ui`. `foundation.css` is kept for the prototype only, until M7.
 
@@ -21,14 +21,15 @@ Node 24.12.0, pnpm 10.31.0. Copy `apps/web/.env.example` to `apps/web/.env.local
 3. Devnet code paths must verify the devnet genesis hash. Never let a devnet keypair or secret touch mainnet.
 4. No invented data in the UI (see [PRODUCT.md](PRODUCT.md)).
 5. Use `bigint` or raw integer units for token amounts. Never float math on amounts that get signed.
-6. Keep the IDL, the Guard builders in `lib/sdk/guard` and the Rust program in sync. CI should fail if they drift.
+6. Keep the IDL, the generated client and builders in `lib/sdk/guard/v1` and the Rust program in sync. `idl:check` and the Codama drift test fail if they drift.
+7. Never commit a keypair. Program, localnet and devnet-only keys live in git-ignored paths (`packages/contracts/target/`, `.keys/`, `.e2e-local/`, `.devnet/`); agents never create, read or use the owner's deployer wallet.
 
 ## Before you open a PR
 ```bash
 pnpm lint
 pnpm typecheck
 pnpm test
-pnpm test:anchor        # if you touched the program
+pnpm test:contracts     # if you touched the program (cargo test, clippy, both builds, IDL drift, LiteSVM)
 ```
 
 ## Style
