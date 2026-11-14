@@ -56,6 +56,7 @@ export function createConfig({
         "**/.next/**",
         // M4: the E2E build (with the test wallet bridge) is written here by e2e/fork/run.ts.
         "**/.next-e2e/**",
+        "**/.next-e2e-*/**",
         "**/.e2e-fork/**",
         "**/.turbo/**",
         "**/dist/**",

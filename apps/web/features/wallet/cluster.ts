@@ -69,7 +69,10 @@ export const WRONG_NETWORK_SHORT: Record<WalletCluster, string> = {
 export function storageKey(cluster: WalletCluster): string {
   if (cluster === "mainnet") return "walletName";
   if (cluster === "devnet") return "aroma.wallet.devnet";
-  return "aromaLocalnetCluster";
+  // Written inline so production builds (flag "false") drop the localnet marker entirely.
+  return process.env.NEXT_PUBLIC_AROMA_LOCALNET === "true"
+    ? "aromaLocalnetCluster"
+    : "aroma.wallet.localnet-unavailable";
 }
 
 export function mainnetConfig(rpcUrl?: string): ClusterConfig {

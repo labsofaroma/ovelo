@@ -103,6 +103,7 @@ describe("wallet clusters (M7 B2)", () => {
   });
 
   it("no session state is shared: each cluster has its own storage key and chain id", () => {
+    vi.stubEnv("NEXT_PUBLIC_AROMA_LOCALNET", "true");
     const keys = new Set(
       (["mainnet", "devnet", "localnet"] as const).map(storageKey),
     );
