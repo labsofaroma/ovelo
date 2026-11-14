@@ -48,6 +48,9 @@ export default defineConfig({
         "server/**/*.ts",
         "features/*/server.ts",
         "features/*/server/**/*.ts",
+        // M5b: server-only creator and Actions modules that are not named server.ts.
+        "features/creators/{stats,basket-page,editable,invites,http,requests}.ts",
+        "features/baskets/actions.ts",
       ],
       exclude: [
         "**/*.test.ts",
@@ -75,6 +78,12 @@ export default defineConfig({
           branches: 70,
         },
         "features/*/server{.ts,/**/*.ts}": {
+          lines: 80,
+          functions: 80,
+          statements: 80,
+          branches: 70,
+        },
+        "features/{creators,baskets}/*.ts": {
           lines: 80,
           functions: 80,
           statements: 80,

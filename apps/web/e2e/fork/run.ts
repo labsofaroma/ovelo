@@ -36,6 +36,7 @@ import {
   USDC,
   walletJson,
 } from "./accounts";
+import { creatorEnabled, creatorLegs, startLocalDb } from "./creator-env";
 
 // pnpm runs this from apps/web (the package root).
 const WEB = process.cwd();
@@ -100,6 +101,7 @@ async function resolveTargets() {
     stock: { mint: stock.mint, symbol: stock.symbol },
     stockLeg: { outputMint: stock.mint, amount: STOCK_USDC } as Leg,
     candidates,
+    symbolOf: new Map(catalog.assets.map((a) => [a.mint, a.symbol])),
   };
 }
 
@@ -293,7 +295,7 @@ async function main() {
   rmSync(WORK, { recursive: true, force: true });
   mkdirSync(WORK, { recursive: true });
   const taker = e2eWallet().publicKey;
-  const { stock, stockLeg, candidates } = await resolveTargets();
+  const { stock, stockLeg, candidates, symbolOf } = await resolveTargets();
   const routes = await recordRoutes([stockLeg], taker);
   // The first candidate basket whose every leg has a route the local fork can execute.
   let basketId = "";
@@ -314,6 +316,8 @@ async function main() {
     `targets: ${stock.symbol} and basket ${basketId} (${legs.length - 1} legs); test wallet ${taker.toBase58()}`,
   );
   writeFileSync(join(WORK, "routes.json"), JSON.stringify(routes, null, 2));
+  // M5b: the creator suite needs Postgres; reset the local one before the app starts.
+  const creatorDb = creatorEnabled() ? startLocalDb(WEB) : {};
   const genesis = await startFork(routes);
   log(`fork genesis ${genesis}`);
   const stand = startJupiterStandIn(routes);
@@ -335,6 +339,7 @@ async function main() {
     AROMA_TRUST_PROXY: "true",
     NEXT_PUBLIC_AROMA_E2E_WALLET: "true",
     AROMA_NEXT_DIST_DIR: ".next-e2e",
+    ...creatorDb,
   };
   if (process.env.E2E_SKIP_BUILD !== "1") {
     // `next build` rewrites tsconfig.json and next-env.d.ts to point at its distDir; restore
@@ -368,6 +373,9 @@ async function main() {
       E2E_BASE_URL: `http://127.0.0.1:${APP_PORT}`,
       E2E_STOCK_SYMBOL: stock.symbol,
       E2E_BASKET_ID: basketId,
+      E2E_RPC_URL: `http://127.0.0.1:${RPC_PORT}`,
+      E2E_CREATOR_LEGS: creatorLegs(legs.slice(1), symbolOf),
+      ...creatorDb,
     },
   );
   stand.close();

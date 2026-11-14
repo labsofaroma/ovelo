@@ -50,12 +50,22 @@ function signOne(encoded: string): string {
   ).toString("base64");
 }
 
-export async function installTestWallet(page: Page): Promise<string> {
+export async function installTestWallet(
+  page: Page,
+  options: { messageDelayMs?: number } = {},
+): Promise<string> {
   const address = e2eWallet().publicKey.toBase58();
   await page.exposeFunction("aromaE2ESign", (unsigned: string[]) =>
     unsigned.map(signOne),
   );
-  await page.exposeFunction("aromaE2ESignMessage", signMessageBase64);
+  // An optional delay keeps the "confirm in your wallet" state on screen (screenshots).
+  await page.exposeFunction("aromaE2ESignMessage", async (message: string) => {
+    if (options.messageDelayMs)
+      await new Promise((resolve) =>
+        setTimeout(resolve, options.messageDelayMs),
+      );
+    return signMessageBase64(message);
+  });
   await page.addInitScript((wallet) => {
     (window as unknown as { aromaE2EWallet: unknown }).aromaE2EWallet = {
       address: wallet,
