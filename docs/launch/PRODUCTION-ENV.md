@@ -11,8 +11,6 @@ pnpm check:prod-env --offline                                # skip the RPC gene
 
 It validates the production profile with the real boot schema (forced to `VERCEL_ENV=production`), then: required variables present; no `.invalid` / `placeholder` / test values; no Cloudflare Turnstile test keys; E2E, localnet and test switches off; the compliance policy fails closed and restricts US; and each mainnet RPC answers `getGenesisHash` with mainnet's genesis (read-only). It prints **names and statuses only**. Exit 1 on any missing, invalid or forbidden item.
 
-**Known blocker (M9):** the boot schema refuses a real Sentry DSN (`https://<public-key>@oN.ingest.sentry.io/N` has userinfo; `httpsUrl` rejects it). Until the schema is fixed (owner decision; shared file), setting `SENTRY_DSN` stops boot. Pinned by `server/prod-env.test.ts`.
-
 ## 1. Web app (Vercel), by service
 
 Milestone = when it is needed: **M9** spot and baskets live; **M10** mainnet recurring through Jupiter DCA (no keeper, no program deploy; REWRITE-PLAN §7.2); **M12** Aroma Guard on mainnet when funded (keeper, Hermes, QStash); **M7** the devnet test surfaces that ship with the app.
@@ -32,7 +30,7 @@ Milestone = when it is needed: **M9** spot and baskets live; **M10** mainnet rec
 | Upstash Redis | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | rate limits, trade idempotency, single-use challenge nonces (creator, terms); without it trading is unavailable | console.upstash.com → Redis, region next to Vercel's | **Pay as you go** with eviction **off** (nonces must not be evicted) | M9 |
 | Neon Postgres | `DATABASE_URL` | receipts, creators, baskets, `terms_acceptances`; run `pnpm db:migrate` (now through `0004`) | console.neon.tech; pooled connection string, `sslmode=require` | **Launch** (point-in-time restore, no autosuspend on the production branch) | M9 |
 | Trade HMAC | `AROMA_TRADE_SECRET`, `AROMA_TRADE_SECRET_PREVIOUS` | HMAC key for trade authorizations (32+ random chars); previous only during a rotation ([KEY-CUSTODY.md §3](./KEY-CUSTODY.md#3-aroma_trade_secret-rotation)) | generate: `openssl rand -base64 48` | — | M9 |
-| Sentry | `SENTRY_DSN`, `NEXT_PUBLIC_SENTRY_DSN`, `SENTRY_ENVIRONMENT`, `SENTRY_AUTH_TOKEN` (build only) | errors and trade breadcrumbs (scrubbed); the auth token uploads source maps | sentry.io project; the auth token is a Vercel build-time secret | **Team** | M9 (see the DSN blocker above) |
+| Sentry | `SENTRY_DSN`, `NEXT_PUBLIC_SENTRY_DSN`, `SENTRY_ENVIRONMENT`, `SENTRY_AUTH_TOKEN` (build only) | errors and trade breadcrumbs (scrubbed); the auth token uploads source maps. Both DSNs must have the exact shape `https://<32-hex public key>@o<org>.ingest[.<region>].sentry.io/<project>` (`server/env.sentry.ts`); anything else stops boot | sentry.io project; the auth token is a Vercel build-time secret | **Team** | M9 |
 | ~~Privy~~ | none: **removed** (REWRITE-PLAN §7.3 W1, wallet-only login). Do not create a Privy app. | | | | |
 | Revalidate | `AROMA_REVALIDATE_SECRET` | bearer for `POST /api/v1/revalidate`; unset = 503 | `openssl rand -base64 48` | — | M9 (recommended) |
 | Pyth | `PYTH_API_KEY` | Hermes (prices, health probe); Hermes answers 401 without a key | Pyth Pro / Hermes access | per provider | M12 (web: recommended at M9) |
@@ -82,6 +80,6 @@ Estimate: one focused session with tests (unit tests for each rule, plus the for
 3. Upstash Redis (eviction off).
 4. Helius or Triton: two keys (server, browser origin-locked); a second provider account for failover.
 5. Jupiter API key; Jito URL.
-6. Sentry project (after the DSN schema fix), operator contact. (No Privy app: wallet-only login, REWRITE-PLAN §7.3 W1.)
+6. Sentry project, operator contact. (No Privy app: wallet-only login, REWRITE-PLAN §7.3 W1.)
 7. Generate `AROMA_TRADE_SECRET` and `AROMA_REVALIDATE_SECRET` directly into Vercel's env UI (never in a file in the repo).
 8. `pnpm check:prod-env` against the Vercel production env (`vercel env pull` into a file **outside** the repo, run the check, delete the file).

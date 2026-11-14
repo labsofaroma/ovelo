@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { complianceShape } from "./env.compliance";
 import { localnetRules } from "./env.rules";
+import { sentryDsn } from "./env.sentry";
 export { TURNSTILE_TEST_SECRETS } from "./env.rules";
 
 /**
@@ -38,7 +39,8 @@ const publicShape = {
     .url({ protocol: /^wss$/, message: "must be a wss:// URL" })
     .optional(),
   NEXT_PUBLIC_PLAUSIBLE_DOMAIN: optionalText,
-  NEXT_PUBLIC_SENTRY_DSN: httpsUrl.optional(),
+  /** W4: a real DSN carries its public key as userinfo; see env.sentry.ts. */
+  NEXT_PUBLIC_SENTRY_DSN: sentryDsn.optional(),
   /** E2E builds only: compiles in the test wallet bridge (no key material). Never in production. */
   NEXT_PUBLIC_AROMA_E2E_WALLET: z.enum(["true", "false"]).optional(),
   /** M7: browser RPC for `/v1/invest` on devnet (default: Solana's public devnet endpoint). */
@@ -100,7 +102,7 @@ const serverShape = {
   CREATOR_AUTH_SECRET: secret32.optional(),
   /** Bearer secret for POST /api/v1/revalidate (M3). Unset: the route answers 503. */
   AROMA_REVALIDATE_SECRET: secret32.optional(),
-  SENTRY_DSN: httpsUrl.optional(),
+  SENTRY_DSN: sentryDsn.optional(),
   SENTRY_ENVIRONMENT: optionalText,
   /** Set by Vercel: "production" | "preview" | "development". */
   VERCEL_ENV: z.enum(["production", "preview", "development"]).optional(),

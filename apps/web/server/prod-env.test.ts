@@ -20,9 +20,9 @@ const GOOD = {
   UPSTASH_REDIS_REST_TOKEN: "AXXXtoken",
   AROMA_TRADE_SECRET: secret("t"),
   JUPITER_API_KEY: "jup-key",
-  // See the KNOWN ISSUE test below: a real DSN carries its public key as userinfo.
-  SENTRY_DSN: "https://o1.ingest.sentry.io/1",
-  NEXT_PUBLIC_SENTRY_DSN: "https://o1.ingest.sentry.io/1",
+  // A real-shaped DSN: the public key is URL userinfo (W4, server/env.sentry.ts).
+  SENTRY_DSN: `https://${"a1".repeat(16)}@o4507.ingest.us.sentry.io/4508`,
+  NEXT_PUBLIC_SENTRY_DSN: `https://${"b2".repeat(16)}@o4507.ingest.sentry.io/4509`,
   SENTRY_ENVIRONMENT: "production",
   JITO_BLOCK_ENGINE_URL: "https://mainnet.block-engine.jito.wtf/api/v1/bundles",
   AROMA_REVALIDATE_SECRET: secret("r"),
@@ -115,17 +115,35 @@ describe("staticFindings (production profile)", () => {
     expect(findings.map((f) => f.status)).toContain("warning");
   });
 
-  it("KNOWN ISSUE (M9 blocker): the boot schema refuses a real Sentry DSN (public key as userinfo)", () => {
-    // server/env.schema.ts validates SENTRY_DSN with httpsUrl, which refuses any userinfo. Real
-    // DSNs look like https://<public-key>@o<org>.ingest.sentry.io/<project>, so production boot
-    // would stop. Owner decision needed (shared file); this test flips when it is fixed.
-    const dsn = "https://abc123@o1.ingest.sentry.io/1";
-    expect(byName({ ...GOOD, SENTRY_DSN: dsn }, "SENTRY_DSN")[0]).toMatchObject(
-      {
-        status: "invalid",
-        detail: "must not embed credentials",
-      },
-    );
+  it("a real-shaped Sentry DSN passes (W4: the public key is userinfo)", () => {
+    for (const dsn of [
+      `https://${"c3".repeat(16)}@o1.ingest.sentry.io/1`,
+      `https://${"c3".repeat(16)}@o1.ingest.de.sentry.io/22`,
+    ]) {
+      const env = { ...GOOD, SENTRY_DSN: dsn, NEXT_PUBLIC_SENTRY_DSN: dsn };
+      expect(byName(env, "SENTRY_DSN").map((f) => f.status)).toEqual(["ok"]);
+      expect(
+        byName(env, "NEXT_PUBLIC_SENTRY_DSN").map((f) => f.status),
+      ).toEqual(["ok"]);
+      expect(failed(staticFindings(env))).toBe(false);
+    }
+  });
+
+  it.each([
+    ["no public key", "https://o1.ingest.sentry.io/1"],
+    ["a secret key", `https://${"c3".repeat(16)}:s3cret@o1.ingest.sentry.io/1`],
+    ["a non-Sentry host", `https://${"c3".repeat(16)}@o1.ingest.evil.io/1`],
+    [
+      "a non-numeric project",
+      `https://${"c3".repeat(16)}@o1.ingest.sentry.io/x`,
+    ],
+  ])("a malformed Sentry DSN (%s) fails", (_label, dsn) => {
+    for (const name of ["SENTRY_DSN", "NEXT_PUBLIC_SENTRY_DSN"]) {
+      const findings = byName({ ...GOOD, [name]: dsn }, name);
+      expect(findings[0]?.status).toBe("invalid");
+      expect(findings[0]?.detail).toMatch(/^must be a Sentry DSN/);
+      expect(failed(staticFindings({ ...GOOD, [name]: dsn }))).toBe(true);
+    }
   });
 
   it("a rotation in progress is a warning, not a failure", () => {
