@@ -11,6 +11,7 @@ import {
   isLoopback,
   LIMITS,
   maxBodyBytes,
+  requestHost,
   requestHostname,
   requestProtocol,
   type Bucket,
@@ -127,7 +128,9 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
 
   if (api || action) {
     const origin = request.headers.get("origin");
-    const effectiveOrigin = `${protocol}://${request.nextUrl.host}`;
+    // The origin the browser used: Host (x-forwarded-host only behind a trusted proxy), not
+    // nextUrl, which can carry the server's bind address under next start.
+    const effectiveOrigin = `${protocol}://${requestHost(request.headers, request.nextUrl.host, env)}`;
     if (
       !action &&
       !allowedOrigin(

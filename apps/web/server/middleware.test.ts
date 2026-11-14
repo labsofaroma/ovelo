@@ -187,6 +187,21 @@ describe("M4 additions", () => {
     ).toBeNull();
   });
 
+  it("the origin allowlist uses the client's Host (next start binds to localhost)", async () => {
+    const response = await middleware(
+      req("http://localhost:3200/api/v1/trade/quote", {
+        method: "POST",
+        headers: {
+          host: "127.0.0.1:3200",
+          origin: "http://127.0.0.1:3200",
+          "content-type": "application/json",
+        },
+        body: "{}",
+      }),
+    );
+    expect(response.status).toBe(200);
+  });
+
   it("the loopback check uses the client's Host, not the server bind address", async () => {
     vi.stubEnv("AROMA_TRUST_PROXY", "true");
     const viaProxy = await middleware(

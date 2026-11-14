@@ -44,7 +44,8 @@ const RPC_PORT = 8899;
 const JUPITER_PORT = 4010;
 const APP_PORT = 3200;
 const STOCK_SYMBOL = process.env.E2E_STOCK ?? "AAPL";
-const BASKET_ID = process.env.E2E_BASKET ?? "sol-energy";
+/** E2E_BASKET pins a basket; otherwise the smallest canonical basket fully tradable right now. */
+const PINNED_BASKET = process.env.E2E_BASKET;
 const STOCK_USDC = 1_000_000n;
 const BASKET_USDC = 2_000_000n;
 
@@ -64,9 +65,15 @@ async function resolveTargets() {
         !a.tradingHalted,
     );
   const stock = bySymbol(STOCK_SYMBOL);
-  const definition = CANONICAL_BASKET_DEFINITIONS.find(
-    (d) => d.id === BASKET_ID,
-  );
+  // Issuers pause listings (e.g. XOMx in November 2026); a paused constituent makes a basket
+  // unbuyable, so pick one whose constituents are all listed, verified and unpaused today.
+  const definition = [...CANONICAL_BASKET_DEFINITIONS]
+    .filter(
+      (d) =>
+        d.issuer === "xstocks" && (!PINNED_BASKET || d.id === PINNED_BASKET),
+    )
+    .sort((a, b) => a.symbols.length - b.symbols.length)
+    .find((d) => d.symbols.length >= 2 && d.symbols.every((s) => bySymbol(s)));
   const members = definition?.symbols.map(bySymbol) ?? [];
   if (!stock || !definition || members.some((m) => !m))
     throw new Error(
@@ -81,6 +88,7 @@ async function resolveTargets() {
     })),
   );
   return {
+    basketId: definition.id,
     stock: { mint: stock.mint, symbol: stock.symbol },
     legs: [
       { outputMint: stock.mint, amount: STOCK_USDC },
@@ -116,6 +124,9 @@ async function recordRoutes(legs: Leg[], taker: PublicKey) {
         programOf.get(leg.outputMint),
       ).toBase58(),
       wrapAndUnwrapSol: "false",
+      // Recording only (the server never sends this): the local validator cannot execute
+      // Manifest's program binary ("Program is not deployed"), so record routes that avoid it.
+      excludeDexes: "Manifest",
     });
     const response = await fetch(`https://api.jup.ag/swap/v2/build?${params}`);
     if (!response.ok)
@@ -267,9 +278,9 @@ async function main() {
   rmSync(WORK, { recursive: true, force: true });
   mkdirSync(WORK, { recursive: true });
   const taker = e2eWallet().publicKey;
-  const { stock, legs } = await resolveTargets();
+  const { stock, legs, basketId } = await resolveTargets();
   log(
-    `targets: ${stock.symbol} and basket ${BASKET_ID} (${legs.length - 1} legs); test wallet ${taker.toBase58()}`,
+    `targets: ${stock.symbol} and basket ${basketId} (${legs.length - 1} legs); test wallet ${taker.toBase58()}`,
   );
   const routes = await recordRoutes(legs, taker);
   writeFileSync(join(WORK, "routes.json"), JSON.stringify(routes, null, 2));
@@ -326,7 +337,7 @@ async function main() {
     {
       E2E_BASE_URL: `http://127.0.0.1:${APP_PORT}`,
       E2E_STOCK_SYMBOL: stock.symbol,
-      E2E_BASKET_ID: BASKET_ID,
+      E2E_BASKET_ID: basketId,
     },
   );
   stand.close();
