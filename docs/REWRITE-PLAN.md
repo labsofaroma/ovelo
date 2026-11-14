@@ -244,6 +244,11 @@ From M6 on, each milestone has a contract part and an app part. Steps marked **(
 | **M10** | Audit + mainnet beta | external audit and fixes **(owner: auditor)**; Squads multisig (≥ 2-of-3, timelock) as upgrade authority **(owner)**; mainnet deploy with launch caps **(owner)**; real xStocks registered | mainnet recurring behind caps; monitoring and alerts | audit findings closed; multisig verified on-chain; first mainnet installments monitored |
 | **M11** | Launch features (was M8) | optional protocol fee via config | notifications, P&L, compliance gate, onboarding, creator fee share, creator dashboard | launch checklist complete; ROADMAP success metrics measured |
 
+> **M8 plan notes (recorded in M7, decided in M8).**
+> 1. **Executor choice of price update.** When `keeper_authority` is `None`, any executor may pass any valid, fully verified `PriceUpdateV2` inside the staleness window, so it can pick the most favourable price in that window. The mainnet path must bound this, for example by requiring the update's `publish_time` to be no older than the newest one the keeper could fetch, or by keeping keeper-only execution on mainnet. Decide in M8.
+> 2. **Subscriptions binary on mainnet.** Mainnet runs an older Subscriptions build (≈ v0.4.0, slot 438,440,823) than the pinned devnet binary (`program-v0.5.0`). Re-verify the account layouts and `validate_recurring_transfer` against mainnet's binary before any mainnet deploy.
+> 3. **Rust coverage** needs `cargo-llvm-cov`, an install the owner must approve.
+
 > **Renumbering (M6, Part 0).** The M0–M5 status sections below, and some AUDIT.md lines written before this change, use the old numbers. Read them as: old **M6** (recurring on v1) = new **M7**; old **M7** (cutover) = new **M9**; old **M8** (launch features) = new **M11**. The status sections are kept as recorded.
 
 ### M0 status: implemented on branch `m0-foundation` (not pushed, not merged, nothing deployed)
