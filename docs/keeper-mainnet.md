@@ -1,6 +1,6 @@
 # Keeper: mainnet mode (M8)
 
-_Off everywhere until M10._ No deploy config sets `KEEPER_CLUSTER=mainnet`. This file covers the mainnet mode only; devnet operations are in [keeper-operations.md](./keeper-operations.md). The program side is in [aroma-guard-v1.md](./aroma-guard-v1.md#mainnet-execution-default-build).
+_Off everywhere until M12._ No deploy config sets `KEEPER_CLUSTER=mainnet`. This file covers the mainnet mode only; devnet operations are in [keeper-operations.md](./keeper-operations.md). The program side is in [aroma-guard-v1.md](./aroma-guard-v1.md#mainnet-execution-default-build).
 
 ## What changes from devnet
 
@@ -42,7 +42,7 @@ A route failure (no route, rate limit, invalid build, intermediate-mint route) d
 
 | Variable | |
 |---|---|
-| `KEEPER_CLUSTER=mainnet` | the switch; off until M10 |
+| `KEEPER_CLUSTER=mainnet` | the switch; off until M12 |
 | `KEEPER_MAINNET_KEYPAIR` | the mainnet keeper key (secret store, P4); `= config.keeper_authority` on mainnet |
 | `KEEPER_RPC_URL` | a paid mainnet RPC over `https://` (P3); devnet and testnet hosts are refused |
 | `JUPITER_API_KEY` | required in production (keyless limits leave most routes unavailable) |
@@ -54,7 +54,7 @@ A route failure (no route, rate limit, invalid build, intermediate-mint route) d
 
 Every URL must be `https://`. The local test mode `KEEPER_CLUSTER=mainnet-fork` needs `KEEPER_ALLOW_FORK=true`, `KEEPER_FORK_GENESIS` and a loopback RPC, and is refused in production. It is used only by `pnpm --filter @aroma/contracts e2e:fork`.
 
-## Before turning it on (M10, owner)
+## Before turning it on (M12, owner)
 
 1. The program is deployed to mainnet, and `initialize_config` has `keeper_authority` = the mainnet keeper key, USDC allow-listed, and the xStocks issuer keys on the Token-2022 allow-lists.
 2. Each catalog xStock is registered with its Pyth equity feed. A direct USDC route exists for each (check with the Jupiter build API).

@@ -5,7 +5,7 @@ import { MAINNET_ENV_FIELDS, mainnetEnvIssues } from "./mainnet/env";
  * Keeper environment (validated at boot; values are never logged or echoed). The keeper key is a
  * DEVNET-ONLY server secret: it is refused on any genesis other than devnet's (or a local
  * validator's, in a localnet test run), checked at boot and for every RPC client. Mainnet
- * (`KEEPER_CLUSTER=mainnet`, off until M10) uses a separate key and rules: `mainnet/env.ts`.
+ * (`KEEPER_CLUSTER=mainnet`, off until M12) uses a separate key and rules: `mainnet/env.ts`.
  */
 
 const LOOPBACK_HTTP = /^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?\/?$/;

@@ -910,7 +910,7 @@ Coverage gates: 85% for `lib/sdk`, 80% for `apps/web/server` and `features/*/ser
 1. While v1 is being built, the prototype runs on its current domain and v1 runs on `next.<domain>`.
 2. At M9, announce the switch date on the site.
 3. Switch DNS. Keep the prototype on an archived URL for 30 days. Then delete `apps/web/components/aroma`, `styles/*`, `packages/anchor` and the prototype `lib/sdk` modules that are replaced (they stay at the `prototype-final` tag).
-4. The v1 program's upgrade authority moves to a Squads multisig in M10 **(owner)**.
+4. The v1 program's upgrade authority moves to a Squads multisig in M12 **(owner)**.
 
 ---
 
@@ -923,7 +923,7 @@ Coverage gates: 85% for `lib/sdk`, 80% for `apps/web/server` and `features/*/ser
 | Contract changes break `lib/sdk` | Codama regenerates the client; CI fails on IDL drift |
 | Jupiter or Pyth API changes | adapters isolated in `lib/sdk`, responses zod-validated, contract tests run nightly against live APIs |
 | xStocks Token-2022 extension surprises | asset registry checks extensions; E2E against the real mints on mainnet with small amounts |
-| One developer owns both contract and app | M7 waits on the owner's M6 devnet deploy; until then build against LiteSVM and the generated client. Mainnet (M10) waits on the M8 contract path and the external audit |
+| One developer owns both contract and app | M7 waits on the owner's M6 devnet deploy; until then build against LiteSVM and the generated client. Aroma Guard on mainnet (M12) waits on the M8 contract path, the external audit and funding (§7.2) |
 
 ---
 

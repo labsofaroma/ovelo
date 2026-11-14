@@ -10,7 +10,7 @@ main (= prototype-final, e85d128)
    → m5-creators → m6-contract-core → m7-recurring-devnet → m8-mainnet-path → launch-prep
 ```
 
-Every branch must contain the previous one; `main` becomes the final tip by **fast-forward** (no merge commit, no squash, history kept). State when this was written (2026-11-14): `main → … → m7-recurring-devnet` is linear; `m8-mainnet-path` (session 2, still in progress) and `launch-prep` both branch from `m7-recurring-devnet` and are **not yet stacked**. After M8 finishes, `launch-prep` is rebased onto it (the session stops and asks on conflicts in M8's files; the terms migration `0004` may need renumbering).
+Every branch must contain the previous one; `main` becomes the final tip by **fast-forward** (no merge commit, no squash, history kept). State (2026-11-14, after the stacking rebase): the whole stack `main → … → m7-recurring-devnet → m8-mainnet-path → launch-prep` is linear (all ten checks below print `OK`, no merge commits, one author identity). `m8-mainnet-path` was rebased onto the `m7-recurring-devnet` tip (which holds the devnet deployment record) and `launch-prep` onto `m8-mainnet-path`. Only docs conflicted: the critical path, the §7 M8/M9 rows, and the open items in `aroma-guard-v1.md`. M8's own files were updated to the budget plan (mainnet keeper, multisig and audit at M12). The terms migration stayed `0004`, because M8 added no migration. The pre-rebase tips are kept locally as `backup/m8-mainnet-path-pre-rebase` and `backup/launch-prep-pre-rebase`; never push them.
 
 ### Verify linearity (read-only)
 

@@ -12,7 +12,7 @@
 | Actor | Trusted for | Not trusted for |
 |---|---|---|
 | Owner | their own plan: create, pause, resume, close | anything else |
-| Admin (Squads multisig on mainnet, M10) | config, pause, asset registry, keeper key | moving user funds (no instruction lets it) |
+| Admin (Squads multisig on mainnet, M12) | config, pause, asset registry, keeper key | moving user funds (no instruction lets it) |
 | Keeper (`config.keeper_authority`, required on mainnet) | liveness: choosing *when* to execute within the schedule, and which price update in the 20-second window | **routes**, amounts, destinations: the program re-checks everything |
 | Jupiter API (off-chain) | nothing | the program never trusts a route |
 | Jupiter v6 program and the AMMs it calls | executing a swap | delivering a fair amount (checked against the oracle floor), touching other accounts (only the accounts passed can be reached) |

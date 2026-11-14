@@ -45,7 +45,7 @@ The binaries differ, so behaviour was checked rather than assumed:
    - the same-slot `UNKNOWN_INIT_ID` sentinel is accepted. The client's 1-step create flow needs this sentinel.
 3. **Upstream source diff `program-v0.4.0…program-v0.5.0`** (GitHub compare): in `state/` and the transfer helpers only comments changed, plus `SubscriptionAuthority::check_init_id` with the sentinel (commit `55a3efd1`, 2026-07-15). Mainnet's deploy (2026-08-10) is after that commit and accepts the sentinel in test 2. M6's "≈ v0.4.0" label was a guess from the slot; behaviourally the mainnet binary matches the `program-v0.5.0` era.
 
-**Conclusion:** nothing the program relies on differs, so there was no reason to stop. Re-run `pnpm test:fixtures:mainnet && pnpm test:litesvm:subscriptions-mainnet` before the mainnet deploy (M10). The fetch fails if upstream redeploys.
+**Conclusion:** nothing the program relies on differs, so there was no reason to stop. Re-run `pnpm test:fixtures:mainnet && pnpm test:litesvm:subscriptions-mainnet` before the mainnet deploy (M12). The fetch fails if upstream redeploys.
 
 ## 3. Rust coverage (cargo-llvm-cov, approved by the owner)
 

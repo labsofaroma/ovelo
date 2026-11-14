@@ -1,7 +1,7 @@
 import { z } from "zod";
 
 /**
- * Mainnet keeper environment (M8 B5). `KEEPER_CLUSTER=mainnet` is OFF everywhere until M10: no
+ * Mainnet keeper environment (M8 B5). `KEEPER_CLUSTER=mainnet` is OFF everywhere until M12: no
  * deploy config sets it. It needs its own key, `KEEPER_MAINNET_KEYPAIR`, and refuses to start
  * when the devnet key (`KEEPER_KEYPAIR`) is present, so the devnet key can never sign on mainnet
  * (and the mainnet key is refused on devnet and localnet). `mainnet-fork` is the local-fork test
