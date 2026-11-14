@@ -59,6 +59,7 @@ export default defineConfig({
         "**/index.ts",
         "**/idl/**",
         "lib/sdk/guard/v1/generated/**",
+        "lib/sdk/guard/v1/test/**",
         "**/test-fixtures.ts",
         "**/types.ts",
         "**/test-*.ts",
