@@ -1,0 +1,61 @@
+# Compliance gate (M9)
+
+_Branch `launch-prep`. Implements counsel's decisions (REWRITE-PLAN §7.1 **P1**, done by the owner). Moved from M11 to M9: it must be live **before** spot trading opens. Nothing here is deployed._
+
+Counsel decided the level of enforcement (**per P1**): IP geo-blocking at every trading entry point, terms acceptance before the first trade, and a risk disclosure on every trade review. This document says what the code enforces, where, what counsel still has to supply, and the limits.
+
+## 1. What is enforced, and where
+
+| Gate | Where | Behaviour |
+|---|---|---|
+| **Geo-blocking (edge)** | `middleware.ts` → `features/compliance/edge.ts` | Every gated POST is refused with **451** `{ code: "JURISDICTION_RESTRICTED", message }` (prototype paths: `{ error }`). Gated: `/api/v1/trade/quote`, `/api/v1/trade/submit`, `/api/v1/actions/baskets/:id` (the Action POST that builds a transaction), the prototype trade paths (`/api/actions/*`, `/api/trade/*`, `/api/transaction/execute`, `/api/bundles/execute`, `/api/buy-basket`), and on the devnet rule `/api/v1/plans/prepare-create` and `/api/v1/faucet`. Creator basket buys go through the quote route and the Action POST, so they are covered. |
+| Geo-blocking (route re-check) | quote, submit and Action routes (`features/compliance/server/gate.ts`) | Same decision again inside the handler, so a middleware matcher change cannot open trading. |
+| Action metadata | `GET /api/v1/actions/baskets/:id` | A blocked or unknown location gets the metadata with `disabled: true` and `error.message`. |
+| Never blocked | Action `/confirm` callback; plan close (`prepare-close`, `plans/submit`); terms routes; all GETs | Receipts for sent transactions are never lost, and a user can always exit a plan. |
+| **Terms acceptance** | `POST /api/v1/compliance/terms/{challenge,accept}`; checked in the quote route and the Action POST | The wallet signs (signMessage) a message naming the terms version and the SHA-256 of their canonical text (the M5 challenge pattern, purpose `terms`, 5-minute single-use nonce, origin-bound). Stored in `terms_acceptances` (migration `0004`; renumber if M8 adds one first) with the exact signed message and the trusted country. A quote needs an acceptance of the **current version and hash**: a version bump, or an edit of the text, requires every wallet to accept again. Refusal: **403** `TERMS_REQUIRED`; the Action's message points to the site. |
+| **Risk disclosure** | `features/compliance/components/RiskDisclosure.tsx` in the trade `ReviewPanel` | Wraps the confirm controls of every live review (stock, basket, creator basket), so the "Sign and buy" button cannot exist without it. No collapse, dismiss or "don't show again". The Action description carries the same text. |
+| UI states | `TradeComplianceGate` in the trade ticket | Restricted or unknown location: an honest notice, no quote button; paper practice and browsing remain. Allowed but no terms: the terms step. `GET /api/v1/compliance/status` drives it. |
+| Browse | middleware → `/v1/restricted` | Only if `AROMA_COMPLIANCE_BROWSE=block`; default is browse-only. Terms and privacy stay readable. |
+
+**Country source.** Only `x-vercel-ip-country`, and only behind the trusted proxy (`VERCEL=1` or `AROMA_TRUST_PROXY=true`, the same rule as the client IP in `server/request-guard.ts`). Without a trusted proxy the header is ignored (anyone can send it) and the country is unknown.
+
+## 2. Configuration (not code)
+
+`features/compliance/policy.ts`, overridden per deployment; validated at boot (`server/env.compliance.ts`) and when loaded. An invalid policy fails closed on every gated path.
+
+| Variable | Default | Notes |
+|---|---|---|
+| `AROMA_COMPLIANCE_RESTRICTED_COUNTRIES` | `US` + placeholder `CU,IR,KP,SY,RU,BY` | ISO 3166-1 alpha-2, comma-separated; replaces the default. **Placeholder list: confirm with counsel.** |
+| `AROMA_COMPLIANCE_MISSING_COUNTRY` | `block` | `allow` only for local development; `pnpm check:prod-env` refuses it. |
+| `AROMA_COMPLIANCE_BROWSE` | `allow` | `block` rewrites v1 pages to the notice page for restricted visitors. |
+| `AROMA_COMPLIANCE_DEVNET` | `block` | Devnet plan creation and the faucet (test tokens of no value). |
+| `AROMA_TERMS_VERSION` | the newest entry in `features/compliance/terms.ts` | Must name a registered version. |
+
+Mainnet trading for a restricted country cannot be configured open (the schema accepts only `block`).
+
+## 3. Tests
+
+- Unit: `features/compliance/{policy,jurisdiction}.test.ts`, `server/terms.test.ts` (replay, wrong wallet, other origin, old version, version bump, expiry), `server/store.postgres.test.ts` (migration 0004 on PGlite).
+- Edge: `server/middleware.compliance.test.ts` (blocked, allowed, missing header, untrusted proxy, Action POST blocked with Actions headers, confirm open, devnet rule, prototype body, invalid policy, browse rewrite).
+- Routes: `features/compliance/routes.test.ts` (quote, submit, Action GET/POST, status, challenge, accept).
+- Components: `ReviewDisclosure.test.tsx` (the confirm control exists only inside the disclosure), `TradeComplianceGate.test.tsx`.
+- Fork E2E: `e2e/trade/compliance.spec.ts` (runs before the purchase specs): blocked country cannot quote (UI and API), allowed country must accept the terms before the first quote, the disclosure is visible on the review, axe in light and dark.
+
+## 4. What counsel must supply (needs counsel's final text)
+
+1. **Terms of use** final text. Today the only version is `2026-09-13-placeholder`: the prototype terms page, ported unchanged, marked `final: false`. Add the final text as a new version in `features/compliance/terms.ts` and the terms page; every wallet re-accepts.
+2. **Acceptance line** the wallet signs (placeholder: "I have read and accept these terms and the risk disclosures.", `features/compliance/server/terms.ts`).
+3. **Risk disclosure** text per surface (stock, basket, creator basket, Action, devnet recurring): `features/compliance/disclosures.ts`, all placeholder; bump `DISCLOSURE_VERSION`.
+4. **Final restricted-country list**, and whether sub-national regions (for example Crimea, Donetsk, Luhansk) must be blocked; that needs `x-vercel-ip-country-region` and is not implemented.
+5. **Blocked-state and notice-page wording** (`JurisdictionNotice.tsx`, `/v1/restricted`, the `JURISDICTION_RESTRICTED` and `TERMS_REQUIRED` messages).
+6. Whether **paper practice** and **browsing** stay open to restricted visitors (defaults: yes).
+7. Whether the devnet test surfaces (plans, faucet) need the gate at all (default: blocked).
+
+## 5. Limits (stated plainly)
+
+- **IP geo-blocking is not identity verification.** It reads the network location the platform reports. VPNs, proxies and Tor exits defeat it; a traveller is classed by where they are, not who they are.
+- The country is only as good as Vercel's geolocation. If the platform omits it, trading fails closed.
+- Off Vercel, `AROMA_TRUST_PROXY=true` must be set only behind a proxy that overwrites `x-vercel-ip-country`; otherwise anyone can claim any country.
+- Terms acceptance proves a wallet signed a text; it does not identify a person or their residence.
+- The gate covers Aroma's server. A user who builds and signs their own Jupiter transaction for an xStock never touches Aroma.
+- Not yet wired: the invest wizard's review (`features/invest/**`, owned by the M7 session) should render `<RiskDisclosure surface="recurring-devnet">`; the component is ready.
