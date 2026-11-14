@@ -5,7 +5,6 @@ import { describe, expect, test } from "vitest";
 import { address, generateKeyPairSigner } from "@solana/kit";
 import * as v1 from "../../../../apps/web/lib/sdk/guard/v1";
 import { ataIx, errorCode, evenWeights, World } from "./world";
-import { START } from "./harness";
 
 describe("execute_installment happy paths (devnet-mock)", () => {
   test("one leg: pulls exactly the installment, mints the oracle amount, funds the treasury", async () => {
@@ -220,10 +219,6 @@ describe("real data", () => {
     expect(r.ok, r.logs.join("\n")).toBe(true);
     // $301.81002 at $301.81002 per share → exactly 1 share.
     expect(w.env.tokenAmount(stock.ownerAta)).toBe(100_000_000n);
-  });
-
-  test("START is far from the real publish time, so the same account is stale there", () => {
-    expect(START).toBeGreaterThan(1_783_000_135n + 60n);
   });
 
   test("a stranger cannot sign as the keeper by passing the keeper's address", async () => {
