@@ -1,5 +1,5 @@
 import type { MetadataRoute } from "next";
-import { siteUrl } from "../lib/site";
+import { siteUrl } from "../features/shared/site";
 import { V1_SITEMAP_PATHS } from "../features/shared/routes";
 export default function sitemap(): MetadataRoute.Sitemap {
   // v1 routes are listed only when they exist (AROMA_V1_ENABLED=true, M3). M7 drops the prefix.
