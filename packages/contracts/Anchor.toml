@@ -1,0 +1,25 @@
+# Aroma Guard v1 workspace (packages/contracts). The prototype keeps its own Anchor.toml in
+# packages/anchor. Toolchain pins = what is installed on the build machine (REWRITE-PLAN M6 A3).
+[toolchain]
+anchor_version = "1.2.1"
+solana_version = "3.1.10"
+
+[features]
+resolution = true
+skip-lint = false
+
+[programs.localnet]
+aroma_guard = "FYrrfhrysaGUwCNyTggqyKmTWqpg3vph8gzmSWt7QtTU"
+
+[programs.devnet]
+aroma_guard = "FYrrfhrysaGUwCNyTggqyKmTWqpg3vph8gzmSWt7QtTU"
+
+# Default to a local validator. Devnet deploys pass --provider.cluster devnet explicitly
+# (docs/M6-DEVNET-DEPLOY.md). The wallet is the owner's deployer (CONTRACT-V1-SPEC §10),
+# never ~/.config/solana/id.json. Nothing in this repo reads or creates it.
+[provider]
+cluster = "localnet"
+wallet = "~/.config/solana/aroma-deployer.json"
+
+[scripts]
+test = "pnpm test:litesvm"
