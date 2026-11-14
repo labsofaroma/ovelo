@@ -46,3 +46,7 @@ apps/web/next-env.d.ts
 apps/web/next.config.mjs
 packages/ui/logos.ts
 packages/ui/dist
+# M6: local-only state and keys (git-ignored in packages/contracts/.gitignore).
+packages/contracts/.e2e-local/
+packages/contracts/.keys/
+packages/contracts/.devnet/
