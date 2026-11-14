@@ -22,7 +22,9 @@ import type { InvestRpc } from "./cluster";
 
 /** JSON for logs and error details; kit returns RPC integers as bigint. */
 export const safeJson = (value: unknown) =>
-  JSON.stringify(value, (_key, v: unknown) => (typeof v === "bigint" ? v.toString() : v));
+  JSON.stringify(value, (_key, v: unknown) =>
+    typeof v === "bigint" ? v.toString() : v,
+  );
 
 export type UnsignedTransaction = {
   transaction: Base64EncodedWireTransaction;

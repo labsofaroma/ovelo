@@ -202,7 +202,9 @@ function Bridge({
       embedded: Boolean(embedded),
       error:
         error ??
-        (status === "wrong-network" ? wrongNetworkMessage(cluster.cluster) : null),
+        (status === "wrong-network"
+          ? wrongNetworkMessage(cluster.cluster)
+          : null),
       open: () => setPicker(true),
       select,
       loginEmbedded: () => {

@@ -90,7 +90,9 @@ function sentInstructions(wire: string) {
   );
   return {
     feePayer: message.staticAccounts[0],
-    datas: ("instructions" in message ? message.instructions : []).map((ix) => [...(ix.data ?? [])][0]),
+    datas: ("instructions" in message ? message.instructions : []).map(
+      (ix) => [...(ix.data ?? [])][0],
+    ),
   };
 }
 

@@ -188,7 +188,10 @@ export const receipts = pgTable(
       "receipts_plan_kinds",
       sql`${t.planPda} IS NOT NULL OR ${t.kind} NOT IN ('plan_create', 'plan_close', 'installment')`,
     ),
-    check("receipts_period_nonneg", sql`${t.period} IS NULL OR ${t.period} >= 0`),
+    check(
+      "receipts_period_nonneg",
+      sql`${t.period} IS NULL OR ${t.period} >= 0`,
+    ),
   ],
 );
 
