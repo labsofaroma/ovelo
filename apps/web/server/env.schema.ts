@@ -68,7 +68,14 @@ const serverShape = {
     }, "must not embed credentials")
     .optional(),
   DATABASE_URL: postgresUrl.optional(),
-  UPSTASH_REDIS_REST_URL: httpsUrl.optional(),
+  /** HTTPS; a loopback http URL only for a local run with test switches (M7 local Redis proxy). */
+  UPSTASH_REDIS_REST_URL: z
+    .url({ message: "must be a URL" })
+    .refine((value) => {
+      const url = new URL(value);
+      return !url.username && !url.password;
+    }, "must not embed credentials")
+    .optional(),
   UPSTASH_REDIS_REST_TOKEN: optionalText,
   AROMA_TRADE_SECRET: secret32.optional(),
   /** The previous trade secret during a rotation: quotes signed with it still verify until they expire. */

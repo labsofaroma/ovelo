@@ -97,3 +97,26 @@ describe("M7 invest environment", () => {
     expect(problems({ AROMA_V1_FAUCET_DAILY_CLAIMS: "200" })).toEqual([]);
   });
 });
+
+describe("local Redis proxy URL (M7 E2E)", () => {
+  it("accepts loopback http only for a local run with test switches, never in production", () => {
+    const local = { UPSTASH_REDIS_REST_URL: "http://127.0.0.1:8079" };
+    expect(problems(local)).toEqual([]);
+    expect(problems({ ...local, NODE_ENV: "production" })).toEqual([
+      "UPSTASH_REDIS_REST_URL: must be an https:// URL",
+    ]);
+    expect(
+      problems({
+        ...local,
+        NODE_ENV: "production",
+        AROMA_V1_ALLOW_TEST_SWITCHES: "true",
+      }),
+    ).toEqual([]);
+    expect(problems({ ...local, VERCEL_ENV: "production" })).toContain(
+      "UPSTASH_REDIS_REST_URL: must be an https:// URL",
+    );
+    expect(
+      problems({ UPSTASH_REDIS_REST_URL: "http://redis.example.com" }),
+    ).toEqual(["UPSTASH_REDIS_REST_URL: must be an https:// URL"]);
+  });
+});

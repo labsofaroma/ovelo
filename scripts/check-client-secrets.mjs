@@ -64,11 +64,17 @@ export const E2E_MARKERS = ["aromaE2EWallet"];
 export const LOCALNET_MARKERS = ["aromaLocalnetCluster"];
 /** A JSON array of exactly 64 integers in 0..255: the shape of a Solana secret key file. */
 const KEY_ARRAY =
-  /\[\s*(?:(?:25[0-5]|2[0-4]\d|1?\d?\d)\s*,\s*){63}(?:25[0-5]|2[0-4]\d|1?\d?\d)\s*\]/;
+  /\[\s*(?:(?:25[0-5]|2[0-4]\d|1?\d?\d)\s*,\s*){63}(?:25[0-5]|2[0-4]\d|1?\d?\d)\s*\]/g;
+/** Random key bytes are varied; library constants (zero buffers, tables) are not. */
+const MIN_DISTINCT = 16;
 
 /** True when `text` contains secret-key-shaped material (exported for tests). */
 export function containsKeyMaterial(text) {
-  return KEY_ARRAY.test(text);
+  for (const match of text.matchAll(KEY_ARRAY)) {
+    const values = match[0].slice(1, -1).split(",").map((v) => v.trim());
+    if (new Set(values).size >= MIN_DISTINCT) return true;
+  }
+  return false;
 }
 
 function isSecretName(name) {

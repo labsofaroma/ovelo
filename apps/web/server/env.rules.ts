@@ -10,10 +10,27 @@ export type InvestEnvView = {
   AROMA_V1_LOCALNET_GENESIS?: string;
   AROMA_V1_LOCALNET_FUNDING_MINT?: string;
   TURNSTILE_SECRET_KEY?: string;
+  NODE_ENV: "development" | "test" | "production";
+  UPSTASH_REDIS_REST_URL?: string;
 };
 
 /** M7: localnet is a test-build-only cluster; production never accepts any part of it. */
 export function localnetRules(env: InvestEnvView, ctx: z.RefinementCtx): void {
+  const redis = env.UPSTASH_REDIS_REST_URL;
+  if (redis && !redis.startsWith("https://")) {
+    const loopback = /^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?\/?$/.test(
+      redis,
+    );
+    const testRun =
+      env.VERCEL_ENV !== "production" &&
+      (env.NODE_ENV !== "production" || env.AROMA_V1_ALLOW_TEST_SWITCHES);
+    if (!loopback || !testRun)
+      ctx.addIssue({
+        code: "custom",
+        path: ["UPSTASH_REDIS_REST_URL"],
+        message: "must be an https:// URL",
+      });
+  }
   const issue = (key: string, message: string) =>
     ctx.addIssue({ code: "custom", path: [key], message });
   const production = env.VERCEL_ENV === "production";
