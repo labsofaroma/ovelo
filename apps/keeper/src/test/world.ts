@@ -13,7 +13,6 @@ import {
   TOKEN_2022_PROGRAM_ID,
   TOKEN_PROGRAM_ID,
   V1_PROGRAM_ID,
-  type PlanIndexRow,
 } from "@aroma/guard";
 import {
   getAssetEncoder,
@@ -23,9 +22,7 @@ import {
   getPlanEncoder,
   type Plan,
 } from "@aroma/guard/generated";
-import type { InstallmentReceipt, KeeperDb } from "../db";
 import { createLogger } from "../log";
-import type { KeeperRedis } from "../store";
 import { fakeKeeperChain, v1Logs } from "./chain";
 export { fakeHermes } from "./hermes";
 
@@ -40,101 +37,8 @@ export const FEEDS = [
 ];
 export const silent = createLogger("silent");
 
-export function memoryRedis(): KeeperRedis & {
-  store: Map<string, string>;
-  lists: Map<string, string[]>;
-} {
-  const store = new Map<string, string>();
-  const lists = new Map<string, string[]>();
-  return {
-    store,
-    lists,
-    async set(key, value, o = {}) {
-      if (o.nx && store.has(key)) return null;
-      store.set(key, value);
-      return "OK";
-    },
-    async get(key) {
-      return store.get(key) ?? null;
-    },
-    async del(...keys) {
-      keys.forEach((k) => store.delete(k));
-      return keys.length;
-    },
-    async eval(_script, keys, args) {
-      if (store.get(keys[0]!) === args[0]) {
-        store.delete(keys[0]!);
-        return 1;
-      }
-      return 0;
-    },
-    async incr(key) {
-      const n = Number(store.get(key) ?? 0) + 1;
-      store.set(key, String(n));
-      return n;
-    },
-    async expire() {
-      return 1;
-    },
-    async lpush(key, ...values) {
-      const list = lists.get(key) ?? [];
-      list.unshift(...values.reverse());
-      lists.set(key, list);
-      return list.length;
-    },
-    async lrange(key, start, stop) {
-      return (lists.get(key) ?? []).slice(start, stop + 1);
-    },
-    async llen(key) {
-      return (lists.get(key) ?? []).length;
-    },
-    async lrem(key, _count, value) {
-      const list = lists.get(key) ?? [];
-      const i = list.indexOf(value);
-      if (i < 0) return 0;
-      list.splice(i, 1);
-      return 1;
-    },
-  };
-}
-
-export function memoryDb(): KeeperDb & {
-  rows: Map<string, PlanIndexRow>;
-  receipts: InstallmentReceipt[];
-} {
-  const rows = new Map<string, PlanIndexRow>();
-  const receipts: InstallmentReceipt[] = [];
-  return {
-    rows,
-    receipts,
-    async dueRows(now, limit) {
-      const t = BigInt(Math.floor(now.getTime() / 1000));
-      return [...rows.values()]
-        .filter(
-          (r) =>
-            r.status === "active" && r.nextDueAt !== null && r.nextDueAt <= t,
-        )
-        .slice(0, limit);
-    },
-    async allRows() {
-      return [...rows.values()];
-    },
-    async upsertRows(list) {
-      list.forEach((r) => rows.set(r.pda, { ...r }));
-    },
-    async closeRows(pdas) {
-      pdas.forEach((p) => {
-        const r = rows.get(p);
-        if (r) rows.set(p, { ...r, status: "closed", nextDueAt: null });
-      });
-    },
-    async insertInstallment(receipt) {
-      if (receipts.some((r) => r.signature === receipt.signature)) return false;
-      receipts.push(receipt);
-      return true;
-    },
-  };
-}
+import { memoryDb, memoryRedis } from "../local-stores";
+export { memoryDb, memoryRedis };
 
 /** A 64-byte secret generated at runtime (seed ‖ public key); never a committed literal. */
 export async function freshSecret(): Promise<number[]> {

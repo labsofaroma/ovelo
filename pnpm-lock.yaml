@@ -338,6 +338,9 @@ importers:
       '@aroma/config':
         specifier: workspace:*
         version: link:../config
+      '@aroma/keeper':
+        specifier: workspace:*
+        version: link:../../apps/keeper
       '@noble/curves':
         specifier: 1.9.7
         version: 1.9.7

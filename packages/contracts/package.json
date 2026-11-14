@@ -18,6 +18,7 @@
     "idl:sync": "node scripts/sync-idl.mjs",
     "idl:check": "node scripts/sync-idl.mjs --check",
     "e2e:local": "vite-node scripts/e2e-local.ts",
+    "e2e:fork": "vite-node scripts/e2e-fork.ts",
     "typecheck": "tsc --noEmit",
     "lint": "eslint .",
     "devnet:init": "vite-node scripts/init-devnet.ts --",
@@ -26,6 +27,7 @@
   },
   "devDependencies": {
     "@aroma/config": "workspace:*",
+    "@aroma/keeper": "workspace:*",
     "@noble/curves": "1.9.7",
     "@noble/hashes": "1.8.0",
     "@solana/kit": "7.1.1",
