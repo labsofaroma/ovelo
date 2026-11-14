@@ -10,6 +10,8 @@ export * from "./deployments";
 export * from "./events";
 export * from "./filters";
 export * from "./timeline";
+export * from "./index-row";
+export * from "./receipts";
 export {
   AROMA_GUARD_PROGRAM_ADDRESS,
   AromaGuardAccount,
