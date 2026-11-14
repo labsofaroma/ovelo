@@ -1,0 +1,215 @@
+"use client";
+
+import { Button } from "@aroma/ui";
+import { useEffect, useRef, useState } from "react";
+import { useQueryClient } from "@tanstack/react-query";
+import { assertSignerCluster } from "../../wallet/cluster";
+import { useSigner } from "../../wallet/context";
+import { errorMessage, investApi } from "../api";
+import { explorerUrl, toBase64 } from "../amounts";
+import { faucetMessage, type FaucetResponse } from "../schema";
+import { formatRaw } from "../server/format";
+
+/**
+ * Devnet faucet (B6): Cloudflare Turnstile in the page, a wallet-signed claim, then the server
+ * mints a fixed amount of test USD and tops up a little SOL. Every refusal shows the server's
+ * message (limits, budget, human check).
+ */
+
+type TurnstileApi = {
+  render: (
+    element: HTMLElement,
+    options: {
+      sitekey: string;
+      callback: (token: string) => void;
+      "expired-callback"?: () => void;
+      "error-callback"?: () => void;
+    },
+  ) => string;
+  reset: (id?: string) => void;
+};
+const turnstileOf = () =>
+  (window as unknown as { turnstile?: TurnstileApi }).turnstile;
+
+const SCRIPT_URL =
+  "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+
+function loadTurnstile(nonce: string | null): Promise<TurnstileApi> {
+  const ready = turnstileOf();
+  if (ready) return Promise.resolve(ready);
+  return new Promise((resolve, reject) => {
+    const existing = document.querySelector<HTMLScriptElement>(
+      `script[src="${SCRIPT_URL}"]`,
+    );
+    const script = existing ?? document.createElement("script");
+    script.addEventListener("load", () =>
+      turnstileOf()
+        ? resolve(turnstileOf()!)
+        : reject(new Error("Turnstile did not load.")),
+    );
+    script.addEventListener("error", () =>
+      reject(new Error("Turnstile could not be loaded.")),
+    );
+    if (!existing) {
+      script.src = SCRIPT_URL;
+      script.async = true;
+      if (nonce) script.nonce = nonce;
+      document.head.appendChild(script);
+    }
+  });
+}
+
+export function FaucetPanel({
+  siteKey,
+  nonce,
+  cluster,
+  explorerRpcUrl,
+  fundingSymbol,
+  fundingDecimals,
+  amountRaw,
+}: {
+  /** The faucet's fixed test USD amount (server constant), raw units. */
+  amountRaw: string;
+  siteKey: string | null;
+  nonce: string | null;
+  cluster: "devnet" | "localnet";
+  explorerRpcUrl: string;
+  fundingSymbol: string;
+  fundingDecimals: number;
+}) {
+  const signer = useSigner();
+  const client = useQueryClient();
+  const box = useRef<HTMLDivElement>(null);
+  const widget = useRef<{ api: TurnstileApi; id: string } | null>(null);
+  const [token, setToken] = useState<string | null>(null);
+  const [status, setStatus] = useState<"idle" | "signing" | "sending">("idle");
+  const [error, setError] = useState<string | null>(null);
+  const [result, setResult] = useState<FaucetResponse | null>(null);
+
+  useEffect(() => {
+    if (!siteKey || !box.current || widget.current) return;
+    let live = true;
+    loadTurnstile(nonce)
+      .then((api) => {
+        if (!live || !box.current) return;
+        const id = api.render(box.current, {
+          sitekey: siteKey,
+          callback: setToken,
+          "expired-callback": () => setToken(null),
+          "error-callback": () =>
+            setError("The human check could not run. Reload the page."),
+        });
+        widget.current = { api, id };
+      })
+      .catch((e: unknown) => setError(errorMessage(e)));
+    return () => {
+      live = false;
+    };
+  }, [siteKey, nonce]);
+
+  if (!siteKey)
+    return (
+      <section
+        data-testid="faucet-unconfigured"
+        className="rounded-panel border border-line bg-surface p-4 text-small"
+      >
+        <h2 className="text-body font-semibold">Test tokens</h2>
+        <p className="text-muted">
+          The devnet faucet is not configured on this deployment.
+        </p>
+      </section>
+    );
+
+  const claim = async () => {
+    setError(null);
+    setResult(null);
+    try {
+      assertSignerCluster(signer, cluster);
+      if (!signer!.signMessage)
+        throw new Error(
+          "This wallet cannot sign messages, so it cannot claim test tokens.",
+        );
+      if (!token) throw new Error("Complete the human check first.");
+      setStatus("signing");
+      const issuedAt = String(Math.floor(Date.now() / 1000));
+      const signature = await signer!.signMessage(
+        new TextEncoder().encode(
+          faucetMessage(signer!.address, issuedAt, cluster),
+        ),
+      );
+      setStatus("sending");
+      const response = await investApi.faucet({
+        wallet: signer!.address,
+        turnstileToken: token,
+        issuedAt,
+        signature: toBase64(signature),
+      });
+      setResult(response);
+      await client.invalidateQueries({ queryKey: ["invest", "plans"] });
+    } catch (e) {
+      setError(errorMessage(e));
+    } finally {
+      setStatus("idle");
+      setToken(null);
+      widget.current?.api.reset(widget.current.id);
+    }
+  };
+
+  return (
+    <section
+      aria-labelledby="faucet-title"
+      className="flex flex-col gap-3 rounded-panel border border-line bg-surface p-4 text-small"
+    >
+      <h2 id="faucet-title" className="text-body font-semibold">
+        Test tokens
+      </h2>
+      <p className="text-muted">
+        Claim {formatRaw(BigInt(amountRaw), fundingDecimals)} {fundingSymbol}{" "}
+        (test USD, no value) once a day, plus a little devnet SOL for fees if
+        your wallet is low. Your wallet signs a short claim message; no funds
+        move from it.
+      </p>
+      <div ref={box} data-testid="faucet-turnstile" />
+      <div>
+        <Button
+          data-testid="faucet-claim"
+          onClick={() => void claim()}
+          loading={status !== "idle"}
+          disabled={!signer}
+        >
+          Claim test tokens
+        </Button>
+      </div>
+      <p role="status" aria-live="polite" className="text-caption text-muted">
+        {status === "signing"
+          ? "Sign the claim in your wallet."
+          : status === "sending"
+            ? "Sending test tokens…"
+            : ""}
+      </p>
+      {error ? (
+        <p role="alert" data-testid="faucet-error" className="text-down">
+          {error}
+        </p>
+      ) : null}
+      {result ? (
+        <p data-testid="faucet-result" role="status">
+          Received {formatRaw(BigInt(result.testUsdRaw), fundingDecimals)}{" "}
+          {fundingSymbol}
+          {result.lamports !== "0"
+            ? ` and ${formatRaw(BigInt(result.lamports), 9)} SOL`
+            : ""}
+          .{" "}
+          <a
+            className="text-accent underline focus-ring"
+            href={explorerUrl(result.signature, cluster, explorerRpcUrl)}
+            target="_blank"
+            rel="noreferrer"
+          >
+            Transaction {result.signature.slice(0, 8)}…
+          </a>
+        </p>
+      ) : null}
+    </section>
+  );
+}

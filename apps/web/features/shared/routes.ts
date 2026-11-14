@@ -8,6 +8,8 @@ export const routes = {
   watchlist: `${V1}/watchlist`,
   portfolio: `${V1}/portfolio`,
   creators: `${V1}/creators`,
+  /** M7: recurring investing on devnet (test tokens). */
+  invest: `${V1}/invest`,
   builder: `${V1}/basket/new`,
   privacy: `${V1}/privacy`,
   terms: `${V1}/terms`,

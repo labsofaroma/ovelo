@@ -19,6 +19,8 @@ const ITEMS = [
   { href: routes.watchlist, label: "Watchlist", match: ["/v1/watchlist"] },
   { href: routes.portfolio, label: "Portfolio", match: ["/v1/portfolio"] },
   { href: routes.creators, label: "Creators", match: ["/v1/creators"] },
+  // M7: devnet test only; the label says so. The v1 nav itself exists only while v1 is on.
+  { href: routes.invest, label: "Invest (devnet)", match: ["/v1/invest"] },
 ] as const;
 
 /** Primary nav. Client only for `aria-current`; links work without JavaScript. */
