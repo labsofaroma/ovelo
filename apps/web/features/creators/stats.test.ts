@@ -23,7 +23,8 @@ async function receipt(input: {
   status?: "pending" | "confirmed" | "failed";
   amount?: string;
   mint?: string;
-  at?: Date | null;
+  /** Order time (created_at). */
+  at?: Date;
   requestId?: string;
 }) {
   n += 1;
@@ -38,8 +39,9 @@ async function receipt(input: {
       input.mint ?? USDC_MINT,
       JSON.stringify([{ requestId: input.requestId ?? `req-${n}` }]),
       input.status ?? "confirmed",
+      // Block time deliberately skewed: windows use the order time (created_at), not it.
+      new Date(NOW.getTime() + 5 * 3_600_000),
       input.at === undefined ? ago(1) : input.at,
-      ago(1),
     ],
   );
 }
@@ -175,7 +177,7 @@ describe("receiptUsage", () => {
     );
   });
 
-  it("a creator's usage spans their baskets only; a receipt dated after as-of is ignored", async () => {
+  it("a creator's usage spans their baskets only; an order recorded after as-of is ignored; a skewed block time does not matter", async () => {
     await receipt({ basketId: alices, at: new Date(NOW.getTime() + DAY) });
     const usage = await receiptUsage(t.db, { creatorWallet: ALICE }, NOW);
     expect(usage.state === "ok" && usage.windows[2]).toMatchObject({

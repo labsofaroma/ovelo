@@ -14,8 +14,9 @@ import type { CreatorStatsView, UsageView, UsageWindow } from "./schema";
  * - A purchase is one order (one request id), even when a bundle spans several transactions.
  * - Volume is the sum of each receipt's raw input amount (integer text, exact `numeric` sum in
  *   Postgres), per funding mint: never converted, never added across mints.
- * - Windows are by confirmation time (the block time, or the order time when the RPC did not
- *   report one), relative to `asOf`.
+ * - Windows are by order time: when Aroma recorded the order (`created_at`, the server's own
+ *   clock, within seconds of confirmation), relative to `asOf`. Not the chain's block time, which
+ *   can run ahead of the server clock (and does, by hours, on a warped local fork).
  * - No confirmed purchase at all is `state: "none"` ("no purchases yet"), never zero volume.
  */
 export const STATS_SOURCE = "Aroma creator registry (Postgres)";
@@ -28,7 +29,7 @@ export const USAGE_WINDOWS = [
 ] as const;
 
 const DAY_MS = 86_400_000;
-const at = sql`coalesce(${receipts.blockTime}, ${receipts.createdAt})`;
+const at = sql`${receipts.createdAt}`;
 const order = sql`coalesce(${receipts.legs}->0->>'requestId', ${receipts.signature})`;
 
 /** Usage of one basket, or of every basket of one creator, from confirmed receipts. */
@@ -51,7 +52,7 @@ export async function receiptUsage(
     "basketId" in scope
       ? eq(receipts.basketId, scope.basketId)
       : eq(baskets.creatorWallet, scope.creatorWallet),
-    // Nothing confirmed in the future relative to as-of (a fixed clock in tests, skew in prod).
+    // Nothing recorded after as-of (a fixed clock in tests; never true in production).
     sql`${at} <= ${asOf}::timestamptz`,
   );
   const base = () =>
