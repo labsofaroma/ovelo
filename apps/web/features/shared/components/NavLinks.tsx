@@ -19,7 +19,7 @@ const ITEMS = [
   { href: routes.watchlist, label: "Watchlist", match: ["/watchlist"] },
   { href: routes.portfolio, label: "Portfolio", match: ["/portfolio"] },
   { href: routes.creators, label: "Creators", match: ["/creators"] },
-  // M7: devnet test only; the label says so. The v1 nav itself exists only while v1 is on.
+  // M7: devnet test only; the label says so.
   { href: routes.invest, label: "Invest (devnet)", match: ["/invest"] },
 ] as const;
 
@@ -27,7 +27,7 @@ const ITEMS = [
 export function NavLinks() {
   const pathname = usePathname() ?? "";
   return (
-    <ul className="flex items-center gap-1">
+    <ul className="flex flex-wrap items-center gap-1">
       {ITEMS.map((item) => {
         const active = item.match.some((prefix) => pathname.startsWith(prefix));
         return (
@@ -36,7 +36,7 @@ export function NavLinks() {
               href={item.href}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "inline-flex min-h-(--aroma-control-height) items-center rounded-control px-3 text-small font-semibold transition-colors motion-base focus-ring",
+                "inline-flex min-h-(--aroma-control-height) items-center whitespace-nowrap rounded-control px-3 text-small font-semibold transition-colors motion-base focus-ring",
                 active ? "bg-raised text-ink" : "text-muted hover:text-ink",
               )}
             >

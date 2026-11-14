@@ -17,7 +17,11 @@ export function SiteHeader() {
           LinkComponent={Link}
           aria-label="Aroma home"
         />
-        <nav aria-label="Primary" className="flex items-center gap-2">
+        {/* M9: on phones the nav takes its own row and wraps, so the page never scrolls sideways. */}
+        <nav
+          aria-label="Primary"
+          className="flex w-full flex-wrap items-center justify-between gap-2 md:w-auto md:justify-end"
+        >
           <NavLinks />
           <ThemeToggle />
         </nav>
