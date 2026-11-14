@@ -1,7 +1,8 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { toMarketsView } from "@/features/markets/normalize";
 import { snapshot } from "@/features/test/fixtures";
-import { resetEnvCacheForTests } from "@/server/env";
+import { isV1Enabled, resetEnvCacheForTests } from "@/server/env";
+import { actionsJsonRules } from "./actions-json";
 import { AppError } from "@/server/errors";
 
 /** M5b B4: the v1 Action routes and the actions.json rule, gated by AROMA_V1_ENABLED. */
@@ -15,7 +16,6 @@ vi.mock("@/features/trade/server/service", () => ({
 
 const actions = await import("@/app/api/v1/actions/baskets/[id]/route");
 const confirm = await import("@/app/api/v1/actions/baskets/[id]/confirm/route");
-const actionsJson = await import("@/app/actions.json/route");
 
 const ACCOUNT = "4Nd1mYQzvgp7uVDYiHn9wrpTkMtZpZyV9pR9ZJ2q5vPz";
 const params = (id: string) => ({ params: Promise.resolve({ id }) });
@@ -47,10 +47,7 @@ describe("flag off", () => {
       params("test-basket"),
     );
     expect(post.status).toBe(404);
-    const rules = (await actionsJson.GET().json()) as {
-      rules: { pathPattern: string }[];
-    };
-    expect(rules.rules.map((r) => r.pathPattern)).toEqual([
+    expect(actionsJsonRules(isV1Enabled()).map((r) => r.pathPattern)).toEqual([
       "/api/actions/**",
       "/basket/*",
       "/baskets/*",
@@ -61,9 +58,7 @@ describe("flag off", () => {
 describe("flag on", () => {
   it("actions.json maps /v1/basket/* to the v1 Action, keeping the prototype rules", async () => {
     flag(true);
-    const rules = (await actionsJson.GET().json()) as {
-      rules: { pathPattern: string; apiPath: string }[];
-    };
+    const rules = { rules: actionsJsonRules(isV1Enabled()) };
     expect(rules.rules[0]).toEqual({
       pathPattern: "/v1/basket/*",
       apiPath: "/api/v1/actions/baskets/*",

@@ -3,18 +3,18 @@ import { keyringFromEnv } from "@/server/auth/trade";
 import { authorizeTransactions } from "@/server/auth/trade-transactions";
 import type { CreatorsDb } from "@/features/creators/db";
 import { getDb } from "@/server/db/client";
-import { testSwitchesAllowed } from "@/server/env.schema";
+import { localNeonProxy } from "@/server/db/local-neon";
 import { AppError } from "@/server/errors";
 import { logger } from "@/server/logger";
 import { getRedis } from "@/server/redis";
 import { createJitoRpc, jitoEndpoint, prepareJitoTip } from "./bundle";
 import { fetchJupiterBuild } from "./jupiter";
 import { loadVerifiedLookupTables } from "./lookup-tables";
+import { localStores } from "./local";
 import type { QuoteDeps } from "./quote";
 import { dbReceipts } from "./receipts-db";
 import {
   latestBlockhash,
-  mainnetEndpoint,
   mainnetRpc,
   mainnetV1Active,
   selectTransactionVersion,
@@ -70,15 +70,17 @@ export function mintDecimals(rpc: MainnetRpc) {
   };
 }
 
-function localStores(): boolean {
-  return mainnetEndpoint().fork && testSwitchesAllowed(process.env);
-}
-
 let memory: { store: TradeStore; receipts: ReceiptWriter } | null = null;
 
 function stores(): { store: TradeStore; receipts: ReceiptWriter } {
   if (localStores()) {
-    memory ??= { store: memoryTradeStore(), receipts: memoryReceipts() };
+    // Receipts go to the local Postgres when the E2E runs one (scripts/local-db.sh, M5b B6), so
+    // creator stats read real rows; otherwise they stay in process, as in M4.
+    const url = process.env.DATABASE_URL ?? "";
+    memory ??= {
+      store: memoryTradeStore(),
+      receipts: localNeonProxy(url) ? dbReceipts(getDb()) : memoryReceipts(),
+    };
     return memory;
   }
   const redis = getRedis();

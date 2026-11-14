@@ -15,6 +15,7 @@
     "db:generate": "drizzle-kit generate",
     "db:migrate": "tsx server/db/migrate.ts",
     "db:check": "drizzle-kit check",
+    "db:local": "scripts/local-db.sh",
     "check-env": "tsx scripts/check-env.ts",
     "e2e:fork": "tsx e2e/fork/run.ts"
   },

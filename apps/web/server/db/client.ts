@@ -3,11 +3,13 @@ import { Pool } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-serverless";
 import { AppError } from "../errors";
 import { tryGetEnv } from "../env";
+import { configureLocalNeon } from "./local-neon";
 import * as schema from "./schema";
 
 export type Database = ReturnType<typeof createDb>["db"];
 
 function createDb(url: string) {
+  configureLocalNeon(url);
   // The WebSocket Pool (not neon-http) is used so multi-statement transactions work: basket
   // publishing writes allocations and relies on the deferred weights-sum constraint at COMMIT.
   const pool = new Pool({

@@ -7,6 +7,7 @@ import { isV1Enabled, tryGetEnv } from "@/server/env";
 import { AppError } from "@/server/errors";
 import { errorResponse } from "@/server/http";
 import { requireRedis } from "@/server/redis";
+import { localStores } from "@/features/trade/server/local";
 import { requestHost, requestProtocol } from "@/server/request-guard";
 import { type CreatorsDb, isDatabaseUnavailable } from "./db";
 import type { AssetRegistry } from "./server";
@@ -50,9 +51,33 @@ async function marketRegistry(): Promise<AssetRegistry> {
   );
 }
 
+/**
+ * Single-use nonces in process memory, for a local-fork E2E run only (no Redis there; one
+ * `next start` process, so GETDEL is atomic). Same gate as M4's in-memory trade store.
+ */
+const localChallenges = new Map<string, { value: string; expires: number }>();
+export function memoryChallengeStore(now = () => Date.now()): ChallengeStore {
+  return {
+    async set(key, value, options) {
+      const existing = localChallenges.get(key);
+      if (existing && existing.expires > now()) return null;
+      localChallenges.set(key, { value, expires: now() + options.ex * 1000 });
+      return "OK";
+    },
+    async getdel(key) {
+      const entry = localChallenges.get(key);
+      localChallenges.delete(key);
+      return entry && entry.expires > now() ? entry.value : null;
+    },
+  };
+}
+
 const defaults: CreatorDeps = {
   db: () => getDb(),
-  challenges: () => redisChallengeStore(requireRedis()),
+  challenges: () =>
+    localStores()
+      ? memoryChallengeStore()
+      : redisChallengeStore(requireRedis()),
   registry: marketRegistry,
   now: () => new Date(),
 };

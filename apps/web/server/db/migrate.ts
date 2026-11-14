@@ -4,6 +4,7 @@ import { Pool } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-serverless";
 import { migrate } from "drizzle-orm/neon-serverless/migrator";
 import { fileURLToPath } from "node:url";
+import { configureLocalNeon } from "./local-neon";
 
 async function main(): Promise<void> {
   const url = process.env.DATABASE_URL?.trim();
@@ -11,6 +12,7 @@ async function main(): Promise<void> {
     process.stderr.write("DATABASE_URL is not set; refusing to migrate.\n");
     process.exit(1);
   }
+  configureLocalNeon(url);
   const pool = new Pool({ connectionString: url, max: 1 });
   try {
     await migrate(drizzle({ client: pool }), {

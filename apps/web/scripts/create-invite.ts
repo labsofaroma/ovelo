@@ -4,6 +4,7 @@
 // Invites always expire (at most 90 days) and are single-use unless --uses says otherwise.
 import { Pool } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-serverless";
+import { configureLocalNeon } from "../server/db/local-neon";
 import * as schema from "../server/db/schema";
 import { createInvite, INVITE_MAX_DAYS } from "../features/creators/invites";
 
@@ -37,6 +38,7 @@ async function main(): Promise<void> {
     process.stderr.write("DATABASE_URL is not set; no invite created.\n");
     process.exit(1);
   }
+  configureLocalNeon(url);
   const pool = new Pool({ connectionString: url, max: 1 });
   try {
     const now = new Date();

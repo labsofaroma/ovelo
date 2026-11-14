@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { resetEnvCacheForTests } from "@/server/env";
-import { expectedOrigin } from "./http";
+import { expectedOrigin, memoryChallengeStore } from "./http";
 
 /**
  * The origin a creator challenge is bound to. Cross-site refusal itself is middleware's job
@@ -47,5 +47,19 @@ describe("expectedOrigin", () => {
     expect(expectedOrigin(forwarded)).toBe("http://internal:3000");
     env({ VERCEL: "1" });
     expect(expectedOrigin(forwarded)).toBe("https://aroma.example");
+  });
+});
+
+describe("memoryChallengeStore (local-fork E2E only)", () => {
+  it("is single-use (GETDEL), refuses a live key twice, and expires", async () => {
+    let now = 1_000;
+    const store = memoryChallengeStore(() => now);
+    expect(await store.set("k", "v", { nx: true, ex: 300 })).toBe("OK");
+    expect(await store.set("k", "w", { nx: true, ex: 300 })).toBeNull();
+    expect(await store.getdel("k")).toBe("v");
+    expect(await store.getdel("k")).toBeNull();
+    await store.set("e", "v", { nx: true, ex: 1 });
+    now += 1_000;
+    expect(await store.getdel("e")).toBeNull();
   });
 });
