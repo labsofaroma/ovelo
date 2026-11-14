@@ -19,24 +19,35 @@ export class WrongClusterError extends Error {
   }
 }
 
-/** Devnet's genesis, or the configured local validator's (never mainnet's or devnet's then). */
-export function expectedGenesis(
-  env: Pick<KeeperEnv, "KEEPER_CLUSTER" | "KEEPER_LOCALNET_GENESIS">,
-): string {
-  return env.KEEPER_CLUSTER === "localnet"
-    ? env.KEEPER_LOCALNET_GENESIS!
-    : DEVNET_GENESIS_HASH;
+type ClusterEnv = Pick<
+  KeeperEnv,
+  "KEEPER_CLUSTER" | "KEEPER_LOCALNET_GENESIS" | "KEEPER_FORK_GENESIS"
+>;
+
+/**
+ * The genesis each cluster must report: devnet's; the configured local validator's; mainnet's
+ * (mainnet mode only, M8); the configured local mainnet fork's.
+ */
+export function expectedGenesis(env: ClusterEnv): string {
+  switch (env.KEEPER_CLUSTER) {
+    case "localnet":
+      return env.KEEPER_LOCALNET_GENESIS!;
+    case "mainnet":
+      return MAINNET_GENESIS_HASH;
+    case "mainnet-fork":
+      return env.KEEPER_FORK_GENESIS!;
+    default:
+      return DEVNET_GENESIS_HASH;
+  }
 }
 
 /**
  * A genesis-checked RPC client (AGENTS.md rule 3): called at boot and for every client the keeper
- * creates, so the devnet-only keeper key can never sign for mainnet. Returns the check's latency.
+ * creates, so the devnet-only keeper key can never sign for mainnet, and the mainnet key (a
+ * separate variable, mainnet/env.ts) only ever signs for mainnet. Returns the check's latency.
  */
 export async function connectRpc(
-  env: Pick<
-    KeeperEnv,
-    "KEEPER_CLUSTER" | "KEEPER_LOCALNET_GENESIS" | "KEEPER_RPC_URL"
-  >,
+  env: ClusterEnv & Pick<KeeperEnv, "KEEPER_RPC_URL">,
   transport?: RpcTransport,
 ): Promise<{ rpc: KeeperRpc; latencyMs: number }> {
   const rpc = transport
@@ -45,9 +56,14 @@ export async function connectRpc(
   const started = Date.now();
   const genesis = await rpc.getGenesisHash().send();
   const expected = expectedGenesis(env);
-  if (genesis === MAINNET_GENESIS_HASH || genesis !== expected)
+  if (genesis !== expected) throw new WrongClusterError(genesis);
+  if (env.KEEPER_CLUSTER !== "mainnet" && genesis === MAINNET_GENESIS_HASH)
     throw new WrongClusterError(genesis);
-  if (env.KEEPER_CLUSTER === "localnet" && genesis === DEVNET_GENESIS_HASH)
+  if (
+    (env.KEEPER_CLUSTER === "localnet" ||
+      env.KEEPER_CLUSTER === "mainnet-fork") &&
+    genesis === DEVNET_GENESIS_HASH
+  )
     throw new WrongClusterError(genesis);
   return { rpc, latencyMs: Date.now() - started };
 }

@@ -1,5 +1,6 @@
 import {
   appendTransactionMessageInstructions,
+  compressTransactionMessageUsingAddressLookupTables,
   createTransactionMessage,
   getBase64EncodedWireTransaction,
   getSignatureFromTransaction,
@@ -7,6 +8,7 @@ import {
   setTransactionMessageFeePayerSigner,
   setTransactionMessageLifetimeUsingBlockhash,
   signTransactionMessageWithSigners,
+  type AddressesByLookupTableAddress,
   type Instruction,
   type KeyPairSigner,
   type Signature,
@@ -59,11 +61,24 @@ const json = (value: unknown) =>
     typeof v === "bigint" ? v.toString() : v,
   );
 const MAX_UNITS = 1_400_000;
+/** Solana's packet limit for one serialized transaction. */
+export const MAX_TRANSACTION_BYTES = 1_232;
+
+/**
+ * Mainnet (M8): verified address lookup tables to compress the message with, and an optional
+ * submit path (Jito block engine) used instead of `sendTransaction` on the RPC. Simulation and
+ * confirmation always go through the genesis-checked RPC.
+ */
+export type SendOptions = {
+  lookupTables?: AddressesByLookupTableAddress;
+  submit?: (wireBase64: string) => Promise<Signature>;
+};
 
 async function build(
   deps: SendDeps,
   instructions: readonly Instruction[],
   units: number,
+  options: SendOptions = {},
 ) {
   const { value: blockhash } = await deps.rpc
     .getLatestBlockhash({ commitment: "confirmed" })
@@ -81,7 +96,13 @@ async function build(
         m,
       ),
   );
-  const signed = await signTransactionMessageWithSigners(message);
+  const compressed = options.lookupTables
+    ? compressTransactionMessageUsingAddressLookupTables(
+        message,
+        options.lookupTables,
+      )
+    : message;
+  const signed = await signTransactionMessageWithSigners(compressed);
   return {
     signed,
     wire: getBase64EncodedWireTransaction(signed),
@@ -141,10 +162,21 @@ async function confirm(
   }
 }
 
+/** Serialized size of the transaction these instructions make (with any lookup tables). */
+export async function transactionBytes(
+  deps: SendDeps,
+  instructions: readonly Instruction[],
+  options: SendOptions = {},
+): Promise<number> {
+  const built = await build(deps, instructions, MAX_UNITS, options);
+  return Buffer.from(built.wire, "base64").length;
+}
+
 export async function sendInstructions(
   deps: SendDeps,
   instructions: readonly Instruction[],
   label: string,
+  options: SendOptions = {},
 ): Promise<Sent> {
   const sleep =
     deps.sleep ?? ((ms: number) => new Promise<void>((r) => setTimeout(r, ms)));
@@ -158,18 +190,20 @@ export async function sendInstructions(
       await sleep(delay);
     }
     try {
-      const probe = await build(deps, instructions, MAX_UNITS);
+      const probe = await build(deps, instructions, MAX_UNITS, options);
       const consumed = await simulateUnits(deps, probe.wire, label);
       const units = consumed
         ? Math.min(MAX_UNITS, Math.ceil(Number(consumed) * 1.15) + 5_000)
         : MAX_UNITS;
-      const final = await build(deps, instructions, units);
-      const signature = await deps.rpc
-        .sendTransaction(final.wire, {
-          encoding: "base64",
-          skipPreflight: true,
-        })
-        .send();
+      const final = await build(deps, instructions, units, options);
+      const signature = options.submit
+        ? await options.submit(final.wire)
+        : await deps.rpc
+            .sendTransaction(final.wire, {
+              encoding: "base64",
+              skipPreflight: true,
+            })
+            .send();
       if (signature !== getSignatureFromTransaction(final.signed))
         throw new Error(`${label}: RPC returned another signature`);
       await confirm(deps, signature, final.lastValid, label);

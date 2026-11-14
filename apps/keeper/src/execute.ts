@@ -56,7 +56,20 @@ export type ExecuteDeps = {
   };
   config: Config;
   leaseMs?: number;
+  /** Mainnet mode (M8): the routed batch runner and its smaller batch size. */
+  runBatch?: BatchRunner;
+  maxLegsPerTransaction?: number;
 };
+
+export type BatchRunner = (
+  deps: ExecuteDeps,
+  address: Address,
+  plan: Plan,
+  period: number,
+  legMask: number,
+  legIndexes: number[],
+  now: bigint,
+) => Promise<string[]>;
 
 export type Outcome =
   | {
@@ -134,7 +147,10 @@ export async function executePlan(
       );
     const signatures: string[] = [];
     let current = plan;
-    const masks = planLegBatches(plan.outputs.length)
+    const masks = planLegBatches(
+      plan.outputs.length,
+      deps.maxLegsPerTransaction,
+    )
       .map((mask) => mask & ~current.legBitmap)
       .filter((mask) => mask !== 0);
     for (const mask of masks) {
@@ -143,7 +159,15 @@ export async function executePlan(
         .filter((i) => (mask >>> i) & 1);
       try {
         signatures.push(
-          ...(await runBatch(deps, address, current, period, mask, legs, now)),
+          ...(await (deps.runBatch ?? runBatch)(
+            deps,
+            address,
+            current,
+            period,
+            mask,
+            legs,
+            now,
+          )),
         );
       } catch (error) {
         if (error instanceof HermesUnavailable) {

@@ -22,6 +22,12 @@ import type { KeeperEnv } from "./env";
 import { executePlan, type Outcome } from "./execute";
 import type { Logger } from "./log";
 import { connectRpc, type KeeperRpc } from "./rpc";
+import { isMainnetCluster } from "./mainnet/env";
+import {
+  assertMainnetKeeper,
+  executeMode,
+  type ExecuteMode,
+} from "./mainnet/wiring";
 import { deadLetterCount, DLQ_SEEN_KEY, type KeeperRedis } from "./store";
 
 /**
@@ -44,6 +50,8 @@ export type RunDeps = {
     latestUpdates(ids: readonly string[]): Promise<HermesLatestUpdates>;
   };
   sleep?: (ms: number) => Promise<void>;
+  /** Mainnet mode (M8); tests inject it, production derives it from the environment. */
+  mode?: ExecuteMode;
 };
 
 export type RunReport = {
@@ -55,11 +63,19 @@ export type RunReport = {
   alerts: number;
 };
 
+/** The devnet key on devnet/localnet, the separate mainnet key in the mainnet modes (M8). */
 export async function keeperSigner(
-  env: Pick<KeeperEnv, "KEEPER_KEYPAIR">,
+  env: Pick<
+    KeeperEnv,
+    "KEEPER_CLUSTER" | "KEEPER_KEYPAIR" | "KEEPER_MAINNET_KEYPAIR"
+  >,
 ): Promise<KeyPairSigner> {
+  const secret = isMainnetCluster(env.KEEPER_CLUSTER)
+    ? env.KEEPER_MAINNET_KEYPAIR
+    : env.KEEPER_KEYPAIR;
+  if (!secret) throw new Error("No keeper key for this cluster");
   return createKeyPairSignerFromBytes(
-    Uint8Array.from(JSON.parse(env.KEEPER_KEYPAIR) as number[]),
+    Uint8Array.from(JSON.parse(secret) as number[]),
   );
 }
 
@@ -172,6 +188,8 @@ export async function runOnce(deps: RunDeps): Promise<RunReport> {
     throw new Error(
       "This key is not the configured keeper_authority; refusing to run",
     );
+  assertMainnetKeeper(env.KEEPER_CLUSTER, config);
+  const mode = deps.mode ?? executeMode(env);
   const now = await chainNow(rpc);
   const reconciled = await reconcile(rpc, deps.db, log, now);
   const due = await deps.db.dueRows(
@@ -195,6 +213,7 @@ export async function runOnce(deps: RunDeps): Promise<RunReport> {
             alerts,
             hermes,
             config,
+            ...mode,
             send: {
               priorityMicroLamports: BigInt(env.KEEPER_PRIORITY_MICROLAMPORTS),
               maxAttempts: env.KEEPER_MAX_ATTEMPTS,

@@ -1,9 +1,11 @@
 import { z } from "zod";
+import { MAINNET_ENV_FIELDS, mainnetEnvIssues } from "./mainnet/env";
 
 /**
  * Keeper environment (validated at boot; values are never logged or echoed). The keeper key is a
  * DEVNET-ONLY server secret: it is refused on any genesis other than devnet's (or a local
- * validator's, in a localnet test run), checked at boot and for every RPC client.
+ * validator's, in a localnet test run), checked at boot and for every RPC client. Mainnet
+ * (`KEEPER_CLUSTER=mainnet`, off until M10) uses a separate key and rules: `mainnet/env.ts`.
  */
 
 const LOOPBACK_HTTP = /^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?\/?$/;
@@ -36,7 +38,9 @@ const schema = z
     LOG_LEVEL: z
       .enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"])
       .default("info"),
-    KEEPER_CLUSTER: z.enum(["devnet", "localnet"]).default("devnet"),
+    KEEPER_CLUSTER: z
+      .enum(["devnet", "localnet", "mainnet", "mainnet-fork"])
+      .default("devnet"),
     /** Local test runs only; refused when NODE_ENV=production. */
     KEEPER_ALLOW_LOCALNET: z.enum(["true", "false"]).default("false"),
     KEEPER_LOCALNET_GENESIS: z
@@ -44,7 +48,8 @@ const schema = z
       .regex(/^[1-9A-HJ-NP-Za-km-z]{32,44}$/)
       .optional(),
     KEEPER_RPC_URL: httpsOrLoopback.default("https://api.devnet.solana.com"),
-    KEEPER_KEYPAIR: keypair,
+    /** Devnet and localnet only (mainnet/env.ts). */
+    KEEPER_KEYPAIR: keypair.optional(),
     QSTASH_CURRENT_SIGNING_KEY: z.string().min(16),
     QSTASH_NEXT_SIGNING_KEY: z.string().min(16),
     /** The URL QStash calls (checked against the signature's `sub` claim when set). */
@@ -68,6 +73,7 @@ const schema = z
     /** Attempts per transaction before an item is dead-lettered. */
     KEEPER_MAX_ATTEMPTS: int(1, 8).default(3),
     KEEPER_PORT: int(1, 65_535).default(8787),
+    ...MAINNET_ENV_FIELDS,
   })
   .superRefine((env, ctx) => {
     const issue = (path: string, message: string) =>
@@ -81,7 +87,7 @@ const schema = z
         issue("KEEPER_LOCALNET_GENESIS", "is required for localnet");
       if (!LOOPBACK_HTTP.test(new URL(env.KEEPER_RPC_URL).origin))
         issue("KEEPER_RPC_URL", "localnet needs a loopback RPC");
-    } else {
+    } else if (env.KEEPER_CLUSTER === "devnet") {
       for (const key of [
         "KEEPER_RPC_URL",
         "UPSTASH_REDIS_REST_URL",
@@ -94,6 +100,7 @@ const schema = z
           issue(key, "must be https:// on devnet");
       }
     }
+    mainnetEnvIssues(env, issue);
     if (env.QSTASH_CURRENT_SIGNING_KEY === env.QSTASH_NEXT_SIGNING_KEY)
       issue(
         "QSTASH_NEXT_SIGNING_KEY",
@@ -120,11 +127,19 @@ export function parseKeeperEnv(
   for (const [key, value] of Object.entries(source))
     if (value?.trim()) input[key] = value.trim();
   const result = schema.safeParse(input);
-  if (!result.success)
-    throw new KeeperEnvError(
-      result.error.issues.map(
-        (i) => `${String(i.path[0] ?? "environment")}: ${i.message}`,
-      ),
+  if (!result.success) {
+    const problems = result.error.issues.map(
+      (i) => `${String(i.path[0] ?? "environment")}: ${i.message}`,
     );
+    // Cross-field checks do not run when a field fails; the devnet key is still named.
+    const mainnet = /^mainnet/.test(input.KEEPER_CLUSTER ?? "");
+    if (
+      !mainnet &&
+      !input.KEEPER_KEYPAIR &&
+      !problems.some((p) => p.startsWith("KEEPER_KEYPAIR:"))
+    )
+      problems.unshift("KEEPER_KEYPAIR: is required");
+    throw new KeeperEnvError(problems);
+  }
   return result.data;
 }
