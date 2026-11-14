@@ -56,18 +56,7 @@ export function betaFindings(env: Env): Finding[] {
     // Reported by the production profile (required and validated there).
   }
 
-  for (const [name, value] of Object.entries(env))
-    if (
-      name.startsWith("NEXT_PUBLIC_") &&
-      value?.trim() &&
-      !KNOWN.has(name) &&
-      !PUBLIC_READ_OUTSIDE_SCHEMA.has(name)
-    )
-      add(
-        name,
-        "forbidden",
-        "a browser-visible variable v1 does not read (prototype-only); unset it for the beta",
-      );
+  findings.push(...unknownPublicFindings(env, "the beta"));
 
   try {
     const host = new URL(env.AROMA_SITE_URL ?? "").hostname;
@@ -77,4 +66,24 @@ export function betaFindings(env: Env): Finding[] {
     // Missing or invalid: reported by the production profile.
   }
   return findings;
+}
+
+/**
+ * A `NEXT_PUBLIC_*` value ships in the browser bundle: any one v1 does not read (a leftover
+ * prototype login id, a typo) is refused on a deployment (beta and production profiles).
+ */
+export function unknownPublicFindings(env: Env, deployment: string): Finding[] {
+  return Object.entries(env)
+    .filter(
+      ([name, value]) =>
+        name.startsWith("NEXT_PUBLIC_") &&
+        value?.trim() &&
+        !KNOWN.has(name) &&
+        !PUBLIC_READ_OUTSIDE_SCHEMA.has(name),
+    )
+    .map(([name]) => ({
+      name,
+      status: "forbidden" as const,
+      detail: `a browser-visible variable v1 does not read; unset it for ${deployment}`,
+    }));
 }

@@ -1,5 +1,6 @@
-// `pnpm check:prod-env [--env-file <path>] [--offline] [--profile beta]` (P3; the beta profile is
-// Phase A, server/prod-env.beta.ts). Validates the PRODUCTION profile of
+// `pnpm check:prod-env [--env-file <path>] [--offline] [--profile production|beta]` (P3). The
+// production profile (default; M9 public launch, server/prod-env.public.ts) and the beta profile
+// (Phase A, server/prod-env.beta.ts) both start from the shared production checks. Validates
 // an env file (or the process env) with the real boot schema plus the launch rules in
 // server/prod-env.ts, and asks each mainnet RPC for its genesis hash (read-only). Prints variable
 // names and statuses only, never a value. Exit 1 when anything is missing, invalid or forbidden.
@@ -12,6 +13,7 @@ import {
   staticFindings,
 } from "../server/prod-env";
 import { betaFindings } from "../server/prod-env.beta";
+import { publicLaunchFindings } from "../server/prod-env.public";
 
 const args = process.argv.slice(2);
 const fileIndex = args.indexOf("--env-file");
@@ -32,7 +34,9 @@ const env: Record<string, string | undefined> = file
 
 async function main(): Promise<void> {
   const findings = staticFindings(env);
-  if (profile === "beta") findings.push(...betaFindings(env));
+  findings.push(
+    ...(profile === "beta" ? betaFindings(env) : publicLaunchFindings(env)),
+  );
   if (!args.includes("--offline"))
     findings.push(
       ...(await genesisFindings(env, (url, init) => fetch(url, init))),
