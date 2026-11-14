@@ -1,0 +1,33 @@
+{
+  "name": "@aroma/contracts",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Aroma Guard v1 (Anchor workspace), its LiteSVM suite, local end-to-end run and devnet scripts.",
+  "scripts": {
+    "build": "bash scripts/build.sh",
+    "test": "vitest run --project unit",
+    "test:native": "cargo test -p aroma_guard && cargo test -p aroma_guard --features devnet-mock",
+    "test:clippy": "cargo clippy -p aroma_guard --all-targets -- -D warnings && cargo clippy -p aroma_guard --all-targets --features devnet-mock -- -D warnings",
+    "test:fixtures": "node scripts/fetch-runtime-programs.mjs",
+    "test:litesvm": "vitest run --project litesvm",
+    "idl:sync": "node scripts/sync-idl.mjs",
+    "idl:check": "node scripts/sync-idl.mjs --check",
+    "e2e:local": "tsx scripts/e2e-local.ts",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint ."
+  },
+  "devDependencies": {
+    "@codama/nodes-from-anchor": "1.5.6",
+    "@codama/renderers-js": "2.4.0",
+    "@solana/kit": "7.1.1",
+    "@solana/spl-token": "0.4.15",
+    "@solana/web3.js": "1.98.4",
+    "@types/node": "22.20.2",
+    "codama": "1.11.0",
+    "litesvm": "1.2.1",
+    "tsx": "4.20.6",
+    "typescript": "5.9.3",
+    "vitest": "3.2.7"
+  }
+}

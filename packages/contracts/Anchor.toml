@@ -1,5 +1,5 @@
-# Aroma Guard v1 workspace (packages/contracts). The prototype keeps its own Anchor.toml in
-# packages/anchor. Toolchain pins = what is installed on the build machine (REWRITE-PLAN M6 A3).
+# Aroma Guard v1 workspace. Toolchain pins = what is installed on the build machine
+# (REWRITE-PLAN M6, A3).
 [toolchain]
 anchor_version = "1.2.1"
 solana_version = "3.1.10"

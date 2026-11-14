@@ -1,0 +1,29 @@
+#!/usr/bin/env node
+// Proves which build contains minting code, from the compiled binaries (M6 exit criterion).
+// The devnet-mock handler logs a unique marker and is the only code that uses the
+// `mock_mint` seed; neither may appear in the default (mainnet) binary.
+import fs from 'node:fs';
+import path from 'node:path';
+import crypto from 'node:crypto';
+
+const root = path.resolve(path.dirname(new URL(import.meta.url).pathname), '..');
+const MARKER = 'aroma-guard: devnet-mock mint at oracle price';
+const SEED = 'mock_mint';
+const read = (variant) => fs.readFileSync(path.join(root, 'target/build', variant, 'aroma_guard.so'));
+const has = (bytes, text) => bytes.includes(Buffer.from(text));
+const mainnet = read('mainnet');
+const devnet = read('devnet-mock');
+const report = {
+  mainnet: { bytes: mainnet.length, sha256: crypto.createHash('sha256').update(mainnet).digest('hex'), marker: has(mainnet, MARKER), mockMintSeed: has(mainnet, SEED) },
+  'devnet-mock': { bytes: devnet.length, sha256: crypto.createHash('sha256').update(devnet).digest('hex'), marker: has(devnet, MARKER), mockMintSeed: has(devnet, SEED) },
+};
+console.log(JSON.stringify(report, null, 2));
+if (report.mainnet.marker || report.mainnet.mockMintSeed) {
+  console.error('The default (mainnet) build contains devnet minting code.');
+  process.exit(1);
+}
+if (!report['devnet-mock'].marker || !report['devnet-mock'].mockMintSeed) {
+  console.error('The devnet-mock build is missing its minting path.');
+  process.exit(1);
+}
+console.log('OK: minting code exists only in the devnet-mock build.');

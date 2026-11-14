@@ -1,6 +1,6 @@
 //! Devnet build (`devnet-mock`). Mints test stock at the oracle price from a per-asset PDA
-//! `["mock_mint", mint]` and moves the leg's funding to the treasury, never burns it (closes
-//! AUDIT C-1 for the devnet build: nothing is minted beyond the oracle value of real funding).
+//! `["mock_mint", mint]` and moves the leg's funding to the treasury, never burns it. Nothing
+//! is minted beyond the oracle value of funding that was actually pulled.
 
 use anchor_lang::prelude::*;
 use anchor_lang::solana_program::program::invoke_signed;

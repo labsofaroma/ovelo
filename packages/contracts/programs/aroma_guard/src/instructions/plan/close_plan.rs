@@ -10,8 +10,8 @@ use crate::state::Plan;
 
 /// Always allowed, even when the protocol or the plan is paused (no config account is read).
 /// Returns the staging balance to the owner, closes staging and the plan with rent to the
-/// owner (AUDIT L-1). The client puts the Subscriptions revoke in the same transaction
-/// (`lib/sdk/guard/v1`, AUDIT H-2).
+/// owner. The client puts the Subscriptions revoke in the same transaction
+/// (`lib/sdk/guard/v1` `buildCloseAndRevokeInstructions`).
 #[derive(Accounts)]
 pub struct ClosePlan<'info> {
     #[account(mut)]

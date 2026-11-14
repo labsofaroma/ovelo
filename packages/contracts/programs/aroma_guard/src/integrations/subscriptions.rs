@@ -1,4 +1,4 @@
-//! Typed layout of the Solana Foundation Subscriptions program (closes AUDIT H-3).
+//! Typed layout of the Solana Foundation Subscriptions program.
 //!
 //! Pinned upstream: `solana-foundation/subscriptions` tag **`program-v0.5.0`** (release commit
 //! `364a41976c33347d092902443bbec2def9227e75`), the version the TypeScript client
