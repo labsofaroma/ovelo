@@ -8,12 +8,13 @@ import { AppError } from "@/server/errors";
 import { errorResponse } from "@/server/http";
 import { createRateLimiter, type RateLimiter } from "@/server/ratelimit";
 import { getRedis, requireRedis } from "@/server/redis";
+import { requestHost, requestProtocol } from "@/server/request-guard";
 import { type CreatorsDb, isDatabaseUnavailable } from "./db";
 import type { AssetRegistry } from "./server";
 
 /**
- * Shared plumbing for the thin `/api/v1/creators/*` handlers: the v1 gate, the same-origin check
- * for state-changing requests, rate limiting, and error mapping. Dependencies are resolved through
+ * Shared plumbing for the thin `/api/v1/creators/*` handlers: the v1 gate, rate limiting and error
+ * mapping. Origin, Content-Type and body-size rules live in middleware (M4) for every `/api/*` route. Dependencies are resolved through
  * `creatorDeps()` so route tests can swap in PGlite, an in-memory challenge store and a fixed clock.
  */
 
@@ -93,51 +94,19 @@ function trustProxy(): boolean {
 }
 
 /**
- * The site origin a challenge is bound to: AROMA_SITE_URL when set, else this request's origin
- * (scheme from x-forwarded-proto behind a trusted proxy).
+ * The site origin a challenge is bound to (the "Site:" line the wallet shows): AROMA_SITE_URL
+ * when set, else the origin the client used, by the SAME rules as middleware's origin allowlist
+ * (`requestProtocol`/`requestHost`: Host, and x-forwarded-* only behind a trusted proxy). Never
+ * `request.url` alone: `next start` rewrites it to its bind address (localhost), which M4 found
+ * and fixed in middleware. Cross-site requests never reach a handler: middleware refuses any
+ * `/api/*` request whose Origin is not allowed (M5b A2, docs/M5-NEEDS-FROM-M4.md #2).
  */
 export function expectedOrigin(request: Request): string {
   const env = tryGetEnv();
   const configured = env.ok ? env.env.server.AROMA_SITE_URL : undefined;
   if (configured) return new URL(configured).origin;
   const url = new URL(request.url);
-  const forwarded = trustProxy()
-    ? request.headers.get("x-forwarded-proto")?.split(",")[0]?.trim()
-    : undefined;
-  return forwarded === "https" || forwarded === "http"
-    ? `${forwarded}://${url.host}`
-    : url.origin;
-}
-
-function allowedOrigins(request: Request): Set<string> {
-  const env = tryGetEnv();
-  const extra = env.ok ? (env.env.server.AROMA_ALLOWED_ORIGINS ?? "") : "";
-  return new Set([
-    expectedOrigin(request),
-    ...extra
-      .split(",")
-      .map((value) => value.trim())
-      .filter(Boolean),
-  ]);
-}
-
-/**
- * State-changing requests must not come from another site. A browser always sends `Origin` on
- * POST and DELETE; a request without one (curl, a server) is still bound by the wallet signature.
- * The prototype middleware also checks origins for /api/*; this keeps the rule when it changes.
- * TODO(M5b): move to M4's middleware (docs/M5-NEEDS-FROM-M4.md #2).
- */
-export function assertSameOrigin(request: Request): void {
-  const origin = request.headers.get("origin");
-  const site = request.headers.get("sec-fetch-site");
-  if (
-    (origin !== null && !allowedOrigins(request).has(origin)) ||
-    site === "cross-site"
-  )
-    throw new AppError("FORBIDDEN", {
-      publicMessage: "Cross-site requests are not allowed.",
-      detail: `cross-origin: ${origin ?? site ?? "unknown"}`.slice(0, 120),
-    });
+  return `${requestProtocol(request.headers, url.protocol, process.env)}://${requestHost(request.headers, url.host, process.env)}`;
 }
 
 /** The client IP behind a trusted proxy, else one shared local bucket (as middleware.ts does). */
@@ -153,7 +122,7 @@ function clientKey(request: Request): string {
 
 export type RouteOptions = {
   route: string;
-  /** POST/DELETE: same-origin required. */
+  /** POST/DELETE (documentation only: middleware enforces Origin, JSON and body size). */
   mutation: boolean;
   limit: { name: string; limit: number; windowSeconds: number };
 };
@@ -161,7 +130,7 @@ export type RouteOptions = {
 type Handler<C> = (request: Request, context: C) => Promise<Response>;
 type PlainHandler = (request: Request) => Promise<Response>;
 
-/** Wrap a handler: gate → origin → rate limit → handler; every error becomes `{ code, message }`. */
+/** Wrap a handler: gate → rate limit → handler; every error becomes `{ code, message }`. */
 export function creatorRoute(
   options: RouteOptions,
   handler: PlainHandler,
@@ -178,7 +147,6 @@ export function creatorRoute<C>(
     try {
       if (!isV1Enabled())
         throw new AppError("NOT_FOUND", { detail: "v1 disabled" });
-      if (options.mutation) assertSameOrigin(request);
       // TODO(M5b): M4's middleware owns rate limits; this per-handler check moves there.
       const { name, limit, windowSeconds } = options.limit;
       const decision = await creatorDeps()

@@ -99,25 +99,6 @@ describe("POST /api/v1/creators/challenge", () => {
     });
   });
 
-  it("rejects a cross-origin request and a cross-site fetch", async () => {
-    const cases: Record<string, string>[] = [
-      { origin: "https://evil.test" },
-      { "sec-fetch-site": "cross-site" },
-    ];
-    for (const headers of cases) {
-      const response = await challenge(
-        jsonRequest(
-          "/api/v1/creators/challenge",
-          "POST",
-          { purpose: "delete" },
-          headers,
-        ),
-      );
-      expect(response.status).toBe(403);
-      expect((await json(response)).code).toBe("FORBIDDEN");
-    }
-  });
-
   it("validates the body: invalid weights, PDA wallets and unknown purposes are 400", async () => {
     const bodies = [
       {
