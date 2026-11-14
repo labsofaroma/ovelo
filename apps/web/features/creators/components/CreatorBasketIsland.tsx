@@ -11,7 +11,6 @@ import {
   DialogTrigger,
 } from "@aroma/ui";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { QueryProvider } from "../../shared/components/QueryProvider";
 import { TradeTicket } from "../../trade/components/TradeTicket";
@@ -48,7 +47,6 @@ function OwnerActions({ basket }: { basket: Props["basket"] }) {
   const wallet = useWallet();
   const signer = wallet.status === "connected" ? wallet.signer : null;
   const archive = useArchiveMutation(signer);
-  const router = useRouter();
   const [open, setOpen] = useState(false);
   if (!signer || signer.address !== basket.creatorWallet) return null;
 
@@ -121,7 +119,10 @@ function OwnerActions({ basket }: { basket: Props["basket"] }) {
                       archive.mutate(basket.id, {
                         onSuccess: () => {
                           setOpen(false);
-                          router.refresh();
+                          // The whole page changes (archived notice, no ticket). A full reload is
+                          // used because router.refresh() did not always re-render the server
+                          // part (seen once in the fork E2E).
+                          window.location.reload();
                         },
                       })
                     }
