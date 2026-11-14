@@ -233,14 +233,14 @@ Each milestone is merged to `main` behind feature flags. The prototype stays dep
 | **M4** | Wallet + spot trading (weeks 3–6, **implemented**, see status below) | `features/wallet`, `features/trade` (single stock + basket, Jito bundles), receipts, portfolio | Playwright test buys on a mainnet fork or simulator; ported authorization tests pass; rate limits and CSP nonces live |
 | **M5** | Creators (weeks 5–6, **implemented**, see status below) | publish flow, invites table, dashboard, Solana Actions | creator E2E; single-use invites enforced |
 
-From M6 on, each milestone has a contract part and an app part. Steps marked **(owner)** are done by the product owner, never by an agent: deploys, choosing the auditor, the multisig, retiring the prototype program.
+From M6 on, each milestone has a contract part and an app part. Steps marked **(owner)** are done by the product owner, never by an agent: deploys, DNS, choosing the auditor, the multisig.
 
 | # | Milestone | Contract | App | Exit criteria |
 |---|---|---|---|---|
 | **M6** | Contract v1 core + devnet deploy | `packages/contracts`: config, asset registry, plan; admin and plan instructions; devnet-mock `execute_installment` minting at the oracle price, with funding to a treasury; catch-up and skip; pause; typed Subscriptions layout; security requirements of spec §7 | Codama client and builders in `lib/sdk/guard/v1`; IDL drift test | LiteSVM suite green; local validator end to end (create → 3 periods → close + revoke); deployed to devnet **(owner)**; config initialized; test assets registered |
 | **M7** | Recurring investing on devnet (was M6) | integration fixes only | `features/invest`, `apps/keeper` on QStash (leases, retries, dead-letter queue, alerts), `plans_index`, faucet with Turnstile and Redis limits (AUDIT H-5) | create → 3 installments → close + revoke on devnet; skipped periods shown; keeper alerting tested |
 | **M8** | Contract mainnet path | Jupiter CPI, oracle-bounded `min_out`, owner-ATA delivery check, multi-leg execution; full LiteSVM with pinned Jupiter, Pyth and Subscriptions binaries; proptest/fuzz; verifiable build | keeper Jupiter routes; mainnet build behind a flag | full suite on a mainnet fork; fuzz clean; verifiable build hash recorded |
-| **M9** | Cutover (was M7) | retire the prototype program: owners close plans; upgrade authority set to none **(owner)**; delete `packages/anchor` | v1 on the production domain **(owner: DNS)**, `/v1` prefix and prototype routes removed, prototype CSP and error residue closed | production serves v1 only |
+| **M9** | Cutover (was M7) | delete `packages/anchor` and the old guard client (unused code) | v1 on the production domain **(owner: DNS)**, `/v1` prefix and prototype routes removed, prototype CSP and error residue closed | production serves v1 only |
 | **M10** | Audit + mainnet beta | external audit and fixes **(owner: auditor)**; Squads multisig (≥ 2-of-3, timelock) as upgrade authority **(owner)**; mainnet deploy with launch caps **(owner)**; real xStocks registered | mainnet recurring behind caps; monitoring and alerts | audit findings closed; multisig verified on-chain; first mainnet installments monitored |
 | **M11** | Launch features (was M8) | optional protocol fee via config | notifications, P&L, compliance gate, onboarding, creator fee share, creator dashboard | launch checklist complete; ROADMAP success metrics measured |
 
@@ -601,9 +601,9 @@ Coverage gates: 85% for `lib/sdk`, 80% for `apps/web/server` and `features/*/ser
 ## 9. Cutover and retirement
 
 1. While v1 is being built, the prototype runs on its current domain and v1 runs on `next.<domain>`.
-2. At M9, announce on the site that **prototype devnet plans will stop being collected** on a given date, and give a one-click "close + revoke" for each plan.
+2. At M9, announce the switch date on the site.
 3. Switch DNS. Keep the prototype on an archived URL for 30 days. Then delete `apps/web/components/aroma`, `styles/*`, `packages/anchor` and the prototype `lib/sdk` modules that are replaced (they stay at the `prototype-final` tag).
-4. Retire the prototype program **(owner)**: once its plans are closed, set its upgrade authority to none or close the program account to recover rent. Only the original deployer's key can do this. This is part of M9; the v1 program's own upgrade authority moves to a Squads multisig in M10.
+4. The v1 program's upgrade authority moves to a Squads multisig in M10 **(owner)**.
 
 ---
 

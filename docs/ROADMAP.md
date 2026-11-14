@@ -39,7 +39,7 @@ There is no separate SDK package for now. The chain, market and basket helpers s
 | `lib/server/faucet.ts` | **Rewrite** | Turnstile + Redis limits (AUDIT H-5) |
 | `lib/server/disk-cache.ts` | **Drop** | Redis or the Next Data Cache only |
 | Raydium CPMM helpers, `*V2` aliases | **Drop** | dead code |
-| `packages/anchor` (prototype program) | **Retire** | replaced by `packages/contracts` with a new program ID |
+| `packages/anchor` | **Drop** | unused code once the prototype UI is removed (M9); the contract is `packages/contracts` |
 | `components/aroma/*` | **Rebuild** | split the 800–1,300-line components; keep the visual design (`.21st/DESIGN.md`, `styles/foundation.css`) |
 | `apps/web/tests/*` | **Port the relevant ones** | they encode many edge cases; keep the ones that apply to kept modules |
 | `.codex/hooks.json`, broken cron workflow, `tsconfig.tsbuildinfo` | **Drop** | |

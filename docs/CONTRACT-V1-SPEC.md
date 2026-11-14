@@ -2,12 +2,7 @@
 
 _Status: specification for a ground-up rebuild, 13 November 2026. Nothing here is implemented yet._
 
-Aroma Guard v1 is written **from scratch**. It is a new program with a new program ID, a new account layout and new instructions. It has **no backward compatibility** with the current prototype (`aroma_guard` 0.2.0 at `8Fm9HENP…zrjs`, described in [aroma-guard-protocol.md](./aroma-guard-protocol.md)):
-- no migration path;
-- no reuse of the prototype's seeds;
-- no shared state.
-
-The prototype is retired once v1 is live on devnet, and existing prototype plans are closed by their owners. For why the prototype can't be patched, see [AUDIT.md §1](./AUDIT.md#1-smart-contract--packagesanchorprogramsaroma_guard).
+Aroma Guard v1 is a new program written **from scratch**, with its own program ID, account layout and instructions. It has no migration path and shares no state or seeds with any other program. The implementation lives in `packages/contracts` and is described in [aroma-guard-v1.md](./aroma-guard-v1.md).
 
 ---
 
@@ -175,7 +170,7 @@ The keeper builds Jupiter routes off-chain. The program does not trust the route
 
 ## 10. Deploying with your own account
 
-The prototype's program ID (`8Fm9HENP…zrjs`) and upgrade authority belong to the earlier deployer, so v1 gets a **fresh program ID owned by your wallet**.
+v1 has its own **program ID, generated fresh and owned by your wallet**. The step-by-step runbook for devnet is [M6-DEVNET-DEPLOY.md](./M6-DEVNET-DEPLOY.md).
 
 ```bash
 # 1. Your deployer wallet (keep it offline/backed up; it pays for and controls the deploy)
@@ -197,7 +192,7 @@ solana program show <PROGRAM_ID>
 
 After deploying:
 - Run `initialize_config` from the deployer wallet, then `register_asset` for each test stock.
-- Update the program ID in the `lib/sdk` constants, the IDL (`idl:sync`) and the web env/catalog (`xstocks-devnet/xstocks.json`).
+- Update the program ID in the v1 IDL and generated client (`pnpm --filter @aroma/contracts idl:sync`) and the v1 devnet deployment record (`apps/web/lib/sdk/guard/v1/deployments.ts`).
 - **Never commit** `aroma-deployer.json` or `aroma_guard-keypair.json`; `target/` is already git-ignored.
 - Before mainnet, hand the upgrade authority to a Squads multisig: `solana program set-upgrade-authority <PROGRAM_ID> --new-upgrade-authority <SQUADS_VAULT>`. Keep your wallet as one of the signers.
 - For mainnet, use a separate deployer wallet from devnet, funded only for the deploy.
