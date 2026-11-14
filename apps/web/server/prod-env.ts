@@ -28,6 +28,8 @@ export const WEB_PRODUCTION: readonly {
   { name: "AROMA_V1_ENABLED", level: "required", milestone: "M9" },
   { name: "AROMA_SITE_URL", level: "required", milestone: "M9" },
   { name: "SOLANA_RPC_URL", level: "required", milestone: "M9" },
+  // M9 failover (PRODUCTION-ENV §3): a second provider; trading still works without it.
+  { name: "SOLANA_RPC_FALLBACK_URL", level: "recommended", milestone: "M9" },
   { name: "NEXT_PUBLIC_SOLANA_RPC_URL", level: "required", milestone: "M9" },
   { name: "DATABASE_URL", level: "required", milestone: "M9" },
   { name: "UPSTASH_REDIS_REST_URL", level: "required", milestone: "M9" },
@@ -155,12 +157,23 @@ export function staticFindings(env: Env): Finding[] {
   // 5. Mainnet URLs must not name another cluster or a local node.
   for (const name of [
     "SOLANA_RPC_URL",
+    "SOLANA_RPC_FALLBACK_URL",
     "NEXT_PUBLIC_SOLANA_RPC_URL",
     "NEXT_PUBLIC_SOLANA_WS_URL",
   ])
     if (env[name] && NON_MAINNET_RPC.test(env[name]!))
       add(name, "forbidden", "names a devnet, testnet or local endpoint");
-  for (const name of ["SOLANA_RPC_URL", "NEXT_PUBLIC_SOLANA_RPC_URL"])
+  if (sameHost(env.SOLANA_RPC_URL, env.SOLANA_RPC_FALLBACK_URL))
+    add(
+      "SOLANA_RPC_FALLBACK_URL",
+      "warning",
+      "same host as SOLANA_RPC_URL; failover does not cover a provider outage",
+    );
+  for (const name of [
+    "SOLANA_RPC_URL",
+    "SOLANA_RPC_FALLBACK_URL",
+    "NEXT_PUBLIC_SOLANA_RPC_URL",
+  ])
     if (env[name]?.includes("api.mainnet-beta.solana.com"))
       add(
         name,
@@ -206,7 +219,11 @@ export async function genesisFindings(
   fetch: Fetch,
 ): Promise<Finding[]> {
   const findings: Finding[] = [];
-  for (const name of ["SOLANA_RPC_URL", "NEXT_PUBLIC_SOLANA_RPC_URL"]) {
+  for (const name of [
+    "SOLANA_RPC_URL",
+    "SOLANA_RPC_FALLBACK_URL",
+    "NEXT_PUBLIC_SOLANA_RPC_URL",
+  ]) {
     const url = env[name]?.trim();
     if (!url || !url.startsWith("https://")) continue;
     try {
@@ -235,6 +252,14 @@ export async function genesisFindings(
     }
   }
   return findings;
+}
+
+function sameHost(a: string | undefined, b: string | undefined): boolean {
+  try {
+    return Boolean(a && b) && new URL(a!).host === new URL(b!).host;
+  } catch {
+    return false;
+  }
 }
 
 export function failed(findings: readonly Finding[]): boolean {

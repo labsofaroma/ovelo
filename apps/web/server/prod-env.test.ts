@@ -14,6 +14,7 @@ const GOOD = {
   AROMA_V1_ENABLED: "true",
   AROMA_SITE_URL: "https://aroma.trade",
   SOLANA_RPC_URL: "https://mainnet.helius-rpc.com/?api-key=k",
+  SOLANA_RPC_FALLBACK_URL: "https://aroma.mainnet.rpcpool.com/k",
   NEXT_PUBLIC_SOLANA_RPC_URL: "https://rpc.aroma.trade",
   DATABASE_URL: "postgres://u:p@ep-cool-1.neon.tech/aroma?sslmode=require",
   UPSTASH_REDIS_REST_URL: "https://eu1-good-1.upstash.io",
@@ -179,7 +180,13 @@ describe("genesisFindings (read-only getGenesisHash)", () => {
   it("mainnet genesis passes; only getGenesisHash is ever called", async () => {
     const fetch = reply(MAINNET_GENESIS);
     const findings = await genesisFindings(GOOD, fetch);
-    expect(findings.map((f) => f.status)).toEqual(["ok", "ok"]);
+    // Primary, fallback (M9) and browser RPC, each on its own.
+    expect(findings.map((f) => f.name)).toEqual([
+      "SOLANA_RPC_URL",
+      "SOLANA_RPC_FALLBACK_URL",
+      "NEXT_PUBLIC_SOLANA_RPC_URL",
+    ]);
+    expect(findings.map((f) => f.status)).toEqual(["ok", "ok", "ok"]);
     for (const [, init] of fetch.mock.calls)
       expect(JSON.parse(String(init.body)).method).toBe("getGenesisHash");
   });

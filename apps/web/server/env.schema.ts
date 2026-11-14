@@ -54,6 +54,16 @@ const publicShape = {
   NEXT_PUBLIC_TURNSTILE_SITE_KEY: optionalText,
 };
 
+/**
+ * A server RPC URL without credentials. zod 4 runs `.refine` even after `.url()` failed, so the
+ * credential check must not throw on a non-URL (it reports "must be a URL" instead).
+ */
+const rpcUrl = z.url({ message: "must be a URL" }).refine((value) => {
+  if (!URL.canParse(value)) return true;
+  const url = new URL(value);
+  return !url.username && !url.password;
+}, "must not embed credentials");
+
 const serverShape = {
   NODE_ENV: z
     .enum(["development", "test", "production"])
@@ -63,13 +73,12 @@ const serverShape = {
     .enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"])
     .default("info"),
   /** HTTPS mainnet RPC. Loopback http is accepted only for an E2E local fork (see superRefine). */
-  SOLANA_RPC_URL: z
-    .url({ message: "must be a URL" })
-    .refine((value) => {
-      const url = new URL(value);
-      return !url.username && !url.password;
-    }, "must not embed credentials")
-    .optional(),
+  SOLANA_RPC_URL: rpcUrl.optional(),
+  /**
+   * M9 failover: a second mainnet RPC (another provider), same rules as SOLANA_RPC_URL, and it
+   * must differ from it. Its genesis is verified on its own at runtime (features/trade/server).
+   */
+  SOLANA_RPC_FALLBACK_URL: rpcUrl.optional(),
   DATABASE_URL: postgresUrl.optional(),
   /** HTTPS; a loopback http URL only for a local run with test switches (M7 local Redis proxy). */
   UPSTASH_REDIS_REST_URL: z
@@ -212,6 +221,13 @@ export const V1_REQUIRED = [
   "AROMA_TRADE_SECRET",
 ] as const;
 
+/** Same URL after normalisation; false when either is not a URL (its own field reports that). */
+function sameUrl(a: string, b: string): boolean {
+  return (
+    URL.canParse(a) && URL.canParse(b) && new URL(a).href === new URL(b).href
+  );
+}
+
 const flatSchema = z.object(flatShape).superRefine((env, ctx) => {
   if (env.VERCEL_ENV === "production") {
     for (const key of [
@@ -238,17 +254,37 @@ const flatSchema = z.object(flatShape).superRefine((env, ctx) => {
     });
   localnetRules(env, ctx);
   capRules(env, ctx);
-  if (env.SOLANA_RPC_URL && !env.SOLANA_RPC_URL.startsWith("https://")) {
-    const loopback = /^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?\/?$/.test(
-      env.SOLANA_RPC_URL,
-    );
-    if (!loopback || !env.AROMA_V1_TEST_FORK_GENESIS)
+  const isLoopback = (value: string) =>
+    /^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?\/?$/.test(value);
+  for (const key of ["SOLANA_RPC_URL", "SOLANA_RPC_FALLBACK_URL"] as const) {
+    const value = env[key];
+    if (!value || value.startsWith("https://")) continue;
+    // Loopback http only for the declared local fork; a loopback fallback only next to a
+    // loopback (fork) primary, as features/trade/server/rpc.ts accepts at runtime.
+    const forkAllowed =
+      isLoopback(value) &&
+      Boolean(env.AROMA_V1_TEST_FORK_GENESIS) &&
+      (key === "SOLANA_RPC_URL" ||
+        (env.SOLANA_RPC_URL !== undefined && isLoopback(env.SOLANA_RPC_URL)));
+    if (!forkAllowed)
       ctx.addIssue({
         code: "custom",
-        path: ["SOLANA_RPC_URL"],
+        path: [key],
         message: "must be an https:// URL",
       });
   }
+  if (
+    env.SOLANA_RPC_FALLBACK_URL &&
+    sameUrl(
+      env.SOLANA_RPC_FALLBACK_URL,
+      env.SOLANA_RPC_URL ?? "https://api.mainnet-beta.solana.com",
+    )
+  )
+    ctx.addIssue({
+      code: "custom",
+      path: ["SOLANA_RPC_FALLBACK_URL"],
+      message: "must differ from SOLANA_RPC_URL",
+    });
   if (
     env.AROMA_TRADE_SECRET_PREVIOUS &&
     env.AROMA_TRADE_SECRET_PREVIOUS === env.AROMA_TRADE_SECRET
