@@ -7,6 +7,9 @@ export * from "./builders";
 export * from "./admin";
 export * from "./execute";
 export * from "./deployments";
+export * from "./events";
+export * from "./filters";
+export * from "./timeline";
 export {
   AROMA_GUARD_PROGRAM_ADDRESS,
   AromaGuardAccount,
@@ -16,6 +19,13 @@ export {
   getAssetDiscriminatorBytes,
   getConfigParamsEncoder,
   getOutputEncoder,
+  getInstallmentExecutedEventEncoder,
+  getPlanClosedEventEncoder,
+  getPlanCreatedEventEncoder,
+  type InstallmentExecutedEvent,
+  type LegExecuted,
+  type PlanClosedEvent,
+  type PlanCreatedEvent,
   type Asset,
   type Config,
   type ConfigParams,
