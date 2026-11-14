@@ -4,7 +4,6 @@ import { isV1Enabled, tryGetEnv } from "./env";
 import { logger } from "./logger";
 import { getRedis } from "./redis";
 import { jupiterProbe, pythProbe } from "./health-providers";
-import { getMainnetConnection } from "./rpc";
 
 /**
  * Health report for GET /api/v1/health. Each check has a hard timeout. The report never contains
@@ -104,19 +103,15 @@ function unconfigured(): { status: CheckStatus } {
 }
 
 /**
- * RPC: the mainnet genesis hash must match (the cluster guard), then "slot lag" is measured as
- * the age of a recently confirmed slot's block time. A node that has stopped following the
- * chain shows growing lag even though it still answers.
+ * RPC (M9 failover): the primary and, when configured, the fallback each prove the mainnet
+ * genesis on their own and report "slot lag", the age of a recently confirmed slot's block time.
+ * A node that has stopped following the chain shows growing lag even though it still answers.
+ * Loaded lazily: features/trade/server/rpc-health.ts uses classifyRpcLag from this module.
  */
 export const rpcProbe: Probe = async () => {
-  const connection = await getMainnetConnection(); // verifies the genesis hash
-  const slot = await connection.getSlot("confirmed");
-  // Use a slightly older slot: the tip's block time is often not yet available.
-  const reference = slot - 4;
-  const blockTime = await connection.getBlockTime(reference);
-  if (blockTime === null) return { status: "degraded", slot };
-  const lagSeconds = Math.max(0, Math.round(Date.now() / 1000 - blockTime));
-  return { status: classifyRpcLag(lagSeconds), slot, lagSeconds };
+  const { rpcEndpointsProbe } =
+    await import("@/features/trade/server/rpc-health");
+  return rpcEndpointsProbe();
 };
 
 export const redisProbe: Probe = async () => {
