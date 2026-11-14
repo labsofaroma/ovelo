@@ -11,15 +11,19 @@ Own real stocks on Solana from your own wallet: research them, buy single names 
 3. **Creators and curators** who publish baskets their audience can buy in one click (Blinks).
 
 ## Surfaces
-| Route | Purpose | Network |
-|---|---|---|
-| `/` `/landing` | editorial landing page | — |
-| `/markets`, `/stock/[symbol]` | catalog, research, news, charts | mainnet data |
-| `/baskets`, `/basket/[id]`, `/basket/builder` | curated and custom baskets | mainnet buy |
-| `/sip` | recurring investing | **devnet only** |
-| `/portfolio`, `/orders`, `/watchlist` | holdings and history | mainnet + paper |
-| `/creators` | publish baskets (invite-only) | — |
-| `/settings`, `/privacy`, `/terms` | | — |
+Final routes since the M9 cutover (the old `/v1/*`, `/landing`, `/app`, `/sip`, `/basket/builder` and `/orders` URLs redirect 308; the prototype APIs answer 410).
+
+| Route | Purpose | Network | Label shown |
+|---|---|---|---|
+| `/` | editorial landing page | mainnet data | mainnet spot, devnet test, paper practice |
+| `/markets`, `/stock/[symbol]` | catalog, research, news, charts, trade ticket | mainnet data; mainnet buy | mainnet spot purchase or paper practice (ticket) |
+| `/baskets`, `/basket/[id]`, `/basket/new` | curated and creator baskets, builder | mainnet buy | mainnet spot purchase or paper practice (ticket) |
+| `/invest` | recurring investing | **devnet only** | devnet recurring test, test tokens of no value |
+| `/portfolio` (activity at `/portfolio#activity`), `/watchlist` | holdings, orders and saved assets | mainnet + paper | mainnet holdings; paper practice kept in the browser |
+| `/creators` | creator directory and publishing (invite-only) | mainnet | — |
+| `/settings` | theme, privacy choices, what each mode does, wallet terms status | — | all three modes explained |
+| `/privacy`, `/terms`, `/restricted` | legal pages and the restricted-location notice | — | — |
+| `/api/v1/*`, `/actions.json` | versioned public API, Solana Actions and Blinks | mainnet (devnet for plans and the faucet) | — |
 
 ## Product rules (must)
 - Always label clearly whether something is a **mainnet spot purchase**, a **devnet recurring test** or **paper practice**.

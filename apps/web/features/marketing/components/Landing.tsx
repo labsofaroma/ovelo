@@ -52,7 +52,7 @@ export function Landing({ snapshot }: { snapshot: Loaded<LandingSnapshot> }) {
         className="flex max-w-3xl flex-col gap-6"
       >
         <p className="text-caption font-semibold uppercase tracking-wide text-muted">
-          Tokenized stocks on Solana · read-only preview
+          Tokenized stocks on Solana · mainnet spot, devnet test, paper practice
         </p>
         <h1
           id="hero-heading"

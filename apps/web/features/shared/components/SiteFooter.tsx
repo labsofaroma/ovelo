@@ -31,6 +31,11 @@ export function SiteFooter() {
               <PrivacyChoicesButton />
             </li>
             <li>
+              <Link className={textLink} href={routes.settings}>
+                Settings
+              </Link>
+            </li>
+            <li>
               <Link className={textLink} href={routes.home}>
                 Aroma home
               </Link>

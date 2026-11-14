@@ -2,11 +2,7 @@
 
 import { SlidersHorizontal } from "lucide-react";
 
-/**
- * Opens the consent banner. Consent state still lives in the prototype's global PrivacyChoices
- * (root layout) until M7; this sends the same event it listens for, so v1 does not import legacy
- * code. Replace with features/account at cutover.
- */
+/** Opens the consent banner (features/shared/components/ConsentBanner listens for this event). */
 export const OPEN_PRIVACY_EVENT = "aroma:privacy-open";
 
 export function PrivacyChoicesButton() {

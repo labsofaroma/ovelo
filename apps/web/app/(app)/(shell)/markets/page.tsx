@@ -42,7 +42,7 @@ export default async function MarketsPage({ searchParams }: Props) {
     >
       <header className="flex flex-col gap-2">
         <p className="text-caption font-semibold uppercase tracking-wide text-muted">
-          Mainnet data · read-only preview
+          Mainnet data · spot purchases and paper practice
         </p>
         <h1 className="text-page font-semibold max-md:text-page-mobile">
           Markets

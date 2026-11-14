@@ -109,9 +109,11 @@ function PortfolioBody() {
         </h2>
         <HoldingsTable holdings={portfolio.holdings} />
       </section>
+      {/* M9: /orders redirects here (/portfolio#activity). */}
       <section
+        id="activity"
         aria-labelledby="activity-heading"
-        className="flex flex-col gap-3"
+        className="flex scroll-mt-6 flex-col gap-3"
       >
         <h2 id="activity-heading" className="text-section font-semibold">
           Activity
