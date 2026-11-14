@@ -1,4 +1,5 @@
 import { createConfig } from "@aroma/config/eslint";
+import { noPrototypeImports } from "./eslint/no-prototype-imports.mjs";
 
 /**
  * v1 code (REWRITE-PLAN §7.3 W1: wallet-only login). The prototype keeps its Privy login until
@@ -71,6 +72,15 @@ export default [
         },
       ],
     },
+  },
+  {
+    // M9 Step 1: kept code never imports prototype code (the rule skips prototype files itself).
+    // Proven by scripts/eslint-v1-imports.test.ts.
+    files: ["**/*.{ts,tsx,mts,cts,js,jsx,mjs,cjs}"],
+    plugins: {
+      aroma: { rules: { "no-prototype-imports": noPrototypeImports } },
+    },
+    rules: { "aroma/no-prototype-imports": "error" },
   },
   {
     // Next.js loads PostCSS plugins with require(), so this wrapper must be CommonJS.
