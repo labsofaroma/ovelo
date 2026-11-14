@@ -76,7 +76,10 @@ export async function buildExecuteInstallmentRoutedInstruction(params: {
   const indices = plan.outputs
     .map((_, i) => i)
     .filter((i) => (params.legMask >>> i) & 1);
-  if (indices.length === 0 || indices.length !== params.legs.length)
+  const all = 2 ** plan.outputs.length - 1;
+  if (params.legMask <= 0 || params.legMask > all)
+    throw new Error("The leg mask names a leg the plan does not have.");
+  if (indices.length !== params.legs.length)
     throw new Error("One leg input per leg in the mask.");
   if (params.protocolFeeBps > 0 && !params.feeRecipient)
     throw new Error("A protocol fee needs the fee recipient's account.");
