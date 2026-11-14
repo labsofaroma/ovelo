@@ -39,8 +39,8 @@ test("frequent token refreshes can omit the supplemental reference batches", asy
     },
   });
   expect(calls.length).toBe(1);
-  expect(result.assets[0].priceUsd).toBe(20);
-  expect(result.assets[0].priceSource).toBe("jupiter-tokens-v2");
+  expect(result.assets[0]!.priceUsd).toBe(20);
+  expect(result.assets[0]!.priceSource).toBe("jupiter-tokens-v2");
 });
 
 test("token quotes available only through V3 still refresh between full reference passes", async () => {

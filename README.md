@@ -43,7 +43,7 @@ Every variable is documented inline in `apps/web/.env.example`; copy it to `apps
 | `pnpm dev:web` | Next dev server |
 | `pnpm build` | Turbo build of all packages |
 | `pnpm lint` | ESLint 9 (flat config from `packages/config`) through Turbo; prototype code reports warnings, new code errors |
-| `pnpm typecheck` | `tsc` for every workspace; `apps/web` also checks `tsconfig.strict.json` (new code, `noUncheckedIndexedAccess`) |
+| `pnpm typecheck` | `tsc` for every workspace; all of `apps/web` is strict with `noUncheckedIndexedAccess` (one tsconfig since M9) |
 | `pnpm test` | Vitest for `packages/*`, `apps/keeper` and `apps/web/server`, plus the prototype `node:test` suites (`apps/web/tests`) |
 | `pnpm format:check` | Prettier on new code (prototype paths are listed in `.prettierignore`) |
 | `pnpm db:generate` / `pnpm db:migrate` | Drizzle: generate a migration from `apps/web/server/db/schema.ts` / apply migrations to `DATABASE_URL` (Neon) |

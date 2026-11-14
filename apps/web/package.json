@@ -7,7 +7,7 @@
     "build": "tsx scripts/check-env.ts && next build && node ../../scripts/check-client-secrets.mjs",
     "start": "next start",
     "lint": "eslint .",
-    "typecheck": "next typegen && tsc --noEmit && tsc --noEmit -p tsconfig.strict.json",
+    "typecheck": "next typegen && tsc --noEmit",
     "test": "pnpm run test:unit",
     "test:unit": "vitest run",
     "test:e2e": "playwright test",

@@ -46,10 +46,10 @@ test("calculateBasket24hGrowth calculates exact weighted return and attribution 
   expect(perf.constituents.length).toBe(2);
 
   // Attribution
-  expect(perf.constituents[0].symbol).toBe("NVDA");
-  expect(perf.constituents[0].contributionPct).toBe(2.5);
-  expect(perf.constituents[1].symbol).toBe("MSFT");
-  expect(perf.constituents[1].contributionPct).toBe(-0.5);
+  expect(perf.constituents[0]!.symbol).toBe("NVDA");
+  expect(perf.constituents[0]!.contributionPct).toBe(2.5);
+  expect(perf.constituents[1]!.symbol).toBe("MSFT");
+  expect(perf.constituents[1]!.contributionPct).toBe(-0.5);
 
   expect(perf.topGainer?.symbol).toBe("NVDA");
   expect(perf.topLoser?.symbol).toBe("MSFT");
@@ -70,8 +70,8 @@ test("calculateBasket24hGrowth handles partial pricing without fabricating data"
   expect(perf.warnings.length > 0).toBeTruthy();
   // Renormalized against priced asset: 4.0%
   expect(perf.changePct).toBe(4.0);
-  expect(perf.constituents[1].changePct).toBe(null);
-  expect(perf.constituents[1].contributionPct).toBe(null);
+  expect(perf.constituents[1]!.changePct).toBe(null);
+  expect(perf.constituents[1]!.contributionPct).toBe(null);
 });
 
 test("calculateBasket24hGrowth returns unavailable when all assets are unpriced or empty", () => {
@@ -118,8 +118,8 @@ test("extractBasketMembers normalizes both raw asset arrays and MarketBasket sch
   };
   const members1 = extractBasketMembers(displayBasket);
   expect(members1.length).toBe(2);
-  expect(members1[0].weightBps).toBe(6000);
-  expect(members1[1].weightBps).toBe(4000);
+  expect(members1[0]!.weightBps).toBe(6000);
+  expect(members1[1]!.weightBps).toBe(4000);
 
   // Case 2: Direct assets array without explicit weights (equal weights via Hare-Niemeyer)
   const plainBasket = {
@@ -128,11 +128,11 @@ test("extractBasketMembers normalizes both raw asset arrays and MarketBasket sch
   const members2 = extractBasketMembers(plainBasket);
   expect(members2.length).toBe(3);
   // 10000 / 3 = 3333 with 1 remainder -> 3334, 3333, 3333
-  expect(members2[0].weightBps).toBe(3334);
-  expect(members2[1].weightBps).toBe(3333);
-  expect(members2[2].weightBps).toBe(3333);
+  expect(members2[0]!.weightBps).toBe(3334);
+  expect(members2[1]!.weightBps).toBe(3333);
+  expect(members2[2]!.weightBps).toBe(3333);
   expect(
-    members2[0].weightBps + members2[1].weightBps + members2[2].weightBps,
+    members2[0]!.weightBps + members2[1]!.weightBps + members2[2]!.weightBps,
   ).toBe(10000);
 });
 
@@ -193,25 +193,25 @@ test("fetchBasketHistoricalPerformance computes normalized NAV series and attrib
   expect(perf.timeframe).toBe("7d");
   expect(perf.history.length).toBe(3);
   // Start: NAV = 100
-  expect(perf.history[0].value).toBe(100);
-  expect(perf.history[0].changePct).toBe(0);
+  expect(perf.history[0]!.value).toBe(100);
+  expect(perf.history[0]!.changePct).toBe(0);
 
   // Day 3:
   // AAPL: 100 -> 110 (+10%), MSFT: 200 -> 210 (+5%)
   // Basket NAV: 0.5 * 110 + 0.5 * 105 = 55 + 52.5 = 107.5
-  expect(perf.history[2].value).toBe(107.5);
+  expect(perf.history[2]!.value).toBe(107.5);
   expect(perf.changePct).toBe(7.5);
   expect(perf.gainLossUsd).toBe(75.0);
   expect(perf.endValueUsd).toBe(1075.0);
 
   // Constituents attribution:
-  expect(perf.constituents[0].symbol).toBe("AAPL");
-  expect(perf.constituents[0].changePct).toBe(10.0);
-  expect(perf.constituents[0].contributionPct).toBe(5.0);
+  expect(perf.constituents[0]!.symbol).toBe("AAPL");
+  expect(perf.constituents[0]!.changePct).toBe(10.0);
+  expect(perf.constituents[0]!.contributionPct).toBe(5.0);
 
-  expect(perf.constituents[1].symbol).toBe("MSFT");
-  expect(perf.constituents[1].changePct).toBe(5.0);
-  expect(perf.constituents[1].contributionPct).toBe(2.5);
+  expect(perf.constituents[1]!.symbol).toBe("MSFT");
+  expect(perf.constituents[1]!.changePct).toBe(5.0);
+  expect(perf.constituents[1]!.contributionPct).toBe(2.5);
 });
 
 test("calculateBasket24hGrowth names a provider only when its observation contributed", () => {

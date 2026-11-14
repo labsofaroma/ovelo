@@ -72,7 +72,7 @@ test("rebalance keeps cash and asset value conserved without token float roundin
       calculateTimeWeightedReturn([
         { openingValue: 100, closingValue: 110 },
         { openingValue: 200, closingValue: 220 },
-      ]) - 0.21,
+      ])! - 0.21,
     ) < 1e-10,
   ).toBeTruthy();
 });

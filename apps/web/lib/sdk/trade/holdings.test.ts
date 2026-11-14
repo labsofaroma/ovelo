@@ -71,20 +71,20 @@ test("all account balances combine precisely and frozen funds stay visible but u
     owner,
   );
   expect(result.length).toBe(2);
-  expect(result[0].rawAmount).toBe("9007199255741000");
-  expect(result[0].spendableRawAmount).toBe("9007199254741000");
-  expect(result[0].displayAmount).toBe("9007199255.741");
-  expect(result[1].tokenProgram).toBe(token2022);
+  expect(result[0]!.rawAmount).toBe("9007199255741000");
+  expect(result[0]!.spendableRawAmount).toBe("9007199254741000");
+  expect(result[0]!.displayAmount).toBe("9007199255.741");
+  expect(result[1]!.tokenProgram).toBe(token2022);
 });
 test("scaled token displays remain separate from raw amounts and missing displays stay unknown", () => {
   const scaled = aggregateTokenBalances(
     [account({ amount: "1000000", uiAmountString: "1.75" })],
     owner,
   )[0];
-  expect(scaled.rawAmount).toBe("1000000");
-  expect(scaled.displayAmount).toBe("1.75");
+  expect(scaled!.rawAmount).toBe("1000000");
+  expect(scaled!.displayAmount).toBe("1.75");
   expect(
-    aggregateTokenBalances([account({ uiAmountString: null })], owner)[0]
+    aggregateTokenBalances([account({ uiAmountString: null })], owner)[0]!
       .displayAmount,
   ).toBe(null);
   expect(
@@ -124,8 +124,8 @@ test("tokens beyond swap precision remain visible without offering an unsafe amo
     ],
     owner,
   )[0];
-  expect(balance.rawAmount).toBe("1");
-  expect(balance.decimals).toBe(19);
+  expect(balance!.rawAmount).toBe("1");
+  expect(balance!.decimals).toBe(19);
   expect(
     maxSwapAmount(
       holding({

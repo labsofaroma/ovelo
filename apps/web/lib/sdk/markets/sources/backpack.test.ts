@@ -46,15 +46,15 @@ test("discovery IDs never become fake mints or pretend prices", () => {
 test("only an unambiguous official Solana mapping with enabled transfers is eligible", () => {
   const parse = (assets?: Parameters<typeof parseBackpackSecurities>[1]) =>
     parseBackpackSecurities([security], assets)[0];
-  expect(parse([mapping]).discoveryOnly).toBe(false);
-  expect(parse([mapping]).solanaMint).toBe(mint);
+  expect(parse([mapping])!.discoveryOnly).toBe(false);
+  expect(parse([mapping])!.solanaMint).toBe(mint);
   for (const token of [
     { ...mapping.tokens[0], blockchain: "Ethereum" },
     { ...mapping.tokens[0], contractAddress: "backpack:SPCX.US" },
     { ...mapping.tokens[0], withdrawEnabled: false },
     { ...mapping.tokens[0], nativeDecimals: null },
   ])
-    expect(parse([{ ...mapping, tokens: [token] }]).discoveryOnly).toBe(true);
+    expect(parse([{ ...mapping, tokens: [token] }])!.discoveryOnly).toBe(true);
   const conflict = {
     ...mapping,
     tokens: [
@@ -64,16 +64,16 @@ test("only an unambiguous official Solana mapping with enabled transfers is elig
       },
     ],
   };
-  expect(parse([mapping, conflict]).solanaMint).toBe(null);
-  expect(parse([mapping, conflict]).candidateSolanaMints).toEqual([
+  expect(parse([mapping, conflict])!.solanaMint).toBe(null);
+  expect(parse([mapping, conflict])!.candidateSolanaMints).toEqual([
     mint,
-    conflict.tokens[0].contractAddress,
+    conflict.tokens[0]!.contractAddress,
   ]);
   expect(
     parse([
       mapping,
       { ...mapping, tokens: [{ ...mapping.tokens[0], depositEnabled: false }] },
-    ]).discoveryOnly,
+    ])!.discoveryOnly,
   ).toBe(true);
 });
 
@@ -96,7 +96,7 @@ test("exchange perpetuals, hidden books and RFQ symbols are not called spot avai
       { ...market, marketType: "RFQ" },
     ],
   );
-  expect(result.spotMarkets).toEqual([
+  expect(result!.spotMarkets).toEqual([
     { symbol: "SPCX.US_USDC", state: "Open" },
   ]);
 });
@@ -109,7 +109,7 @@ test("mapping outage preserves real discovery without enabling token orders", as
         : new Response("", { status: 503 }),
   });
   expect(result.securities.length).toBe(1);
-  expect(result.securities[0].discoveryOnly).toBe(true);
+  expect(result.securities[0]!.discoveryOnly).toBe(true);
   expect(result.warnings.length).toBe(2);
   await await expect(
     getBackpackCatalog({ fetcher: async () => json({ results: [security] }) }),
@@ -126,7 +126,7 @@ test("malformed mapping rows and mixed invalid securities cannot claim complete 
     },
   });
   expect(result.mappingsAvailable).toBe(false);
-  expect(result.securities[0].discoveryOnly).toBe(true);
+  expect(result.securities[0]!.discoveryOnly).toBe(true);
   expect(
     result.warnings.some((warning) =>
       warning.includes("mappings could not be verified"),
@@ -183,13 +183,13 @@ test("only transfer-enabled tokens enter issuer pricing and catalog snapshots re
   const catalog = await getMainnetCatalog({ fetcher });
   expect(catalog.backpackSecurities!.length).toBe(2);
   expect(catalog.assets.length).toBe(1);
-  expect(catalog.assets[0].issuer).toBe("backpack");
+  expect(catalog.assets[0]!.issuer).toBe("backpack");
   expect(
-    catalog.assets[0].kind,
+    catalog.assets[0]!.kind,
     "security catalog does not classify equities versus ETFs",
   ).toBe("unknown");
   const result = await getMainnetMarkets({ catalog, fetcher });
-  expect(result.assets[0].priceUsd).toBe(99);
+  expect(result.assets[0]!.priceUsd).toBe(99);
   expect(result.backpackSecurities!.length).toBe(2);
   expect(
     requests

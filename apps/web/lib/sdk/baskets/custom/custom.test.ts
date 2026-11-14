@@ -115,9 +115,9 @@ test("equal-weight distribution conserves every basis point (Hare-Niemeyer)", ()
   ]);
   expect(three.length).toBe(3);
   expect(three.reduce((sum, a) => sum + a.weightBps, 0)).toBe(10000);
-  expect(three[0].weightBps).toBe(3334);
-  expect(three[1].weightBps).toBe(3333);
-  expect(three[2].weightBps).toBe(3333);
+  expect(three[0]!.weightBps).toBe(3334);
+  expect(three[1]!.weightBps).toBe(3333);
+  expect(three[2]!.weightBps).toBe(3333);
 });
 
 test("auto-balance distribution conserves every basis point via Hare-Niemeyer", () => {
@@ -127,8 +127,8 @@ test("auto-balance distribution conserves every basis point via Hare-Niemeyer", 
     { mint: "mint2", symbol: "B", weightBps: 3000 },
   ]);
   expect(under.reduce((sum, a) => sum + a.weightBps, 0)).toBe(10000);
-  expect(under[0].weightBps).toBe(6250);
-  expect(under[1].weightBps).toBe(3750);
+  expect(under[0]!.weightBps).toBe(6250);
+  expect(under[1]!.weightBps).toBe(3750);
 
   // Case 2: Proportional scaling when sum > 10,000 (e.g. 45%, 35%, 25% = 105%)
   const over = autoBalanceWeights([
@@ -137,9 +137,9 @@ test("auto-balance distribution conserves every basis point via Hare-Niemeyer", 
     { mint: "mint3", symbol: "C", weightBps: 2500 },
   ]);
   expect(over.reduce((sum, a) => sum + a.weightBps, 0)).toBe(10000);
-  expect(over[0].weightBps).toBe(4286);
-  expect(over[1].weightBps).toBe(3333);
-  expect(over[2].weightBps).toBe(2381);
+  expect(over[0]!.weightBps).toBe(4286);
+  expect(over[1]!.weightBps).toBe(3333);
+  expect(over[2]!.weightBps).toBe(2381);
 
   // Case 3: Distribute unallocated remainder to zero-weight legs
   const withZero = autoBalanceWeights([
@@ -148,9 +148,9 @@ test("auto-balance distribution conserves every basis point via Hare-Niemeyer", 
     { mint: "mint3", symbol: "C", weightBps: 0 },
   ]);
   expect(withZero.reduce((sum, a) => sum + a.weightBps, 0)).toBe(10000);
-  expect(withZero[0].weightBps).toBe(6000);
-  expect(withZero[1].weightBps).toBe(2000);
-  expect(withZero[2].weightBps).toBe(2000);
+  expect(withZero[0]!.weightBps).toBe(6000);
+  expect(withZero[1]!.weightBps).toBe(2000);
+  expect(withZero[2]!.weightBps).toBe(2000);
 
   // Case 4: All zero weights fallback to equal weights via Hare-Niemeyer
   const allZero = autoBalanceWeights([
@@ -159,9 +159,9 @@ test("auto-balance distribution conserves every basis point via Hare-Niemeyer", 
     { mint: "mint3", symbol: "C", weightBps: 0 },
   ]);
   expect(allZero.reduce((sum, a) => sum + a.weightBps, 0)).toBe(10000);
-  expect(allZero[0].weightBps).toBe(3334);
-  expect(allZero[1].weightBps).toBe(3333);
-  expect(allZero[2].weightBps).toBe(3333);
+  expect(allZero[0]!.weightBps).toBe(3334);
+  expect(allZero[1]!.weightBps).toBe(3333);
+  expect(allZero[2]!.weightBps).toBe(3333);
 });
 
 test("share code encodes and decodes custom baskets reliably", () => {

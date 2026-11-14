@@ -14,14 +14,17 @@ const asset = {
   issuer: "xstocks",
   kind: "equity",
 };
-const json = (value) => new Response(JSON.stringify(value));
-const fact = (value, asOfDate, currencyCode = "USD", periodType = "12M") => ({
+const json = (value: unknown) => new Response(JSON.stringify(value));
+const fact = (
+  value: number,
+  asOfDate: string,
+  currencyCode = "USD", periodType = "12M") => ({
   asOfDate,
   periodType,
   currencyCode,
   reportedValue: { raw: value },
 });
-const series = (type, values, symbol = "NVDA") => ({
+const series = (type: string, values: unknown[], symbol = "NVDA") => ({
   meta: { type: [type], symbol: [symbol] },
   [type]: values,
 });
@@ -67,7 +70,7 @@ test("provider outages never populate synthetic values, bars, news or fundamenta
   expect(result.status).toBe("unavailable");
   expect(result.profile).toBe(null);
   expect(result.technicals).toBe(null);
-  for (const field of ["bars", "fundamentals", "events", "news", "sources"])
+  for (const field of ["bars", "fundamentals", "events", "news", "sources"] as const)
     expect(result[field]).toEqual([]);
   await await expect(
     getStockResearch({ ...asset, underlyingSymbol: "https://example.com" }),
@@ -75,10 +78,10 @@ test("provider outages never populate synthetic values, bars, news or fundamenta
 });
 
 test("an unrelated encyclopedia result is not used as the company overview", async () => {
-  const urls = [];
+  const urls: string[] = [];
   const result = await getStockResearch(asset, {
     now: () => now,
-    fetcher: async (input) => {
+    fetcher: async (input: unknown) => {
       const url = String(input);
       urls.push(url);
       if (url.includes("/chart/")) return json(chart());
@@ -97,21 +100,21 @@ test("an unrelated encyclopedia result is not used as the company overview", asy
       return json({});
     },
   });
-  expect(result.profile.name).toBe("NVIDIA Corporation");
-  expect(result.profile.description).toBe(null);
+  expect(result.profile!.name).toBe("NVIDIA Corporation");
+  expect(result.profile!.description).toBe(null);
   expect(urls.filter((url) => url.includes("wikipedia")).length).toBe(1);
 });
 
 test("company enrichment starts before slow financials finish and shares one request deadline", async () => {
-  const urls = [];
-  const signals = [];
+  const urls: string[] = [];
+  const signals: unknown[] = [];
   let finishFinancials;
   const financials = new Promise((resolve) => {
     finishFinancials = resolve;
   });
   const operation = getStockResearch(asset, {
     now: () => now,
-    fetcher: async (input, init) => {
+    fetcher: async (input: unknown, init: RequestInit) => {
       const url = String(input);
       urls.push(url);
       signals.push(init.signal);
@@ -136,7 +139,7 @@ test("company enrichment starts before slow financials finish and shares one req
   expect(urls.filter((url) => url.includes("wikipedia")).length).toBe(1);
   expect(urls.length).toBe(4);
   expect(signals.every((signal) => signal === signals[0])).toBeTruthy();
-  finishFinancials(
+  finishFinancials!(
     json({
       timeseries: {
         result: [series("annualTotalRevenue", [fact(50, "2025-12-31")])],
@@ -144,7 +147,7 @@ test("company enrichment starts before slow financials finish and shares one req
     }),
   );
   const result = await operation;
-  expect(result.profile.description).toBe(
+  expect(result.profile!.description).toBe(
     "A provider-returned company description.",
   );
   expect(result.fundamentals.length).toBe(1);

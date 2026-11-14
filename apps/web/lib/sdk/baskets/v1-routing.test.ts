@@ -60,14 +60,14 @@ const fixture = (count: number, accountsPerLeg = 1, dataBytes = 20) => ({
 test("V1 fits twelve allocations as one static-account transaction without a tip", async () => {
   const chunks = await composeBasketV1Chunks(fixture(12));
   expect(chunks.length).toBe(1);
-  const { message } = await inspectWalletTransaction(chunks[0].transaction);
+  const { message } = await inspectWalletTransaction(chunks[0]!.transaction);
   expect(message.version).toBe(1);
   expect("addressTableLookups" in message).toBe(false);
   expect(message.staticAccounts.includes(tipAccount.toBase58() as never)).toBe(
     false,
   );
-  expect(chunks[0].accountCount).toBe(14);
-  expect(chunks[0].allocationIndexes).toEqual(
+  expect(chunks[0]!.accountCount).toBe(14);
+  expect(chunks[0]!.allocationIndexes).toEqual(
     Array.from({ length: 12 }, (_, i) => i),
   );
 });
@@ -95,7 +95,7 @@ test("V1 partitions when accounts exceed 64 and keeps the tip last without ALTs"
     );
     expect(tips.length).toBe(index === chunks.length - 1 ? 1 : 0);
     if (tips.length) {
-      expect(instructions.at(-1)!.accounts![1].address).toBe(
+      expect(instructions.at(-1)!.accounts![1]!.address).toBe(
         tipAccount.toBase58(),
       );
       expect(Buffer.from(instructions.at(-1)!.data!).readBigUInt64LE(4)).toBe(
@@ -133,7 +133,7 @@ test("capability, route validation and invalid resource limits are never swallow
     composeBasketV1Chunks({ ...fixture(2), priorityFeeLamports: 100001 }),
   ).rejects.toThrow(/priority fee/);
   const signer = fixture(2, 32);
-  signer.legs[1].instructions[0].keys.push({
+  signer.legs[1]!.instructions[0]!.keys.push({
     pubkey: key(999),
     isSigner: true,
     isWritable: true,
@@ -150,7 +150,7 @@ test("capability, route validation and invalid resource limits are never swallow
     }),
   ).rejects.toThrow(/message config/);
   const empty = fixture(2);
-  empty.legs[0].instructions = [];
+  empty.legs[0]!.instructions = [];
   await await expect(composeBasketV1Chunks(empty)).rejects.toThrow(
     /execution legs/,
   );
@@ -158,7 +158,7 @@ test("capability, route validation and invalid resource limits are never swallow
   await await expect(
     composeV1Transaction({
       ...options,
-      instructions: options.legs[0].instructions,
+      instructions: options.legs[0]!.instructions,
       lookupTables: [
         new AddressLookupTableAccount({
           key: key(8),

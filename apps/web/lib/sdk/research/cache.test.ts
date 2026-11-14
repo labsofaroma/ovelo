@@ -14,14 +14,17 @@ const asset = {
   issuer: "xstocks",
   kind: "equity",
 };
-const json = (value) => new Response(JSON.stringify(value));
-const fact = (value, asOfDate, currencyCode = "USD", periodType = "12M") => ({
+const json = (value: unknown) => new Response(JSON.stringify(value));
+const fact = (
+  value: number,
+  asOfDate: string,
+  currencyCode = "USD", periodType = "12M") => ({
   asOfDate,
   periodType,
   currencyCode,
   reportedValue: { raw: value },
 });
-const series = (type, values, symbol = "NVDA") => ({
+const series = (type: string, values: unknown[], symbol = "NVDA") => ({
   meta: { type: [type], symbol: [symbol] },
   [type]: values,
 });
@@ -60,7 +63,7 @@ const chart = (symbol = "NVDA") => ({
 test("coalesces cold loads and serves dated cache immediately while one refresh reuses slow-changing facts", async () => {
   let clock = now;
   let gate: Promise<unknown> | undefined = undefined;
-  const calls = [];
+  const calls: string[] = [];
   const symbol = "CACHEFLOW";
   const cachedAsset = {
     ...asset,
@@ -68,13 +71,13 @@ test("coalesces cold loads and serves dated cache immediately while one refresh 
     underlyingSymbol: symbol,
   };
   vi.spyOn(Date, "now").mockImplementation((() => clock) as never);
-  vi.spyOn(globalThis, "fetch").mockImplementation((async (input) => {
+  vi.spyOn(globalThis, "fetch").mockImplementation((async (input: unknown) => {
     const url = String(input);
     calls.push(url);
     if (gate) await gate;
     if (url.includes("/chart/")) {
       const value = chart(symbol);
-      value.chart.result[0].meta.longName = "Cache Flow";
+      value.chart.result[0]!.meta.longName = "Cache Flow";
       return json(value);
     }
     if (url.includes("/timeseries/"))
@@ -114,8 +117,8 @@ test("coalesces cold loads and serves dated cache immediately while one refresh 
   gate = new Promise((resolve) => {
     release = resolve;
   });
-  const refreshes = [];
-  const options = { waitUntil: (task) => refreshes.push(task) };
+  const refreshes: Promise<unknown>[] = [];
+  const options = { waitUntil: (task: Promise<unknown>) => refreshes.push(task) };
   const stale = await getStockResearch(cachedAsset, options);
   const another = await getStockResearch(cachedAsset, options);
   expect(stale).toEqual({ ...first, refreshing: true });
@@ -127,14 +130,14 @@ test("coalesces cold loads and serves dated cache immediately while one refresh 
   expect(stale.asOf).toBe(new Date(now).toISOString());
   expect(calls.length).toBe(6);
   expect(refreshes.length).toBe(2);
-  release();
+  release!();
   await Promise.all(refreshes);
   const refreshed = await getStockResearch(cachedAsset);
   expect(refreshed.asOf).toBe(new Date(clock).toISOString());
   expect(refreshed.refreshing).toBe(false);
   expect(calls.filter((url) => url.includes("/timeseries/")).length).toBe(1);
   expect(calls.filter((url) => url.includes("wikipedia")).length).toBe(1);
-  expect(refreshed.fundamentals[0].periodEnd).toBe("2025-12-31");
+  expect(refreshed.fundamentals[0]!.periodEnd).toBe("2025-12-31");
 });
 
 test("research cache survives a short outage without extending observation dates and retries recovery", async () => {
@@ -143,11 +146,11 @@ test("research cache survives a short outage without extending observation dates
   const symbol = "RECOVERY";
   const cachedAsset = { ...asset, mint: "recovery", underlyingSymbol: symbol };
   vi.spyOn(Date, "now").mockImplementation((() => clock) as never);
-  vi.spyOn(globalThis, "fetch").mockImplementation((async (input) => {
+  vi.spyOn(globalThis, "fetch").mockImplementation((async (input: unknown) => {
     if (offline) throw new Error("provider offline");
     if (String(input).includes("/chart/")) {
       const value = chart(symbol);
-      value.chart.result[0].meta.longName = "Recovery Provider";
+      value.chart.result[0]!.meta.longName = "Recovery Provider";
       return json(value);
     }
     if (String(input).includes("/timeseries/"))
@@ -163,9 +166,9 @@ test("research cache survives a short outage without extending observation dates
   const first = await getStockResearch(cachedAsset);
   clock += 5 * 60_000 + 1;
   offline = true;
-  const refreshes = [];
+  const refreshes: Promise<unknown>[] = [];
   const stale = await getStockResearch(cachedAsset, {
-    waitUntil: (task) => refreshes.push(task),
+    waitUntil: (task: Promise<unknown>) => refreshes.push(task),
   });
   expect(stale.asOf).toBe(first.asOf);
   expect(stale.refreshing).toBe(true);
@@ -178,17 +181,17 @@ test("research cache survives a short outage without extending observation dates
   ).toBe(false);
   expect(retained.bars.length).toBe(first.bars.length);
   expect(retained.warnings.join(" ")).toMatch(/last observed research/);
-  const cooldownTasks = [];
+  const cooldownTasks: Promise<unknown>[] = [];
   await getStockResearch(cachedAsset, {
-    waitUntil: (task) => cooldownTasks.push(task),
+    waitUntil: (task: Promise<unknown>) => cooldownTasks.push(task),
   });
   expect(cooldownTasks.length).toBe(0);
 
   clock += 30_001;
   offline = false;
-  const recoveredTasks = [];
+  const recoveredTasks: Promise<unknown>[] = [];
   await getStockResearch(cachedAsset, {
-    waitUntil: (task) => recoveredTasks.push(task),
+    waitUntil: (task: Promise<unknown>) => recoveredTasks.push(task),
   });
   await Promise.all(recoveredTasks);
   const recovered = await getStockResearch(cachedAsset);

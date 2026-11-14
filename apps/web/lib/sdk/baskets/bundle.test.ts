@@ -66,10 +66,10 @@ test("small baskets compile to a single actual v0 transaction, without a Jito ti
   const chunks = composeBasketV0Chunks(options);
   expect(chunks.length).toBe(1);
   const tx = VersionedTransaction.deserialize(
-    Buffer.from(chunks[0].transaction, "base64"),
+    Buffer.from(chunks[0]!.transaction, "base64"),
   );
   expect(tx.version).toBe(0);
-  expect(chunks[0].serializedBytes <= 1232).toBeTruthy();
+  expect(chunks[0]!.serializedBytes <= 1232).toBeTruthy();
   const message = TransactionMessage.decompile(tx.message, {
     addressLookupTableAccounts: options.lookupTables,
   });
@@ -100,9 +100,9 @@ test("five assets partition to two ordered transactions with the tip only on the
     expect(tips.length).toBe(index === 1 ? 1 : 0);
     if (tips.length) {
       expect(
-        message.instructions.at(-1)!.keys[1].pubkey.equals(tipAccount),
+        message.instructions.at(-1)!.keys[1]!.pubkey.equals(tipAccount),
       ).toBeTruthy();
-      expect(tips[0].data.readBigUInt64LE(4)).toBe(10000n);
+      expect(tips[0]!.data.readBigUInt64LE(4)).toBe(10000n);
       expect(
         tx.message.staticAccountKeys.some((address) =>
           address.equals(tipAccount),
@@ -142,12 +142,12 @@ test("capacity failure never emits a truncated basket and a split requires a rev
 
 test("tip cannot be loaded from an ALT, and an extra route signer fails closed", () => {
   const options = fixture(5, 14);
-  options.lookupTables[0].state.addresses.push(tipAccount);
+  options.lookupTables[0]!.state.addresses.push(tipAccount);
   expect(() => composeBasketV0Chunks(options)).toThrow(
     /tip accounts must remain static/,
   );
   const other = fixture(1);
-  other.legs[0].instructions[0].keys.push({
+  other.legs[0]!.instructions[0]!.keys.push({
     pubkey: key(8),
     isSigner: true,
     isWritable: false,

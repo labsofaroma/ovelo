@@ -158,8 +158,8 @@ test("retries a rate-limited price batch using the provider reset window", async
   const snapshot = await getMainnetMarkets({ fetcher });
   expect(priceCalls).toBe(2);
   expect(Date.now() - startedAt >= 100).toBeTruthy();
-  expect(snapshot.assets[0].priceUsd).toBe(25);
-  expect(snapshot.assets[0].priceSource).toBe("jupiter-price-v3");
+  expect(snapshot.assets[0]!.priceUsd).toBe(25);
+  expect(snapshot.assets[0]!.priceSource).toBe("jupiter-price-v3");
 });
 
 test("request cancellation stops quota waiting and preserves completed token quotes", async () => {
@@ -191,7 +191,7 @@ test("request cancellation stops quota waiting and preserves completed token quo
     signal: controller.signal,
   });
   expect(priceCalls).toBe(1);
-  expect(snapshot.assets[0].priceUsd).toBe(25);
+  expect(snapshot.assets[0]!.priceUsd).toBe(25);
   expect(snapshot.status).toBe("partial");
 });
 
@@ -217,8 +217,8 @@ test("issuer-only discovery performs no Jupiter requests", async () => {
       throw new Error("Price lookup must not be needed to identify an asset");
     },
   });
-  expect(catalog.assets[0].mint).toBe(mintA);
-  expect(catalog.assets[0].priceUsd).toBe(null);
+  expect(catalog.assets[0]!.mint).toBe(mintA);
+  expect(catalog.assets[0]!.priceUsd).toBe(null);
   expect(requested.every((url) => !url.includes("jup.ag"))).toBeTruthy();
 });
 

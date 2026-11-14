@@ -31,7 +31,7 @@ test("paper buy and partial sale conserve cash and remaining cost basis without 
   expect(start.cashUsd).toBe(1000);
   expect(start.positions.length).toBe(0);
   expect(bought.cashUsd).toBe(800);
-  expect(bought.positions[0].quantity).toBe(4);
+  expect(bought.positions[0]!.quantity).toBe(4);
   const sold = executePaperOrder(
     bought,
     asset({ priceUsd: 100 }),
@@ -40,8 +40,8 @@ test("paper buy and partial sale conserve cash and remaining cost basis without 
     now,
   );
   expect(sold.cashUsd).toBe(1000);
-  expect(sold.positions[0].quantity).toBe(2);
-  expect(sold.positions[0].costBasisUsd).toBe(100);
+  expect(sold.positions[0]!.quantity).toBe(2);
+  expect(sold.positions[0]!.costBasisUsd).toBe(100);
   expect(
     valuePaperAccount(sold, [asset({ priceUsd: 100 })]).profitLossUsd,
   ).toBe(200);
@@ -131,7 +131,7 @@ test("monthly plans clamp to month-end; app-open execution does not fabricate mi
   account = runDuePaperPlans(account, testSnapshot({ assets: [asset()] }), now);
   expect(account.orders.length).toBe(1);
   expect(account.cashUsd).toBe(900);
-  expect(account.plans[0].nextExecutionAt).toBe("2026-09-13T12:00:00.000Z");
+  expect(account.plans[0]!.nextExecutionAt).toBe("2026-09-13T12:00:00.000Z");
   expect(
     runDuePaperPlans(account, testSnapshot({ assets: [asset()] }), now).orders
       .length,
@@ -183,7 +183,7 @@ test("an existing paper basket plan retains all original members after mainnet p
     baskets: resolveReviewedMarketBaskets(assets),
   });
   const result = runDuePaperPlans(account, snapshot, now);
-  expect(result.plans[0].lastError).toBe(null);
+  expect(result.plans[0]!.lastError).toBe(null);
   expect(result.orders.length).toBe(5);
   expect(result.positions.map((position) => position.mint).sort()).toEqual(
     [...symbols].sort(),

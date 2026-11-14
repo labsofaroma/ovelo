@@ -89,7 +89,7 @@ test("onchain reads use the push PDA and verify receiver, discriminator, feed, f
       (v.owner = new PublicKey("11111111111111111111111111111111")),
     (v: ReturnType<typeof account>) => (v.data[0] = 0),
     (v: ReturnType<typeof account>) => (v.data[40] = 0),
-    (v: ReturnType<typeof account>) => (v.data[41] ^= 1),
+    (v: ReturnType<typeof account>) => (v.data[41]! ^= 1),
     (v: ReturnType<typeof account>) => v.data.writeBigInt64LE(1n, 93),
     (v: ReturnType<typeof account>) => (v.executable = true),
   ]) {

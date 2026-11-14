@@ -71,8 +71,8 @@ test("missing and oversized route plans fail closed", () => {
   const path = Array.from({ length: 65 }, (_, index) => mint(index + 1));
   const longestPlan = path
     .slice(1)
-    .map((destination, index) => hop(path[index], destination));
-  expect(getJupiterIntermediateMints(longestPlan, path[0], path[64]).size).toBe(
+    .map((destination, index) => hop(path[index]!, destination));
+  expect(getJupiterIntermediateMints(longestPlan, path[0]!, path[64]!).size).toBe(
     63,
   );
 });
@@ -108,8 +108,8 @@ test("same-mint hops and invalid endpoints are rejected", () => {
     expect(() =>
       getJupiterIntermediateMints(
         [hop(input, output)],
-        endpoints[0],
-        endpoints[1],
+        endpoints[0]!,
+        endpoints[1]!,
       ),
     ).toThrow(/route plan/);
 });
@@ -190,7 +190,7 @@ test("Token-2022 intermediate mints may contain inert metadata extensions", () =
     { type: ExtensionType.MetadataPointer, data: pointer },
     { type: ExtensionType.TokenMetadata, data: metadata },
   ];
-  for (const allowed of [extensions, [extensions[0]], [extensions[1]]])
+  for (const allowed of [extensions, [extensions[0]!], [extensions[1]!]])
     expect(
       validateJupiterIntermediateMint(
         bridge,

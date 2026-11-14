@@ -27,8 +27,8 @@ function request(
 }
 const accounts = {
   signer: live.taker,
-  source: live.swapInstruction.accounts[1].pubkey,
-  destination: live.swapInstruction.accounts[2].pubkey,
+  source: live.swapInstruction.accounts[1]!.pubkey,
+  destination: live.swapInstruction.accounts[2]!.pubkey,
   inputMint: live.inputMint,
   outputMint: live.outputMint,
 };
@@ -161,7 +161,7 @@ test("quote minimum and settlement substitutions cannot be concealed by correct 
     ...instruction,
     accounts: instruction.accounts.map((a) => ({ ...a })),
   };
-  wrong.accounts[1].pubkey = JUPITER_SWAP_PROGRAM;
+  wrong.accounts[1]!.pubkey = JUPITER_SWAP_PROGRAM;
   expect(() =>
     validate(
       request(wrong, {

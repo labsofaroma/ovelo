@@ -13,14 +13,14 @@ test("token discovery preserves unknown prices and real verification flags", () 
     },
   ];
   const [verified] = parseJupiterSwapTokens(payload);
-  expect(verified.verified).toBe(true);
-  expect(verified.priceUsd).toBe(101.23);
+  expect(verified!.verified).toBe(true);
+  expect(verified!.priceUsd).toBe(101.23);
   const [unverified] = parseJupiterSwapTokens([
     { ...payload[0], isVerified: "true", usdPrice: null },
   ]);
-  expect(unverified.verified).toBe(false);
-  expect(unverified.priceUsd).toBe(null);
-  expect(unverified.source).toBe("jupiter");
+  expect(unverified!.verified).toBe(false);
+  expect(unverified!.priceUsd).toBe(null);
+  expect(unverified!.source).toBe("jupiter");
 });
 
 test("token discovery rejects malformed identities and unsupported decimal metadata", () => {

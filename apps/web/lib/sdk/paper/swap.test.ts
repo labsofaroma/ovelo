@@ -55,12 +55,12 @@ test("paper stock swap conserves equity and cash while realizing the input cost 
     swapped.positions.find((p) => p.mint === output.mint)!.costBasisUsd,
   ).toBe(375);
   const [buy, sell] = swapped.orders;
-  expect(buy.side).toBe("buy");
-  expect(sell.side).toBe("sell");
-  expect(buy.swapId).toBe(sell.swapId);
-  expect(buy.id).not.toBe(sell.id);
-  expect(buy.totalUsd).toBe(sell.totalUsd);
-  expect(sell.realizedPnlUsd).toBe(125);
+  expect(buy!.side).toBe("buy");
+  expect(sell!.side).toBe("sell");
+  expect(buy!.swapId).toBe(sell!.swapId);
+  expect(buy!.id).not.toBe(sell!.id);
+  expect(buy!.totalUsd).toBe(sell!.totalUsd);
+  expect(sell!.realizedPnlUsd).toBe(125);
   expect(valuePaperAccount(swapped, [appreciated, output]).profitLossUsd).toBe(
     500,
   );
@@ -90,10 +90,10 @@ test("full paper swap merges into an existing output holding and records realize
     now,
   );
   expect(swapped.positions.some((p) => p.mint === input.mint)).toBe(false);
-  expect(swapped.positions[0].quantity).toBe(7.2);
-  expect(swapped.positions[0].costBasisUsd).toBe(180);
+  expect(swapped.positions[0]!.quantity).toBe(7.2);
+  expect(swapped.positions[0]!.costBasisUsd).toBe(180);
   expect(swapped.cashUsd).toBe(700);
-  expect(swapped.orders[1].realizedPnlUsd).toBe(-120);
+  expect(swapped.orders[1]!.realizedPnlUsd).toBe(-120);
   expect(valuePaperAccount(swapped, [input, output]).profitLossUsd).toBe(-120);
 });
 

@@ -11,7 +11,7 @@ const createClient = (...args: unknown[]) =>
   )(...args);
 
 // Transport fixtures live only in tests; no company values are supplied by the client cache.
-const response = (mint, status = "available") => ({
+const response = (mint: string, status = "available") => ({
   mint,
   symbol: "TEST",
   asOf: new Date().toISOString(),
@@ -27,8 +27,13 @@ const response = (mint, status = "available") => ({
 });
 const signal = () => new AbortController().signal;
 function deferredLoader() {
-  const calls = [];
-  const loader = (mint, abortSignal) =>
+  const calls: {
+    mint: string;
+    signal: AbortSignal;
+    resolve: (value: unknown) => void;
+    reject: (reason?: unknown) => void;
+  }[] = [];
+  const loader = (mint: string, abortSignal: AbortSignal) =>
     new Promise((resolve, reject) => {
       calls.push({ mint, signal: abortSignal, resolve, reject });
       abortSignal.addEventListener(
@@ -50,17 +55,17 @@ test("research readers coalesce, cancel independently, and reuse a fresh respons
   expect(calls.length).toBe(1);
   first.abort();
   await await expect(a).rejects.toMatchObject({ name: "AbortError" });
-  expect(calls[0].signal.aborted).toBe(false);
+  expect(calls[0]!.signal.aborted).toBe(false);
   const value = response("one");
-  calls[0].resolve(value);
+  calls[0]!.resolve(value);
   expect(await b).toBe(value);
   expect(await client.load("one", signal())).toBe(value);
   expect(calls.length).toBe(1);
-  expect(client.peek("one").asOf).toBe(value.asOf);
+  expect(client.peek("one")!.asOf).toBe(value.asOf);
   const forced = client.load("one", signal(), true);
   await Promise.resolve();
   expect(calls.length).toBe(2);
-  calls[1].resolve(value);
+  calls[1]!.resolve(value);
   await forced;
 });
 
@@ -69,7 +74,7 @@ test("stale research stays readable during revalidation and after provider failu
   let fail = false;
   let calls = 0;
   const client = createClient(
-    async (mint) => {
+    async (mint: string) => {
       calls += 1;
       if (fail) throw new Error("Provider unavailable");
       return response(mint);
@@ -92,7 +97,7 @@ test("partial and unavailable research retry sooner than complete responses", as
   let now = 0;
   const calls = new Map();
   const client = createClient(
-    async (mint) => {
+    async (mint: string) => {
       calls.set(mint, (calls.get(mint) ?? 0) + 1);
       return response(mint, mint);
     },
@@ -121,16 +126,16 @@ test("rapid remounts share the request, and the last departing reader aborts it"
   const b = client.load("one", second.signal);
   await wait(20);
   expect(calls.length).toBe(1);
-  expect(calls[0].signal.aborted).toBe(false);
+  expect(calls[0]!.signal.aborted).toBe(false);
   second.abort();
   await await expect(b).rejects.toMatchObject({ name: "AbortError" });
   await wait(20);
-  expect(calls[0].signal.aborted).toBe(true);
+  expect(calls[0]!.signal.aborted).toBe(true);
   expect(client.peek("one")).toBe(null);
   const retry = client.load("one", signal());
   await Promise.resolve();
   expect(calls.length).toBe(2);
-  calls[1].resolve(response("one"));
+  calls[1]!.resolve(response("one"));
   await retry;
 });
 
@@ -151,7 +156,7 @@ test("invalid identity, data arrays, dates, and status never enter the research 
 });
 
 test("the research cache evicts the least recently read response", async () => {
-  const client = createClient(async (mint) => response(mint), {
+  const client = createClient(async (mint: string) => response(mint), {
     maxEntries: 2,
   });
   await client.load("one", signal());
@@ -169,16 +174,16 @@ test("deadline failure cancels transport and permits a later retry", async () =>
   await await expect(client.load("one", signal())).rejects.toThrow(
     /too long to respond/,
   );
-  expect(calls[0].signal.aborted).toBe(true);
+  expect(calls[0]!.signal.aborted).toBe(true);
   const retry = client.load("one", signal());
   await Promise.resolve();
-  calls[1].resolve(response("one"));
+  calls[1]!.resolve(response("one"));
   expect((await retry).mint).toBe("one");
 });
 
 test("already cancelled readers never start a provider request", async () => {
   let calls = 0;
-  const client = createClient(async (mint) => {
+  const client = createClient(async (mint: string) => {
     calls += 1;
     return response(mint);
   });
@@ -220,7 +225,7 @@ test("server observation age bounds client freshness instead of restarting its T
   now += 1;
   await client.load("one", signal());
   expect(calls).toBe(3);
-  expect(client.peek("one").asOf).toBe(value.asOf);
+  expect(client.peek("one")!.asOf).toBe(value.asOf);
 });
 
 test("refreshing server snapshots remain readable but immediately eligible for revalidation", async () => {
@@ -231,7 +236,7 @@ test("refreshing server snapshots remain readable but immediately eligible for r
     return { ...value, refreshing: calls === 1 };
   });
   await client.load("one", signal());
-  expect(client.peek("one").refreshing).toBe(true);
+  expect(client.peek("one")!.refreshing).toBe(true);
   const completed = await client.load("one", signal());
   expect(calls).toBe(2);
   expect(completed.refreshing).toBe(false);

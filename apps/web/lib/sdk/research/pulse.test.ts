@@ -39,7 +39,7 @@ test("market pulse computes covered breadth and volume without treating missing 
     coveredAssets: 3,
     advancingPct: null,
   });
-  expect(Math.abs(pulse.breadth.advancingPct - 100 / 3) < 1e-10).toBeTruthy();
+  expect(Math.abs(pulse.breadth.advancingPct! - 100 / 3) < 1e-10).toBeTruthy();
   expect(pulse.volume24hUsd).toBe(300);
   expect(pulse.volumeCoveredAssets).toBe(3);
   expect(pulse.topVolume.map((a) => a.symbol)).toEqual(["B", "A", "C"]);
