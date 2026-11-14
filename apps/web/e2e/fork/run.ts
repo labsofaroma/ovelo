@@ -12,10 +12,13 @@
  * 3. Serve the recorded routes from a loopback Jupiter stand-in.
  * 4. Build the app with the E2E wallet bridge into .next-e2e and start it against the fork.
  * 5. Run e2e/trade/*.spec.ts, then stop everything.
+ *
+ * M9: the app reaches the fork through two loopback proxies, its primary and its fallback RPC
+ * (e2e/fork/rpc-proxy.ts), so e2e/trade/failover.spec.ts can stop one or make it lie about its
+ * genesis. The specs read the chain directly (E2E_RPC_URL).
  */
 import { spawn, type ChildProcess } from "node:child_process";
 import { mkdirSync, readFileSync, rmSync, writeFileSync } from "node:fs";
-import { createServer } from "node:http";
 import { join } from "node:path";
 import {
   getAssociatedTokenAddressSync,
@@ -37,6 +40,11 @@ import {
   walletJson,
 } from "./accounts";
 import { creatorLegs, localDbEnv } from "./creator-env";
+import { startJupiterStandIn } from "./jupiter-stand-in";
+import { controlUrl, proxyUrl, startRpcProxies } from "./rpc-proxy";
+
+/** Devnet's genesis: what the "wrong cluster" proxy claims (never the fork's). */
+const OTHER_CLUSTER_GENESIS = "EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG";
 
 // pnpm runs this from apps/web (the package root).
 const WEB = process.cwd();
@@ -135,7 +143,9 @@ async function recordRoutes(legs: Leg[], taker: PublicKey) {
       // Recording only (the server never sends this): the local solana-test-validator (Agave
       // 3.1.10) cannot execute Manifest's current program binary even with mainnet's feature
       // set ("Program is not deployed"). A basket with a Manifest-only leg is skipped instead.
-      excludeDexes: "Manifest",
+      // M9 (2026-11-15): Jupiter now also routes through BisonFi, a DEX the reviewed program
+      // schema does not know, so the server (correctly) refuses such routes. Recording only.
+      excludeDexes: "Manifest,BisonFi",
     });
     let response = await fetch(`https://api.jup.ag/swap/v2/build?${params}`);
     // Keyless Jupiter rate-limits quickly: back off and retry instead of skipping the basket.
@@ -253,25 +263,6 @@ async function startFork(routes: Record<string, unknown>) {
   throw new Error("the local fork did not start");
 }
 
-function startJupiterStandIn(routes: Record<string, unknown>) {
-  const server = createServer((request, response) => {
-    const url = new URL(request.url ?? "/", `http://127.0.0.1:${JUPITER_PORT}`);
-    const route =
-      routes[
-        `${url.searchParams.get("outputMint")}:${url.searchParams.get("amount")}`
-      ];
-    response.setHeader("content-type", "application/json");
-    if (url.pathname !== "/swap/v2/build" || !route) {
-      response.statusCode = 400;
-      response.end(JSON.stringify({ errorCode: "NO_ROUTES_FOUND" }));
-      return;
-    }
-    response.end(JSON.stringify(route));
-  });
-  server.listen(JUPITER_PORT, "127.0.0.1");
-  return server;
-}
-
 function run(
   command: string,
   args: string[],
@@ -320,7 +311,11 @@ async function main() {
   const creatorDb = localDbEnv(WEB);
   const genesis = await startFork(routes);
   log(`fork genesis ${genesis}`);
-  const stand = startJupiterStandIn(routes);
+  const stand = startJupiterStandIn(routes, JUPITER_PORT);
+  const proxies = startRpcProxies(
+    `http://127.0.0.1:${RPC_PORT}`,
+    OTHER_CLUSTER_GENESIS,
+  );
   // Placeholder values from .env.example satisfy boot validation; they connect to nothing.
   const placeholders = Object.fromEntries(
     readFileSync(join(WEB, ".env.example"), "utf8")
@@ -335,7 +330,8 @@ async function main() {
     AROMA_V1_ALLOW_TEST_SWITCHES: "true",
     AROMA_V1_TEST_FORK_GENESIS: genesis,
     AROMA_V1_TEST_JUPITER_URL: `http://127.0.0.1:${JUPITER_PORT}`,
-    SOLANA_RPC_URL: `http://127.0.0.1:${RPC_PORT}`,
+    SOLANA_RPC_URL: proxyUrl("primary"),
+    SOLANA_RPC_FALLBACK_URL: proxyUrl("fallback"),
     AROMA_TRUST_PROXY: "true",
     NEXT_PUBLIC_AROMA_E2E_WALLET: "true",
     AROMA_NEXT_DIST_DIR: ".next-e2e",
@@ -374,11 +370,13 @@ async function main() {
       E2E_STOCK_SYMBOL: stock.symbol,
       E2E_BASKET_ID: basketId,
       E2E_RPC_URL: `http://127.0.0.1:${RPC_PORT}`,
+      E2E_RPC_CONTROL: controlUrl,
       E2E_CREATOR_LEGS: creatorLegs(legs.slice(1), symbolOf),
       ...creatorDb,
     },
   );
   stand.close();
+  proxies.close();
   process.exitCode = code;
 }
 
