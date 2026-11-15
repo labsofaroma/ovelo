@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
 import { InvestIsland } from "@/features/invest/components/InvestIsland";
 import { InvestUnavailable } from "@/features/invest/components/InvestUnavailable";
+import { MainnetRecurringComing } from "@/features/invest/components/MainnetRecurringComing";
+import { investCopy } from "@/features/invest/copy";
 import { loadInvestPage } from "@/features/invest/page-data";
 import { v1Metadata } from "@/features/shared/metadata";
 import { routes } from "@/features/shared/routes";
@@ -33,11 +35,24 @@ export default async function InvestPage() {
           only; nothing here has real value.
         </p>
       </div>
-      {page.state === "ok" ? (
-        <InvestIsland data={page.data} />
-      ) : (
-        <InvestUnavailable cluster={page.cluster} message={page.message} />
-      )}
+      <MainnetRecurringComing />
+      <section
+        aria-labelledby="devnet-plans-heading"
+        data-testid="devnet-plans"
+        className="flex flex-col gap-3"
+      >
+        <div className="flex flex-col gap-1">
+          <h2 id="devnet-plans-heading" className="text-section font-semibold">
+            {investCopy.devnetHeading}
+          </h2>
+          <p className="text-caption text-muted">{investCopy.devnetLabel}</p>
+        </div>
+        {page.state === "ok" ? (
+          <InvestIsland data={page.data} />
+        ) : (
+          <InvestUnavailable cluster={page.cluster} message={page.message} />
+        )}
+      </section>
     </main>
   );
 }
