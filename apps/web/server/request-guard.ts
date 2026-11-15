@@ -75,6 +75,8 @@ const FAUCET_PATHS = [/^\/api\/v1\/faucet$/];
 const CREATOR_PATHS = [
   /^\/api\/v1\/creators\/challenge$/,
   /^\/api\/v1\/creators\/invites\/redeem$/,
+  // M11: wallet challenges for notification settings.
+  /^\/api\/v1\/notifications\/challenge$/,
 ];
 
 /** Reads, writes, trades and creator auth are limited separately (AUDIT H-4, M4 B8, M5b A3). */

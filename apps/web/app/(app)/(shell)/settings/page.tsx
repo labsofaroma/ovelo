@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { SettingsWallet } from "@/features/account/components/SettingsWallet";
 import { betaGateOn } from "@/features/beta/config";
+import { NotificationsSettings } from "@/features/notifications/components/NotificationsSettings";
 import { PrivacyChoicesButton } from "@/features/shared/components/PrivacyChoicesButton";
 import { ThemeToggle } from "@/features/shared/components/ThemeToggle";
 import { v1Metadata } from "@/features/shared/metadata";
@@ -13,7 +14,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = v1Metadata({
   title: "Settings",
   description:
-    "Theme, privacy choices, what is live on Aroma, and your wallet's terms status.",
+    "Theme, privacy choices, notifications, what is live on Aroma, and your wallet's terms status.",
   path: routes.settings,
   // Per device and per wallet: nothing to index.
   noindex: true,
@@ -60,6 +61,13 @@ export default function SettingsPage() {
         <div className="text-small">
           <PrivacyChoicesButton />
         </div>
+      </section>
+
+      <section aria-labelledby="notifications" className="flex flex-col gap-2">
+        <h2 id="notifications" className="text-section font-semibold">
+          Notifications
+        </h2>
+        <NotificationsSettings />
       </section>
 
       <section aria-labelledby="modes" className="flex flex-col gap-2">

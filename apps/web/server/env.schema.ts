@@ -2,6 +2,7 @@ import { z } from "zod";
 import { betaShape, capRules } from "./env.beta";
 import { complianceShape } from "./env.compliance";
 import { localnetRules } from "./env.rules";
+import { notifyRules, notifyShape } from "./env.notify";
 import { sentryDsn } from "./env.sentry";
 export { TURNSTILE_TEST_SECRETS } from "./env.rules";
 
@@ -137,6 +138,7 @@ const serverShape = {
   // --- end M9 compliance gate ---
   // --- Phase A private beta (W2, W3) ---
   ...betaShape,
+  ...notifyShape, // M11 notifications
 };
 
 const loopbackHttp = z
@@ -250,6 +252,7 @@ const flatSchema = z.object(flatShape).superRefine((env, ctx) => {
     });
   localnetRules(env, ctx);
   capRules(env, ctx);
+  notifyRules(env, ctx);
   const isLoopback = (value: string) =>
     /^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?\/?$/.test(value);
   for (const key of ["SOLANA_RPC_URL", "SOLANA_RPC_FALLBACK_URL"] as const) {

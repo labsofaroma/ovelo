@@ -153,6 +153,46 @@ const APIS: Record<string, Api> = {
     sample: "/api/v1/revalidate",
     methods: { POST: "write" },
   },
+  // M11 notifications: no trading gate (they move no funds); every write is signed or bearer.
+  "/api/v1/notifications/config": {
+    sample: "/api/v1/notifications/config",
+    methods: { GET: "read" },
+  },
+  "/api/v1/notifications/challenge": {
+    sample: "/api/v1/notifications/challenge",
+    methods: { POST: "creator" },
+    handler: ["issueNotifyChallenge"],
+  },
+  "/api/v1/notifications/session": {
+    sample: "/api/v1/notifications/session",
+    methods: { POST: "write" },
+    handler: ["openNotifySession"],
+  },
+  "/api/v1/notifications/subscriptions": {
+    sample: "/api/v1/notifications/subscriptions",
+    methods: { GET: "read", POST: "write", DELETE: "write" },
+    handler: ["sessionWallet", "subscribe", "assertSameOrigin"],
+  },
+  "/api/v1/notifications/subscriptions/[channel]": {
+    sample: "/api/v1/notifications/subscriptions/push",
+    methods: { POST: "write", DELETE: "write" },
+    handler: ["sessionWallet", "assertSameOrigin"],
+  },
+  "/api/v1/notifications/test": {
+    sample: "/api/v1/notifications/test",
+    methods: { POST: "write" },
+    handler: ["sessionWallet", "assertSameOrigin"],
+  },
+  "/api/v1/notifications/deliver": {
+    sample: "/api/v1/notifications/deliver",
+    methods: { POST: "write" },
+    handler: ["assertWorkerSecret"],
+  },
+  "/api/v1/notifications/telegram": {
+    sample: "/api/v1/notifications/telegram",
+    methods: { POST: "write" },
+    handler: ["assertTelegramSecret", "readLimitedJson"],
+  },
 };
 
 /** Page URL → can browse=block hide it? Legal pages, the notice and files never. */

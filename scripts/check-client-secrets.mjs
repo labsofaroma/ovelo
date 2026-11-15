@@ -55,6 +55,11 @@ export const FORBIDDEN_NAMES = [
   "KEEPER_KEYPAIR",
   "KEEPER_MAINNET_KEYPAIR",
   "PYTH_API_KEY",
+  // M11 notifications (the VAPID public key is public and is served by the config route).
+  "AROMA_NOTIFY_WORKER_SECRET",
+  "VAPID_PRIVATE_KEY",
+  "TELEGRAM_BOT_TOKEN",
+  "TELEGRAM_WEBHOOK_SECRET",
   // M9: the prototype's variables are gone; their names stay forbidden in any client artifact.
   "BOT_KEYPAIR",
   "CREATOR_INVITE_CODES",

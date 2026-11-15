@@ -28,10 +28,22 @@ export default defineConfig({
       testMatch: /compliance\.spec\.ts$/,
       dependencies: ["beta"],
     },
+    // M11: notifications opt in before the purchases and are checked after them.
+    {
+      name: "notify-optin",
+      testMatch: /notify-optin\.spec\.ts$/,
+      dependencies: ["compliance"],
+    },
     {
       name: "chromium",
-      testIgnore: /(compliance|beta-gate)\.spec\.ts$/,
-      dependencies: ["compliance"],
+      testIgnore:
+        /(compliance|beta-gate|notify-optin|notify-delivery)\.spec\.ts$/,
+      dependencies: ["notify-optin"],
+    },
+    {
+      name: "notify-delivery",
+      testMatch: /notify-delivery\.spec\.ts$/,
+      dependencies: ["chromium"],
     },
   ],
 });

@@ -41,6 +41,7 @@ import {
 } from "./accounts";
 import { creatorLegs, localDbEnv } from "./creator-env";
 import { startJupiterStandIn } from "./jupiter-stand-in";
+import * as notify from "./notify-sink";
 import { controlUrl, proxyUrl, startRpcProxies } from "./rpc-proxy";
 
 /** Devnet's genesis: what the "wrong cluster" proxy claims (never the fork's). */
@@ -316,6 +317,7 @@ async function main() {
     `http://127.0.0.1:${RPC_PORT}`,
     OTHER_CLUSTER_GENESIS,
   );
+  const sink = notify.startNotifySink(); // M11: every channel delivers to a loopback sink
   // Placeholder values from .env.example satisfy boot validation; they connect to nothing.
   const placeholders = Object.fromEntries(
     readFileSync(join(WEB, ".env.example"), "utf8")
@@ -334,6 +336,7 @@ async function main() {
     AROMA_TRUST_PROXY: "true",
     NEXT_PUBLIC_AROMA_E2E_WALLET: "true",
     AROMA_NEXT_DIST_DIR: ".next-e2e",
+    ...notify.NOTIFY_E2E_ENV,
     ...creatorDb,
   };
   if (process.env.E2E_SKIP_BUILD !== "1") {
@@ -371,11 +374,13 @@ async function main() {
       E2E_RPC_URL: `http://127.0.0.1:${RPC_PORT}`,
       E2E_RPC_CONTROL: controlUrl,
       E2E_CREATOR_LEGS: creatorLegs(legs.slice(1), symbolOf),
+      ...notify.NOTIFY_E2E_ENV,
       ...creatorDb,
     },
   );
   stand.close();
   proxies.close();
+  sink.close();
   process.exitCode = code;
 }
 

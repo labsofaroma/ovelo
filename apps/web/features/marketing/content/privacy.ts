@@ -1,8 +1,9 @@
 import type { LegalDocument } from "../schema";
 
 /**
- * Text ported unchanged from app/privacy/page.tsx (prototype, updated 13 September 2026). The
- * operator name is filled in at render. Change both copies until M7 retires the prototype page.
+ * Text ported from app/privacy/page.tsx (prototype, updated 13 September 2026). The operator name
+ * is filled in at render. M11 adds the notification section (draft wording for counsel's review,
+ * docs/launch/COMPLIANCE.md).
  */
 export const privacyDocument = {
   title: "Privacy policy",
@@ -10,7 +11,7 @@ export const privacyDocument = {
     "How Aroma handles local paper accounts, wallet information and optional analytics.",
   introduction:
     "A clear view of the information used when you explore, practise and trade with Aroma.",
-  updated: "2026-09-13",
+  updated: "2026-11-15",
   sections: [
     {
       heading: "Who operates this interface",
@@ -42,6 +43,13 @@ export const privacyDocument = {
       paragraphs: [
         "Essential storage supports paper activity, preferences and sign-in. Wallet and sign-in providers may use storage necessary for the features you request. Optional Aroma usage analytics are disabled unless the deployment configures them and you select Allow analytics. When enabled, Plausible receives page categories and basic request information; Aroma excludes wallet addresses, transaction payloads, query parameters and form values from analytics events.",
         "Use Privacy choices at the bottom of any page to decline or withdraw optional analytics. Your preference is kept on this device. We do not load advertising trackers in this implementation.",
+      ],
+    },
+    {
+      heading: "Notifications (optional)",
+      paragraphs: [
+        "Notifications are off until you turn a channel on in Settings and sign with your wallet. For browser push, Aroma stores the push subscription your browser creates (an address at your browser's push service and its encryption keys). For Telegram, Aroma stores the chat id of the chat that sent the one-time code to the Aroma bot. Aroma does not collect email addresses. These details are used only to send the notifications you chose, are never shown in analytics or logs, and are not shared except with the push service or Telegram that delivers each message.",
+        "Messages state facts from Aroma's own records: an amount, a cluster label and an explorer link. Delivery records are deleted after 30 days. Turning a channel off, sending /stop to the bot, or choosing Delete all my notification data in Settings deletes the stored details at once.",
       ],
     },
     {
