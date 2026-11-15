@@ -3,12 +3,15 @@
 import { useQuery } from "@tanstack/react-query";
 import { z } from "zod";
 import { TradeApiError } from "../trade/api";
+import { pnlViewSchema } from "./pnl/schema";
 import { activityItemSchema, portfolioViewSchema } from "./schema";
 
 /** TanStack Query for GET /api/v1/portfolio/:wallet (zod-parsed; errors are `{ code, message }`). */
 const responseSchema = z.object({
   portfolio: portfolioViewSchema,
   activity: z.array(activityItemSchema).nullable(),
+  /** M11: null when receipts are unavailable (shown as such, never as zero). */
+  pnl: pnlViewSchema.nullable(),
 });
 export type PortfolioResponse = z.infer<typeof responseSchema>;
 

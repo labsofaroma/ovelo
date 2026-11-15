@@ -11,7 +11,10 @@ import { usePortfolio } from "../queries";
 import { ActivityList } from "./ActivityList";
 import { AllocationDonut } from "./AllocationDonut";
 import { HoldingsTable } from "./HoldingsTable";
+import { ExportCsv } from "./ExportCsv";
+import { PnlPanel } from "./PnlPanel";
 import { PnLSummary } from "./PnLSummary";
+import { pnlCopy } from "../copy";
 
 /** Client entry for /portfolio: the connected wallet's holdings, allocation and orders. */
 export function PortfolioIsland() {
@@ -59,7 +62,7 @@ function PortfolioBody() {
         <p>{query.error.message}</p>
       </DataNotice>
     );
-  const { portfolio, activity } = query.data;
+  const { portfolio, activity, pnl } = query.data;
   return (
     <div className="flex flex-col gap-8">
       <div className="flex flex-wrap items-center justify-between gap-2">
@@ -81,7 +84,16 @@ function PortfolioBody() {
         <h2 id="summary-heading" className="text-section font-semibold">
           Summary
         </h2>
-        <PnLSummary portfolio={portfolio} activity={activity} />
+        <PnLSummary portfolio={portfolio} activity={activity} pnl={pnl} />
+      </section>
+      <section aria-labelledby="pnl-heading" className="flex flex-col gap-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <h2 id="pnl-heading" className="text-section font-semibold">
+            {pnlCopy.heading}
+          </h2>
+          <ExportCsv />
+        </div>
+        <PnlPanel pnl={pnl} />
       </section>
       <section
         aria-labelledby="allocation-heading"

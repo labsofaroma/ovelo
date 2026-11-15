@@ -62,16 +62,27 @@ test("basket: one order buys every constituent, confirmed on the fork", async ({
   await buy(page, `/basket/${BASKET}`, "2");
 });
 
-test("portfolio lists the fork holdings and the confirmed orders, without a P&L estimate", async ({
+test("portfolio lists the fork holdings, the confirmed orders and P&L from their exact fills", async ({
   page,
 }) => {
   await installTestWallet(page);
   await page.goto("/portfolio");
   await page.getByRole("button", { name: "Connect wallet" }).first().click();
   await expect(page.getByRole("heading", { name: "Holdings" })).toBeVisible();
+  // M11: P&L from Aroma receipts and the confirmed transactions' exact fills, average cost.
   await expect(
-    page.getByText(/cost basis of these holdings is unknown/),
+    page.getByRole("heading", { name: "Profit and loss" }),
   ).toBeVisible();
+  await expect(
+    page.getByText(/^Average cost of what this wallet bought/),
+  ).toBeVisible();
+  const pnlTable = page.getByRole("table", { name: "Profit and loss" });
+  await expect(
+    pnlTable.getByRole("rowheader", {
+      name: process.env.E2E_STOCK_SYMBOL ?? "AAPLx",
+    }),
+  ).toBeVisible();
+  await expect(page.getByText(/Realized P&L: not shown/)).toBeVisible();
   // Both orders from the buy tests are in the activity list, confirmed.
   const activity = page.getByRole("region", { name: "Activity" });
   await expect(activity.getByText("Stock purchase")).toBeVisible();

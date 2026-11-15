@@ -188,6 +188,22 @@ const APIS: Record<string, Api> = {
     methods: { POST: "write" },
     handler: ["assertWorkerSecret"],
   },
+  // M11 read-only wallet sessions (creator dashboard, portfolio CSV) and the CSV itself.
+  "/api/v1/session/challenge": {
+    sample: "/api/v1/session/challenge",
+    methods: { POST: "creator" },
+    handler: ["issueSessionChallenge"],
+  },
+  "/api/v1/session": {
+    sample: "/api/v1/session",
+    methods: { POST: "write" },
+    handler: ["openScopedSession"],
+  },
+  "/api/v1/portfolio/export": {
+    sample: "/api/v1/portfolio/export",
+    methods: { GET: "read" },
+    handler: ["openSession", "assertExportAllowed"],
+  },
   "/api/v1/notifications/telegram": {
     sample: "/api/v1/notifications/telegram",
     methods: { POST: "write" },

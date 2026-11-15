@@ -16,7 +16,7 @@ import { AppError } from "./errors";
  * rotating AROMA_TRADE_SECRET (with _PREVIOUS) rotates these too. No cookie: the client keeps
  * the token in memory and sends it as `Authorization: Bearer`.
  */
-export const SESSION_SCOPES = ["notify", "creator"] as const;
+export const SESSION_SCOPES = ["notify", "creator", "portfolio"] as const;
 export type SessionScope = (typeof SESSION_SCOPES)[number];
 export const SESSION_TTL_SECONDS = 15 * 60;
 

@@ -1,20 +1,25 @@
 import { formatUnits } from "@aroma/ui/format";
 import { FUNDING_TOKENS } from "../../trade/schema";
 import { formatUsd } from "../../shared/fixed";
+import { pnlCopy } from "../copy";
+import type { PnlView } from "../pnl/schema";
 import type { ActivityItem, PortfolioView } from "../schema";
+import { formatBps } from "./PnlPanel";
 
 /**
- * A basic summary built ONLY from data we have (B7): the priced value now, how much of it is
- * unpriced, and what this wallet spent through Aroma (confirmed receipts, per funding token).
- * Cost basis is unknown (holdings can come from anywhere), so no profit or loss is computed or
- * estimated. Full P&L arrives with M8.
+ * A summary built ONLY from data we have (B7): the priced value now, how much of it is unpriced,
+ * what this wallet spent through Aroma (confirmed receipts, per funding token), and (M11) the
+ * unrealized P&L over the holdings whose cost basis (Aroma receipts, exact fills) and price are
+ * both known, saying how many were left out. Nothing is estimated.
  */
 export function PnLSummary({
   portfolio,
   activity,
+  pnl,
 }: {
   portfolio: PortfolioView;
   activity: readonly ActivityItem[] | null;
+  pnl: PnlView | null;
 }) {
   const spent = new Map<string, bigint>();
   for (const item of activity ?? [])
@@ -60,11 +65,25 @@ export function PnLSummary({
         )}
       </div>
       <div className="rounded-panel border border-line p-3">
-        <dt className="text-caption text-muted">Profit and loss</dt>
-        <dd className="text-small">
-          Not shown: the cost basis of these holdings is unknown. Aroma does not
-          estimate it.
-        </dd>
+        <dt className="text-caption text-muted">{pnlCopy.totalsLabel}</dt>
+        {!pnl ? (
+          <dd className="text-small text-muted">{pnlCopy.unavailable}</dd>
+        ) : pnl.totals.included === 0 ? (
+          <dd className="text-small">{pnlCopy.noneKnown}</dd>
+        ) : (
+          <dd className="text-title font-semibold tabular-nums">
+            {BigInt(pnl.totals.unrealized.raw) > 0n ? "+" : ""}
+            {formatUsd(pnl.totals.unrealized)}{" "}
+            <span className="text-small font-normal">
+              ({formatBps(pnl.totals.unrealizedBps)})
+            </span>
+          </dd>
+        )}
+        {pnl ? (
+          <dd className="text-caption text-muted">
+            {pnlCopy.leftOut(pnl.totals.excluded)}
+          </dd>
+        ) : null}
       </div>
     </dl>
   );

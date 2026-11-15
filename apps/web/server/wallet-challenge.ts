@@ -25,6 +25,7 @@ export const WALLET_PURPOSES = [
   "notify-manage",
   "notify-subscribe",
   "creator-dashboard",
+  "portfolio-export",
 ] as const;
 export type WalletPurpose = (typeof WALLET_PURPOSES)[number];
 
@@ -32,6 +33,7 @@ const TITLE: Record<WalletPurpose, string> = {
   "notify-manage": "open your Aroma notification settings",
   "notify-subscribe": "turn on an Aroma notification channel",
   "creator-dashboard": "open your Aroma creator dashboard",
+  "portfolio-export": "download your Aroma portfolio history",
 };
 
 const nonceSchema = z.string().regex(/^[A-Za-z0-9_-]{32}$/);
