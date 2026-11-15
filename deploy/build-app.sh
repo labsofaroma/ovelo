@@ -34,7 +34,9 @@ mkdir -p /out/apps/web/.next /out/deploy
 cp -a "$sa/." /out/
 cp -a apps/web/.next/static /out/apps/web/.next/static
 cp -a apps/web/public /out/apps/web/public
-cp deploy/server.mjs deploy/graceful.mjs deploy/healthcheck.mjs /out/deploy/
+cp deploy/server.mjs deploy/graceful.mjs deploy/healthcheck.mjs deploy/public-env.mjs /out/deploy/
+# The NEXT_PUBLIC_* values this bundle was built with; the entry point applies them at runtime.
+node --input-type=module -e "import { publicEnvOf } from './deploy/public-env.mjs'; process.stdout.write(JSON.stringify(publicEnvOf(process.env), null, 2))" > /out/deploy/public-env.json
 node deploy/build-migrate.mjs /out/deploy
 mkdir -p /out/apps/web/.next/cache
 # The E2E variant carries a marker the entry point checks before anything else (deploy/server.mjs).

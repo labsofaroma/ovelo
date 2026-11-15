@@ -3,10 +3,11 @@
 // - NEXT_MANUAL_SIG_HANDLE=true (set in the image) stops Next from exiting on SIGTERM itself;
 // - every HTTP server Next creates is tracked, and SIGTERM drains it (deploy/graceful.mjs).
 // Logs are one JSON line each on stdout, like the app's logger. Nothing secret is printed.
-import { existsSync } from "node:fs";
+import { existsSync, readFileSync } from "node:fs";
 import http from "node:http";
 import { createRequire } from "node:module";
 import { installGracefulShutdown, trackServers } from "./graceful.mjs";
+import { applyPublicEnv } from "./public-env.mjs";
 
 const log = (msg, extra = {}) =>
   process.stdout.write(
@@ -32,6 +33,24 @@ if (e2eBuild && productionLike) {
   );
   process.exit(1);
 }
+
+// The browser bundle's NEXT_PUBLIC_* values, so server code (the CSP) agrees with it.
+const publicEnvFile = new URL("./public-env.json", import.meta.url);
+if (!existsSync(publicEnvFile)) {
+  log("startup: deploy/public-env.json is missing (build-app.sh writes it)");
+  process.exit(1);
+}
+const overridden = applyPublicEnv(
+  process.env,
+  JSON.parse(readFileSync(publicEnvFile, "utf8")),
+);
+if (overridden.length)
+  log(
+    "startup: env file NEXT_PUBLIC_* values ignored; the image's build values apply",
+    {
+      names: overridden,
+    },
+  );
 
 const drainMs = Number(process.env.AROMA_DRAIN_MS ?? 65_000);
 const state = trackServers(http);

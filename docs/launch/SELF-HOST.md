@@ -9,7 +9,7 @@ How the Aroma web image runs on a VPS behind Cloudflare. This is the contract be
 - **User:** UID and GID 10001 (`aroma`, no shell, no home).
 - **Entry point:** `node /app/deploy/server.mjs` starts the standalone server behind a bounded graceful shutdown.
 - **Labels:** `org.opencontainers.image.revision` (commit) and `.version`. The same values are in the env as `AROMA_REVISION` and `AROMA_VERSION`, and Sentry's release is `aroma-web@<revision>`.
-- **Build inputs:** only `NEXT_PUBLIC_*` build args, which end up in the browser bundle and are public by definition. **One image therefore matches one set of public values.** If beta and production differ in a `NEXT_PUBLIC_*` value (RPC URL, Sentry DSN, Turnstile site key, analytics domain), build one image per set. No secret is ever a build arg, an `ENV` or a layer, and the client-secret scan runs inside the build.
+- **Build inputs:** only `NEXT_PUBLIC_*` build args, which end up in the browser bundle and are public by definition. **One image therefore matches one set of public values.** If beta and production differ in a `NEXT_PUBLIC_*` value (RPC URL, Sentry DSN, Turnstile site key, analytics domain), build one image per set. The build writes the values it inlined to `deploy/public-env.json` in the image, and `deploy/server.mjs` applies them to the runtime environment before Next starts, so server code that reads them per request (the CSP's `connect-src`) agrees with the bundle; an env-file value that differs is ignored and named in a startup log line. No secret is ever a build arg, an `ENV` or a layer, and the client-secret scan runs inside the build.
 
 ## 2. Environment (`/etc/aroma/aroma.env`, mode 0600)
 

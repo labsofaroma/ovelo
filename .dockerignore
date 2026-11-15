@@ -18,6 +18,7 @@
 !deploy/server.mjs
 !deploy/graceful.mjs
 !deploy/healthcheck.mjs
+!deploy/public-env.mjs
 !deploy/build-migrate.mjs
 !deploy/build-app.sh
 # Manifests only, so pnpm sees the whole workspace (their sources stay out).

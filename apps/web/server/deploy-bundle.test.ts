@@ -312,6 +312,18 @@ describe("deploy/Dockerfile targets (Step 8)", () => {
     expect(runtime).not.toMatch(/build-e2e|E2E_WALLET=true/);
   });
 
+  it("the runtime gets the bundle's NEXT_PUBLIC_* values from the image, before Next starts", () => {
+    expect(read("deploy/build-app.sh")).toMatch(
+      /publicEnvOf[\s\S]*> \/out\/deploy\/public-env\.json/,
+    );
+    const server = read("deploy/server.mjs");
+    expect(server).toMatch(/public-env\.json/);
+    expect(server.indexOf("applyPublicEnv(")).toBeLessThan(
+      server.indexOf('("../apps/web/server.js")'),
+    );
+    expect(read(".dockerignore")).toMatch(/^!deploy\/public-env\.mjs$/m);
+  });
+
   it("deploy.sh never uses the local override", () => {
     expect(read("deploy/hostinger/deploy.sh")).not.toMatch(/compose\.local/);
     expect(read("deploy/hostinger/rollback.sh")).not.toMatch(/compose\.local/);
