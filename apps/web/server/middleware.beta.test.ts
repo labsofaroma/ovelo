@@ -220,5 +220,6 @@ describe("beta gate in middleware", () => {
       }),
       { numRuns: 50 },
     );
-  });
+    // M11: ~4.5 s alone (50 middleware runs), so the 5 s default timed out under full-suite load.
+  }, 30_000);
 });
