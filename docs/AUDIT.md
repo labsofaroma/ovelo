@@ -259,4 +259,24 @@ A cost basis from receipts alone would use quotes.
 Receipts do not say whether a buy came through the Action.
 **Status: Closed from 2026-11-15.** The Action confirm callback records it (`0008_purchase_channels`). Earlier buys are shown as "not recorded" on the dashboard, never counted as app buys.
 
+## 6. Phase H findings: self-host (branch `deploy-hostinger`)
+
+The full self-host threat table (S1–S12, each with its control and proof) is in [audit/threat-model.md](./audit/threat-model.md#self-host-deployment-phase-h-hostinger-vps-behind-cloudflare). These are the findings Phase H fixed in the code that existed before it:
+
+### PH-1 (High): production refusals depended on `VERCEL_ENV`
+Off Vercel, `VERCEL_ENV` is unset, so a self-hosted production boot would accept test switches, a fork genesis, a Jupiter stand-in, the E2E wallet, localnet, Turnstile test secrets and missing caps.
+**Status: Closed in Phase H.** `server/platform.ts` answers the platform and the deploy environment. A production boot with no answer, or a contradictory one, is refused, and the production rules apply to self-host production and beta (`server/platform.test.ts`).
+
+### PH-2 (High): forwarded headers spoofable behind Cloudflare
+With `AROMA_TRUST_PROXY=true` behind Cloudflare, the client IP (`X-Real-IP`, `X-Forwarded-For`) and the country (`x-vercel-ip-country`) came from headers that Cloudflare passes through, so the geo gate and per-IP limits could be bypassed. Without it, every visitor shared one rate-limit key.
+**Status: Closed in Phase H.** `AROMA_PROXY_MODE` with a `cloudflare` mode (`CF-Connecting-IP` and `CF-IPCountry` only), the origin lock, and one header parser (`server/proxy.ts`, `server/origin-lock.ts`). `AROMA_TRUST_PROXY` now refuses to boot.
+
+### PH-3 (Medium): the public health report described the deployment
+`/api/v1/health` returned latencies, slots, upstream HTTP statuses and whether API keys were set.
+**Status: Closed in Phase H.** The body is statuses only, plus the RPC failover facts the alerts need (`server/health-public.ts`). The full report is logged.
+
+### PH-4 (Low): no bounded shutdown
+A restart could cut in-flight requests at once.
+**Status: Closed in Phase H** for self-host: a 65 s drain (`deploy/graceful.mjs`). Vercel manages its own.
+
 See [ROADMAP.md](./ROADMAP.md) for the v1 rebuild plan.

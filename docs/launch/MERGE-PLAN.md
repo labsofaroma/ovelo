@@ -19,15 +19,15 @@ Every branch must contain the previous one; `main` becomes the final tip by **fa
 prev=main
 for b in m0-foundation m1-design-system m2-shared-helpers m3-read-only-app m4-wallet-trading \
          m5-creators m6-contract-core m7-recurring-devnet m8-mainnet-path launch-prep \
-         phase-a-beta; do
+         phase-a-beta phase-b-cutover m10-recurring m11-launch deploy-hostinger; do
   git merge-base --is-ancestor "$prev" "$b" && echo "OK $prev -> $b" || echo "NOT LINEAR $prev -> $b"
   prev=$b
 done
-git log --merges --oneline main..phase-a-beta   # must print nothing
-git log --format='%an <%ae>' main..phase-a-beta | sort -u   # must be the Aroma Labs identity only
+git log --merges --oneline main..deploy-hostinger   # must print nothing
+git log --format='%an <%ae>' main..deploy-hostinger | sort -u   # must be the Aroma Labs identity only
 ```
 
-All eleven lines must say `OK` before anything is pushed (Phase A added `phase-a-beta` on top of `launch-prep`).
+All fifteen lines must say `OK` before anything is pushed. Phase A added `phase-a-beta` on top of `launch-prep`; then came `phase-b-cutover`, `m10-recurring`, `m11-launch`, and Phase H's `deploy-hostinger` on top of `m11-launch`.
 
 ## 2. The prototype stays deployable
 

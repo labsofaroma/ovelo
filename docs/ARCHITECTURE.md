@@ -25,6 +25,7 @@ All server-rendered (RSC) with small client islands; every page is dynamic becau
 ## A request, end to end
 
 1. **Middleware** (`apps/web/middleware.ts`, Node.js runtime), on every route:
+   - Phase H, self-host only: the **origin lock** first. In `cloudflare` proxy mode, a request without the edge's `x-aroma-origin` secret gets 403 `ORIGIN_REFUSED`; the header is then stripped;
    - HTTPS redirect to `AROMA_SITE_URL` in production; HSTS (`includeSubDomains; preload`) on production deployments only;
    - removed prototype APIs → 410 `{ code: "GONE", message }`, before anything else;
    - a per-request nonce CSP (`script-src 'self' 'nonce-…' 'strict-dynamic'`, explicit `connect-src`, `frame-ancestors 'none'`);
@@ -81,8 +82,35 @@ The gates every route must have are pinned in `server/route-gates.test.ts` (a ne
 
 ## Observability
 
-pino JSON logs with redaction (wallets and signatures become fingerprints), Sentry (errors, one breadcrumb per trade stage, events for alerts such as `rpc.wrong_cluster`), and `GET /api/v1/health` (RPC primary and fallback with genesis and slot age, Redis, Postgres, Jupiter, Pyth; facts only).
+pino JSON logs with redaction (wallets and signatures become fingerprints), Sentry (errors, one breadcrumb per trade stage, events for alerts such as `rpc.wrong_cluster`), and `GET /api/v1/health`: RPC primary and fallback with genesis and slot age, Redis, Postgres, Jupiter and Pyth. Since Phase H the public body has statuses only (`ok`, `degraded`, `down`, `skipped`) plus the RPC failover facts; the full report is logged. Liveness for containers is `GET /api/v1/health/live`.
+
+## Deployment (two supported platforms)
+
+Who the client is (IP, country, scheme, host) comes from one module, `server/proxy.ts`. Which platform and environment this is, and whether production rules apply, comes from one module, `server/platform.ts`. Each fails closed when its answer is missing or inconsistent.
+
+**Vercel** (unchanged): Git integration on `main`; `VERCEL_ENV` gives the deploy environment; proxy mode `vercel` (`X-Real-IP`, `x-vercel-ip-country`); Instant Rollback.
+
+**Hostinger VPS behind Cloudflare** (Phase H; [SELF-HOST.md](./launch/SELF-HOST.md), [HOSTINGER-RUNBOOK.md](./launch/HOSTINGER-RUNBOOK.md)):
+
+```
+User ──HTTPS──▶ Cloudflare edge: DNS, TLS, WAF (+ trading geo backup), rate limits,
+                cache rules (HTML and /api bypassed), Transform Rule sets x-aroma-origin
+                    │  Cloudflare Tunnel (outbound-only from the VPS; no inbound 80/443)
+                    ▼
+Hostinger VPS (Ubuntu 24.04; ufw + Hostinger firewall: SSH over Tailscale only)
+  docker compose (deploy/hostinger/docker-compose.yml):
+    cloudflared ──[internal network "edge"]──▶ app :3000 (not published on the host)
+      app: image by digest (cosign-verified), read-only root, tmpfs /tmp, cache volume,
+           UID 10001, cap_drop ALL, no-new-privileges, 1 GiB / 1.5 CPU, 65 s drain,
+           AROMA_PLATFORM=selfhost, AROMA_PROXY_MODE=cloudflare (CF-Connecting-IP, CF-IPCountry)
+    app ──[network "egress"]──▶ Neon, Upstash (Redis, QStash), RPC primary and fallback,
+                                 Jupiter, Pyth Hermes, Jito, Sentry, push, Telegram
+CI (.github/workflows/image.yml): test gate → build → Trivy → SBOM → cosign sign → attest
+  (no deploy job: the owner runs deploy.sh <digest> on the VPS; the VPS pulls by digest)
+```
+
+One app instance: the page, data and image caches are local to it.
 
 ## Further reading
 
-[REWRITE-PLAN.md](./REWRITE-PLAN.md) (milestones and status), [AUDIT.md](./AUDIT.md), [aroma-guard-v1.md](./aroma-guard-v1.md), [keeper-operations.md](./keeper-operations.md), and the launch runbooks in [launch/](./launch): [CUTOVER-RUNBOOK.md](./launch/CUTOVER-RUNBOOK.md), [PRODUCTION-ENV.md](./launch/PRODUCTION-ENV.md), [KEY-CUSTODY.md](./launch/KEY-CUSTODY.md), [MERGE-PLAN.md](./launch/MERGE-PLAN.md).
+[REWRITE-PLAN.md](./REWRITE-PLAN.md) (milestones and status), [AUDIT.md](./AUDIT.md), [aroma-guard-v1.md](./aroma-guard-v1.md), [keeper-operations.md](./keeper-operations.md), and the launch runbooks in [launch/](./launch): [CUTOVER-RUNBOOK.md](./launch/CUTOVER-RUNBOOK.md), [PRODUCTION-ENV.md](./launch/PRODUCTION-ENV.md), [KEY-CUSTODY.md](./launch/KEY-CUSTODY.md), [MERGE-PLAN.md](./launch/MERGE-PLAN.md), and for self-host [SELF-HOST.md](./launch/SELF-HOST.md) and [HOSTINGER-RUNBOOK.md](./launch/HOSTINGER-RUNBOOK.md).
