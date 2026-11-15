@@ -4,6 +4,7 @@ import {
   actionRoute,
 } from "@/features/baskets/action-http";
 import {
+  actionMessageHash,
   actionMetadata,
   actionQuoteRequest,
   actionTransaction,
@@ -103,18 +104,20 @@ export const POST = actionRoute<Context>(
       },
     );
     const prepared = await quoteTrade(actionQuoteRequest(basket.id, input));
+    // Refuse a bundle-only basket before reserving anything.
+    const body = actionTransaction(prepared, basket, actionOrigin(request));
     // Phase A caps (W3): the same per-trade and daily checks as the ticket. The Blink client
-    // sends the transaction itself, so the amount is reserved now and kept for the day.
+    // sends the transaction itself, so the amount is reserved as pending, tied to the authorized
+    // message, and settled by /confirm or from the chain (features/caps/server/caps.ts).
     await reserveActionQuote(capsDeps(), {
       requestId: prepared.requestId,
       wallet: input.account,
       inputMint: prepared.quote.inputMint,
       amountRaw: BigInt(prepared.quote.maxDebit),
       expiresAt: prepared.expiresAt,
+      actionMessageHash: actionMessageHash(prepared),
     });
-    return Response.json(
-      actionTransaction(prepared, basket, actionOrigin(request)),
-    );
+    return Response.json(body);
   },
 );
 

@@ -7,6 +7,8 @@ import {
   completedAction,
   recordActionPurchase,
 } from "@/features/baskets/actions";
+import { settleReservation } from "@/features/caps/server/caps";
+import { capsDeps } from "@/features/caps/server/deps";
 import { markActionPurchase } from "@/features/creators/channels";
 import { receiptsReader } from "@/features/trade/server/deps";
 import { mainnetRpc } from "@/features/trade/server/rpc";
@@ -26,7 +28,7 @@ type Context = { params: Promise<{ id: string }> };
 export const POST = actionRoute<Context>(
   "v1/actions/baskets/:id/confirm",
   async (request, context) => {
-    const { status } = await recordActionPurchase(
+    const { status, requestId } = await recordActionPurchase(
       {
         basketId: (await context.params).id,
         authorization: new URL(request.url).searchParams.get("authorization"),
@@ -40,6 +42,8 @@ export const POST = actionRoute<Context>(
         markAction: (signature) => markActionPurchase(signature),
       },
     );
+    // W3: the read-back transaction settles the Action's pending cap reservation (never throws).
+    await settleReservation(capsDeps(), requestId, status);
     return Response.json(completedAction(actionOrigin(request), status));
   },
 );

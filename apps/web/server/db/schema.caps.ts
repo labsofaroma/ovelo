@@ -61,6 +61,12 @@ export const tradeCapReservations = pgTable(
     resolveAfter: timestamptz("resolve_after").notNull(),
     createdAt: timestamptz("created_at").notNull().defaultNow(),
     settledAt: timestamptz("settled_at"),
+    /**
+     * Solana Action quotes only (0010): the SHA-256 of the one authorized message. A Blink
+     * client sends the transaction itself, so the reservation is settled by finding this message
+     * among the wallet's transactions (features/caps/server/action-outcome.ts).
+     */
+    actionMessageHash: text("action_message_hash"),
   },
   (t) => [
     check("trade_cap_reservations_amount_positive", sql`${t.amountRaw} > 0`),

@@ -1,3 +1,4 @@
+import type * as BasketActions from "@/features/baskets/actions";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { toMarketsView } from "@/features/markets/normalize";
 import { snapshot } from "@/features/test/fixtures";
@@ -35,6 +36,12 @@ vi.mock("@/features/markets/server", () => ({
 }));
 vi.mock("@/features/trade/server/service", () => ({
   quoteTrade: (...args: unknown[]) => quote.fn(...args),
+}));
+
+// The quote is mocked with a placeholder transaction; the message hash is unit-tested in actions.test.ts.
+vi.mock("@/features/baskets/actions", async (orig) => ({
+  ...(await orig<typeof BasketActions>()),
+  actionMessageHash: () => "ab".repeat(32),
 }));
 
 const actions = await import("@/app/api/v1/actions/baskets/[id]/route");

@@ -1,0 +1,1 @@
+ALTER TABLE "trade_cap_reservations" ADD COLUMN "action_message_hash" text;

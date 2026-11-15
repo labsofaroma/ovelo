@@ -50,7 +50,13 @@ const unavailable = (cause: unknown) =>
 async function resolveStale(deps: CapsDeps, wallet: string): Promise<void> {
   const stale = await staleReservations(deps.db(), wallet, deps.now());
   for (const reservation of stale) {
-    const outcome = await deps.outcome(reservation.requestId);
+    const outcome = reservation.actionMessageHash
+      ? await deps.actionOutcome({
+          wallet: reservation.wallet,
+          actionMessageHash: reservation.actionMessageHash,
+          createdAt: reservation.createdAt,
+        })
+      : await deps.outcome(reservation.requestId);
     if (outcome === "open") continue;
     await settle(
       deps.db(),
@@ -143,6 +149,8 @@ export async function reserveForSubmit(
     inputMint: string;
     amountRaw: bigint;
     expiresAt: number;
+    /** Solana Action quotes: the authorized message's SHA-256 (settled from the chain). */
+    actionMessageHash?: string;
   },
 ): Promise<"reserved" | "replay"> {
   const cfg = config(deps);
@@ -161,6 +169,9 @@ export async function reserveForSubmit(
       amount: notional,
       cap: cfg.daily,
       resolveAfter: new Date(input.expiresAt + RESOLVE_MARGIN_MS),
+      ...(input.actionMessageHash
+        ? { actionMessageHash: input.actionMessageHash }
+        : {}),
     });
   } catch (error) {
     if (error instanceof DailyCapExceeded) throw overDay(cfg, error.used);
@@ -170,20 +181,17 @@ export async function reserveForSubmit(
 
 /**
  * Solana Action quotes: a Blink client signs and sends the transaction itself, so Aroma never sees
- * a submit to reserve at or a failure to release on. The Action POST therefore reserves its
- * notional and KEEPS it for the UTC day, sent or not (conservative: the confirmed daily total can
- * only be lower than what is counted).
+ * a submit. The Action POST reserves the notional as PENDING, tied to the one authorized message.
+ * The confirm callback settles it when the client calls back; otherwise, after the resolve time,
+ * the wallet's transactions are searched for that message (action-outcome.ts): sent → kept,
+ * never sent → released. So an unsigned POST naming someone else's wallet holds that wallet's
+ * cap only until the quote can no longer land (minutes), not for the whole day.
  */
 export async function reserveActionQuote(
   deps: CapsDeps,
-  input: Parameters<typeof reserveForSubmit>[1],
+  input: Parameters<typeof reserveForSubmit>[1] & { actionMessageHash: string },
 ): Promise<void> {
   await reserveForSubmit(deps, input);
-  try {
-    await settle(deps.db(), input.requestId, "confirmed");
-  } catch (cause) {
-    throw unavailable(cause);
-  }
 }
 
 /**

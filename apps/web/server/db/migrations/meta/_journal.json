@@ -71,6 +71,13 @@
       "when": 1794737861870,
       "tag": "0009_fee_share_ledger",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1794769614374,
+      "tag": "0010_action_cap_reservations",
+      "breakpoints": true
     }
   ]
 }

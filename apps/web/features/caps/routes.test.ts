@@ -1,3 +1,4 @@
+import type * as BasketActions from "@/features/baskets/actions";
 import type { PGlite } from "@electric-sql/pglite";
 import { stubBaseEnv } from "@/server/test/base-env";
 import {
@@ -16,7 +17,8 @@ import { toMarketsView } from "@/features/markets/normalize";
 import { snapshot } from "@/features/test/fixtures";
 import { SOL_MINT, USDC_MINT } from "@/features/trade/schema";
 import { resetEnvCacheForTests } from "@/server/env";
-import { setCapsDepsForTests } from "./server/deps";
+import { checkQuoteCaps } from "./server/caps";
+import { capsDeps, setCapsDepsForTests } from "./server/deps";
 import { reservationOf, usedOn, type CapsDb } from "./server/store";
 import { utcDay } from "./config";
 
@@ -33,6 +35,12 @@ const service = vi.hoisted(() => ({
   publicRecord: (r: unknown) => r,
 }));
 vi.mock("@/features/trade/server/service", () => service);
+// The quote is mocked with a placeholder transaction; the message hash is unit-tested in actions.test.ts.
+vi.mock("@/features/baskets/actions", async (orig) => ({
+  ...(await orig<typeof BasketActions>()),
+  actionMessageHash: () => "ab".repeat(32),
+}));
+
 vi.mock("@/features/beta/server/gate", () => ({
   assertTradeAccess: vi.fn(async () => {}),
   assertBetaAccess: vi.fn(async () => {}),
@@ -79,6 +87,7 @@ let db: CapsDb;
 let client: PGlite;
 let dbDown = false;
 let outcome: "confirmed" | "failed" | "open" = "open";
+let actionResult: "confirmed" | "failed" | "open" = "open";
 beforeAll(async () => {
   ({ db, client } = await createTestDb());
 });
@@ -93,6 +102,7 @@ beforeEach(() => {
   resetEnvCacheForTests();
   dbDown = false;
   outcome = "open";
+  actionResult = "open";
   setCapsDepsForTests({
     env: () => ({
       AROMA_MAX_TRADE_USDC_RAW: "50000000",
@@ -104,6 +114,7 @@ beforeEach(() => {
     },
     price: async () => ({ raw: "10000000000", decimals: 8 }), // $100 per SOL
     outcome: async () => outcome,
+    actionOutcome: async () => actionResult,
   });
   service.quoteTrade.mockReset();
   service.submitSignedTrade.mockReset();
@@ -291,25 +302,84 @@ describe("submit", () => {
 });
 
 describe("Solana Action", () => {
-  it("reserves the quoted amount and keeps it for the day (the Blink sends it itself)", async () => {
+  const actionQuote = async (account: string) => {
     const requestId = crypto.randomUUID();
     service.quoteTrade.mockResolvedValue({
       ...prepared("40000000", requestId),
+      mode: "single",
+      authorization: "at1.a.b.c",
       quote: {
         inputMint: USDC_MINT,
         maxDebit: "40000000",
+        inAmount: "40000000",
         kind: "basket",
         legs: [],
       },
     });
-    const account = fresh();
-    await action.POST(
+    const response = await action.POST(
       post("/api/v1/actions/baskets/test-basket?amount=40", { account }),
-      {
-        params: Promise.resolve({ id: "test-basket" }),
-      },
+      { params: Promise.resolve({ id: "test-basket" }) },
     );
-    expect((await reservationOf(db, requestId))?.status).toBe("confirmed");
+    expect(response.status).toBe(200);
+    return requestId;
+  };
+  const later = () => {
+    const now = new Date(Date.now() + 10 * 60_000);
+    setCapsDepsForTests({ ...capsDeps(), now: () => now });
+    return now;
+  };
+
+  it("reserves the quoted amount as pending, tied to the authorized message", async () => {
+    const account = fresh();
+    const requestId = await actionQuote(account);
+    const reservation = await reservationOf(db, requestId);
+    expect(reservation?.status).toBe("reserved");
+    expect(reservation?.actionMessageHash).toBe("ab".repeat(32));
     expect(await usedOn(db, account, utcDay(new Date()))).toBe(40_000_000n);
+  });
+
+  it("an Action never sent (someone else's POST) is released once it can no longer land", async () => {
+    const account = fresh();
+    const requestId = await actionQuote(account);
+    const { day } = (await reservationOf(db, requestId))!;
+    actionResult = "failed";
+    await checkQuoteCaps(capsDeps(), {
+      wallet: account,
+      inputMint: USDC_MINT,
+      amountRaw: 1n,
+    }).catch(() => {});
+    // Before the resolve time nothing is decided.
+    expect((await reservationOf(db, requestId))?.status).toBe("reserved");
+    later();
+    await checkQuoteCaps(capsDeps(), {
+      wallet: account,
+      inputMint: USDC_MINT,
+      amountRaw: 1n,
+    });
+    expect((await reservationOf(db, requestId))?.status).toBe("released");
+    expect(await usedOn(db, account, day)).toBe(0n);
+  });
+
+  it("an Action found on chain keeps counting; an undecidable one stays reserved", async () => {
+    const account = fresh();
+    const sent = await actionQuote(account);
+    const unclear = await actionQuote(account);
+    const { day } = (await reservationOf(db, sent))!;
+    later();
+    actionResult = "open";
+    await checkQuoteCaps(capsDeps(), {
+      wallet: account,
+      inputMint: USDC_MINT,
+      amountRaw: 1n,
+    });
+    expect((await reservationOf(db, unclear))?.status).toBe("reserved");
+    actionResult = "confirmed";
+    await checkQuoteCaps(capsDeps(), {
+      wallet: account,
+      inputMint: USDC_MINT,
+      amountRaw: 1n,
+    });
+    expect((await reservationOf(db, sent))?.status).toBe("confirmed");
+    expect(await usedOn(db, account, day)).toBe(80_000_000n);
   });
 });

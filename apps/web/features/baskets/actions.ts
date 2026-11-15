@@ -165,6 +165,14 @@ export function actionQuoteRequest(
   };
 }
 
+/** The SHA-256 of the one message an Action quote authorizes (its cap reservation's key on chain). */
+export function actionMessageHash(prepared: PreparedQuote): string {
+  const transaction = getTransactionDecoder().decode(
+    Buffer.from(prepared.transactions[0]!, "base64"),
+  );
+  return messageHash(transaction.messageBytes);
+}
+
 export function actionTransaction(
   prepared: PreparedQuote,
   basket: ActionBasket,
@@ -220,7 +228,7 @@ const confirmBodySchema = z.strictObject({
 export async function recordActionPurchase(
   input: { basketId: string; authorization: string | null; body: unknown },
   deps: ConfirmDeps,
-): Promise<{ status: "confirmed" | "failed" }> {
+): Promise<{ status: "confirmed" | "failed"; requestId: string }> {
   const body = confirmBodySchema.safeParse(input.body);
   if (!body.success)
     throw new AppError("VALIDATION_FAILED", { detail: "confirm body" });
@@ -285,7 +293,7 @@ export async function recordActionPurchase(
   });
   // Attribution only: a failure here never changes the receipt or the answer.
   await deps.markAction?.(body.data.signature).catch(() => undefined);
-  return { status };
+  return { status, requestId: payload.requestId };
 }
 
 export function completedAction(

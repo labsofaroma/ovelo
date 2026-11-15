@@ -260,7 +260,10 @@ describe("recordActionPurchase", () => {
         markAction: async () => Promise.reject(new Error("db down")),
       },
     );
-    expect(result).toEqual({ status: "confirmed" });
+    expect(result).toEqual({
+      status: "confirmed",
+      requestId: expect.any(String),
+    });
   });
 
   it("records a confirmed receipt for the authorized transaction read back from mainnet", async () => {
@@ -273,7 +276,10 @@ describe("recordActionPurchase", () => {
       },
       p.deps(),
     );
-    expect(result).toEqual({ status: "confirmed" });
+    expect(result).toEqual({
+      status: "confirmed",
+      requestId: expect.any(String),
+    });
     const [row] = await p.receipts.listByWallet(p.taker, 5);
     expect(row).toMatchObject({
       signature: p.signature,
@@ -311,7 +317,7 @@ describe("recordActionPurchase", () => {
         },
         p.deps(),
       ),
-    ).toEqual({ status: "failed" });
+    ).toEqual({ status: "failed", requestId: expect.any(String) });
   });
 
   it("refuses anything that is not exactly the authorized purchase", async () => {

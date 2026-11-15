@@ -1,6 +1,8 @@
 import "server-only";
 import { submitDeps } from "@/features/trade/server/deps";
 import { tradeOutcome } from "@/features/trade/server/outcome";
+import { mainnetRpc } from "@/features/trade/server/rpc";
+import { actionOutcome, type ActionReservation } from "./action-outcome";
 import { getDb } from "@/server/db/client";
 import { jupiterPrice, type PriceLookup } from "./notional";
 import type { CapsDb } from "./store";
@@ -14,6 +16,9 @@ export type CapsDeps = {
   db(): CapsDb;
   price: PriceLookup;
   outcome(requestId: string): Promise<"confirmed" | "failed" | "open">;
+  actionOutcome(
+    reservation: ActionReservation,
+  ): Promise<"confirmed" | "failed" | "open">;
   now(): Date;
 };
 
@@ -22,6 +27,7 @@ const defaults: CapsDeps = {
   db: () => getDb() as unknown as CapsDb,
   price: jupiterPrice,
   outcome: (requestId) => tradeOutcome(requestId, submitDeps()),
+  actionOutcome: (reservation) => actionOutcome(reservation, mainnetRpc),
   now: () => new Date(),
 };
 

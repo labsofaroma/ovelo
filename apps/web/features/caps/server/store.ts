@@ -19,7 +19,22 @@ export type Reservation = {
   amount: bigint;
   status: "reserved" | "confirmed" | "released";
   resolveAfter: Date;
+  createdAt: Date;
+  /** Solana Action quotes only: the authorized message's SHA-256 (settled from the chain). */
+  actionMessageHash: string | null;
 };
+
+type Row = typeof tradeCapReservations.$inferSelect;
+const toReservation = (row: Row): Reservation => ({
+  requestId: row.requestId,
+  wallet: row.wallet,
+  day: row.day,
+  amount: BigInt(row.amountRaw),
+  status: row.status,
+  resolveAfter: row.resolveAfter,
+  createdAt: row.createdAt,
+  actionMessageHash: row.actionMessageHash,
+});
 
 export class DailyCapExceeded extends Error {
   constructor(readonly used: bigint) {
@@ -54,6 +69,7 @@ export async function reserve(
     amount: bigint;
     cap: bigint;
     resolveAfter: Date;
+    actionMessageHash?: string;
   },
 ): Promise<"reserved" | "replay"> {
   const amount = input.amount.toString();
@@ -66,6 +82,7 @@ export async function reserve(
         day: input.day,
         amountRaw: amount,
         resolveAfter: input.resolveAfter,
+        actionMessageHash: input.actionMessageHash ?? null,
       })
       .onConflictDoNothing({ target: tradeCapReservations.requestId })
       .returning({ requestId: tradeCapReservations.requestId });
@@ -159,14 +176,7 @@ export async function staleReservations(
       ),
     )
     .limit(20);
-  return rows.map((row) => ({
-    requestId: row.requestId,
-    wallet: row.wallet,
-    day: row.day,
-    amount: BigInt(row.amountRaw),
-    status: row.status,
-    resolveAfter: row.resolveAfter,
-  }));
+  return rows.map(toReservation);
 }
 
 export async function reservationOf(
@@ -177,14 +187,5 @@ export async function reservationOf(
     .select()
     .from(tradeCapReservations)
     .where(eq(tradeCapReservations.requestId, requestId));
-  return row
-    ? {
-        requestId: row.requestId,
-        wallet: row.wallet,
-        day: row.day,
-        amount: BigInt(row.amountRaw),
-        status: row.status,
-        resolveAfter: row.resolveAfter,
-      }
-    : null;
+  return row ? toReservation(row) : null;
 }
