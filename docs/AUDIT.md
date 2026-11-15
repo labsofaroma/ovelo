@@ -8,6 +8,8 @@ Severity scale: **Critical** (funds, integrity or an outage) · **High** (securi
 >
 > **M9 (Phase B, branch `phase-b-cutover`):** the prototype is deleted; the M9 lines below close H-4, H-5, H-6, M-5, M-6, M-9 and C-4 with their evidence, record M-12 as partial by decision and L-3 as the owner's license choice.
 >
+> **M11 (Phase D, branch `m11-launch`):** product gaps 2, 3 and 6 are addressed, 4 gains a fee-share ledger (accounting only), and §5 adds the M11 findings with where each is closed. M11 adds no Critical or High finding. Open Critical and High items stay as at M10: H-7 (`main` protection) and H-8 (CI green), both the owner's P6; C-1, C-2 and H-1–H-3 concern the deleted prototype program (REWRITE-PLAN §11). Aroma Guard v1's own external audit is M12.
+>
 > **Milestones were renumbered in M6** (REWRITE-PLAN §7): recurring investing is now **M7**, the Jupiter mainnet contract path **M8**, cutover **M9**, the Jupiter DCA spike **M10** (it took Path B on 2026-11-15: no mainnet DCA, the devnet beta stays; [launch/DCA-SPIKE.md](./launch/DCA-SPIKE.md)), launch features **M11**, and the external audit with Aroma Guard on mainnet **M12** (when funded). Status lines below use the new numbers.
 
 ---
@@ -216,14 +218,45 @@ _Fixed:_ three web tests imported `packages/sdk/node_modules/@solana/kit-v1`. Th
 
 1. **Recurring investing works only on devnet.** This is the product's main promise and is not shippable yet.
 2. **No notifications** (email, push or Telegram) for executed or failed installments.
+
+   **Status: Addressed (M11), email off by decision.** Web push and Telegram behind a `NotificationChannel` interface with local fakes, a wallet-signed opt-in per channel, and an outbox with retries, back-off, a lease and dead-lettering (`features/notifications`). Events: trade confirmed, failed or not seen to confirm; creator basket bought; and, labelled devnet, a test-plan round ran, failed or has too little balance (written by the devnet keeper in the same step). No email address is collected.
 3. **No portfolio history or P&L for real holdings.** Basket performance exists, but cost basis per wallet does not.
+
+   **Status: Addressed (M11) for purchases made through Aroma.** Average cost from confirmed receipts and the exact fills of their transactions, in bigint; anything else is "cost basis unknown" with the reason; per holding, per basket and in totals that say what was left out; a CSV for the signed-in wallet (`features/portfolio/pnl`). Realized P&L is not shown: Aroma records no sales.
 4. **The creator economy is invite-only** with multi-use, never-expiring invite codes and no reward mechanism.
 
    **Status: Addressed for v1 invites (M5); rewards still open.** v1 invites are rows in Postgres holding only the SHA-256 of the code, **single-use by default** (`--uses` up to 100) and **always expiring** (1–90 days; an invite without an expiry is refused, fail closed). Redemption is one transaction: a conditional `UPDATE … uses < max_uses AND expires_at > now()` plus the `creators` row, and it must be signed by the wallet being registered. Proven by a 25-way parallel redemption on PGlite and, in M5b, on real Postgres through the Neon driver (25 connections, exactly one succeeds: `features/creators/invites.postgres.test.ts`), and by the creator E2E refusing a used invite. Codes come only from the admin CLI (`scripts/create-invite.ts`, printed once). The prototype's `CREATOR_INVITE_CODES` flow still serves the prototype `/creators` page until M9. Still open: any reward mechanism (no product decision yet), and creator usage is now measured from confirmed receipts (`features/creators/stats.ts`), never self-reported.
 5. **No compliance layer**: no geo-restriction for tokenized securities (xStocks are not available to US persons), no terms acceptance gate before trading, no clear risk disclosure on each trade.
 
    **Status: Mechanism built for v1 (M9 compliance gate, branch `launch-prep`); counsel's final texts and country list still open.** IP geo-blocking at every trading entry point (middleware plus a route re-check on quote, submit and the Action POST; the Action GET shows `disabled`), from Vercel's `x-vercel-ip-country` trusted only behind the trusted proxy, failing closed when the country is missing. A wallet-signed terms acceptance (version + SHA-256, single-use nonce, Postgres migration `0004`) is required before every quote and again after a version bump. A risk disclosure wraps the confirm controls of every live trade review and travels in the Action description. Copy is placeholder pending counsel; IP geolocation is not identity verification. Details and limits: [launch/COMPLIANCE.md](./launch/COMPLIANCE.md). **Phase A (branch `phase-a-beta`):** the devnet invest review now carries the `recurring-devnet` disclosure; a private-beta access gate (invite or allowlist, wallet-signed, fail closed; [launch/BETA-ACCESS.md](./launch/BETA-ACCESS.md)) sits between the location and terms checks; and per-trade and per-wallet daily caps in raw USDC units are enforced at quote and submit ([launch/TRADE-CAPS.md](./launch/TRADE-CAPS.md)). The edge now matches normalised paths, closing a fail-open where `//api/v1/trade/quote` skipped the middleware gates (handlers always re-checked).
+   **M11:** a fee-share ledger records each creator-basket order, accounting only, with the fee at 0 (no platform fee is charged). Rewards and payouts are still open (5b).
 6. **No onboarding funnel analytics** (consent-gated Plausible exists, with no event plan).
+
+   **Status: Addressed (M11).** `/get-started`, and four consent-gated events with no wallet address: `onboarding_step_viewed`, `wallet_connected`, `first_quote`, `first_buy_confirmed` (with the time to first basket buy as a bucket). The fork E2E times the flow against the < 2 min target.
 7. **The mobile app is referenced but missing.**
+
+---
+
+## 5. M11 findings (branch `m11-launch`)
+
+### M11-1 (Medium): user-supplied push endpoints are server-side request targets
+A browser push subscription's `endpoint` is a URL chosen by the client, and the worker POSTs to it, so an attacker could make the server send requests to internal hosts (SSRF).
+**Status: Closed in M11.** `allowedPushEndpoint` (`features/notifications/server/channels/webpush.ts`) accepts only https URLs on the known push services, with no port and no credentials. It is checked at the challenge, at the opt-in and again at delivery; requests use `redirect: "error"` and a 10 s timeout. Tests: `webpush.test.ts`, `routes.test.ts`.
+
+### M11-2 (Low): at-least-once delivery can repeat a Telegram message
+If a worker dies after sending and before recording the outcome, the lease expires and the message is sent again. Web push dedupes on the receiver (the notification `tag` is the event id); Telegram cannot.
+**Status: Accepted (beta).** Bounded by the 60 s lease and the per-row attempt guard. A delivery that keeps dying is dead-lettered after 6 attempts (`lease_expired`), never retried forever (`outbox.test.ts` properties).
+
+### M11-3 (Low): the receipt scan reads at most 500 orders per kind and run
+Orders from subscribed wallets beyond 500 in the last 24 hours would not be scanned in that run, newest first.
+**Status: Accepted (beta scale).** The scan is idempotent and runs every minute; raise the limit or add a cursor before the public launch if volume needs it.
+
+### M11-4 (Low): receipts store quoted, not executed, output amounts
+A cost basis from receipts alone would use quotes.
+**Status: Closed in M11.** P&L reads the exact fill from each confirmed transaction (token-balance change, read-only, cached), and marks a mint "not read yet" until it has (`features/portfolio/pnl/fills.ts`).
+
+### M11-5 (Low): Blink attribution did not exist before M11
+Receipts do not say whether a buy came through the Action.
+**Status: Closed from 2026-11-15.** The Action confirm callback records it (`0008_purchase_channels`). Earlier buys are shown as "not recorded" on the dashboard, never counted as app buys.
 
 See [ROADMAP.md](./ROADMAP.md) for the v1 rebuild plan.

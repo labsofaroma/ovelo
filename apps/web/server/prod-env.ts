@@ -1,5 +1,6 @@
 import { loadPolicy } from "@/features/compliance/policy";
 import { parseEnv, TURNSTILE_TEST_SECRETS } from "./env.schema";
+import { m11Findings } from "./prod-env.m11";
 
 /**
  * Production profile check (P3, `pnpm check:prod-env`). Pure apart from the injected `fetch`:
@@ -71,6 +72,8 @@ const FORBIDDEN_SET = [
   "AROMA_V1_LOCALNET_FUNDING_MINT",
   "AROMA_LOCAL_NEON_WS_PROXY",
   "AROMA_SKIP_ENV_CHECK",
+  // M11: the E2E notification sink.
+  "AROMA_V1_TEST_NOTIFY_SINK_URL",
 ] as const;
 
 /** Cloudflare's published Turnstile test SITE keys (secrets are in env.rules). */
@@ -85,7 +88,7 @@ const TURNSTILE_TEST_SITE_KEYS = new Set([
 const PLACEHOLDER =
   /(\.invalid\b|placeholder|changeme|replace[-_ ]?me|example\.(com|org)|aroma-local-only)/i;
 const APP_VARIABLE =
-  /^(AROMA_|NEXT_PUBLIC_|SOLANA_|UPSTASH_|DATABASE_URL|JUPITER_|PYTH_|SENTRY_|JITO_|TURNSTILE_|QSTASH_|KEEPER_|CREATOR_|HERMES_)/;
+  /^(AROMA_|NEXT_PUBLIC_|SOLANA_|UPSTASH_|DATABASE_URL|JUPITER_|PYTH_|SENTRY_|JITO_|TURNSTILE_|QSTASH_|KEEPER_|CREATOR_|HERMES_|VAPID_|TELEGRAM_)/;
 const NON_MAINNET_RPC = /(devnet|testnet|localhost|127\.0\.0\.1|\[::1\])/i;
 export const MAINNET_GENESIS = "5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d";
 
@@ -202,7 +205,10 @@ export function staticFindings(env: Env): Finding[] {
     for (const name of names) add(name, "invalid", "invalid compliance policy");
   }
 
-  // 7. Rotation hygiene.
+  // 7. M11 launch features: channels, the periodic worker, consent-gated analytics, fees.
+  findings.push(...m11Findings(env));
+
+  // 8. Rotation hygiene.
   if (present(env, "AROMA_TRADE_SECRET_PREVIOUS"))
     add(
       "AROMA_TRADE_SECRET_PREVIOUS",

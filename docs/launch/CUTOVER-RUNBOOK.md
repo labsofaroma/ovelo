@@ -102,3 +102,36 @@ SOL: none.
 - **Back to the prototype:** point DNS back at the archive deployment from step 6.
 
 SOL: none.
+
+## 12. M11 launch features (added for the M11 tip)
+
+Do these with steps 4, 8 and 10; they ran first on `beta.<domain>` ([BETA-RUNBOOK.md](./BETA-RUNBOOK.md) §4).
+
+- [ ] **Counsel** reviewed the M11 wording ([COMPLIANCE.md](./COMPLIANCE.md) §6):
+  - the notification section of the privacy notice;
+  - the notification messages;
+  - the P&L wording ("information, not advice");
+  - the onboarding page;
+  - the creator dashboard's fee-share line.
+- [ ] **Migrations** through `0009_fee_share_ledger` on the production database (step 4).
+- [ ] **Channels** for the production domain:
+  - a production Telegram bot (or the beta one, with the webhook moved to the production URL);
+  - VAPID keys generated for the production deployment. New keys mean beta push subscriptions do not carry over: users turn push on again;
+  - `AROMA_NOTIFY_WORKER_SECRET` and the QStash schedule pointed at `https://<domain>/api/v1/notifications/deliver`.
+- [ ] `pnpm check:prod-env` (production profile) shows each channel you turned on as `ok`, and `AROMA_PLATFORM_FEE_BPS` unset or `0`.
+- [ ] **P5 on production** (step 8):
+  - the P&L row of the test stock (cost basis = the amount spent, quantity = the exact fill);
+  - a notification for the test purchase on each channel you turned on;
+  - `/creators/dashboard` for a creator wallet.
+- [ ] **Monitoring** (step 10):
+  - the QStash schedule's failures;
+  - the `notify worker run` log lines (`dead` growing means a channel is failing);
+  - Sentry errors from `v1/notifications/*`.
+- [ ] **Rollback:** `AROMA_NOTIFICATIONS=off` pauses notifications without touching trading; `AROMA_TRADING=off` stops trading without touching notifications.
+- [ ] **Not in this launch:**
+  - a platform fee and creator payouts (5b: needs the owner's and counsel's approval, and its own reviewed trade-path change);
+  - email notifications;
+  - on-ramp links;
+  - Aroma Guard on mainnet (M12).
+
+SOL: none (5a creates no fee account).

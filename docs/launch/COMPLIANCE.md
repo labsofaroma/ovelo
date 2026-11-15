@@ -60,3 +60,18 @@ Mainnet trading for a restricted country cannot be configured open (the schema a
 - Terms acceptance proves a wallet signed a text; it does not identify a person or their residence.
 - The gate covers Aroma's server. A user who builds and signs their own Jupiter transaction for an xStock never touches Aroma.
 - The invest wizard's review renders `<RiskDisclosure surface="recurring-devnet">` around its confirm control (wired in Phase A, branch `phase-a-beta`); its text says the devnet beta uses test tokens of no value, and the persistent "Devnet: test tokens, no real value" label stays.
+
+## 6. M11 wording for counsel's review (draft; nothing here is final)
+
+M11 adds surfaces that are information, not advice, and no new gate. Counsel reviews the draft wording below before the beta's public use (BETA-RUNBOOK §3) and before the public launch (CUTOVER-RUNBOOK §12). None of these surfaces opens a way around the location, beta, terms, caps or trading-switch gates: the route-gate table test (`server/route-gates.test.ts`) lists every new route with no trading gate, because none of them quotes, builds or sends a transaction.
+
+| Surface | Draft wording (file) | Question for counsel |
+|---|---|---|
+| **P&L** (`/portfolio`) | "Average cost of what this wallet bought through Aroma (exact amounts from the confirmed transactions). 1 USDC is counted as 1 USD. Holdings from anywhere else have no cost basis here." and "Realized P&L: not shown. Aroma records purchases only, not sales." (`features/portfolio/copy.ts`) | Is a P&L view of the user's own purchases information, not advice, as worded? Should it carry a tax disclaimer ("not tax reporting")? |
+| **CSV export** | Raw and display amounts of the wallet's own orders and P&L rows (`features/portfolio/pnl/csv.ts`) | Any wording needed on the file (it has none beyond column names)? |
+| **Notifications** | Facts only: "Purchase confirmed: TSLAx: 25 USDC spent. Confirmed on Solana mainnet." and "[Devnet test] Recurring round ran …" (`features/notifications/copy.ts`) | Are transactional messages acceptable as worded, with no marketing? Is a Telegram chat id or a browser push subscription "personal data" under the operator's regime (treated as such: opt-in, deletable, 30-day delivery records)? |
+| **Privacy notice** | New section "Notifications (optional)" (`features/marketing/content/privacy.ts`, updated 2026-11-15) | Final text. |
+| **Onboarding** (`/get-started`) | The suggested basket is "a starting point, not a recommendation: Aroma does not give investment advice", chosen by a stated rule (fewest tokens). No on-ramp or exchange is linked (`features/onboarding/copy.ts`) | Is showing one suggested basket acceptable at all? Which on-ramp providers, if any, may be linked later? |
+| **Creator dashboard** | Buys, unique buyer COUNT (never a list), volume, Blink share; "Fee share: off" (`features/creators/copy.ts`) | Fine to show creators a buyer count? Any payout (5b) needs its own review first. |
+
+**Fee share.** Option 5a (accounting only) is implemented: a ledger records each creator-basket order's notional and the share in basis points, with the fee at 0. No platform fee is charged, and boot refuses a non-zero `AROMA_PLATFORM_FEE_BPS`. A platform fee or any payout (5b) needs the owner's and counsel's sign-off, and its own reviewed change to the trade path.

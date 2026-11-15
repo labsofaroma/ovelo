@@ -103,7 +103,7 @@ Every variable the owner sets for `beta.<domain>`:
 | Domain | `AROMA_SITE_URL` | `https://beta.<domain>` | yes |
 | Mainnet RPC (server) | `SOLANA_RPC_URL` | paid Helius or Triton key (path/query, never `user:pass@`) | yes |
 | Mainnet RPC (browser) | `NEXT_PUBLIC_SOLANA_RPC_URL`, `NEXT_PUBLIC_SOLANA_WS_URL` | a separate, origin-locked key for `beta.<domain>` | yes (WS optional) |
-| Neon | `DATABASE_URL` | pooled, `sslmode=require`; then `pnpm db:migrate` (through `0006_trade_caps`) | yes |
+| Neon | `DATABASE_URL` | pooled, `sslmode=require`; then `pnpm db:migrate` (through `0009_fee_share_ledger`, M11) | yes |
 | Upstash Redis | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | eviction **off** (single-use nonces) | yes |
 | Trade HMAC | `AROMA_TRADE_SECRET` | `openssl rand -base64 48`, straight into Vercel | yes |
 | Jupiter | `JUPITER_API_KEY` | portal.jup.ag (keyless → `TRADING_UNAVAILABLE`) | yes |
@@ -117,3 +117,19 @@ Every variable the owner sets for `beta.<domain>`:
 
 **Must be unset on the beta** (in addition to the production list above): `NEXT_PUBLIC_PRIVY_APP_ID` and any other prototype-only variable (`AROMA_RECURRING_AUTH_SECRET`, `AROMA_FAUCET_SECRET_KEY`, `CREATOR_AUTH_SECRET`, `CREATOR_INVITE_CODES`, `BOT_KEYPAIR`). The owner's checklist, in order: [BETA-RUNBOOK.md](./BETA-RUNBOOK.md).
 
+
+## 6. M11 launch features (beta and production)
+
+All optional unless stated; `pnpm check:prod-env` (both profiles) reports each. A half-set channel, a channel without the worker secret in production, the E2E sink and a non-zero platform fee stop the boot.
+
+| Service | Variables | Value | Required |
+|---|---|---|---|
+| Periodic worker (QStash schedule, every minute, to `POST /api/v1/notifications/deliver`) | `AROMA_NOTIFY_WORKER_SECRET` | `openssl rand -base64 48`; sent as `Upstash-Forward-Authorization: Bearer …` | yes once a channel is set; recommended anyway (it also writes the fee-share ledger) |
+| Pause switch | `AROMA_NOTIFICATIONS` | `on` (default) or `off` | — |
+| Web push | `VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY`, `VAPID_SUBJECT` | `pnpm --filter @aroma/web notify:vapid` on the owner's machine; subject `mailto:` the operator | all three or none |
+| Telegram | `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNAME`, `TELEGRAM_WEBHOOK_SECRET` | @BotFather; `openssl rand -hex 32`; then `setWebhook` (BETA-RUNBOOK §4) | all three or none |
+| Email | — | not in this build (no email address is collected) | — |
+| Analytics | `NEXT_PUBLIC_PLAUSIBLE_DOMAIN` | the site's own host; events only after consent | — |
+| Fees | `AROMA_PLATFORM_FEE_BPS`, `AROMA_CREATOR_FEE_SHARE_BPS` | `0` or unset; share 0–10000 (ledger only) | — |
+
+**Must be unset in production:** `AROMA_V1_TEST_NOTIFY_SINK_URL` (E2E only).
