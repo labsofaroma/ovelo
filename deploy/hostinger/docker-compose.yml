@@ -1,7 +1,7 @@
 # Phase H Step 5: Aroma on a Hostinger VPS behind Cloudflare (docs/launch/HOSTINGER-RUNBOOK.md).
-# Run ONLY through deploy.sh / rollback.sh, which set AROMA_IMAGE to an image DIGEST:
-#   sudo AROMA_IMAGE=ghcr.io/aromalabs/aroma-web@sha256:<digest> docker compose \
-#     -f /opt/aroma/docker-compose.yml up -d --wait
+# Deploy ONLY through deploy.sh / rollback.sh, which set AROMA_IMAGE to an image DIGEST and pin
+# it in /opt/aroma/.env (read by Compose), so plain `sudo docker compose -f
+# /opt/aroma/docker-compose.yml ps|logs|exec|stop` work on the running digest.
 #
 # - Nothing is published on the host: the app is reachable only from cloudflared on the internal
 #   `edge` network, and cloudflared dials OUT to Cloudflare (no inbound 80/443 on the VPS).

@@ -1,6 +1,7 @@
 // @vitest-environment node
 import { execFileSync, spawnSync } from "node:child_process";
 import { readFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { describe, expect, it } from "vitest";
 
@@ -209,6 +210,54 @@ describe("deploy.sh and rollback.sh refuse anything but our digest", () => {
         "aromalabs/aroma/\\.github/workflows/image\\.yml@refs/",
       );
       expect(text).toContain("https://token.actions.githubusercontent.com");
+    }
+  });
+
+  it("the signer identity accepts main and vX.Y.Z[-pre] tags only (both scripts agree)", () => {
+    const identities = ["deploy.sh", "rollback.sh"].map(
+      (script) =>
+        /^SIGNER_IDENTITY='(.+)'$/m.exec(
+          read(`deploy/hostinger/${script}`),
+        )![1]!,
+    );
+    expect(identities[0]).toBe(identities[1]);
+    const re = new RegExp(identities[0]!);
+    const ref = (r: string) =>
+      `https://github.com/aromalabs/aroma/.github/workflows/image.yml@refs/${r}`;
+    for (const r of ["heads/main", "tags/v1.0.0", "tags/v1.2.3-beta.1"])
+      expect(re.test(ref(r)), r).toBe(true);
+    for (const r of ["heads/dev", "tags/v1", "tags/vX", "tags/v1.0.0;x"])
+      expect(re.test(ref(r)), r).toBe(false);
+  });
+
+  it("deploy.sh compares the migration and app ROLES, however the URLs are spelled", () => {
+    const text = read("deploy/hostinger/deploy.sh");
+    const fn = /^db_user\(\) \{[\s\S]*?^\}$/m.exec(text)![0];
+    const user = (line: string) =>
+      spawnSync("bash", [
+        "-c",
+        `${fn}\nprintf '%s\\n' "$1" > "$2"; db_user "$2"`,
+        "_",
+        line,
+        join(tmpdir(), `db-${process.pid}`),
+      ]).stdout.toString();
+    expect(
+      user("DATABASE_URL=postgres://aroma_app:pw@h/db?sslmode=require"),
+    ).toBe("aroma_app");
+    expect(
+      user('DATABASE_URL="postgresql://aroma_app:pw@h/db?a=1&sslmode=require"'),
+    ).toBe("aroma_app");
+    expect(user("DATABASE_URL='postgres://aroma_migrate:p:w@h/db'")).toBe(
+      "aroma_migrate",
+    );
+    expect(user("DATABASE_URL=postgres://h/db")).toBe("");
+  });
+
+  it("deploy.sh and rollback.sh pin the running digest for plain docker compose commands", () => {
+    for (const script of ["deploy.sh", "rollback.sh"]) {
+      const text = read(`deploy/hostinger/${script}`);
+      expect(text).toMatch(/pin_image\(\) \{[\s\S]*AROMA_IMAGE=%s/);
+      expect(text).toMatch(/\n\s*pin_image "\$(IMAGE|TARGET)"/);
     }
   });
 

@@ -116,7 +116,22 @@ sudo install -d -m 0755 -o root -g root /opt/aroma
 
 - [ ] Copy `deploy/hostinger/docker-compose.yml`, `deploy.sh`, `rollback.sh` and `host-check.sh` from the **release tag you deploy** to `/opt/aroma/` (`scp` over Tailscale). Then run `sudo chmod 0750 /opt/aroma/*.sh && sudo chown root:root /opt/aroma/*`.
 
-**Verify:** `sudo stat -c '%a %U %n' /etc/aroma /opt/aroma /opt/aroma/*` shows `700 root /etc/aroma`, `755 root /opt/aroma`, `750` for the scripts and `644` for the compose file.
+**Verify:** `sudo stat -c '%a %U %n' /etc/aroma /opt/aroma /opt/aroma/*` shows `700 root /etc/aroma`, `755 root /opt/aroma`, `750` for the scripts and `644` for the compose file. After the first deploy, `/opt/aroma/.env` (`644 root`) holds only `AROMA_IMAGE=<the running digest>`: `deploy.sh` and `rollback.sh` write it, so plain `sudo docker compose -f /opt/aroma/docker-compose.yml ps|logs|exec|stop` work. Never put a secret in it.
+
+**2.8 Registry login (the image is private).**
+
+The image lives in GitHub's container registry (GHCR) under the repository's account. While the package is private, `docker pull` and `cosign verify` on the VPS need a read-only login.
+
+- [ ] On GitHub: Settings → Developer settings → Personal access tokens → **Tokens (classic)** → a token with **only `read:packages`**, named `aroma-vps-pull`, with an expiry (for example 1 year; put the renewal in your calendar). Fine-grained tokens do not cover GHCR packages yet.
+- [ ] On the VPS, as root, without echoing it or saving it in history:
+
+```bash
+sudo sh -c 'read -rs T && printf %s "$T" | docker login ghcr.io -u <github-user> --password-stdin'   # paste the token, Enter
+```
+
+  `docker login` stores it in `/root/.docker/config.json` (mode 0600); `cosign` reads the same file. Alternative: make the package public (GitHub → the package → Package settings → Change visibility). The image holds no secret (the build takes public values only, and the client-secret scan runs inside it), so public is acceptable; then skip this step.
+
+**Verify:** `sudo stat -c '%a %U' /root/.docker/config.json` prints `600 root`. After the first `image.yml` run, `sudo docker manifest inspect ghcr.io/<owner>/aroma-web@sha256:<digest> >/dev/null && echo ok` prints `ok`.
 
 ## 3. Cloudflare (the free plan is enough for the beta)
 
@@ -182,7 +197,7 @@ ssh opsadmin@<tailscale-name> 'sudo install -m 0600 -o root -g root ~/aroma.env 
 - [ ] Put the **same** `AROMA_ORIGIN_SECRET` in the Cloudflare Transform Rule (§3).
 - [ ] If you ever type a secret in a shell, prefix the command with a space (with `HISTCONTROL=ignorespace`), or `read -rs VAR`.
 
-**Verify:** `sudo stat -c '%a %U %n' /etc/aroma/*` shows `600 root` for the env files and `400` (UID 65532) for the tunnel token. `history | grep -c -E 'base64|SECRET='` prints `0`.
+**Verify:** `sudo stat -c '%a %u %n' /etc/aroma/*` shows `600 0` for the env files and `400 65532` for the tunnel token (UID 65532 has no name on the host, so print the number). `history | grep -c -E 'base64|SECRET='` prints `0`.
 
 ## 5. Database roles on Neon 💲 (PITR length depends on the plan)
 
@@ -305,7 +320,7 @@ ssh opsadmin@<tailscale-name> 'sudo tar -C /etc -czf - aroma' | gpg --symmetric 
 
 - **Stop the damage first:** [kill-switch.md](../../deploy/hostinger/kill-switch.md) (trading off, Under Attack mode, notifications off, tunnel down).
 - **Bad deploy:** `sudo /opt/aroma/rollback.sh`. It re-verifies the signature and doesn't touch the database; migrations are additive and forward-only.
-- **Rotate a secret** (edit `/etc/aroma/aroma.env`, then `sudo AROMA_IMAGE="$(sudo cat /etc/aroma/current)" docker compose -f /opt/aroma/docker-compose.yml up -d --wait app`; in-flight requests drain first):
+- **Rotate a secret** (edit `/etc/aroma/aroma.env`, then `sudo docker compose -f /opt/aroma/docker-compose.yml up -d --wait app`; in-flight requests drain first):
 
   | Secret | Rotation |
   |---|---|
@@ -325,6 +340,6 @@ ssh opsadmin@<tailscale-name> 'sudo tar -C /etc -czf - aroma' | gpg --symmetric 
 | 💲 Hostinger KVM 2 VPS | the plan price at checkout (longer terms are cheaper per month; check the renewal price). Backups as included or priced in hPanel |
 | Cloudflare (DNS, TLS, tunnel, WAF managed rules, the free plan's custom and rate-limiting rules) | free plan |
 | Tailscale (personal) | free plan |
-| GHCR (private image storage) | included in the GitHub plan's package storage (check the limits for a private org) |
+| GHCR (private image storage) | included in the GitHub plan's package storage (check the limits for a private repository); the VPS logs in with a `read:packages` token (§2.8) |
 | Neon, Upstash, RPC, Jupiter, Sentry, Turnstile | unchanged from PRODUCTION-ENV.md (none of them depends on where the app runs) |
 | SOL | **none** for hosting. Network fees are paid by users' own wallets; the M12 program deploy is a separate budget (REWRITE-PLAN §7.2) |

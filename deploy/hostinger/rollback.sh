@@ -15,8 +15,16 @@ umask 077
 REPO="${AROMA_IMAGE_REPO:-ghcr.io/aromalabs/aroma-web}"
 ETC="${AROMA_ETC:-/etc/aroma}"
 COMPOSE_FILE="${AROMA_COMPOSE_FILE:-/opt/aroma/docker-compose.yml}"
-SIGNER_IDENTITY='^https://github\.com/aromalabs/aroma/\.github/workflows/image\.yml@refs/(heads/main|tags/v[0-9][0-9.]*)$'
+SIGNER_IDENTITY='^https://github\.com/aromalabs/aroma/\.github/workflows/image\.yml@refs/(heads/main|tags/v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?)$'
 OIDC_ISSUER="https://token.actions.githubusercontent.com"
+
+# Compose reads .env next to the compose file for ${AROMA_IMAGE}, so plain `docker compose ps`,
+# `logs`, `exec` and `stop` (host-check.sh, kill-switch.md, the runbook) use the running digest.
+pin_image() {
+  local file
+  file="$(dirname "$COMPOSE_FILE")/.env"
+  printf 'AROMA_IMAGE=%s\n' "$1" > "${file}.tmp" && chmod 0644 "${file}.tmp" && mv -f "${file}.tmp" "$file"
+}
 
 log() { printf '%s rollback: %s\n' "$(date -u +%FT%TZ)" "$*" >&2; }
 die() { log "ERROR: $*"; exit "${2:-1}"; }
@@ -38,11 +46,13 @@ log "verifying the signature of ${TARGET}"
 cosign verify "$TARGET" \
   --certificate-identity-regexp "$SIGNER_IDENTITY" \
   --certificate-oidc-issuer "$OIDC_ISSUER" >/dev/null \
-  || die "signature verification failed"
-docker pull --quiet "$TARGET" >/dev/null
+  || die "signature verification failed (or ghcr.io login missing: HOSTINGER-RUNBOOK §2.8)"
+docker pull --quiet "$TARGET" >/dev/null \
+  || die "pull failed: is root logged in to ghcr.io (HOSTINGER-RUNBOOK §2.8)?"
 log "switching app to ${TARGET} (database untouched: migrations are forward-only)"
 AROMA_IMAGE="$TARGET" docker compose -f "$COMPOSE_FILE" up -d --wait --wait-timeout 150 app cloudflared \
-  || die "rollback did not become healthy: use kill-switch.md and check 'docker compose logs app'"
+  || die "rollback did not become healthy: use kill-switch.md and check 'docker compose -f ${COMPOSE_FILE} logs app'"
 printf '%s\n' "$TARGET" > "${ETC}/current"
+pin_image "$TARGET"
 [ -n "$CURRENT" ] && [ "$CURRENT" != "$TARGET" ] && printf '%s\n' "$CURRENT" > "${ETC}/previous"
 log "rolled back to ${TARGET}; the version rolled away from is now in ${ETC}/previous"

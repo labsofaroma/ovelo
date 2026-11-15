@@ -8,7 +8,7 @@ Three levers, fastest first. None of them needs a new image or a deploy. Each on
 
 ```bash
 sudo sed -i 's/^AROMA_TRADING=.*/AROMA_TRADING=off/' /etc/aroma/aroma.env
-sudo AROMA_IMAGE="$(sudo cat /etc/aroma/current)" docker compose -f /opt/aroma/docker-compose.yml up -d --wait app
+sudo docker compose -f /opt/aroma/docker-compose.yml up -d --wait app
 # Verify (expects 503 TRADING_UNAVAILABLE):
 curl -s -X POST https://<host>/api/v1/trade/quote -H 'content-type: application/json' -d '{}'
 ```
@@ -27,7 +27,7 @@ Side effect: Blink unfurlers and wallets that call `/actions.json` and `/api/v1/
 
 ```bash
 sudo sed -i 's/^AROMA_NOTIFICATIONS=.*/AROMA_NOTIFICATIONS=off/' /etc/aroma/aroma.env
-sudo AROMA_IMAGE="$(sudo cat /etc/aroma/current)" docker compose -f /opt/aroma/docker-compose.yml up -d --wait app
+sudo docker compose -f /opt/aroma/docker-compose.yml up -d --wait app
 ```
 
 You can also pause the schedule in the Upstash console (QStash → Schedules → Pause), which stops the calls at the source.

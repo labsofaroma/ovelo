@@ -24,7 +24,7 @@ umask 077
 REPO="${AROMA_IMAGE_REPO:-ghcr.io/aromalabs/aroma-web}"
 ETC="${AROMA_ETC:-/etc/aroma}"
 COMPOSE_FILE="${AROMA_COMPOSE_FILE:-/opt/aroma/docker-compose.yml}"
-SIGNER_IDENTITY='^https://github\.com/aromalabs/aroma/\.github/workflows/image\.yml@refs/(heads/main|tags/v[0-9][0-9.]*)$'
+SIGNER_IDENTITY='^https://github\.com/aromalabs/aroma/\.github/workflows/image\.yml@refs/(heads/main|tags/v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?)$'
 OIDC_ISSUER="https://token.actions.githubusercontent.com"
 
 log() { printf '%s deploy: %s\n' "$(date -u +%FT%TZ)" "$*" >&2; }
@@ -60,22 +60,43 @@ if grep -Eq '^(AROMA_TRUST_PROXY|AROMA_SKIP_ENV_CHECK|SENTRY_AUTH_TOKEN|AROMA_V1
   die "${ETC}/aroma.env sets a test-only or removed variable (see SELF-HOST.md §2)"
 fi
 grep -Eq '^DATABASE_URL=.' "${ETC}/migrate.env" || die "${ETC}/migrate.env has no DATABASE_URL"
-if [ "$(grep -E '^DATABASE_URL=' "${ETC}/migrate.env")" = "$(grep -E '^DATABASE_URL=' "${ETC}/aroma.env" || true)" ]; then
-  die "migrate.env must use the MIGRATION role, not the app role's DATABASE_URL"
+# The ROLE (the URL's user) must differ, however the URLs are spelled (quotes, parameters).
+db_user() {
+  local v
+  v="$(grep -E '^DATABASE_URL=' "$1" | head -1 | cut -d= -f2-)"
+  v="${v%\"}"; v="${v#\"}"; v="${v%\'}"; v="${v#\'}"
+  v="${v#*://}"
+  [[ "$v" == *@* ]] || return 0
+  v="${v%%@*}"
+  printf '%s' "${v%%:*}"
+}
+MIGRATE_USER="$(db_user "${ETC}/migrate.env")"
+[ -n "$MIGRATE_USER" ] || die "${ETC}/migrate.env DATABASE_URL names no user (role)"
+if [ "$MIGRATE_USER" = "$(db_user "${ETC}/aroma.env")" ]; then
+  die "migrate.env must use the MIGRATION role, not the app role (same user in both DATABASE_URLs)"
 fi
 
 compose() { AROMA_IMAGE="$1" docker compose -f "$COMPOSE_FILE" "${@:2}"; }
+
+# Compose reads .env next to the compose file for ${AROMA_IMAGE}, so plain `docker compose ps`,
+# `logs`, `exec` and `stop` (host-check.sh, kill-switch.md, the runbook) use the running digest.
+pin_image() {
+  local file
+  file="$(dirname "$COMPOSE_FILE")/.env"
+  printf 'AROMA_IMAGE=%s\n' "$1" > "${file}.tmp" && chmod 0644 "${file}.tmp" && mv -f "${file}.tmp" "$file"
+}
 
 # --- 2. signature -------------------------------------------------------------------------
 log "verifying the signature of ${IMAGE}"
 cosign verify "$IMAGE" \
   --certificate-identity-regexp "$SIGNER_IDENTITY" \
   --certificate-oidc-issuer "$OIDC_ISSUER" >/dev/null \
-  || die "signature verification failed: not built and signed by aromalabs/aroma image.yml"
+  || die "signature verification failed: not built and signed by aromalabs/aroma image.yml (or ghcr.io login missing: HOSTINGER-RUNBOOK §2.8)"
 
 # --- 3. pull ------------------------------------------------------------------------------
 log "pulling by digest"
-docker pull --quiet "$IMAGE" >/dev/null
+docker pull --quiet "$IMAGE" >/dev/null \
+  || die "pull failed: is root logged in to ghcr.io with a read:packages token (HOSTINGER-RUNBOOK §2.8)?"
 
 # --- 4. candidate boot, off the traffic path ----------------------------------------------
 CANDIDATE="aroma-candidate-$$"
@@ -113,6 +134,7 @@ if compose "$IMAGE" up -d --wait --wait-timeout 150 app cloudflared; then
     printf '%s\n' "$PREVIOUS" > "${ETC}/previous"
   fi
   printf '%s\n' "$IMAGE" > "${ETC}/current"
+  pin_image "$IMAGE"
   chmod 0600 "${ETC}/current" "${ETC}/previous" 2>/dev/null || true
   log "deployed ${IMAGE}"
   log "previous digest (rollback.sh): ${PREVIOUS:-none}"
@@ -121,7 +143,8 @@ else
   if [ -n "$PREVIOUS" ]; then
     log "rolling back to ${PREVIOUS}"
     compose "$PREVIOUS" up -d --wait --wait-timeout 150 app cloudflared \
-      || die "ROLLBACK FAILED: run kill-switch.md and check 'docker compose logs app'"
+      || die "ROLLBACK FAILED: run kill-switch.md and check 'docker compose -f ${COMPOSE_FILE} logs app'"
+    pin_image "$PREVIOUS"
     die "deploy failed and was rolled back to the previous digest"
   fi
   die "deploy failed and there is no previous digest to roll back to"
