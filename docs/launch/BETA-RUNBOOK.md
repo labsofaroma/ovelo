@@ -4,12 +4,16 @@ _Prepared for the M11 tip on branch `m11-launch` (REWRITE-PLAN §7.3 phase D; fi
 
 **What the beta is (owner decision, 2026-11-15).** Spot purchases, baskets, creators, Blinks and the M11 features are live on Solana mainnet for invited wallets, with small caps. Recurring investing stays the labelled **devnet test** (M10 Path B). **Aroma Guard is not on mainnet**: that is M12, when it is funded and audited. Nothing in this runbook deploys a program.
 
+**Platform: Vercel or Hostinger (Phase H).** The beta runs on either platform; pick one.
+- **Vercel:** the steps below as written.
+- **Hostinger VPS behind Cloudflare:** do the steps below **except** the Vercel lines (marked *Vercel*). Then follow [HOSTINGER-RUNBOOK.md](./HOSTINGER-RUNBOOK.md) §1–§9 for the VPS, Cloudflare, secrets, database roles and the first deploy. Variables go in `/etc/aroma/aroma.env` instead of Vercel's env, and `check:prod-env` takes `--platform selfhost`.
+
 ## 1. Accounts (P3 minimum)
 
 Create only what the beta needs ([PRODUCTION-ENV.md §5](./PRODUCTION-ENV.md#5-phase-a-betadomain-private-beta)):
 
-- [ ] Vercel: a **separate project** for `beta.<domain>` (not the prototype's project), Git integration on `main` only.
-- [ ] Domain: `beta.<domain>` pointed at that project.
+- [ ] *Vercel:* a **separate project** for `beta.<domain>` (not the prototype's project), Git integration on `main` only. **Hostinger:** the VPS, Cloudflare zone and tunnel instead (HOSTINGER-RUNBOOK §1–§3).
+- [ ] Domain: `beta.<domain>` pointed at that project (*Vercel*), or the tunnel's public hostname `beta.<domain>` (Hostinger).
 - [ ] Mainnet RPC (Helius or Triton): a server key and a browser key locked to `https://beta.<domain>`. A second provider for `SOLANA_RPC_FALLBACK_URL` is recommended.
 - [ ] Neon (Postgres): a production branch; the pooled connection string.
 - [ ] Upstash Redis: eviction **off**. Upstash QStash: for the M11 periodic worker (step 4).
@@ -27,15 +31,15 @@ Create only what the beta needs ([PRODUCTION-ENV.md §5](./PRODUCTION-ENV.md#5-p
   - Fees: leave `AROMA_PLATFORM_FEE_BPS` unset or `0` (anything else stops the boot: no platform fee is approved). `AROMA_CREATOR_FEE_SHARE_BPS` is optional and is recorded in the ledger only.
   - Analytics (optional): `NEXT_PUBLIC_PLAUSIBLE_DOMAIN=beta.<domain>`. Events are sent only after a visitor opts in.
 - [ ] Check the environment:
-  1. `vercel env pull` into a file **outside** the repo.
-  2. `pnpm check:prod-env --profile beta --env-file <that file>`. It calls `getGenesisHash` on each RPC, read-only.
-  3. Delete the file.
+  1. `vercel env pull` into a file **outside** the repo (*Vercel*). On Hostinger, use your local copy of `aroma.env`.
+  2. `pnpm check:prod-env --profile beta --env-file <that file>`, adding `--platform selfhost` on Hostinger. It calls `getGenesisHash` on each RPC, read-only.
+  3. Delete the file (*Vercel*), or keep it only on the encrypted disk (Hostinger, HOSTINGER-RUNBOOK §4).
 
   The check must end `check:prod-env: OK`. Warnings for a channel you left off are expected.
 
 ## 2. Database
 
-- [ ] From a trusted machine, with the Neon `DATABASE_URL` exported: `pnpm db:migrate`. It applies through **`0009_fee_share_ledger`**. All migrations are additive:
+- [ ] *Vercel:* from a trusted machine, with the Neon `DATABASE_URL` exported, run `pnpm db:migrate`. **Hostinger:** `deploy.sh` runs the same migrations as a one-shot container with the migration role (`/etc/aroma/migrate.env`), and the app runs as the DML-only `aroma_app` role (HOSTINGER-RUNBOOK §5). Either way it applies through **`0009_fee_share_ledger`**. All migrations are additive:
   - `0005_beta_access` (invites, access) and `0006_trade_caps` (caps), from Phase A;
   - `0007_notifications`: the subscription and event tables, and delivery columns on `notifications`. That table has never been written to, so its new `NOT NULL` column needs no backfill; on a table with rows the statement fails loudly instead;
   - `0008_purchase_channels`: Blink attribution;
@@ -45,7 +49,7 @@ Create only what the beta needs ([PRODUCTION-ENV.md §5](./PRODUCTION-ENV.md#5-p
 
 - [ ] P6: the stack is pushed and merged to `main` with CI green ([MERGE-PLAN.md](./MERGE-PLAN.md)). The beta project builds from that merged tip, never from a local branch.
 - [ ] Counsel's beta texts are in: terms, risk disclosures, the privacy notice's notification section, the P&L wording ([COMPLIANCE.md](./COMPLIANCE.md)).
-- [ ] Deploy. The build runs the env check and the client-secret scan; both must pass.
+- [ ] Deploy. *Vercel:* the build runs the env check and the client-secret scan; both must pass. **Hostinger:** the `image` workflow builds, scans and signs the image from `main`. Then run `sudo /opt/aroma/deploy.sh sha256:<digest>` and the verification list in HOSTINGER-RUNBOOK §8.
 - [ ] Open `https://beta.<domain>/api/v1/health`: RPC (mainnet genesis), Redis and Postgres `ok`.
 - [ ] Every v1 page shows the "Private beta" banner; a wallet without access sees the redeem step in the ticket; the Action GET is disabled.
 - [ ] `/get-started`, `/portfolio` (Profit and loss section), `/settings` (Notifications) and `/creators/dashboard` load.
@@ -97,9 +101,9 @@ It fits the $5 budget. M11 adds no SOL cost: notifications, P&L and the ledger a
 
 ## 7. Rollback, emergency stop, and Phase B
 
-**Rollback a bad deploy:** Vercel → Deployments → the previous good deployment → *Instant Rollback*. Migrations `0005`–`0009` are additive, so an older build runs on the newer schema; never roll the database back.
+**Rollback a bad deploy:** *Vercel:* Deployments → the previous good deployment → *Instant Rollback*. **Hostinger:** `sudo /opt/aroma/rollback.sh` (the previous digest, signature re-verified). Migrations `0005`–`0009` are additive, so an older build runs on the newer schema; never roll the database back.
 
-**Emergency stop of trading:** set `AROMA_TRADING=off` and redeploy.
+**Emergency stop of trading:** set `AROMA_TRADING=off` and redeploy. On Hostinger, edit `aroma.env` and recreate the container ([kill-switch.md](../../deploy/hostinger/kill-switch.md)); this takes seconds and needs no new image.
 - Every mainnet trading entry point (quote, submit, Action POST) answers 503 `TRADING_UNAVAILABLE` in middleware and in each route.
 - Browsing, receipts, P&L and plan closes stay open.
 - Or remove access for wallets with `DELETE FROM beta_access WHERE wallet = '<address>'`, and remove them from `AROMA_BETA_WALLETS`.

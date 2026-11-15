@@ -15,13 +15,13 @@ _Runbook prepared on `launch-prep`. **The owner holds every key**; sessions neve
 | **Timelock** (Squads time lock on the vault) | — | Squads config | — | by proposal | — | set ≥ 24 h before mainnet caps are raised; monitor proposals |
 | **Mainnet keeper key** (`KEEPER_KEYPAIR`, M12) | owner (operator) | keeper host's secret store (not Vercel, not git) | can be regenerated; no backup needed | new key → `update_config` `keeper_authority` by multisig → redeploy keeper | can execute due installments within the program's bounds (oracle-bounded `min_out`, caps); can spend its fee SOL | set a new `keeper_authority` by multisig; drain-proof by design (holds only fee SOL; alert at `KEEPER_MIN_SOL_LAMPORTS`) |
 | **Devnet keeper key** | operator | keeper secret store (devnet service) | regenerate | as above, on devnet (deployer signs) | devnet installments only; refused on mainnet genesis | new devnet key |
-| **Devnet faucet key** (`AROMA_V1_FAUCET_KEYPAIR`) | operator | Vercel env (server-only) | regenerate | new key, transfer the test USD mint authority, redeploy | mints worthless test USD; refused on any non-devnet genesis | rotate; the daily budget and Turnstile cap abuse |
-| **`AROMA_TRADE_SECRET`** (+ `_PREVIOUS`) | operator | Vercel env (server-only) | none needed (regenerate) | §3 below; at least quarterly and on staff change | forge trade authorizations; but every submit still needs the **wallet's signature** over the exact authorized bytes, so no funds move without the user. Receipts could be polluted | §3 leak path (no overlap) |
-| **`AROMA_REVALIDATE_SECRET`** | operator | Vercel env | regenerate | replace and redeploy | can force cache revalidation (load, not data) | replace; rate limits cap abuse |
-| **Turnstile secret** (`TURNSTILE_SECRET_KEY`) | operator | Vercel env | Cloudflare dashboard | rotate in Cloudflare, redeploy | bypass the faucet's human check (devnet test tokens) | rotate in Cloudflare |
-| **QStash signing keys** (current/next) and `QSTASH_TOKEN` | operator | keeper host / Vercel env | Upstash console | Upstash "roll signing key": deploy current+next, then promote | forge keeper runs (the keeper only executes what is due on-chain) / schedule spam | roll keys in Upstash |
+| **Devnet faucet key** (`AROMA_V1_FAUCET_KEYPAIR`) | operator | Vercel env (server-only), or `/etc/aroma/aroma.env` on the VPS (§6) | regenerate | new key, transfer the test USD mint authority, redeploy | mints worthless test USD; refused on any non-devnet genesis | rotate; the daily budget and Turnstile cap abuse |
+| **`AROMA_TRADE_SECRET`** (+ `_PREVIOUS`) | operator | Vercel env (server-only), or `/etc/aroma/aroma.env` on the VPS (§6) | none needed (regenerate) | §3 below; at least quarterly and on staff change | forge trade authorizations; but every submit still needs the **wallet's signature** over the exact authorized bytes, so no funds move without the user. Receipts could be polluted | §3 leak path (no overlap) |
+| **`AROMA_REVALIDATE_SECRET`** | operator | Vercel env or `aroma.env` (§6) | regenerate | replace and redeploy | can force cache revalidation (load, not data) | replace; rate limits cap abuse |
+| **Turnstile secret** (`TURNSTILE_SECRET_KEY`) | operator | Vercel env or `aroma.env` (§6) | Cloudflare dashboard | rotate in Cloudflare, redeploy | bypass the faucet's human check (devnet test tokens) | rotate in Cloudflare |
+| **QStash signing keys** (current/next) and `QSTASH_TOKEN` | operator | keeper host / Vercel env / `aroma.env` (§6) | Upstash console | Upstash "roll signing key": deploy current+next, then promote | forge keeper runs (the keeper only executes what is due on-chain) / schedule spam | roll keys in Upstash |
 | ~~Privy~~ | none: **removed** (REWRITE-PLAN §7.3 W1, wallet-only login); no Privy keys exist | | | | | |
-| **Provider keys** (Jupiter, RPC, Hermes, Upstash, Neon, Sentry) | operator | Vercel / keeper env | provider dashboards | rotate in the dashboard, redeploy | quota abuse, data access (Neon: receipts, creators, terms acceptances) | rotate; Neon: rotate the role password, review access logs |
+| **Provider keys** (Jupiter, RPC, Hermes, Upstash, Neon, Sentry) | operator | Vercel / `aroma.env` / keeper env | provider dashboards | rotate in the dashboard, redeploy | quota abuse, data access (Neon: receipts, creators, terms acceptances) | rotate; Neon: rotate the role password, review access logs |
 
 ## 2. M12: moving the upgrade authority to Squads, and verifying it
 
@@ -42,8 +42,8 @@ Today on devnet (program not deployed yet): `check:custody: NOT DEPLOYED … OK`
 
 Authorizations are `at1.<kid>.<payload>.<mac>`; `kid` is derived from the key; quotes live 60 s. Drill test: `apps/web/server/auth/trade-rotation.drill.test.ts`.
 
-1. Generate a new value (`openssl rand -base64 48`) straight into Vercel's env UI.
-2. Set `AROMA_TRADE_SECRET_PREVIOUS` = the current value, `AROMA_TRADE_SECRET` = the new one. Deploy. (Boot refuses previous = current.)
+1. Generate a new value (`openssl rand -base64 48`) straight into Vercel's env UI, or into your local copy of `aroma.env` on the self-host path.
+2. Set `AROMA_TRADE_SECRET_PREVIOUS` = the current value and `AROMA_TRADE_SECRET` = the new one. Deploy: on Vercel, redeploy; on self-host, install the file and recreate the container (§6). The boot refuses previous = current.
 3. New quotes carry the new `kid`; in-flight quotes under the old key still verify until they expire.
 4. After one quote lifetime plus the rollout (a few minutes; the Action confirm callback accepts up to 15 minutes after expiry, so wait **20 minutes** to keep Blink receipts), remove `AROMA_TRADE_SECRET_PREVIOUS` and deploy. Old tokens now fail `AUTHORIZATION_INVALID`.
 5. `pnpm check:prod-env` warns while a previous key is set.
@@ -61,3 +61,18 @@ Authorizations are `at1.<kid>.<payload>.<mac>`; `kid` is derived from the key; q
 - `pnpm check:custody` — on-chain upgrade authority, config admin and keeper vs. expected (read-only).
 - `pnpm check:prod-env` — the production env profile (no test or placeholder values, rotation in progress warned).
 - Secret scans: `scripts/check-client-secrets.mjs` at the end of `pnpm build:web`; the repo secret scan test.
+
+## 6. Self-host (Hostinger VPS): where each secret lives, who can read it
+
+Phase H. On the VPS, every runtime secret is in **one root-only directory**. Nothing secret is in the image, the compose file, a build argument, CI or the repo.
+
+| Secret | Location on the VPS | Readable by | Also held at | Rotation |
+|---|---|---|---|---|
+| All app secrets (`AROMA_TRADE_SECRET`, `AROMA_ORIGIN_SECRET`, notify worker, revalidate, Upstash token, QStash keys, provider keys, VAPID private, Telegram, Turnstile, the devnet faucet key, the `aroma_app` DB password) | `/etc/aroma/aroma.env` (dir 0700 root, file 0600 root) | root, and through `docker inspect` anyone who can run Docker (root only: `opsadmin` is **not** in the `docker` group). Inside the container: the app process (UID 10001) | the owner's encrypted offline backup (HOSTINGER-RUNBOOK §10) | HOSTINGER-RUNBOOK §12 table: edit the file, recreate the container (drains first) |
+| `AROMA_ORIGIN_SECRET` | `aroma.env` | as above | **the Cloudflare Transform Rule**: anyone with access to the Cloudflare account. Keep members minimal, with 2FA | change the rule and the file together (each alone fails closed: every request 403) |
+| Migration role DB URL | `/etc/aroma/migrate.env` (0600 root) | root; only `deploy.sh`'s one-shot container reads it | offline backup | Neon → reset the role password, update the file |
+| Cloudflare Tunnel token | `/etc/aroma/tunnel-token` (0400, UID 65532), mounted read-only into `cloudflared` | root and the `cloudflared` process | Cloudflare Zero Trust (it can be refreshed there) | Zero Trust → *Refresh token*, rewrite the file, recreate `cloudflared` |
+| Alert webhook URL | `/etc/aroma/alert-webhook` (0600 root) | root (cron) | the Slack or Discord workspace | regenerate the webhook |
+| Image signing | none on the VPS or in CI: cosign **keyless** (GitHub OIDC). The VPS verifies against the `image.yml` workflow identity | — | Sigstore's transparency log (public) | nothing to rotate. A compromised workflow identity is handled by protecting `main` and the tags |
+
+**Who can reach the VPS:** only `opsadmin`, with an SSH key, over Tailscale. Root login and passwords are off, and ufw and the Hostinger firewall deny all other inbound traffic. **The VPS holds no user keys and no funded mainnet wallet:** a VPS compromise exposes the secrets above (rotate them all, HOSTINGER-RUNBOOK §12), but no user funds can move without each user's own wallet signature.

@@ -30,7 +30,7 @@ SOL: none.
 - [ ] Push the stack in order and fast-forward `main` ([MERGE-PLAN.md](./MERGE-PLAN.md) §1–§3; the linearity check now ends `phase-a-beta → phase-b-cutover`).
 - [ ] CI green on GitHub: `ci.yml` (required), and run `e2e.yml`, `lighthouse.yml` and `contracts.yml` once by hand (they are path-filtered and nightly; never run on GitHub yet).
 - [ ] Protect `main` (MERGE-PLAN §4 `gh api` commands).
-- [ ] The production Vercel project builds from `main` only. Tag the old prototype deploy `prototype-final` (already exists locally; push it first, MERGE-PLAN §3).
+- [ ] The production Vercel project builds from `main` only. **Hostinger:** only images signed by `image.yml` on `main` or a `v*` tag can be deployed (`deploy.sh` checks the cosign identity). Tag the release (`vX.Y.Z`) and deploy its digest. Tag the old prototype deploy `prototype-final` (already exists locally; push it first, MERGE-PLAN §3).
 
 SOL: none.
 
@@ -62,7 +62,13 @@ SOL: none.
 
 ## 7. Point the production domain at v1 (owner: DNS)
 
-- [ ] In Vercel, assign the production domain to the v1 project. DNS changes are yours.
+- [ ] *Vercel:* assign the production domain to the v1 project. DNS changes are yours.
+- [ ] **Hostinger** (the same VPS becomes production, or a second VPS from HOSTINGER-RUNBOOK §1–§2 if you want beta kept):
+  1. Add the tunnel's public hostname `<domain>` → `app:3000`.
+  2. Extend the Transform Rule's condition to the production hostname.
+  3. Set `AROMA_DEPLOY_ENV=production` and `AROMA_SITE_URL=https://<domain>` in `aroma.env`.
+  4. Run `check:prod-env --profile production --platform selfhost`, then `deploy.sh` the release digest.
+  5. If `beta.<domain>` stays on the same box, remove its hostname from the tunnel (one instance serves one site URL).
 - [ ] Open `https://<domain>/api/v1/health`: RPC (both endpoints: `primary` and `fallback` `ok`, `fallbackInUse: false`), Redis and Postgres `ok`.
 - [ ] Spot-check headers once: `curl -sI https://<domain>/ | grep -iE 'content-security-policy|strict-transport-security'` shows the nonce CSP and HSTS with preload.
 
@@ -89,6 +95,7 @@ SOL: none.
 ## 10. Monitoring
 
 - [ ] An uptime check on `GET /api/v1/health` (alert on 503 and on `status: degraded` for longer than a few minutes).
+- [ ] **Hostinger:** also the tunnel-health notification, the `fallbackInUse` keyword monitor and `host-check.sh` from cron ([HOSTINGER-RUNBOOK.md](./HOSTINGER-RUNBOOK.md) §9).
 - [ ] Sentry alert rules: web errors; `quote.refused` / `submit.refused` spikes; **`alert rpc.wrong_cluster`** (page immediately: an RPC endpoint reports another cluster); a sustained rate of **`rpc.fallback_served`** (the primary RPC is failing).
 - [ ] The Jupiter key's quota (keyless or exhausted keys refuse every quote).
 - [ ] Optional, owner only: register the Actions with a Blink registry so basket links unfurl on X.
@@ -97,8 +104,8 @@ SOL: none.
 
 ## 11. Rollback
 
-- **A bad deploy:** Vercel → Deployments → the previous good deployment → *Instant Rollback*. Migrations through `0006` are additive; never roll the database back.
-- **Stop trading, keep the site up:** set `AROMA_TRADING=off` and redeploy. Quote, submit and the Action POST answer 503; browsing, receipts and plan closes stay open.
+- **A bad deploy:** *Vercel:* Deployments → the previous good deployment → *Instant Rollback*. **Hostinger:** `sudo /opt/aroma/rollback.sh`. Migrations are additive (an AGENTS.md rule); never roll the database back.
+- **Stop trading, keep the site up:** set `AROMA_TRADING=off` and redeploy (Hostinger: [kill-switch.md](../../deploy/hostinger/kill-switch.md), seconds, no new image). Quote, submit and the Action POST answer 503; browsing, receipts and plan closes stay open.
 - **Back to the prototype:** point DNS back at the archive deployment from step 6.
 
 SOL: none.

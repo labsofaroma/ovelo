@@ -1,6 +1,8 @@
 # Production environment (P3)
 
-_Prepared on `launch-prep`; **the owner creates every account and key**. Sources: `apps/web/server/env.schema.ts` (+ `env.compliance.ts`), `apps/keeper/src/env.ts`, [M4-DEPLOY.md](../M4-DEPLOY.md), [keeper-operations.md](../keeper-operations.md). Values never go in git; set them in Vercel (web) or the keeper host's secret store._
+_Prepared on `launch-prep`; **the owner creates every account and key**. Sources: `apps/web/server/env.schema.ts` (+ `env.compliance.ts`), `apps/keeper/src/env.ts`, [M4-DEPLOY.md](../M4-DEPLOY.md), [keeper-operations.md](../keeper-operations.md). Values never go in git; set them in Vercel (web), in `/etc/aroma/aroma.env` on the self-host VPS ([§7](#7-self-host-hostinger-vps-behind-cloudflare), Phase H), or in the keeper host's secret store._
+
+**Two supported platforms (Phase H).** Either **Vercel** (as before) or a **Hostinger VPS behind Cloudflare** ([SELF-HOST.md](./SELF-HOST.md), [HOSTINGER-RUNBOOK.md](./HOSTINGER-RUNBOOK.md)). The variables are the same; what differs is where they live, how the platform is detected and which proxy is trusted (§7).
 
 **Check before every production deploy:**
 
@@ -8,9 +10,10 @@ _Prepared on `launch-prep`; **the owner creates every account and key**. Sources
 pnpm check:prod-env --env-file <path relative to apps/web>   # or with the env already exported
 pnpm check:prod-env --offline                                # skip the RPC genesis calls
 pnpm check:prod-env --profile beta --env-file <path>         # Phase A: beta.<domain> (§5)
+pnpm check:prod-env --profile beta --env-file <path> --platform selfhost   # Phase H: the VPS file (§7)
 ```
 
-It validates the production profile with the real boot schema (forced to `VERCEL_ENV=production`), then: required variables present; no `.invalid` / `placeholder` / test values; no Cloudflare Turnstile test keys; E2E, localnet and test switches off; the compliance policy fails closed and restricts US; and each mainnet RPC answers `getGenesisHash` with mainnet's genesis (read-only). It prints **names and statuses only**. Exit 1 on any missing, invalid or forbidden item.
+It validates the production profile with the real boot schema (on `--platform vercel`, the default, forced to `VERCEL_ENV=production`; on `--platform selfhost`, nothing is forced and the file must say `AROMA_PLATFORM=selfhost`, the profile's `AROMA_DEPLOY_ENV`, `AROMA_PROXY_MODE=cloudflare` and a valid `AROMA_ORIGIN_SECRET`), then: required variables present; no `.invalid` / `placeholder` / test values; no Cloudflare Turnstile test keys; E2E, localnet and test switches off; the compliance policy fails closed and restricts US; and each mainnet RPC answers `getGenesisHash` with mainnet's genesis (read-only). It prints **names and statuses only**. Exit 1 on any missing, invalid or forbidden item.
 
 ## 1. Web app (Vercel), by service
 
@@ -20,8 +23,9 @@ Milestone = when it is needed: **M9** spot and baskets live; **M10** no new vari
 |---|---|---|---|---|---|
 | Emergency stop | `AROMA_TRADING` | `on` (default) or `off`: `off` refuses every mainnet trading entry point with 503, nothing else (M9; replaces the removed `AROMA_V1_ENABLED` flag; boot now always validates the environment) | — | — | M9 |
 | Domain | `AROMA_SITE_URL` | canonical `https://` origin: HTTPS redirect, metadata, the `Site:` line of every wallet challenge, Action links | Vercel project → Domains; DNS at the registrar | — | M9 |
-| Vercel | `VERCEL`, `VERCEL_ENV` (set by Vercel) | platform detection; `VERCEL=1` makes the proxy and `x-vercel-ip-country` trusted | Vercel project (Git integration on `main` only) | **Pro** (team, protection, analytics, longer functions; `maxDuration` 60 s routes) | M9 |
-| Vercel | `AROMA_TRUST_PROXY` | only off Vercel, behind a proxy that overwrites forwarding and geo headers | — | leave `false` on Vercel | — |
+| Vercel | `VERCEL`, `VERCEL_ENV` (set by Vercel) | platform detection, read only by `server/platform.ts`; on Vercel the proxy mode defaults to `vercel` (`x-vercel-ip-country`, `X-Real-IP` trusted) | Vercel project (Git integration on `main` only) | **Pro** (team, protection, analytics, longer functions; `maxDuration` 60 s routes) | M9 |
+| Platform (Phase H) | `AROMA_PLATFORM`, `AROMA_DEPLOY_ENV` | leave **unset on Vercel** (`AROMA_DEPLOY_ENV=beta` may refine a Vercel production deployment); self-host: `selfhost` + `production`/`beta`, both required. A production boot without a platform answer, or with a contradiction, is refused | — | — | Phase H |
+| Proxy (Phase H) | `AROMA_PROXY_MODE`, `AROMA_ORIGIN_SECRET` | `vercel` (default on Vercel) / `cloudflare` (required on self-host production and beta, with the origin secret the Cloudflare Transform Rule sends) / `none`. **Replaces `AROMA_TRUST_PROXY`, which now refuses to boot: remove it from every environment** | `openssl rand -base64 48` for the secret | — | Phase H |
 | Vercel | `AROMA_ALLOWED_ORIGINS` | extra exact browser origins for the API | — | usually unset | optional |
 | Paid RPC (primary) | `SOLANA_RPC_URL` | server mainnet RPC; genesis verified before every trade operation | Helius or Triton dashboard; API key in the URL path/query (never as `user:pass@`) | Helius **Business** or Triton dedicated (sendTransaction + simulate at trade volume; staked connections) | M9 |
 | Paid RPC (browser) | `NEXT_PUBLIC_SOLANA_RPC_URL`, `NEXT_PUBLIC_SOLANA_WS_URL` | wallet stack RPC; becomes a CSP `connect-src` entry; public in the bundle | same provider: a **separate, domain-restricted** key | origin-locked key | M9 |
@@ -133,3 +137,21 @@ All optional unless stated; `pnpm check:prod-env` (both profiles) reports each. 
 | Fees | `AROMA_PLATFORM_FEE_BPS`, `AROMA_CREATOR_FEE_SHARE_BPS` | `0` or unset; share 0–10000 (ledger only) | — |
 
 **Must be unset in production:** `AROMA_V1_TEST_NOTIFY_SINK_URL` (E2E only).
+
+## 7. Self-host (Hostinger VPS behind Cloudflare)
+
+Phase H. The contract is [SELF-HOST.md](./SELF-HOST.md), and the owner's steps are [HOSTINGER-RUNBOOK.md](./HOSTINGER-RUNBOOK.md). The variables are those of §1, §5 and §6, plus the following:
+
+| Topic | Vercel | Self-host |
+|---|---|---|
+| Where runtime variables live | Vercel project env | `/etc/aroma/aroma.env` (root, 0600), template [`deploy/hostinger/aroma.env.example`](../../deploy/hostinger/aroma.env.example) |
+| Platform | `VERCEL`, `VERCEL_ENV` (Vercel) | `AROMA_PLATFORM=selfhost`, `AROMA_DEPLOY_ENV=beta\|production` |
+| Client IP and country | `X-Real-IP`, `x-vercel-ip-country` (`AROMA_PROXY_MODE` unset or `vercel`) | `CF-Connecting-IP`, `CF-IPCountry` only (`AROMA_PROXY_MODE=cloudflare`), behind the origin lock (`AROMA_ORIGIN_SECRET`) |
+| `NEXT_PUBLIC_*` | Vercel env (build time) | GitHub **repository variables**, baked into the image by `image.yml`. One image per set of public values |
+| `SENTRY_AUTH_TOKEN` | Vercel build secret (source maps) | not used: the image build never receives a secret. Server stack traces still reach Sentry, but browser source maps aren't uploaded unless you add a separate upload step |
+| Migrations | `pnpm db:migrate` from a trusted machine | `deploy.sh` runs them as a one-shot container with the **migration role** in `/etc/aroma/migrate.env`. The app role (`aroma_app`) has DML only ([HOSTINGER-RUNBOOK.md](./HOSTINGER-RUNBOOK.md) §5) |
+| Tunnel | — | the Cloudflare Tunnel token in `/etc/aroma/tunnel-token` (0400, UID 65532), never an env variable |
+| Deploys and rollback | Git integration; Instant Rollback | the signed image digest: `deploy.sh <digest>`, `rollback.sh` |
+| Function limits | `maxDuration` per route | no per-request limit. The SIGTERM drain is 65 s, above the 60 s routes |
+| Never set | `AROMA_TRUST_PROXY` | the same, plus everything in the "never on the VPS" list in [SELF-HOST.md](./SELF-HOST.md) §2 |
+

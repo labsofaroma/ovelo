@@ -220,6 +220,7 @@ describe("deploy.sh and rollback.sh refuse anything but our digest", () => {
       "style",
       join(ROOT, "deploy/hostinger/deploy.sh"),
       join(ROOT, "deploy/hostinger/rollback.sh"),
+      join(ROOT, "deploy/hostinger/host-check.sh"),
     ]);
     expect(result.stdout.toString()).toBe("");
     expect(result.status).toBe(0);
