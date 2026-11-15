@@ -47,6 +47,9 @@ Every variable is documented inline in `apps/web/.env.example`; copy it to `apps
 | `pnpm test` | Vitest for `packages/*`, `apps/keeper` and `apps/web/server`, plus the prototype `node:test` suites (`apps/web/tests`) |
 | `pnpm format:check` | Prettier on new code (prototype paths are listed in `.prettierignore`) |
 | `pnpm db:generate` / `pnpm db:migrate` | Drizzle: generate a migration from `apps/web/server/db/schema.ts` / apply migrations to `DATABASE_URL` (Neon) |
+| `pnpm check:prod-env [--profile beta]` | Production env check, names and statuses only (M11: channels, worker secret, fees) |
+| `pnpm --filter @aroma/web notify:vapid` | Print a fresh VAPID key pair for web push (owner, once per deployment; never committed) |
+| `pnpm --filter @aroma/web perf:p95 -- --base <url>` | p95 latency of `/markets` and `/api/v1/prices` against a running app (read-only GETs) |
 | `pnpm test:anchor` | Rust unit tests + IDL check + LiteSVM runtime tests |
 | `pnpm build:anchor` | `anchor build` |
 
@@ -59,6 +62,7 @@ The prototype scripts that pointed at files that were never committed (`dev:mobi
 - [docs/aroma-guard-v1.md](docs/aroma-guard-v1.md): the Aroma Guard v1 program (devnet until M12)
 - [docs/keeper-operations.md](docs/keeper-operations.md): the recurring keeper, operations and alerts
 - [docs/launch/CUTOVER-RUNBOOK.md](docs/launch/CUTOVER-RUNBOOK.md): the public spot launch, step by step (owner)
+- [docs/launch/BETA-RUNBOOK.md](docs/launch/BETA-RUNBOOK.md) and [docs/launch/LAUNCH-CHECKLIST.md](docs/launch/LAUNCH-CHECKLIST.md): the beta deploy (owner) and the launch status
 - [docs/AUDIT.md](docs/AUDIT.md): known flaws, ranked
 - [docs/CONTRACT-V1-SPEC.md](docs/CONTRACT-V1-SPEC.md): Aroma Guard v1 contract spec (ground-up rebuild)
 - [docs/ROADMAP.md](docs/ROADMAP.md): v1 rebuild plan (phases and launch scope)

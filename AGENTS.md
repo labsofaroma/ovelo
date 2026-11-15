@@ -11,6 +11,7 @@ Node 24.12.0, pnpm 10.31.0. Copy `apps/web/.env.example` to `apps/web/.env.local
 ## Where things go
 - Server-only code → `apps/web/server/` (v1: env, logger, errors, http, redis, ratelimit, rpc, db). Import `server-only`; never import it from a client component. Product code lives in `apps/web/features/<feature>/` (server modules under `server/` or `server.ts`).
 - Chain, market and basket helpers → `apps/web/lib/sdk/` (import the module itself, e.g. `@/lib/sdk/baskets/mainnet`; there is no barrel). The v1 contract client and the Pyth pieces the keeper also needs → `packages/guard` (`@aroma/guard`; TypeScript source, no build step). Nothing in `packages/guard` imports from `apps/*`.
+- Wallet-signed requests that are not about a basket (notification opt-in, read-only sessions) → `apps/web/server/wallet-challenge.ts` and `wallet-session.ts`; `server/auth/**` is frozen (M11).
 - Contract changes → `packages/contracts/programs/aroma_guard/` (Aroma Guard v1, [docs/aroma-guard-v1.md](docs/aroma-guard-v1.md)). Then run `pnpm build:contracts && pnpm --filter @aroma/contracts idl:sync` (it writes the IDL and the Codama client into `packages/guard/src/v1/`).
 - Design tokens → `packages/ui/tokens.css` (through `@aroma/ui`). Design context → `.21st/DESIGN.md`. Styling: Tailwind v4 utilities and CSS Modules; no new global CSS.
 

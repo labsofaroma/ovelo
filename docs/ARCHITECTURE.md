@@ -1,13 +1,13 @@
 # Architecture
 
-Aroma v1 as built (M9, Phase B). Own tokenized stocks on Solana from your own wallet: research, buy single names or themed baskets (mainnet spot through Jupiter), practise on paper, and try recurring plans on devnet. The server prepares and checks transactions; **wallets sign them**; no user key ever reaches the server.
+Aroma v1 as built (M9, Phase B; M11 launch features on branch `m11-launch`). Own tokenized stocks on Solana from your own wallet: research, buy single names or themed baskets (mainnet spot through Jupiter), practise on paper, and try recurring plans on devnet. The server prepares and checks transactions; **wallets sign them**; no user key ever reaches the server.
 
 ## Repository
 
 | Path | What |
 |---|---|
 | `apps/web` | Next.js 15 App Router (React 19, TypeScript strict with `noUncheckedIndexedAccess`). Pages in two root route groups, `(app)` and `(marketing)`; the versioned API under `/api/v1`; `middleware.ts` |
-| `apps/web/features/<feature>` | All product code: `markets`, `stock`, `baskets`, `trade`, `portfolio`, `watchlist`, `creators`, `invest`, `compliance`, `beta`, `caps`, `wallet`, `account`, `marketing`, `shared`. Server modules in `server/` or `server.ts` (`import "server-only"`) |
+| `apps/web/features/<feature>` | All product code: `markets`, `stock`, `baskets`, `trade`, `portfolio`, `watchlist`, `creators`, `invest`, `compliance`, `beta`, `caps`, `wallet`, `account`, `marketing`, `shared`, and (M11) `notifications`, `onboarding`. Server modules in `server/` or `server.ts` (`import "server-only"`) |
 | `apps/web/server` | Server infrastructure: validated env (`env.schema.ts`), RPC (`rpc.ts`), auth tokens (`auth/`), Postgres (`db/`), Redis, rate limits, CSP, errors, telemetry, the 410 rule (`gone.ts`), the trading switch |
 | `apps/web/lib/sdk` | Chain, market and basket helpers: catalog and sources, research, Jupiter, Pyth, basket math, paper trading |
 | `apps/keeper` | The recurring-plan keeper, triggered by QStash ([keeper-operations.md](./keeper-operations.md)); devnet today, mainnet at M12 ([keeper-mainnet.md](./keeper-mainnet.md)) |
@@ -20,7 +20,7 @@ Aroma v1 as built (M9, Phase B). Own tokenized stocks on Solana from your own wa
 
 All server-rendered (RSC) with small client islands; every page is dynamic because each response carries a fresh CSP nonce. Market and research data come from the Next data cache (tagged, refreshed by `POST /api/v1/revalidate`), never the disk.
 
-`/` landing · `/markets` · `/stock/[symbol]` · `/baskets` · `/basket/[id]` (curated slug or creator basket UUID) · `/basket/new` (builder) · `/watchlist` · `/portfolio` (activity at `#activity`) · `/creators` · `/invest` (devnet) · `/settings` · `/privacy` · `/terms` · `/restricted`. Every page says which mode it shows: **mainnet spot purchase**, **devnet recurring test** or **paper practice** ([PRODUCT.md](../PRODUCT.md)). Old URLs (`/v1/*`, `/landing`, `/app`, `/sip`, `/basket/builder`, `/orders`) redirect 308 (`apps/web/redirects.mjs`); the removed prototype APIs answer 410 `GONE`.
+`/` landing · `/markets` · `/stock/[symbol]` · `/baskets` · `/basket/[id]` (curated slug or creator basket UUID) · `/basket/new` (builder) · `/watchlist` · `/portfolio` (activity at `#activity`, P&L) · `/get-started` · `/creators` · `/creators/dashboard` · `/invest` (devnet) · `/settings` · `/privacy` · `/terms` · `/restricted`. Every page says which mode it shows: **mainnet spot purchase**, **devnet recurring test** or **paper practice** ([PRODUCT.md](../PRODUCT.md)). Old URLs (`/v1/*`, `/landing`, `/app`, `/sip`, `/basket/builder`, `/orders`) redirect 308 (`apps/web/redirects.mjs`); the removed prototype APIs answer 410 `GONE`.
 
 ## A request, end to end
 
@@ -57,14 +57,27 @@ The gates every route must have are pinned in `server/route-gates.test.ts` (a ne
 
 `/invest` creates and closes Aroma Guard v1 plans on **devnet** with test tokens of no value (`features/invest`; prepare → wallet signs → submit). The keeper (`apps/keeper`) executes due installments: QStash calls `POST /run` (signature verified), it takes a lease per plan and period, posts a fresh Pyth price, executes oldest period first, records skipped periods, retries with backoff, keeps a dead-letter list and alerts a webhook. Mainnet recurring is not offered: `/invest` shows the devnet plans under a "Mainnet recurring: coming" notice. M10 took **Path B** (owner, 2026-11-15): Jupiter's on-chain Recurring API rejects every xStock (Token-2022), and its successor holds deposits in a Jupiter-controlled custodial vault with off-chain orders ([launch/DCA-SPIKE.md](./launch/DCA-SPIKE.md)). **M12** (Aroma Guard on mainnet, when funded) is the mainnet recurring path.
 
+## Launch features (M11)
+
+- **Notifications outbox** (`features/notifications`, migration `0007`):
+  - `notification_events` holds one row per fact, with a deterministic id. Trade and creator-buy events come from a scan of Aroma's receipts (the trade path stays frozen). Devnet round events are written by the keeper in the same step (`apps/keeper/src/notify.ts`), only for owners with an active subscription.
+  - The worker (`POST /api/v1/notifications/deliver`, bearer secret, QStash every minute) fans each event out into one `notifications` row per active channel (unique on event and channel). It then claims due rows with `SKIP LOCKED` and a 60 s lease, sends, and settles them as sent, retried (exponential back-off) or dead (6 attempts, or a permanent failure).
+  - Delivery is at-least-once; push dedupes on the receiver (`tag` = event id).
+  - Channels sit behind `NotificationChannel`, with local fakes: web push (RFC 8291/8292 on `node:crypto`, endpoints restricted to known push services) and Telegram (Bot API over `fetch`, verified by a one-time `/start` code). Email is off.
+  - Opt-in is wallet-signed per channel (`server/wallet-challenge.ts`); reads and changes use a 15-minute `ws1` session (`server/wallet-session.ts`). Unsubscribe and "delete all" are hard deletes.
+- **P&L** (`features/portfolio/pnl`): confirmed receipts plus the exact fill of each confirmed transaction (the token-balance change, read once over read-only RPC and cached in Redis), replayed as average cost in `bigint` against the balance on chain now. A holding larger than Aroma bought is "cost basis unknown"; a smaller one left at average cost. Views per holding, per basket and in totals over what is known. The CSV is served to the signed-in wallet only (`ws1` portfolio session).
+- **Onboarding funnel** (`features/onboarding`, `/get-started`): wallet → real SOL and USDC balances against the SOL the suggested basket needs → a catalog basket chosen by a stated rule, into the trade ticket with the usual gates. Four events, consent-gated, with no wallet address (`features/shared/analytics.ts`).
+- **Creator dashboard** (`/creators/dashboard`, `GET /api/v1/creators/dashboard`, `ws1` creator session): the wallet's own baskets only (403 otherwise), with usage from confirmed receipts and the version history. The Blink share comes from `purchase_channels` (migration `0008`, written by the Action confirm callback).
+- **Fee-share ledger** (`features/creators/fee-share.ts`, migration `0009`): accounting only. One row per confirmed creator-basket order, with the fee at 0; boot refuses a non-zero platform fee. No payout exists.
+
 ## Data stores
 
 | Store | What |
 |---|---|
-| Postgres (Neon, Drizzle; migrations through `0006`) | `creators`, `invites`, `baskets`, `basket_allocations`, `basket_versions` (insert-only), `receipts`, `plans_index`, `terms_acceptances`, `beta_invites`, `beta_access`, `trade_cap_days`, `trade_cap_reservations` (plus `notifications`, `portfolio_snapshots` for later milestones) |
-| Upstash Redis (eviction off) | rate limits, trade idempotency and records, single-use challenge nonces (creators, terms, beta), keeper leases and dead letters |
+| Postgres (Neon, Drizzle; migrations through `0009`) | `creators`, `invites`, `baskets`, `basket_allocations`, `basket_versions` (insert-only), `receipts`, `plans_index`, `terms_acceptances`, `beta_invites`, `beta_access`, `trade_cap_days`, `trade_cap_reservations`, M11's `notification_subscriptions`, `notification_events`, `notifications` (deliveries), `purchase_channels`, `fee_share_ledger` (plus `portfolio_snapshots`, unused) |
+| Upstash Redis (eviction off) | rate limits, trade idempotency and records, single-use challenge nonces (creators, terms, beta, M11 wallet challenges), keeper leases and dead letters, M11 fill cache (30 days) |
 | Next data cache | market snapshots and research, tagged and revalidated; an outage is never cached |
-| Browser | theme, consent, watchlist (mints), paper account and drafts; nothing that must survive or be shared |
+| Browser | theme, consent, watchlist (mints), paper account and drafts, the onboarding funnel's first-time flags (after consent only), the push service worker (`/notify-sw.js`); session tokens stay in memory |
 
 ## Observability
 

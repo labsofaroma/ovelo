@@ -11,6 +11,8 @@
         "http://localhost:3400/basket/sol-core",
         "http://localhost:3400/basket/new",
         "http://localhost:3400/creators",
+        "http://localhost:3400/creators/dashboard",
+        "http://localhost:3400/get-started",
         "http://localhost:3400/invest",
         "http://localhost:3400/watchlist",
         "http://localhost:3400/portfolio",
@@ -48,7 +50,7 @@
           }
         },
         {
-          "matchingUrlPattern": "^http://localhost:3400/(markets|stock/.*|baskets|basket/sol-core|creators|privacy|terms)?$",
+          "matchingUrlPattern": "^http://localhost:3400/(markets|stock/.*|baskets|basket/sol-core|creators|get-started|privacy|terms)?$",
           "assertions": {
             "categories:seo": [
               "error",
@@ -64,6 +66,6 @@
       "target": "filesystem",
       "outputDir": ".lighthouseci-reports"
     },
-    "_comment": "SEO >= 90 is asserted on the indexable pages; /basket/new, /invest, /watchlist, /portfolio and /settings are noindex on purpose (is-crawlable fails by design)."
+    "_comment": "SEO >= 90 is asserted on the indexable pages; /basket/new, /invest, /watchlist, /portfolio, /settings and /creators/dashboard are noindex on purpose (is-crawlable fails by design)."
   }
 }

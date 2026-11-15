@@ -242,7 +242,7 @@ From M6 on, each milestone has a contract part and an app part. Steps marked **(
 | **M8** | Contract mainnet path (**implemented**, see status below) | Jupiter CPI, oracle-bounded `min_out`, owner-ATA delivery check, multi-leg execution; full LiteSVM with pinned Jupiter, Pyth and Subscriptions binaries; proptest/fuzz; verifiable build | keeper Jupiter routes; mainnet build behind a flag | full suite on a mainnet fork; fuzz clean; verifiable build hash recorded |
 | **M9** | Cutover (was M7) | none | v1 on the production domain **(owner: DNS)**, `/v1` prefix and prototype routes removed with their unused code (including `packages/anchor`), prototype CSP and error residue closed; spot and basket trading go live; **compliance gate** implementing counsel's decisions (**P1**): geo-blocking, terms acceptance before the first trade, risk disclosure on every trade review | production serves v1 only; **compliance gate live before spot trading opens**; production readiness **P3**, **P4** (spot items), **P5** (spot) and **P6** met (§7.1) |
 | **M10** | Mainnet recurring on the budget path (no program deploy, §7.2) | none: Aroma Guard v1 stays on devnet | **Spike done 2026-11-15 ([launch/DCA-SPIKE.md](launch/DCA-SPIKE.md)); owner chose Path B.** Jupiter's on-chain Recurring API is unmaintained and rejects Token-2022, so every xStock; its successor (Trigger V2 DCA, beta) keeps deposits in a Privy-managed custodial vault with off-chain orders and rejects transfer-hook mints unless whitelisted (all 1,517 xStocks carry the extension, no hook program set). So no mainnet DCA: `/invest` keeps the devnet beta, labelled "test tokens, no real value", under a "Mainnet recurring: coming" notice with the reason and no date | spike result recorded ✅; devnet beta stays public ✅; M12 is the mainnet recurring path ✅. No P5 DCA spend |
-| **M11** | Launch features (was M8) | none | notifications, P&L, onboarding, creator fee share, creator dashboard | **launch**: launch checklist complete; ROADMAP success metrics measured; §7.1 launch items done; **every step within the ≤ $5 SOL budget (§7.2)** |
+| **M11** | Launch features (was M8; **implemented**, see "M11 / Phase D status" below) | none | notifications, P&L, onboarding, creator fee share, creator dashboard | **launch**: launch checklist complete; ROADMAP success metrics measured; §7.1 launch items done; **every step within the ≤ $5 SOL budget (§7.2)** |
 | **M12** | Aroma Guard v1 on mainnet (when funded, after launch) | external audit and fixes (auditor booked, **P2**; reschedule to when funding is in place); Squads multisig (≥ 2-of-3, timelock) as upgrade authority **(owner)**; mainnet deploy with launch caps **(owner)**; real xStocks registered | **the mainnet recurring path** (M10 took Path B: no Jupiter DCA): recurring on Aroma Guard (pull per period, no upfront deposit, no $10 minimum, non-custodial) behind caps; keeper mainnet mode on; monitoring and alerts; `/invest` replaces its "Mainnet recurring: coming" notice | **funding in place: ≥ 5 SOL in the mainnet deployer (§7.2)**; audit findings closed; multisig verified on-chain; first mainnet installments monitored; **P4** (contract items) and **P5** (Aroma Guard recurring) met |
 
 ### 7.1 Production readiness (owner and launch gates)
@@ -292,7 +292,7 @@ Each phase is a deploy to mainnet users. Phases A and B fit the §7.2 budget; th
 | **A. Private beta** | `beta.<domain>`, a separate Vercel project with `AROMA_V1_ENABLED=true`; invited testers only. The prototype stays on the main domain | spot and basket buying through Jupiter, creators and Actions, portfolio, compliance gate; recurring only as the **devnet** beta, labelled as test tokens | **W1** wallet-only login (Privy removed from v1), **W2** beta access gate, **W3** per-trade caps, **W4** the Sentry DSN schema fix; P3 minimum accounts (mainnet RPC, Neon, Upstash, `AROMA_TRADE_SECRET`, Jupiter API key, Vercel and domain); P5 spot tests; P6 pushed and deployed from the merged tip | about 0.007 SOL (one stock and a three-stock basket; measured 2026-11-14: an xStock token account is 179–182 bytes, 0.00156–0.00157 SOL); **fits $1.50** |
 | **B. Public launch of spot (M9)** | the production domain; the `/v1` prefix and the prototype removed | everything in A, open to allowed jurisdictions; W2's gate switched off; W3's caps raised or kept per counsel | M9 cutover (including removing the prototype's Privy code and the `@privy-io/react-auth` dependency), P3 complete for spot, P4 trade-secret rotation, P6 with CI green and `main` protected | none beyond fees |
 | **C. Mainnet recurring, budget path (M10)** | production | **Path B (2026-11-15):** no mainnet recurring; the devnet beta stays, with a "Mainnet recurring: coming" notice. Recurring on mainnet moves to phase E | M10 desk and chain spike ([launch/DCA-SPIKE.md](launch/DCA-SPIKE.md)); no USDC spent | none |
-| **D. Launch (M11)** | production | launch features (notifications, P&L, onboarding for wallet users, creator fee share and dashboard) | M11 | 0–0.006 SOL |
+| **D. Launch (M11)** | `beta.<domain>` first, then production (owner decision 2026-11-15: **without Aroma Guard on mainnet**) | launch features (notifications by web push and Telegram, P&L from Aroma receipts, onboarding for wallet users, creator dashboard, fee-share ledger with the fee at 0); recurring stays the labelled devnet test | M11 (built on `m11-launch`; [launch/BETA-RUNBOOK.md](launch/BETA-RUNBOOK.md), [launch/LAUNCH-CHECKLIST.md](launch/LAUNCH-CHECKLIST.md)) | 0 for M11 itself (5a creates no fee account); the beta's P5 about 0.007 SOL |
 | **E. Aroma Guard on mainnet (M12, when funded)** | production | recurring on Aroma Guard v1 | M12: audit, multisig, deploy | about 4.97 SOL peak, about 2.47 locked (refundable) |
 
 **Workstreams for phase A** (one session; each item has tests, and the beta deploy waits for all four). **All four done on branch `phase-a-beta`** (not pushed, nothing deployed; see "Phase A status" below):
@@ -1011,6 +1011,113 @@ Exit (§7.3 phase C): decided and closed on **Path B**. No mainnet recurring is 
 - Frozen paths (`features/trade/server`, `server/auth`, `features/caps`, `features/beta`, `features/compliance/server`, `lib/sdk/{jupiter,baskets,core}`) and `packages/contracts/programs`: empty diff against `phase-b-cutover`.
 
 **Open items.** **Mainnet recurring at M12** (Aroma Guard: audit, multisig, funded deploy). **Owner items carried over from M9:** counsel's final texts (hard gate); P3 incl. the second RPC provider; P4 rotation drill; P5 spot tests; P6 push, CI green, `main` protected; the archive URL and DNS; `AROMA_BETA_GATE=off`; `LICENSE`; plus the Jupiter schema refresh (BisonFi, GoonFi V2, Kipseli, Scorch). **Not verified:** CI; real providers (only keyless Jupiter and public RPC, read-only); a real wallet in a browser; any mainnet transaction (none was sent).
+
+### M11 / Phase D status: implemented on branch `m11-launch`, cut from `m10-recurring` at `38f7706` (not pushed, not merged, nothing deployed; no mainnet transaction)
+
+**Owner decision (2026-11-15):** the beta goes to production **without Aroma Guard on mainnet**. Spot, baskets, creators, Blinks and the M11 features are live on mainnet; recurring stays the labelled devnet test (M10 Path B); Aroma Guard on mainnet is M12. Nothing in M11 deploys a program.
+
+**Checklist**
+- [x] Step 0: baseline (equal to Phase C's final evidence) and [launch/M11-MAP.md](launch/M11-MAP.md) (`dee7ba6`).
+- [x] Step 1: notifications (`95184b3`, `b9a0fd1`, `f4477c7`).
+  - Web push and Telegram behind `NotificationChannel`, with local fakes.
+  - Wallet-signed opt-in per channel; Telegram verified by a one-time code; hard deletes.
+  - An outbox with fan-out, a lease, back-off and dead-lettering (migration `0007`).
+  - The devnet keeper writes round events (executed, failed, low balance) in the same step.
+  - Trade and creator-buy events come from a receipt scan.
+  - `/settings` Notifications section; privacy notice section.
+  - Fork E2E: opt in, buy, one notification, delivered once.
+- [x] Step 2: P&L (`de839ea`).
+  - Average cost from Aroma receipts and exact fills (read-only RPC, cached), bigint, rounding rule in `ledger.ts`.
+  - "Cost basis unknown" with the reason for everything else; per holding, per basket, and totals over what is known.
+  - CSV for the signed-in wallet only (`ws1` portfolio session, 5 per 10 min).
+  - fast-check properties.
+- [x] Step 3: onboarding (`01da0bb`).
+  - `/get-started`: wallet and phone browse links, real SOL and USDC balances, a suggested basket by a stated rule, then the trade ticket.
+  - Four consent-gated events, with the time to first basket buy as a bucket.
+  - Axe in light and dark at 390 and 1440 px; a fork timing check.
+- [x] Step 4: creator dashboard (`406e30d`).
+  - The wallet's own baskets only (another creator's basket → 403).
+  - Buys, unique buyer count, volume per mint, Blink share (`0008_purchase_channels`, recorded by the Action confirm callback from 2026-11-15) and versions.
+  - Copy, share, edit and archive through the existing flows.
+- [x] Step 5: fee share **5a, accounting only** (`b27aded`). `0009_fee_share_ledger` holds one row per confirmed creator-basket order, with the fee at 0. Boot refuses a non-zero `AROMA_PLATFORM_FEE_BPS`. The dashboard shows "Fee share: off". No payouts.
+- [x] Step 6: beta deploy candidate (`cf616d0`).
+  - `check:prod-env` M11 checks in both profiles.
+  - BETA-RUNBOOK for this tip; CUTOVER-RUNBOOK §12; PRODUCTION-ENV §6.
+  - PRODUCT.md; COMPLIANCE §6 (M11 wording for counsel); AUDIT M11-1…M11-5.
+- [x] Step 7: ROADMAP §4 measured; [launch/LAUNCH-CHECKLIST.md](launch/LAUNCH-CHECKLIST.md) (`9c8d6da`).
+- [x] Step 8: ARCHITECTURE, README, AGENTS, this section, the final gate.
+- Also: `c59fa86` gives an existing middleware property test 30 s. It takes about 4.5 s alone and timed out at the 5 s default under full-suite load.
+
+**Decisions (taken in the session on the owner's instruction "taking decisions independently"; each is easy to revisit)**
+1. Channels: web push and Telegram. **Email off**: no email address is collected, no Resend.
+2. No new dependency. Web push is RFC 8291/8292 on `node:crypto` (matches the RFC 8291 Appendix A vector byte for byte). Telegram uses `fetch`. The worker takes a bearer secret, so no `@upstash/qstash`.
+3. Cost basis from Aroma receipts only, with exact fills. Everything else is "cost basis unknown"; no on-chain history parsing.
+4. On-ramps: none linked (the wallet's own Buy feature); no affiliate parameters.
+5. Fee share: 5a. 5b needs the owner's and counsel's approval and its own reviewed trade-path change.
+6. M11's wallet challenges and sessions live in `server/wallet-challenge.ts` and `server/wallet-session.ts`. Frozen `server/auth/**` is unchanged (only its exports are reused). The `ws1` keys are derived per scope from `AROMA_TRADE_SECRET`, so a rotation covers them.
+
+**Deviations from the prompt**
+1. The migration is `0007_notifications`, not `0008`: the last one was `0006`. M11 adds `0007`, `0008` and `0009`.
+2. Trade events come from an idempotent receipt scan in the worker, not from the confirm step, because the trade path is frozen. Devnet round events are written in the same step, by the keeper.
+3. "Expired" is "not seen to confirm after 15 minutes" (`trade_unconfirmed`). Receipts have no expired status, and Aroma cannot always tell.
+4. "Low balance" is checked after a round runs: the owner's funding balance against the next round's amount. The keeper did not read it before.
+5. "Blink or Action share" needed attribution that did not exist, so it is recorded from M11 on and earlier buys show as "not recorded".
+6. The creator dashboard's "wallet-signed session" is a read-only `ws1` token. There was no session mechanism before.
+
+**Evidence (local; CI not verified; nothing deployed; no mainnet transaction)**
+- Install and static gates:
+  - `pnpm install --frozen-lockfile`, `typecheck --force`, `lint --force` (0 errors, 0 warnings) and `format:check` pass.
+  - `build:web` with the `.env.example` placeholders passes: env check OK, `check-client-secrets: OK`, 319 files, 25 forbidden names (+4 M11 secrets).
+  - First-load JS: `/markets` **146 kB** (Phase C: 145 kB; budget 180), `/settings` 160 kB, `/portfolio` 151 kB, `/get-started` 152 kB, `/creators/dashboard` 154 kB.
+- `pnpm test --force`: web **1,857 passed / 3 skipped** (Phase C: 1,644 / 3; +213), keeper **52** (+5), guard 99, contracts 30, ui 173, config 2.
+- Lighthouse 12.8.2 (mobile, local `next start`, `AROMA_SITE_URL=https://www.example.com` as in `lighthouse.yml`):
+
+  | Page | Performance | Accessibility | Best practices | SEO |
+  |---|---|---|---|---|
+  | `/get-started` | 98 | 100 | 96 | 100 |
+  | `/creators/dashboard` | 98 | 100 | 96 | 91 |
+  | `/portfolio` | 98 | 100 | 96 | 54 (noindex by design) |
+  | `/settings` | 98 | 100 | 96 | 54 (noindex by design) |
+  | `/markets` | 97 | 100 | 96 | 92 |
+
+  `/creators/dashboard` does send `noindex, nofollow`. For browsers Next streams it after `</head>` (the `/creators` `loading.tsx`), so Lighthouse does not see it; crawlers get it. `lighthouserc.json` now lists both new pages.
+- E2E, one at a time:
+  - `e2e:fork` (`E2E_STOCK=TSLA`): **45/45**. Phase C's 36, plus notification opt-in and delivery, the onboarding axe checks in 4 variants and the timing check, and the creator dashboard in light and dark. Time to first basket buy: 2.8 s on the Step 3 run, **2.3 s** on the final run.
+  - `e2e:invest`: **14/14**, on the same `aroma-m8`-era devnet-mock binary as Phase C (`6597196a…`). It was copied into the ignored `target/`, with the runtime programs matching their SHA-256 pins. No contract build was run.
+  - Smoke suite (`test:e2e`): **40/40** on the first run.
+- Measured (ROADMAP §4):
+  - time to first basket buy **2.3–2.8 s** of app time (fork, two runs);
+  - `/markets` p95 **47 ms**;
+  - `/api/v1/prices` p95 1,861 ms with 46 % 502 (keyless Jupiter, live);
+  - on-time installments not measurable (0 devnet plans, read-only);
+  - alert coverage: every failure that reaches execution alerts; an error before execution does not (gap).
+- MERGE-PLAN linearity: all **fourteen** links `OK` through `m10-recurring → m11-launch`, no merge commits, the Aroma Labs identity throughout.
+- Key-material scan over `git log -p m10-recurring..HEAD`: 15,452 added lines, **0 hits** (64-number arrays, PEM, base58 secret keys, bot tokens, secret assignments). The one private-key-shaped literal is the application-server key published as RFC 8291's Appendix A test vector. E2E secrets (worker, Telegram) are generated at run time, never committed.
+- Money path (rule 7): `git diff --stat m10-recurring -- features/trade/server server/auth features/caps features/beta features/compliance/server lib/sdk/{jupiter,baskets,core}` is **empty**; `packages/contracts/programs` is empty. Trade-adjacent, outside the frozen list:
+  - `features/baskets/actions.ts` +4 and the confirm route +2: a best-effort Blink mark after the receipt;
+  - `features/trade/useTradeFlow.ts` +4: a client-side, consent-gated funnel event.
+
+**Open items**
+- **Owner:**
+  - P6 push, CI and `main` protection;
+  - P3 accounts, including the channels: a Telegram bot, VAPID keys, the QStash schedule;
+  - P4 rotation drill;
+  - counsel's final texts and the M11 wording (COMPLIANCE §6);
+  - P5 spot tests (about 0.007 SOL);
+  - the Jupiter schema refresh;
+  - `LICENSE`.
+- **M11 follow-ups:**
+  - a keeper alert for errors before execution;
+  - a cursor for the receipt scan above 500 orders a day (AUDIT M11-3);
+  - Telegram at-least-once duplicates (M11-2, accepted);
+  - email and on-ramp links if the owner approves;
+  - a public creator profile page.
+- **M12 (when funded):** the audit, the multisig, the Aroma Guard mainnet deploy, mainnet recurring and the mainnet keeper.
+- **Not verified:**
+  - CI;
+  - real providers (Telegram, push services, on-ramps; only keyless Jupiter and public RPC, read-only);
+  - a real wallet in a browser, and the wallets' phone browse links;
+  - any mainnet transaction (none was sent).
 
 **Critical path:** M0 → M2 → M4 (spot trading, shipped) → M6 (contract core and its devnet deploy, done 2026-11-14) → M7 (recurring on devnet) → M8 (mainnet contract path, audit-ready, not deployed) → M9 (cutover, spot live) → M10 (spike → Path B: the devnet beta stays, "Mainnet recurring: coming") → M11 (launch, within the $5 SOL budget, §7.2) → M12 when funded (audit, multisig, Aroma Guard on mainnet). M7 develops against a local LiteSVM build and the generated client until the owner's devnet deploy lands.
 
