@@ -59,7 +59,7 @@ jobs:
           set -a; . apps/web/.env.example; set +a
           pnpm --filter @ovelo/web test:e2e
       - if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: smoke-report
           path: apps/web/test-results
@@ -92,7 +92,7 @@ jobs:
       # The recorded fixtures (Jupiter routes, cloned-account list) are kept as files for replay
       # and diagnosis. They contain public chain data only.
       - if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: fork-fixtures
           path: |
@@ -143,7 +143,7 @@ jobs:
       - name: Faucet, create, 3 installments + 1 skip, timeline, close + revoke, alerts, negatives, axe
         run: pnpm --filter @ovelo/web e2e:invest
       - if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: e2e-invest-logs
           path: |
