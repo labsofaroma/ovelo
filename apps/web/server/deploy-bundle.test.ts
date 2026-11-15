@@ -55,6 +55,8 @@ describe("secret scan: Dockerfile, deploy/**, workflows", () => {
       "deploy/hostinger/deploy.sh",
       "deploy/hostinger/rollback.sh",
       "deploy/hostinger/aroma.env.example",
+      ".github/workflows/image.yml",
+      ".github/dependabot.yml",
     ])
       expect(SCANNED, f).toContain(f);
   });
@@ -221,5 +223,54 @@ describe("deploy.sh and rollback.sh refuse anything but our digest", () => {
     ]);
     expect(result.stdout.toString()).toBe("");
     expect(result.status).toBe(0);
+  });
+});
+
+describe(".github/workflows/image.yml (Step 6; written, not run here)", () => {
+  // Comments excluded: they explain, e.g., why there is no SSH step.
+  const wf = read(".github/workflows/image.yml")
+    .split("\n")
+    .filter((l) => !/^\s*#/.test(l))
+    .join("\n");
+
+  it("pins every action by a full commit SHA", () => {
+    const uses = [...wf.matchAll(/^\s*-?\s*uses:\s*(\S+)/gm)].map((m) => m[1]!);
+    expect(uses.length).toBeGreaterThan(5);
+    for (const u of uses)
+      expect(u, u).toMatch(/^[\w.-]+\/[\w.-]+@[0-9a-f]{40}$/);
+  });
+
+  it("starts from no permissions and grants each job only what it needs", () => {
+    expect(wf).toMatch(/^permissions: \{\}$/m);
+    expect(wf).toMatch(/id-token: write/);
+    expect(wf).not.toMatch(
+      /contents: write|actions: write|pull-requests: write/,
+    );
+  });
+
+  it("uses no secret but the job's own token, and NEXT_PUBLIC_* only from variables", () => {
+    const secrets = [...wf.matchAll(/secrets\.([A-Z_]+)/g)].map((m) => m[1]);
+    expect([...new Set(secrets)]).toEqual(["GITHUB_TOKEN"]);
+    for (const m of wf.matchAll(/NEXT_PUBLIC_[A-Z_]+=\$\{\{\s*([^}]+)\}\}/g))
+      expect(m[1]!.trim()).toMatch(/^vars\.NEXT_PUBLIC_/);
+  });
+
+  it("scans (Critical/High with a fix), signs keylessly, attests, and never deploys", () => {
+    expect(wf).toMatch(/severity: CRITICAL,HIGH/);
+    expect(wf).toMatch(/ignore-unfixed: true/);
+    expect(wf).toMatch(/exit-code: "1"/);
+    expect(wf).toMatch(/cosign sign --yes "\$\{IMAGE\}@\$\{DIGEST\}"/);
+    expect(wf).toMatch(/attest-build-provenance/);
+    expect(wf).toMatch(/attest-sbom/);
+    expect(wf).not.toMatch(
+      /\bssh\b|scp |appleboy|deploy\.sh .*\$\{\{ secrets/i,
+    );
+    expect(wf).not.toMatch(/:latest\b/);
+  });
+
+  it("triggers only on main and v* tags (the identities deploy.sh accepts)", () => {
+    expect(wf).toMatch(/branches: \[main\]/);
+    expect(wf).toMatch(/tags: \["v\*"\]/);
+    expect(wf).not.toMatch(/pull_request|workflow_dispatch/);
   });
 });

@@ -12,10 +12,10 @@
 # - Runtime: Next's traced standalone server (no dev dependencies, no package manager), non-root
 #   UID 10001, read-only root filesystem friendly (writes only to /tmp and .next/cache).
 
-ARG NODE_IMAGE=node:24.12.0-slim@sha256:7326fb2dbdce998edd72140946851be64ef4a643e8715e138ca467e8e9d92c99
+# Both stages use the same pinned reference (literal, so Dependabot can bump it).
 
 # ---------- build ----------
-FROM ${NODE_IMAGE} AS build
+FROM node:24.12.0-slim@sha256:7326fb2dbdce998edd72140946851be64ef4a643e8715e138ca467e8e9d92c99 AS build
 ENV NEXT_TELEMETRY_DISABLED=1 \
     PNPM_HOME=/pnpm \
     COREPACK_ENABLE_DOWNLOAD_PROMPT=0
@@ -73,7 +73,7 @@ RUN mkdir -p /out/apps/web/.next /out/deploy \
  && rm -f /out/apps/web/.env.example
 
 # ---------- runtime ----------
-FROM ${NODE_IMAGE} AS runtime
+FROM node:24.12.0-slim@sha256:7326fb2dbdce998edd72140946851be64ef4a643e8715e138ca467e8e9d92c99 AS runtime
 ARG AROMA_REVISION=unknown
 ARG AROMA_VERSION=0.0.0-local
 LABEL org.opencontainers.image.title="aroma-web" \
