@@ -49,7 +49,7 @@ async function fixture(
     idlAfterBuild?: string;
   } = {},
 ): Promise<Fixture> {
-  const root = fs.mkdtempSync(path.join(os.tmpdir(), "aroma-program-id-"));
+  const root = fs.mkdtempSync(path.join(os.tmpdir(), "ovelo-program-id-"));
   dirs.push(root);
   const real = await freshKeypair();
   const id = real.address;
@@ -58,19 +58,19 @@ async function fixture(
     fs.copyFileSync(path.join(SCRIPTS, f), path.join(root, "scripts", f));
   // check-build.mjs inspects real binaries; the stubbed build has none.
   fs.writeFileSync(path.join(root, "scripts/check-build.mjs"), "");
-  fs.mkdirSync(path.join(root, "programs/aroma_guard/src"), {
+  fs.mkdirSync(path.join(root, "programs/ovelo_guard/src"), {
     recursive: true,
   });
   fs.writeFileSync(
-    path.join(root, "programs/aroma_guard/src/lib.rs"),
+    path.join(root, "programs/ovelo_guard/src/lib.rs"),
     `use anchor_lang::prelude::*;\n\ndeclare_id!("${o.declareId ?? id}");\n`,
   );
   fs.writeFileSync(
     path.join(root, "Anchor.toml"),
-    `[programs.localnet]\naroma_guard = "${id}"\n\n[programs.devnet]\naroma_guard = "${o.devnetToml ?? id}"\n`,
+    `[programs.localnet]\novelo_guard = "${id}"\n\n[programs.devnet]\novelo_guard = "${o.devnetToml ?? id}"\n`,
   );
   fs.mkdirSync(path.join(root, "target/deploy"), { recursive: true });
-  const keypairFile = path.join(root, "target/deploy/aroma_guard-keypair.json");
+  const keypairFile = path.join(root, "target/deploy/ovelo_guard-keypair.json");
   if (o.keypair === "stray")
     fs.writeFileSync(keypairFile, JSON.stringify((await freshKeypair()).bytes));
   else if (o.keypair === "corrupt")
@@ -91,9 +91,9 @@ async function fixture(
   // `anchor build`, like the real one, creates a program keypair when it is missing.
   const stubs: Record<string, string> = {
     anchor: `echo "anchor $*" >> "${log}"
-[ -f target/deploy/aroma_guard-keypair.json ] || echo '[]' > target/deploy/aroma_guard-keypair.json
-mkdir -p target/idl && echo '{"address":"${idl}"}' > target/idl/aroma_guard.json
-touch target/deploy/aroma_guard.so`,
+[ -f target/deploy/ovelo_guard-keypair.json ] || echo '[]' > target/deploy/ovelo_guard-keypair.json
+mkdir -p target/idl && echo '{"address":"${idl}"}' > target/idl/ovelo_guard.json
+touch target/deploy/ovelo_guard.so`,
     solana: `echo "solana $*" >> "${log}"
 case "$1" in
   genesis-hash) echo "${DEVNET_GENESIS}" ;;
@@ -124,7 +124,7 @@ function run(f: Fixture, script: string, expected = f.programId) {
     env: {
       ...process.env,
       PATH: `${path.join(f.root, "bin")}:${process.env.PATH}`,
-      AROMA_DEPLOYER: path.join(f.root, "deployer.json"),
+      OVELO_DEPLOYER: path.join(f.root, "deployer.json"),
     },
   });
   const calls = fs.existsSync(f.log) ? fs.readFileSync(f.log, "utf8") : "";
@@ -142,12 +142,12 @@ test("deploy-devnet.sh pins the real program ID, and the checked-in IDs agree", 
     fs.readFileSync(path.join(SCRIPTS, "deploy-devnet.sh"), "utf8"),
   ).toContain(`EXPECTED_PROGRAM_ID="${EXPECTED}"`);
   expect(
-    fs.readFileSync(path.join(root, "programs/aroma_guard/src/lib.rs"), "utf8"),
+    fs.readFileSync(path.join(root, "programs/ovelo_guard/src/lib.rs"), "utf8"),
   ).toContain(`declare_id!("${EXPECTED}")`);
   const toml = fs.readFileSync(path.join(root, "Anchor.toml"), "utf8");
-  expect(toml.match(/aroma_guard = "([^"]+)"/g)).toEqual([
-    `aroma_guard = "${EXPECTED}"`,
-    `aroma_guard = "${EXPECTED}"`,
+  expect(toml.match(/ovelo_guard = "([^"]+)"/g)).toEqual([
+    `ovelo_guard = "${EXPECTED}"`,
+    `ovelo_guard = "${EXPECTED}"`,
   ]);
 });
 
@@ -199,7 +199,7 @@ test("deploy refuses when the built IDL has another address", async () => {
   const f = await fixture({ idlAfterBuild: EXPECTED });
   const r = run(f, "deploy-devnet.sh");
   expect(r.status).not.toBe(0);
-  expect(r.stderr).toMatch(/target\/idl\/aroma_guard\.json/);
+  expect(r.stderr).toMatch(/target\/idl\/ovelo_guard\.json/);
   expect(r.calls).toMatch(/anchor build/);
   expect(r.calls).not.toMatch(/program deploy/);
 });
@@ -216,10 +216,10 @@ test("build.sh never lets anchor create a program keypair", async () => {
   const f = await fixture({ keypair: "missing" });
   const r = run(f, "build.sh");
   expect(r.status).not.toBe(0);
-  expect(r.stderr).toMatch(/aroma_guard-keypair\.json is missing/);
+  expect(r.stderr).toMatch(/ovelo_guard-keypair\.json is missing/);
   expect(r.calls).not.toMatch(/anchor/);
   expect(
-    fs.existsSync(path.join(f.root, "target/deploy/aroma_guard-keypair.json")),
+    fs.existsSync(path.join(f.root, "target/deploy/ovelo_guard-keypair.json")),
   ).toBe(false);
 });
 
@@ -242,7 +242,7 @@ test("the check never prints secret key bytes", async () => {
   const r = run(f, "build.sh");
   const secret = JSON.parse(
     fs.readFileSync(
-      path.join(f.root, "target/deploy/aroma_guard-keypair.json"),
+      path.join(f.root, "target/deploy/ovelo_guard-keypair.json"),
       "utf8",
     ),
   ) as number[];

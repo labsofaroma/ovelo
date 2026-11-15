@@ -24,14 +24,14 @@ target
 apps/mobile/android/
 apps/mobile/ios/
 
-.aroma-collections/
-.aroma-investment-worker/
-.aroma-investments/
-.aroma-cache/
+.ovelo-collections/
+.ovelo-investment-worker/
+.ovelo-investments/
+.ovelo-cache/
 
-.aroma-investing-state/
-.aroma-worker-state/
-.aroma-executor-keypair.json
+.ovelo-investing-state/
+.ovelo-worker-state/
+.ovelo-executor-keypair.json
 # Internal & Private Documentation (Local Machine Only)
 internal-docs/
 docs/free-deployment-plan.md

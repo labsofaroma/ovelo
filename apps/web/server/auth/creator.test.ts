@@ -21,7 +21,7 @@ import {
  * prototype checked in its store.
  */
 
-const ORIGIN = "https://aroma.test";
+const ORIGIN = "https://ovelo.test";
 const NOW = Date.parse("2026-11-13T12:00:00.000Z");
 const BASKET_ID = "8c1f6c0e-3b0d-4a0f-9a59-3a7a4f1d2c11";
 const CONTENT = {
@@ -93,7 +93,7 @@ describe("creator challenge (ported from creator-auth.test.ts)", () => {
     const { challenge, signer } = await issued();
     const message = challenge.message;
     expect(message.split("\n")[0]).toBe(
-      "Aroma: sign to publish a creator basket",
+      "Ovelo: sign to publish a creator basket",
     );
     expect(message).toContain(`Wallet: ${signer.wallet}`);
     expect(message).toContain(`Basket id: ${BASKET_ID}`);
@@ -249,7 +249,7 @@ describe("request matching", () => {
     const { store, request, challenge } = await issued("delete");
     expect(challenge.payload.contentHash).toBe(contentHash(null));
     expect(challenge.message.split("\n")[0]).toBe(
-      "Aroma: sign to archive a creator basket",
+      "Ovelo: sign to archive a creator basket",
     );
     await expect(
       verifyChallenge(store, request, { now: NOW + 1 }),
@@ -271,7 +271,7 @@ describe("input parsing", () => {
     // A program-derived address is off curve: it cannot sign a message.
     const [pda] = await getProgramDerivedAddress({
       programAddress: address("11111111111111111111111111111111"),
-      seeds: ["aroma"],
+      seeds: ["ovelo"],
     });
     expect(walletSchema.safeParse(pda).success).toBe(false);
     for (const bad of ["", "0OIl", "x".repeat(45), 42])

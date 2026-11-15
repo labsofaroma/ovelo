@@ -26,7 +26,7 @@ import {
   ASSOCIATED_TOKEN_PROGRAM_ID,
   findAssociatedTokenAddress,
   SYSTEM_PROGRAM_ID,
-} from "@aroma/guard";
+} from "@ovelo/guard";
 import { AppError } from "@/server/errors";
 import { logger } from "@/server/logger";
 import {

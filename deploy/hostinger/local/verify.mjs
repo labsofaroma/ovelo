@@ -1,5 +1,5 @@
 // Phase H Step 8: verify the IMAGE like production, locally (test harness; never on the VPS).
-//   node deploy/hostinger/local/verify.mjs [--image aroma-web:local]      (from the repo root)
+//   node deploy/hostinger/local/verify.mjs [--image ovelo-web:local]      (from the repo root)
 // Runs the production compose file + compose.local.yml (the Cloudflare stand-in in place of the
 // tunnel, and the attacker's direct path to the origin), twice:
 //   beta mode (production rules): read-only FS, security headers, the route table with the origin
@@ -15,11 +15,11 @@ import { tmpdir } from "node:os";
 import { join } from "node:path";
 
 const ROOT = process.cwd();
-const IMAGE = arg("--image") ?? "aroma-web:local";
-const EDGE = Number(process.env.AROMA_LOCAL_EDGE_PORT ?? 3201);
-const DIRECT = Number(process.env.AROMA_LOCAL_DIRECT_PORT ?? 3299);
-const HOST = "beta.aroma.test";
-const work = mkdtempSync(join(tmpdir(), "aroma-verify-"));
+const IMAGE = arg("--image") ?? "ovelo-web:local";
+const EDGE = Number(process.env.OVELO_LOCAL_EDGE_PORT ?? 3201);
+const DIRECT = Number(process.env.OVELO_LOCAL_DIRECT_PORT ?? 3299);
+const HOST = "beta.ovelo.test";
+const work = mkdtempSync(join(tmpdir(), "ovelo-verify-"));
 const secret = randomBytes(36).toString("base64url");
 const secretFile = join(work, "origin");
 writeFileSync(secretFile, secret, { mode: 0o644 });
@@ -45,19 +45,19 @@ function envFile(mode) {
     .filter((l) => /^[A-Z][A-Z0-9_]*=/.test(l))
     .filter(
       (l) =>
-        !/^(AROMA_PLATFORM|AROMA_DEPLOY_ENV|AROMA_PROXY_MODE|AROMA_ORIGIN_SECRET|NODE_ENV|NEXT_PUBLIC_AROMA_E2E_WALLET|AROMA_V1_ALLOW_TEST_SWITCHES)=/.test(
+        !/^(OVELO_PLATFORM|OVELO_DEPLOY_ENV|OVELO_PROXY_MODE|OVELO_ORIGIN_SECRET|NODE_ENV|NEXT_PUBLIC_OVELO_E2E_WALLET|OVELO_V1_ALLOW_TEST_SWITCHES)=/.test(
           l,
         ),
     );
   lines.push(
-    "AROMA_PLATFORM=selfhost",
-    `AROMA_DEPLOY_ENV=${mode === "beta" ? "beta" : "development"}`,
-    "AROMA_PROXY_MODE=cloudflare",
-    `AROMA_ORIGIN_SECRET=${secret}`,
-    "AROMA_MAX_TRADE_USDC_RAW=50000000",
-    "AROMA_MAX_DAILY_USDC_RAW=200000000",
-    `AROMA_SITE_URL=https://${HOST}`,
-    `AROMA_V1_ALLOW_TEST_SWITCHES=${mode === "beta" ? "false" : "true"}`,
+    "OVELO_PLATFORM=selfhost",
+    `OVELO_DEPLOY_ENV=${mode === "beta" ? "beta" : "development"}`,
+    "OVELO_PROXY_MODE=cloudflare",
+    `OVELO_ORIGIN_SECRET=${secret}`,
+    "OVELO_MAX_TRADE_USDC_RAW=50000000",
+    "OVELO_MAX_DAILY_USDC_RAW=200000000",
+    `OVELO_SITE_URL=https://${HOST}`,
+    `OVELO_V1_ALLOW_TEST_SWITCHES=${mode === "beta" ? "false" : "true"}`,
   );
   const file = join(work, `${mode}.env`);
   writeFileSync(file, `${lines.join("\n")}\n`, { mode: 0o600 });
@@ -80,10 +80,10 @@ function compose(envPath, ...args) {
       encoding: "utf8",
       env: {
         ...process.env,
-        AROMA_IMAGE: IMAGE,
-        AROMA_LOCAL_ENV_FILE: envPath,
-        AROMA_LOCAL_SECRET_FILE: secretFile,
-        AROMA_LOCAL_EDGE_HOST: HOST,
+        OVELO_IMAGE: IMAGE,
+        OVELO_LOCAL_ENV_FILE: envPath,
+        OVELO_LOCAL_SECRET_FILE: secretFile,
+        OVELO_LOCAL_EDGE_HOST: HOST,
       },
     },
   );
@@ -258,7 +258,7 @@ async function betaSuite() {
       const noSecret = await direct(r.url, init);
       const wrong = await direct(r.url, {
         ...init,
-        headers: { ...init.headers, "x-aroma-origin": `${secret}x` },
+        headers: { ...init.headers, "x-ovelo-origin": `${secret}x` },
       });
       const viaEdge = await edge(r.url, init);
       const ok =

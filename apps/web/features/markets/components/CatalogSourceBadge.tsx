@@ -1,4 +1,4 @@
-import { Badge } from "@aroma/ui";
+import { Badge } from "@ovelo/ui";
 import { ISSUER_LABEL } from "../labels";
 import type { MarketRow } from "../schema";
 

@@ -15,23 +15,23 @@ vi.mock("@/features/compliance/terms", async (orig) =>
 /** P3: `pnpm check:prod-env` refuses an incomplete, placeholder or test production profile. */
 const secret = (c: string) => c.repeat(40);
 const GOOD = {
-  AROMA_SITE_URL: "https://aroma.trade",
+  OVELO_SITE_URL: "https://ovelo.trade",
   SOLANA_RPC_URL: "https://mainnet.helius-rpc.com/?api-key=k",
-  SOLANA_RPC_FALLBACK_URL: "https://aroma.mainnet.rpcpool.com/k",
-  NEXT_PUBLIC_SOLANA_RPC_URL: "https://rpc.aroma.trade",
-  DATABASE_URL: "postgres://u:p@ep-cool-1.neon.tech/aroma?sslmode=require",
+  SOLANA_RPC_FALLBACK_URL: "https://ovelo.mainnet.rpcpool.com/k",
+  NEXT_PUBLIC_SOLANA_RPC_URL: "https://rpc.ovelo.trade",
+  DATABASE_URL: "postgres://u:p@ep-cool-1.neon.tech/ovelo?sslmode=require",
   UPSTASH_REDIS_REST_URL: "https://eu1-good-1.upstash.io",
   UPSTASH_REDIS_REST_TOKEN: "AXXXtoken",
-  AROMA_TRADE_SECRET: secret("t"),
+  OVELO_TRADE_SECRET: secret("t"),
   JUPITER_API_KEY: "jup-key",
-  AROMA_MAX_TRADE_USDC_RAW: "50000000",
-  AROMA_MAX_DAILY_USDC_RAW: "200000000",
+  OVELO_MAX_TRADE_USDC_RAW: "50000000",
+  OVELO_MAX_DAILY_USDC_RAW: "200000000",
   // A real-shaped DSN: the public key is URL userinfo (W4, server/env.sentry.ts).
   SENTRY_DSN: `https://${"a1".repeat(16)}@o4507.ingest.us.sentry.io/4508`,
   NEXT_PUBLIC_SENTRY_DSN: `https://${"b2".repeat(16)}@o4507.ingest.sentry.io/4509`,
   SENTRY_ENVIRONMENT: "production",
   JITO_BLOCK_ENGINE_URL: "https://mainnet.block-engine.jito.wtf/api/v1/bundles",
-  AROMA_REVALIDATE_SECRET: secret("r"),
+  OVELO_REVALIDATE_SECRET: secret("r"),
   PYTH_API_KEY: "pyth",
   NEXT_PUBLIC_TURNSTILE_SITE_KEY: "0x4AAAAAAA-real",
   TURNSTILE_SECRET_KEY: "0x4AAAAAAA-real-secret",
@@ -65,33 +65,33 @@ describe("staticFindings (production profile)", () => {
     const env = {
       ...GOOD,
       DATABASE_URL:
-        "postgres://aroma:placeholder@db.placeholder.invalid/aroma?sslmode=require",
+        "postgres://ovelo:placeholder@db.placeholder.invalid/ovelo?sslmode=require",
       UPSTASH_REDIS_REST_URL: "https://redis.placeholder.invalid",
-      AROMA_TRADE_SECRET:
+      OVELO_TRADE_SECRET:
         "placeholder-trade-secret-replace-with-32-plus-random-chars",
     };
     for (const name of [
       "DATABASE_URL",
       "UPSTASH_REDIS_REST_URL",
-      "AROMA_TRADE_SECRET",
+      "OVELO_TRADE_SECRET",
     ])
       expect(byName(env, name).map((f) => f.status)).toContain("forbidden");
   });
 
   it.each([
-    ["AROMA_V1_ALLOW_TEST_SWITCHES", "true"],
-    ["NEXT_PUBLIC_AROMA_E2E_WALLET", "true"],
-    ["NEXT_PUBLIC_AROMA_LOCALNET", "true"],
+    ["OVELO_V1_ALLOW_TEST_SWITCHES", "true"],
+    ["NEXT_PUBLIC_OVELO_E2E_WALLET", "true"],
+    ["NEXT_PUBLIC_OVELO_LOCALNET", "true"],
     [
-      "AROMA_V1_TEST_FORK_GENESIS",
+      "OVELO_V1_TEST_FORK_GENESIS",
       "GH7ome3EiwEr7tu9JuTh2dpYWBJK3z69Xm1ZE3MEE6JC",
     ],
-    ["AROMA_V1_TEST_JUPITER_URL", "http://127.0.0.1:4010"],
-    ["AROMA_LOCAL_NEON_WS_PROXY", "127.0.0.1:54330"],
+    ["OVELO_V1_TEST_JUPITER_URL", "http://127.0.0.1:4010"],
+    ["OVELO_LOCAL_NEON_WS_PROXY", "127.0.0.1:54330"],
     ["TURNSTILE_SECRET_KEY", "1x0000000000000000000000000000000AA"],
     ["NEXT_PUBLIC_TURNSTILE_SITE_KEY", "1x00000000000000000000AA"],
-    ["AROMA_COMPLIANCE_MISSING_COUNTRY", "allow"],
-    ["AROMA_COMPLIANCE_RESTRICTED_COUNTRIES", "CU,IR"],
+    ["OVELO_COMPLIANCE_MISSING_COUNTRY", "allow"],
+    ["OVELO_COMPLIANCE_RESTRICTED_COUNTRIES", "CU,IR"],
   ])("%s=<test value> is refused", (name, value) => {
     const findings = staticFindings({ ...GOOD, [name]: value });
     expect(failed(findings)).toBe(true);
@@ -154,10 +154,10 @@ describe("staticFindings (production profile)", () => {
   it("a rotation in progress is a warning, not a failure", () => {
     const findings = staticFindings({
       ...GOOD,
-      AROMA_TRADE_SECRET_PREVIOUS: secret("p"),
+      OVELO_TRADE_SECRET_PREVIOUS: secret("p"),
     });
     expect(
-      findings.find((f) => f.name === "AROMA_TRADE_SECRET_PREVIOUS")?.status,
+      findings.find((f) => f.name === "OVELO_TRADE_SECRET_PREVIOUS")?.status,
     ).toBe("warning");
     expect(failed(findings)).toBe(false);
   });

@@ -46,14 +46,14 @@ const publicShape = {
   /** W4: a real DSN carries its public key as userinfo; see env.sentry.ts. */
   NEXT_PUBLIC_SENTRY_DSN: sentryDsn.optional(),
   /** E2E builds only: compiles in the test wallet bridge (no key material). Never in production. */
-  NEXT_PUBLIC_AROMA_E2E_WALLET: z.enum(["true", "false"]).optional(),
+  NEXT_PUBLIC_OVELO_E2E_WALLET: z.enum(["true", "false"]).optional(),
   /** M7: browser RPC for `/invest` on devnet (default: Solana's public devnet endpoint). */
   NEXT_PUBLIC_SOLANA_DEVNET_RPC_URL: httpsUrl.optional(),
   /**
    * M7, test builds only: compiles in the localnet wallet cluster (local-validator E2E). Refused
    * in production here and by the client-secret scan.
    */
-  NEXT_PUBLIC_AROMA_LOCALNET: z.enum(["true", "false"]).optional(),
+  NEXT_PUBLIC_OVELO_LOCALNET: z.enum(["true", "false"]).optional(),
   /** M7: Cloudflare Turnstile site key for the devnet faucet (public). */
   NEXT_PUBLIC_TURNSTILE_SITE_KEY: optionalText,
 };
@@ -73,9 +73,9 @@ const serverShape = {
     .enum(["development", "test", "production"])
     .default("development"),
   /** M9 emergency stop: `off` refuses every mainnet trading entry point (503). Default on. */
-  AROMA_TRADING: z.enum(["on", "off"]).default("on"),
+  OVELO_TRADING: z.enum(["on", "off"]).default("on"),
   /** Solana Actions POST: unset = off under the production rules, on elsewhere (server/actions-switch.ts). */
-  AROMA_ACTIONS: z.enum(["on", "off"]).optional(),
+  OVELO_ACTIONS: z.enum(["on", "off"]).optional(),
   LOG_LEVEL: z
     .enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"])
     .default("info"),
@@ -96,9 +96,9 @@ const serverShape = {
     }, "must not embed credentials")
     .optional(),
   UPSTASH_REDIS_REST_TOKEN: optionalText,
-  AROMA_TRADE_SECRET: secret32.optional(),
+  OVELO_TRADE_SECRET: secret32.optional(),
   /** The previous trade secret during a rotation: quotes signed with it still verify until they expire. */
-  AROMA_TRADE_SECRET_PREVIOUS: secret32.optional(),
+  OVELO_TRADE_SECRET_PREVIOUS: secret32.optional(),
   /** Jito Block Engine bundle endpoint. Unset: multi-transaction baskets are refused (no partial orders). */
   JITO_BLOCK_ENGINE_URL: httpsUrl.optional(),
   JITO_AUTH_UUID: optionalText,
@@ -109,31 +109,31 @@ const serverShape = {
       message: "must be between 1000 and 100000",
     })
     .optional(),
-  AROMA_SITE_URL: httpsUrl.optional(),
-  AROMA_ALLOWED_ORIGINS: optionalText,
+  OVELO_SITE_URL: httpsUrl.optional(),
+  OVELO_ALLOWED_ORIGINS: optionalText,
   JUPITER_API_KEY: optionalText,
   PYTH_API_KEY: optionalText,
   /** Bearer secret for POST /api/v1/revalidate (M3). Unset: the route answers 503. */
-  AROMA_REVALIDATE_SECRET: secret32.optional(),
+  OVELO_REVALIDATE_SECRET: secret32.optional(),
   SENTRY_DSN: sentryDsn.optional(),
   SENTRY_ENVIRONMENT: optionalText,
   ...platformShape,
   /**
    * Lets a local `next start` (NODE_ENV=production) honour test-only switches such as
-   * AROMA_V1_SIMULATE_UPSTREAM_OUTAGE. Rejected outright when the production rules apply
+   * OVELO_V1_SIMULATE_UPSTREAM_OUTAGE. Rejected outright when the production rules apply
    * (server/platform.ts: production or beta, or no sound platform answer).
    */
-  AROMA_V1_ALLOW_TEST_SWITCHES: bool.default(false),
+  OVELO_V1_ALLOW_TEST_SWITCHES: bool.default(false),
   /**
    * E2E only (test switches): genesis hash of a LOCAL fork (solana-test-validator) that stands in
    * for mainnet. Honoured only with a loopback SOLANA_RPC_URL while test switches are allowed.
    */
-  AROMA_V1_TEST_FORK_GENESIS: z
+  OVELO_V1_TEST_FORK_GENESIS: z
     .string()
     .regex(/^[1-9A-HJ-NP-Za-km-z]{32,44}$/, "must be a base58 hash")
     .optional(),
   /** E2E only (test switches): a loopback Jupiter stand-in serving recorded routes. */
-  AROMA_V1_TEST_JUPITER_URL: z
+  OVELO_V1_TEST_JUPITER_URL: z
     .url({ message: "must be a URL" })
     .refine((v) => /^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?\/?$/.test(v), {
       message: "must be a loopback http URL",
@@ -160,21 +160,21 @@ const base58Hash = z
 
 const devnetShape = {
   /** Server devnet RPC (prototype and, from M7, `/invest` on devnet). Genesis-checked per client. */
-  AROMA_RECURRING_RPC_URL: z.url().optional(),
+  OVELO_RECURRING_RPC_URL: z.url().optional(),
   /**
    * M7: the cluster `/invest` runs on. `localnet` (a local validator) is for test builds only:
    * it needs test switches and the localnet build flag, and is refused in production.
    */
-  AROMA_V1_INVEST_CLUSTER: z.enum(["devnet", "localnet"]).default("devnet"),
+  OVELO_V1_INVEST_CLUSTER: z.enum(["devnet", "localnet"]).default("devnet"),
   /** M7 localnet only: the validator's RPC, its genesis hash and the test USD mint. */
-  AROMA_V1_LOCALNET_RPC_URL: loopbackHttp.optional(),
-  AROMA_V1_LOCALNET_GENESIS: base58Hash.optional(),
-  AROMA_V1_LOCALNET_FUNDING_MINT: base58Hash.optional(),
+  OVELO_V1_LOCALNET_RPC_URL: loopbackHttp.optional(),
+  OVELO_V1_LOCALNET_GENESIS: base58Hash.optional(),
+  OVELO_V1_LOCALNET_FUNDING_MINT: base58Hash.optional(),
   /**
    * M7 faucet: the devnet-only key that holds the test USD mint authority (never the deployer),
    * as a 64-byte JSON array. Refused on any non-devnet genesis at use.
    */
-  AROMA_V1_FAUCET_KEYPAIR: z
+  OVELO_V1_FAUCET_KEYPAIR: z
     .string()
     .regex(
       /^\[\s*\d{1,3}(\s*,\s*\d{1,3}){63}\s*\]$/,
@@ -184,7 +184,7 @@ const devnetShape = {
   /** M7 faucet: Cloudflare Turnstile secret (server-side siteverify). */
   TURNSTILE_SECRET_KEY: optionalText,
   /** M7 faucet: claims allowed per UTC day across all wallets (default 200). */
-  AROMA_V1_FAUCET_DAILY_CLAIMS: z
+  OVELO_V1_FAUCET_DAILY_CLAIMS: z
     .string()
     .regex(/^\d+$/, "must be an integer")
     .refine((v) => Number(v) >= 1 && Number(v) <= 10_000, {
@@ -197,7 +197,7 @@ const keeperShape = {
   QSTASH_TOKEN: optionalText,
   QSTASH_CURRENT_SIGNING_KEY: optionalText,
   QSTASH_NEXT_SIGNING_KEY: optionalText,
-  AROMA_RECURRING_EXECUTOR_SECRET: secret32.optional(),
+  OVELO_RECURRING_EXECUTOR_SECRET: secret32.optional(),
   KEEPER_ALERT_WEBHOOK_URL: httpsUrl.optional(),
 };
 
@@ -218,13 +218,13 @@ for (const key of Object.keys(keeperShape)) GROUP_OF[key] = "keeper";
 /** Every variable the v1 schema reads (check:prod-env's beta profile flags the others). */
 export const SCHEMA_VARIABLES: readonly string[] = Object.keys(flatShape);
 
-/** Always required (M9: no feature flag; AROMA_SKIP_ENV_CHECK only for local builds). */
+/** Always required (M9: no feature flag; OVELO_SKIP_ENV_CHECK only for local builds). */
 export const REQUIRED = [
   "SOLANA_RPC_URL",
   "DATABASE_URL",
   "UPSTASH_REDIS_REST_URL",
   "UPSTASH_REDIS_REST_TOKEN",
-  "AROMA_TRADE_SECRET",
+  "OVELO_TRADE_SECRET",
 ] as const;
 
 /** Same URL after normalisation; false when either is not a URL (its own field reports that). */
@@ -239,9 +239,9 @@ const flatSchema = z.object(flatShape).superRefine((env, ctx) => {
   const production = productionRules(env);
   if (production) {
     for (const key of [
-      "AROMA_V1_ALLOW_TEST_SWITCHES",
-      "AROMA_V1_TEST_FORK_GENESIS",
-      "AROMA_V1_TEST_JUPITER_URL",
+      "OVELO_V1_ALLOW_TEST_SWITCHES",
+      "OVELO_V1_TEST_FORK_GENESIS",
+      "OVELO_V1_TEST_JUPITER_URL",
     ] as const) {
       if (env[key])
         ctx.addIssue({
@@ -251,10 +251,10 @@ const flatSchema = z.object(flatShape).superRefine((env, ctx) => {
         });
     }
   }
-  if (production && env.NEXT_PUBLIC_AROMA_E2E_WALLET === "true")
+  if (production && env.NEXT_PUBLIC_OVELO_E2E_WALLET === "true")
     ctx.addIssue({
       code: "custom",
-      path: ["NEXT_PUBLIC_AROMA_E2E_WALLET"],
+      path: ["NEXT_PUBLIC_OVELO_E2E_WALLET"],
       message: "must not be set in a production deployment",
     });
   localnetRules(env, ctx);
@@ -270,7 +270,7 @@ const flatSchema = z.object(flatShape).superRefine((env, ctx) => {
     // loopback (fork) primary, as features/trade/server/rpc.ts accepts at runtime.
     const forkAllowed =
       isLoopback(value) &&
-      Boolean(env.AROMA_V1_TEST_FORK_GENESIS) &&
+      Boolean(env.OVELO_V1_TEST_FORK_GENESIS) &&
       (key === "SOLANA_RPC_URL" ||
         (env.SOLANA_RPC_URL !== undefined && isLoopback(env.SOLANA_RPC_URL)));
     if (!forkAllowed)
@@ -293,13 +293,13 @@ const flatSchema = z.object(flatShape).superRefine((env, ctx) => {
       message: "must differ from SOLANA_RPC_URL",
     });
   if (
-    env.AROMA_TRADE_SECRET_PREVIOUS &&
-    env.AROMA_TRADE_SECRET_PREVIOUS === env.AROMA_TRADE_SECRET
+    env.OVELO_TRADE_SECRET_PREVIOUS &&
+    env.OVELO_TRADE_SECRET_PREVIOUS === env.OVELO_TRADE_SECRET
   ) {
     ctx.addIssue({
       code: "custom",
-      path: ["AROMA_TRADE_SECRET_PREVIOUS"],
-      message: "must differ from AROMA_TRADE_SECRET",
+      path: ["OVELO_TRADE_SECRET_PREVIOUS"],
+      message: "must differ from OVELO_TRADE_SECRET",
     });
   }
   for (const key of REQUIRED) {

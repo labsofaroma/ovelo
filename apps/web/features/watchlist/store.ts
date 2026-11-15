@@ -10,9 +10,9 @@ import { cleanMints, MAX_WATCHED, storedWatchlistSchema } from "./schema";
  * Watchlist preferences (REWRITE-PLAN §3: Zustand, persisted, preferences only). Market data is
  * never stored here; the page asks the server for it. Per device, not synced.
  */
-export const WATCHLIST_KEY = "aroma.v1.watchlist";
+export const WATCHLIST_KEY = "ovelo.v1.watchlist";
 /** The prototype's key. Read once to import existing picks; never written. */
-export const LEGACY_WATCHLIST_KEY = "aroma.watchlist.mainnet.v1";
+export const LEGACY_WATCHLIST_KEY = "ovelo.watchlist.mainnet.v1";
 
 function legacyMints(): string[] {
   try {

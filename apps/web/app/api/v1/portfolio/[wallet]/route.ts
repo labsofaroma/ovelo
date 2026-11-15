@@ -7,7 +7,7 @@ export const runtime = "nodejs";
 
 /**
  * GET /api/v1/portfolio/:wallet: mainnet balances valued with the cached issuer snapshot (each
- * price with source and as-of), plus this wallet's Aroma receipts. Public chain data only.
+ * price with source and as-of), plus this wallet's Ovelo receipts. Public chain data only.
  */
 export async function GET(
   _request: Request,

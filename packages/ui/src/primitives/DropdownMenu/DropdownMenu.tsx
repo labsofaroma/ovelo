@@ -50,7 +50,7 @@ export const DropdownMenuContent = forwardRef<
 });
 
 const itemClass =
-  "flex min-h-(--aroma-control-height) w-full cursor-pointer items-center gap-3 rounded-control bg-transparent p-3 text-left text-small text-ink outline-none data-[highlighted]:bg-raised data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50 [&>svg:first-child]:text-muted";
+  "flex min-h-(--ovelo-control-height) w-full cursor-pointer items-center gap-3 rounded-control bg-transparent p-3 text-left text-small text-ink outline-none data-[highlighted]:bg-raised data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50 [&>svg:first-child]:text-muted";
 
 export const DropdownMenuItem = forwardRef<
   HTMLDivElement,

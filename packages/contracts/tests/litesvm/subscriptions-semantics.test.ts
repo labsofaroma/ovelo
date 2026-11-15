@@ -1,7 +1,7 @@
 /**
- * M8 decision 2: the upstream Subscriptions rules Aroma Guard relies on, tested on the binary
- * directly (no Aroma program involved). Run twice by `test:litesvm:subscriptions-mainnet`: with
- * the pinned devnet binary and with mainnet's (`AROMA_V1_SUBSCRIPTIONS=mainnet`).
+ * M8 decision 2: the upstream Subscriptions rules Ovelo Guard relies on, tested on the binary
+ * directly (no Ovelo program involved). Run twice by `test:litesvm:subscriptions-mainnet`: with
+ * the pinned devnet binary and with mainnet's (`OVELO_V1_SUBSCRIPTIONS=mainnet`).
  *
  * - `validate_recurring_transfer`: at most `amount_per_period` per period, no carry-over, nothing
  *   before the start or after the expiry, period boundaries on the delegation's grid.
@@ -19,7 +19,7 @@ import {
   getInitSubscriptionAuthorityInstruction,
   getTransferRecurringInstructionAsync,
 } from "@solana/subscriptions";
-import * as v1 from "@aroma/guard";
+import * as v1 from "@ovelo/guard";
 import { Env, START } from "./harness";
 
 const DAY = 86_400n;
@@ -96,9 +96,9 @@ const code = (r: { ok: boolean; error: string; logs: string[] }) => {
 };
 
 const label =
-  process.env.AROMA_V1_SUBSCRIPTIONS === "mainnet" ? "mainnet" : "devnet";
+  process.env.OVELO_V1_SUBSCRIPTIONS === "mainnet" ? "mainnet" : "devnet";
 
-describe(`Subscriptions rules Aroma relies on (${label} binary)`, () => {
+describe(`Subscriptions rules Ovelo relies on (${label} binary)`, () => {
   test("1-step create: the same-slot sentinel is accepted; a stale init_id is refused", async () => {
     expect((await setup()).create.ok).toBe(true);
     const stale = await setup({ initId: 12_345n });

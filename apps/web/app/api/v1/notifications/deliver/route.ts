@@ -15,10 +15,10 @@ export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
 
 /**
- * POST /api/v1/notifications/deliver `Authorization: Bearer <AROMA_NOTIFY_WORKER_SECRET>` {}:
+ * POST /api/v1/notifications/deliver `Authorization: Bearer <OVELO_NOTIFY_WORKER_SECRET>` {}:
  * the M11 periodic worker (QStash schedule or cron, every minute): the fee-share ledger
  * (accounting only, always), then one notification outbox run (nothing with
- * AROMA_NOTIFICATIONS=off). Logs counts only.
+ * OVELO_NOTIFICATIONS=off). Logs counts only.
  */
 export const POST = notifyRoute("v1/notifications/deliver", async (request) => {
   const deps = notifyDeps();

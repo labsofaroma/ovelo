@@ -16,11 +16,11 @@ export interface SiteContact {
 export function siteContact(
   env: Record<string, string | undefined> = process.env,
 ): SiteContact {
-  const supportEmail = email.safeParse(env.AROMA_SUPPORT_EMAIL ?? "");
-  const issuesUrl = https.safeParse(env.AROMA_ISSUES_URL ?? "");
+  const supportEmail = email.safeParse(env.OVELO_SUPPORT_EMAIL ?? "");
+  const issuesUrl = https.safeParse(env.OVELO_ISSUES_URL ?? "");
   return {
     operatorName:
-      env.AROMA_OPERATOR_NAME?.trim() || "the Aroma project contributors",
+      env.OVELO_OPERATOR_NAME?.trim() || "the Ovelo project contributors",
     supportEmail: supportEmail.success ? supportEmail.data : null,
     issuesUrl: issuesUrl.success ? issuesUrl.data : null,
   };

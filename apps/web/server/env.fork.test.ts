@@ -17,7 +17,7 @@ describe("env schema (M4)", () => {
       parseEnv({
         ...BASE_ENV,
         SOLANA_RPC_URL: "http://127.0.0.1:8899",
-        AROMA_V1_TEST_FORK_GENESIS:
+        OVELO_V1_TEST_FORK_GENESIS:
           "EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG",
       }).ok,
     ).toBe(true);
@@ -26,7 +26,7 @@ describe("env schema (M4)", () => {
         parseEnv({
           ...BASE_ENV,
           SOLANA_RPC_URL: "http://rpc.example.test",
-          AROMA_V1_TEST_FORK_GENESIS:
+          OVELO_V1_TEST_FORK_GENESIS:
             "EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG",
         }),
       ),
@@ -46,25 +46,25 @@ describe("env schema (M4)", () => {
       parseEnv({
         ...BASE_ENV,
         VERCEL_ENV: "production",
-        AROMA_V1_TEST_FORK_GENESIS:
+        OVELO_V1_TEST_FORK_GENESIS:
           "EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG",
-        AROMA_V1_TEST_JUPITER_URL: "http://127.0.0.1:4010",
+        OVELO_V1_TEST_JUPITER_URL: "http://127.0.0.1:4010",
       }),
     );
     expect(issues).toEqual(
       expect.arrayContaining([
-        "AROMA_V1_TEST_FORK_GENESIS",
-        "AROMA_V1_TEST_JUPITER_URL",
+        "OVELO_V1_TEST_FORK_GENESIS",
+        "OVELO_V1_TEST_JUPITER_URL",
       ]),
     );
     expect(
       variables(
         parseEnv({
           ...BASE_ENV,
-          AROMA_V1_TEST_JUPITER_URL: "https://api.jup.ag",
+          OVELO_V1_TEST_JUPITER_URL: "https://api.jup.ag",
         }),
       ),
-    ).toContain("AROMA_V1_TEST_JUPITER_URL");
+    ).toContain("OVELO_V1_TEST_JUPITER_URL");
   });
 
   it("the previous trade secret must differ from the current one and be 32+ chars", () => {
@@ -73,16 +73,16 @@ describe("env schema (M4)", () => {
       variables(
         parseEnv({
           ...BASE_ENV,
-          AROMA_TRADE_SECRET: secret,
-          AROMA_TRADE_SECRET_PREVIOUS: secret,
+          OVELO_TRADE_SECRET: secret,
+          OVELO_TRADE_SECRET_PREVIOUS: secret,
         }),
       ),
-    ).toContain("AROMA_TRADE_SECRET_PREVIOUS");
+    ).toContain("OVELO_TRADE_SECRET_PREVIOUS");
     expect(
       variables(
-        parseEnv({ ...BASE_ENV, AROMA_TRADE_SECRET_PREVIOUS: "short" }),
+        parseEnv({ ...BASE_ENV, OVELO_TRADE_SECRET_PREVIOUS: "short" }),
       ),
-    ).toContain("AROMA_TRADE_SECRET_PREVIOUS");
+    ).toContain("OVELO_TRADE_SECRET_PREVIOUS");
     expect(
       variables(parseEnv({ ...BASE_ENV, JITO_MAX_TIP_LAMPORTS: "999" })),
     ).toContain("JITO_MAX_TIP_LAMPORTS");

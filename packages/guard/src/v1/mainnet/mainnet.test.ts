@@ -7,7 +7,7 @@ import {
 } from "@solana/kit";
 import { getExecuteInstallmentRoutedInstructionDataDecoder } from "../generated";
 import {
-  AROMA_GUARD_V1_PROGRAM_ID,
+  OVELO_GUARD_V1_PROGRAM_ID,
   SUBSCRIPTIONS_PROGRAM_ID,
   TOKEN_2022_PROGRAM_ID,
   TOKEN_PROGRAM_ID,
@@ -294,7 +294,7 @@ describe("routed builder", () => {
         },
       ],
     });
-    expect(ix.programAddress).toBe(AROMA_GUARD_V1_PROGRAM_ID);
+    expect(ix.programAddress).toBe(OVELO_GUARD_V1_PROGRAM_ID);
     const accounts = ix.accounts!;
     expect(accounts).toHaveLength(
       13 + ROUTED_FIXED_ACCOUNTS_PER_LEG + route.accounts.length,

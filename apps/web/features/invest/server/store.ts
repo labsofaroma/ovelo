@@ -1,6 +1,6 @@
 import "server-only";
 import { and, eq, inArray, ne } from "drizzle-orm";
-import type { PlanIndexRow } from "@aroma/guard";
+import type { PlanIndexRow } from "@ovelo/guard";
 import type { Database } from "@/server/db/client";
 import { plansIndex, receipts } from "@/server/db/schema";
 

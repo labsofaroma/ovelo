@@ -11,7 +11,7 @@ import {
   findConfigPda as generatedConfig,
 } from "./generated";
 import {
-  AROMA_GUARD_V1_PROGRAM_ID,
+  OVELO_GUARD_V1_PROGRAM_ID,
   BPF_LOADER_UPGRADEABLE_ID,
   TOKEN_2022_PROGRAM_ID,
   TOKEN_PROGRAM_ID,
@@ -52,18 +52,18 @@ describe("v1 PDAs", () => {
           new PublicKey(usd).toBuffer(),
           nonce,
         ],
-        AROMA_GUARD_V1_PROGRAM_ID,
+        OVELO_GUARD_V1_PROGRAM_ID,
       ),
     );
     expect(await findMockMintAuthorityPda(k(4))).toBe(
       web3(
         [Buffer.from("mock_mint"), new PublicKey(k(4)).toBuffer()],
-        AROMA_GUARD_V1_PROGRAM_ID,
+        OVELO_GUARD_V1_PROGRAM_ID,
       ),
     );
     expect(await findProgramDataAddress()).toBe(
       web3(
-        [new PublicKey(AROMA_GUARD_V1_PROGRAM_ID).toBuffer()],
+        [new PublicKey(OVELO_GUARD_V1_PROGRAM_ID).toBuffer()],
         BPF_LOADER_UPGRADEABLE_ID,
       ),
     );

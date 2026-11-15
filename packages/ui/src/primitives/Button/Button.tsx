@@ -25,8 +25,8 @@ export const buttonVariants: Record<ButtonVariant, string> = {
 };
 
 export const buttonSizes: Record<ButtonSize, string> = {
-  sm: "min-h-(--aroma-control-height-compact) px-3 text-caption max-md:min-h-(--aroma-control-height)",
-  md: "min-h-(--aroma-control-height) px-4 text-small",
+  sm: "min-h-(--ovelo-control-height-compact) px-3 text-caption max-md:min-h-(--ovelo-control-height)",
+  md: "min-h-(--ovelo-control-height) px-4 text-small",
   lg: "min-h-12 px-6 text-body",
 };
 

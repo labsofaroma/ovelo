@@ -1,6 +1,6 @@
 #!/usr/bin/env bash
 # Phase H: host checks for the VPS (HOSTINGER-RUNBOOK §9), run by cron every 5 minutes as root.
-# Alerts the webhook in /etc/aroma/alert-webhook (Slack or Discord incoming webhook) when:
+# Alerts the webhook in /etc/ovelo/alert-webhook (Slack or Discord incoming webhook) when:
 #   - a filesystem (/, /var/lib/docker) is above 80% full;
 #   - memory available is below 10%;
 #   - the app or cloudflared container is not running, or the app is not healthy;
@@ -8,10 +8,10 @@
 # Prints the findings, exits 1 if there is any. Sends nothing secret: names and percentages only.
 set -Eeuo pipefail
 
-ETC="${AROMA_ETC:-/etc/aroma}"
-COMPOSE_FILE="${AROMA_COMPOSE_FILE:-/opt/aroma/docker-compose.yml}"
-DISK_MAX="${AROMA_DISK_MAX_PERCENT:-80}"
-MEM_MIN="${AROMA_MEM_MIN_PERCENT:-10}"
+ETC="${OVELO_ETC:-/etc/ovelo}"
+COMPOSE_FILE="${OVELO_COMPOSE_FILE:-/opt/ovelo/docker-compose.yml}"
+DISK_MAX="${OVELO_DISK_MAX_PERCENT:-80}"
+MEM_MIN="${OVELO_MEM_MIN_PERCENT:-10}"
 problems=()
 
 for mount in / /var/lib/docker; do
@@ -41,7 +41,7 @@ if [ "${#problems[@]}" -eq 0 ]; then
   exit 0
 fi
 
-message="aroma $(hostname -s): ${problems[*]}"
+message="ovelo $(hostname -s): ${problems[*]}"
 printf '%s\n' "$message"
 if [ -s "${ETC}/alert-webhook" ]; then
   url="$(head -1 "${ETC}/alert-webhook")"

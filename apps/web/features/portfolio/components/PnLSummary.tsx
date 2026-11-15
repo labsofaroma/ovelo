@@ -1,4 +1,4 @@
-import { formatUnits } from "@aroma/ui/format";
+import { formatUnits } from "@ovelo/ui/format";
 import { FUNDING_TOKENS } from "../../trade/schema";
 import { formatUsd } from "../../shared/fixed";
 import { pnlCopy } from "../copy";
@@ -8,8 +8,8 @@ import { formatBps } from "./PnlPanel";
 
 /**
  * A summary built ONLY from data we have (B7): the priced value now, how much of it is unpriced,
- * what this wallet spent through Aroma (confirmed receipts, per funding token), and (M11) the
- * unrealized P&L over the holdings whose cost basis (Aroma receipts, exact fills) and price are
+ * what this wallet spent through Ovelo (confirmed receipts, per funding token), and (M11) the
+ * unrealized P&L over the holdings whose cost basis (Ovelo receipts, exact fills) and price are
  * both known, saying how many were left out. Nothing is estimated.
  */
 export function PnLSummary({
@@ -43,7 +43,7 @@ export function PnLSummary({
       </div>
       <div className="rounded-panel border border-line p-3">
         <dt className="text-caption text-muted">
-          Spent through Aroma (confirmed)
+          Spent through Ovelo (confirmed)
         </dt>
         {activity === null ? (
           <dd className="text-small text-muted">

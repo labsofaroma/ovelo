@@ -1,4 +1,4 @@
-import { Badge } from "@aroma/ui";
+import { Badge } from "@ovelo/ui";
 import type { ReactNode } from "react";
 import type { BasketSummary } from "../../markets/schema";
 import { BasketStatusBadge } from "./BasketStatusBadge";
@@ -30,7 +30,7 @@ export function BasketHeader({
       <p className="max-w-3xl text-body text-muted">{basket.description}</p>
       <p className="text-caption text-muted">
         {provenance ??
-          "Constituents and weights come from Aroma’s published basket definition (lib/sdk), matched against the issuer catalogs. Not hand-entered figures."}
+          "Constituents and weights come from Ovelo’s published basket definition (lib/sdk), matched against the issuer catalogs. Not hand-entered figures."}
       </p>
     </header>
   );

@@ -1,6 +1,6 @@
 import { BASE_ENV } from "@/server/test/base-env";
-import type * as GuardExports from "@aroma/guard";
-import { DEVNET_GENESIS_HASH, MAINNET_GENESIS_HASH } from "@aroma/guard";
+import type * as GuardExports from "@ovelo/guard";
+import { DEVNET_GENESIS_HASH, MAINNET_GENESIS_HASH } from "@ovelo/guard";
 import { describe, expect, it, vi } from "vitest";
 import { parseEnv, type Env } from "@/server/env.schema";
 import { fakeChain } from "./test-chain";
@@ -19,17 +19,17 @@ const env = (source: Record<string, string>): Env => {
   return result.env;
 };
 const localnet = {
-  AROMA_V1_INVEST_CLUSTER: "localnet",
-  AROMA_V1_ALLOW_TEST_SWITCHES: "true",
-  NEXT_PUBLIC_AROMA_LOCALNET: "true",
-  AROMA_V1_LOCALNET_RPC_URL: "http://127.0.0.1:8899",
-  AROMA_V1_LOCALNET_GENESIS: LOCAL,
-  AROMA_V1_LOCALNET_FUNDING_MINT: "So11111111111111111111111111111111111111112",
+  OVELO_V1_INVEST_CLUSTER: "localnet",
+  OVELO_V1_ALLOW_TEST_SWITCHES: "true",
+  NEXT_PUBLIC_OVELO_LOCALNET: "true",
+  OVELO_V1_LOCALNET_RPC_URL: "http://127.0.0.1:8899",
+  OVELO_V1_LOCALNET_GENESIS: LOCAL,
+  OVELO_V1_LOCALNET_FUNDING_MINT: "So11111111111111111111111111111111111111112",
 };
 
 async function load(deployment: unknown) {
   vi.resetModules();
-  vi.doMock("@aroma/guard", async (original) => ({
+  vi.doMock("@ovelo/guard", async (original) => ({
     ...(await original<GuardModule>()),
     V1_DEPLOYMENTS: { devnet: deployment, mainnet: null },
   }));
@@ -92,34 +92,34 @@ describe("invest cluster (B0/B2)", () => {
     // Phase H: a production boot needs a platform answer (server/platform.ts).
     expect(
       testPeriods({
-        AROMA_PLATFORM: "selfhost",
-        AROMA_DEPLOY_ENV: "development",
+        OVELO_PLATFORM: "selfhost",
+        OVELO_DEPLOY_ENV: "development",
         NODE_ENV: "production",
       }),
     ).toBe(false);
     expect(
       testPeriods({
-        AROMA_PLATFORM: "selfhost",
-        AROMA_DEPLOY_ENV: "beta",
-        AROMA_PROXY_MODE: "cloudflare",
-        AROMA_ORIGIN_SECRET: "test-origin-secret-0123456789abcdefABCDEF",
+        OVELO_PLATFORM: "selfhost",
+        OVELO_DEPLOY_ENV: "beta",
+        OVELO_PROXY_MODE: "cloudflare",
+        OVELO_ORIGIN_SECRET: "test-origin-secret-0123456789abcdefABCDEF",
         NODE_ENV: "production",
-        AROMA_V1_ALLOW_TEST_SWITCHES: "false",
+        OVELO_V1_ALLOW_TEST_SWITCHES: "false",
       }),
     ).toBe(false);
     expect(
       testPeriods({
         // Phase H: a local `next start` declares itself (server/platform.ts).
-        AROMA_PLATFORM: "selfhost",
-        AROMA_DEPLOY_ENV: "development",
+        OVELO_PLATFORM: "selfhost",
+        OVELO_DEPLOY_ENV: "development",
         NODE_ENV: "production",
-        AROMA_V1_ALLOW_TEST_SWITCHES: "true",
+        OVELO_V1_ALLOW_TEST_SWITCHES: "true",
       }),
     ).toBe(true);
     expect(
       testPeriods({
         NODE_ENV: "production",
-        AROMA_V1_ALLOW_TEST_SWITCHES: "false",
+        OVELO_V1_ALLOW_TEST_SWITCHES: "false",
         VERCEL_ENV: "production",
       }),
     ).toBe(false);
@@ -136,7 +136,7 @@ describe("invest cluster (B0/B2)", () => {
     });
     expect(
       resolveInvestNetwork(
-        env({ ...localnet, AROMA_V1_LOCALNET_GENESIS: DEVNET_GENESIS_HASH }),
+        env({ ...localnet, OVELO_V1_LOCALNET_GENESIS: DEVNET_GENESIS_HASH }),
       ),
     ).toMatchObject({ available: false, reason: "misconfigured" });
   });

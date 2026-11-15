@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
 
-describe("@aroma/config", () => {
+describe("@ovelo/config", () => {
   it("ships a strict tsconfig base with noUncheckedIndexedAccess", () => {
     const base = JSON.parse(
       readFileSync(new URL("../tsconfig.base.json", import.meta.url), "utf8"),

@@ -3,14 +3,14 @@
  * M9: the only stylesheet entry (the prototype's Tailwind v3 chain is gone). Preflight resets the
  * browser defaults; every layer is declared up front, so utilities sit in their own layer and
  * win over the base and theme layers by order, not by specificity. Source detection is off; only
- * the app and @aroma/ui are scanned.
+ * the app and @ovelo/ui are scanned.
  */
 @layer theme, base, components, utilities;
 @import "tailwindcss/theme.css" layer(theme);
 @import "tailwindcss/preflight.css" layer(base);
-@import "@aroma/ui/fonts.css";
-@import "@aroma/ui/tokens.css";
-@import "@aroma/ui/theme.css";
+@import "@ovelo/ui/fonts.css";
+@import "@ovelo/ui/tokens.css";
+@import "@ovelo/ui/theme.css";
 @import "tailwindcss/utilities.css" layer(utilities) source(none);
 
 @source "./(app)";

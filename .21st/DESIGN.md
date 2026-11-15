@@ -1,4 +1,4 @@
-<!-- Curated for the Aroma monorepo. Sources and decisions are recorded in design.json. -->
+<!-- Curated for the Ovelo monorepo. Sources and decisions are recorded in design.json. -->
 
 # Project Design Context
 
@@ -6,7 +6,7 @@ Reference-led landing page direction, 7 October 2026. The 21st root scanner does
 
 ## Project
 
-- Name: aroma-monorepo
+- Name: ovelo-monorepo
 - Product: self-custody interface for tokenized securities on Solana.
 - Stack: Next.js App Router, React, strict TypeScript, CSS Modules, Tailwind and the shared helpers in `lib/sdk`.
 - Color mode: light and dark.
@@ -21,7 +21,7 @@ Reference-led landing page direction, 7 October 2026. The 21st root scanner does
 
 ## Components
 
-- Reuse existing Aroma components and shared market/research transports.
+- Reuse existing Ovelo components and shared market/research transports.
 - Use semantic details/summary for FAQs, keyboard-operated research tabs, geometric Lucide icons and Next Image.
 
 ## Tokens
@@ -34,8 +34,8 @@ Reference-led landing page direction, 7 October 2026. The 21st root scanner does
 - Research advances through all five views on scroll; recurring advances through all four steps. Both reverse with scrolling and never play on a timer. Persistent panes and captions share a stable grid height.
 - Animated product chapters finish at 86% of their finite GSAP pin, reserving the remaining scroll for a completed-frame hold. Timelines read pin progress directly on scroll and refresh; landing-scoped anchoring suppression prevents viewport jumps when spacers rebuild. Fit a whole chapter first, then its smaller workspace/allocation/ownership stage. Stable research pane/source areas and compact vertical spacing at short viewport heights preserve type sizes, disclosures and 44px controls; truly oversized stages stay inline. Pause/direct selection remain available. Reduced motion removes pins and offers manual tabs/next-step controls. No wheel/touch trapping.
 - One forest footer contains the final CTA, brand, product/community links, risk disclosure and legal/data controls. The global privacy component supplies the consent banner and storage-error notice without adding a second landing footer; other routes retain their existing data/security footer.
-- Griffin-inspired navigation continuously morphs into a centered island over 180px of scroll, retaining the geometric home glyph and measured crisp-text geometry. Keep 96px clear above pinned stages. The compact dated market snapshot concludes the research chapter, outside its pin, aligned to the workspace with four desktop columns and two on phones. One combined issuer/tools section follows How Aroma Works and precedes FAQ, with separate role-labeled groups and official Jupiter/Pyth marks; no endorsement implication.
-- The desktop theme toggle fades/collapses during the island morph, returning at the page top. The compact width is measured from the remaining controls so Open Aroma fits. Mobile theme controls remain in the menu; concealed header controls are inert.
+- Griffin-inspired navigation continuously morphs into a centered island over 180px of scroll, retaining the geometric home glyph and measured crisp-text geometry. Keep 96px clear above pinned stages. The compact dated market snapshot concludes the research chapter, outside its pin, aligned to the workspace with four desktop columns and two on phones. One combined issuer/tools section follows How Ovelo Works and precedes FAQ, with separate role-labeled groups and official Jupiter/Pyth marks; no endorsement implication.
+- The desktop theme toggle fades/collapses during the island morph, returning at the page top. The compact width is measured from the remaining controls so Open Ovelo fits. Mobile theme controls remain in the menu; concealed header controls are inert.
 
 ## Constraints
 
@@ -55,7 +55,7 @@ Reference-led landing page direction, 7 October 2026. The 21st root scanner does
 ## Decisions
 
 - Adapt the user's Kimia and Griffin references into a premium editorial landing page: the user's currency artwork, quiet typography, clear product explanations and source-backed data.
-- Retrieve 21st Financial Platform Feature Grid (component 29553) for composition reference. Use existing Aroma primitives rather than installing its spotlight styling and extra dependencies.
+- Retrieve 21st Financial Platform Feature Grid (component 29553) for composition reference. Use existing Ovelo primitives rather than installing its spotlight styling and extra dependencies.
 - Explain vaultless SIP/DCA with wallet custody, bounded approval, due test-token collection and test stock delivery to owner accounts.
 - The latest explicit request authorizes GSAP pin/unpin spacing for finite product chapters, superseding the earlier native-sticky decision. Keep browser scrolling native and restore scoped styles/triggers on route or media changes; never use timed chapter playback.
 - The latest contextual 21st search was blocked by workspace data-egress review. No context was uploaded and no third-party component code was installed for this rebuild.

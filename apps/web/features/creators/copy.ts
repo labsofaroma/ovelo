@@ -2,7 +2,7 @@
 export const dashboardCopy = {
   title: "Creator dashboard",
   intro:
-    "Your baskets' purchases from Aroma's own confirmed receipts. Buyers are counted, never listed.",
+    "Your baskets' purchases from Ovelo's own confirmed receipts. Buyers are counted, never listed.",
   connect: "Connect the wallet you create baskets with.",
   cannotSign:
     "This wallet cannot sign messages, so it cannot open the dashboard.",
@@ -44,5 +44,5 @@ export const dashboardCopy = {
     "Archive this basket? It can no longer be bought; past buys stay recorded.",
   feeShare: "Fee share: off",
   feeShareNote: (entries: number) =>
-    `Aroma charges no platform fee during the beta, so there is nothing to share. ${entries} confirmed buy${entries === 1 ? " is" : "s are"} recorded in the fee-share ledger for the record; no payout exists.`,
+    `Ovelo charges no platform fee during the beta, so there is nothing to share. ${entries} confirmed buy${entries === 1 ? " is" : "s are"} recorded in the fee-share ledger for the record; no payout exists.`,
 } as const;

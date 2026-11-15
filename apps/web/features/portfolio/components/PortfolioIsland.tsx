@@ -36,7 +36,7 @@ function PortfolioBody() {
       <section className="flex flex-col items-start gap-3 rounded-panel border border-line bg-surface p-4">
         <p className="text-small">
           Connect a Solana mainnet wallet to see its holdings and the orders you
-          placed through Aroma. Aroma reads public balances; it never holds your
+          placed through Ovelo. Ovelo reads public balances; it never holds your
           funds or keys.
         </p>
         <ConnectButton />

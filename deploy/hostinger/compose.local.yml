@@ -1,11 +1,11 @@
 # Phase H Step 8: LOCAL verification only (never on the VPS). Layered on the production file:
-#   AROMA_IMAGE=aroma-web:local AROMA_LOCAL_ENV_FILE=<env> AROMA_LOCAL_SECRET_FILE=<secret file> \
+#   OVELO_IMAGE=ovelo-web:local OVELO_LOCAL_ENV_FILE=<env> OVELO_LOCAL_SECRET_FILE=<secret file> \
 #     docker compose -f deploy/hostinger/docker-compose.yml -f deploy/hostinger/compose.local.yml up -d --wait
 #
 # - cloudflared is replaced by `edge`, a stand-in for Cloudflare's edge and the tunnel
 #   (local/edge-proxy.mjs), published on 127.0.0.1 only. It sets CF-Connecting-IP, CF-IPCountry,
 #   the origin header, X-Forwarded-Proto and the public Host, overwriting client values.
-# - `app` is ALSO published on 127.0.0.1:${AROMA_LOCAL_DIRECT_PORT}: that is the attacker's path
+# - `app` is ALSO published on 127.0.0.1:${OVELO_LOCAL_DIRECT_PORT}: that is the attacker's path
 #   straight to the origin (no Cloudflare), which the spoofing suite uses and must find refused.
 #   The production file publishes nothing (deploy-bundle.test.ts).
 # - The `bridge` profile adds the loopback bridge the fork E2E needs (local/loopback-bridge.mjs).
@@ -14,10 +14,10 @@
 services:
   app:
     env_file: !override
-      - path: ${AROMA_LOCAL_ENV_FILE:?set AROMA_LOCAL_ENV_FILE}
+      - path: ${OVELO_LOCAL_ENV_FILE:?set OVELO_LOCAL_ENV_FILE}
         required: true
     ports:
-      - "127.0.0.1:${AROMA_LOCAL_DIRECT_PORT:-3299}:3000"
+      - "127.0.0.1:${OVELO_LOCAL_DIRECT_PORT:-3299}:3000"
     extra_hosts:
       - "host.docker.internal:host-gateway"
 
@@ -31,14 +31,14 @@ services:
       EDGE_UPSTREAM: http://app:3000
       EDGE_PORT: "8080"
       # Unset: the public hostname over https (verify.mjs). Empty + http: the fork E2E (container.ts).
-      EDGE_HOST: ${AROMA_LOCAL_EDGE_HOST-beta.aroma.test}
-      EDGE_SCHEME: ${AROMA_LOCAL_EDGE_SCHEME:-https}
+      EDGE_HOST: ${OVELO_LOCAL_EDGE_HOST-beta.ovelo.test}
+      EDGE_SCHEME: ${OVELO_LOCAL_EDGE_SCHEME:-https}
       EDGE_ORIGIN_SECRET_FILE: /run/secrets/origin
     volumes:
       - ./local/edge-proxy.mjs:/edge/edge-proxy.mjs:ro
-      - ${AROMA_LOCAL_SECRET_FILE:?set AROMA_LOCAL_SECRET_FILE}:/run/secrets/origin:ro
+      - ${OVELO_LOCAL_SECRET_FILE:?set OVELO_LOCAL_SECRET_FILE}:/run/secrets/origin:ro
     ports:
-      - "127.0.0.1:${AROMA_LOCAL_EDGE_PORT:-3201}:8080"
+      - "127.0.0.1:${OVELO_LOCAL_EDGE_PORT:-3201}:8080"
     depends_on:
       app:
         condition: service_healthy

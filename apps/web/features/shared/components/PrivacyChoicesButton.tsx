@@ -3,7 +3,7 @@
 import { SlidersHorizontal } from "lucide-react";
 
 /** Opens the consent banner (features/shared/components/ConsentBanner listens for this event). */
-export const OPEN_PRIVACY_EVENT = "aroma:privacy-open";
+export const OPEN_PRIVACY_EVENT = "ovelo:privacy-open";
 
 export function PrivacyChoicesButton() {
   return (

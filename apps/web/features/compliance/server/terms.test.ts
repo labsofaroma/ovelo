@@ -12,7 +12,7 @@ import {
 } from "./terms";
 import { TERMS_VERSIONS } from "../terms";
 
-const ORIGIN = "https://aroma.example";
+const ORIGIN = "https://ovelo.example";
 const NOW = new Date("2026-11-14T10:00:00.000Z");
 
 function deps(overrides: Partial<TermsDeps> = {}) {
@@ -62,7 +62,7 @@ describe("terms acceptance (purpose `terms`, the M5 challenge pattern)", () => {
     expect(challenge.hash).toBe(termsHash(challenge.version));
     expect(challenge.hash).toMatch(/^[0-9a-f]{64}$/);
     expect(challenge.message).toContain(
-      "Aroma: sign to accept Aroma's terms of use",
+      "Ovelo: sign to accept Ovelo's terms of use",
     );
     expect(challenge.message).toContain(`Terms version: ${challenge.version}`);
     expect(challenge.message).toContain(`Terms text: sha256:${challenge.hash}`);

@@ -41,8 +41,8 @@ type Context = { params: Promise<{ id: string }> };
  * Solana Action for a v1 basket (curated or published creator basket), M5b B4.
  * GET → Action metadata. POST ?amount= { account } → one unsigned mainnet transaction for that
  * account, quoted and simulated by M4's trade server, plus a `links.next` callback that records
- * the receipt once the transaction confirms. AROMA_TRADING=off refuses the POST (503), and so
- * does AROMA_ACTIONS, which is off by default under the production rules (server/actions-switch.ts).
+ * the receipt once the transaction confirms. OVELO_TRADING=off refuses the POST (503), and so
+ * does OVELO_ACTIONS, which is off by default under the production rules (server/actions-switch.ts).
  */
 export const GET = actionRoute<Context>(
   "v1/actions/baskets/:id",
@@ -74,7 +74,7 @@ export const GET = actionRoute<Context>(
         ...metadata,
         disabled: true,
         error: {
-          message: `Aroma is in private beta. Invited wallets can buy this basket at ${actionOrigin(request)}${routes.basket(basket.id)}.`,
+          message: `Ovelo is in private beta. Invited wallets can buy this basket at ${actionOrigin(request)}${routes.basket(basket.id)}.`,
         },
       });
     return Response.json(metadata);
@@ -99,8 +99,8 @@ export const POST = actionRoute<Context>(
       input.account,
       { compliance: complianceDeps(), beta: betaDeps() },
       {
-        beta: `Aroma is in private beta. Redeem an invite with this wallet at ${site} before buying. Nothing was quoted.`,
-        terms: `Accept Aroma's current terms with this wallet before your first purchase: open ${site}, connect this wallet and sign the terms. Nothing was quoted.`,
+        beta: `Ovelo is in private beta. Redeem an invite with this wallet at ${site} before buying. Nothing was quoted.`,
+        terms: `Accept Ovelo's current terms with this wallet before your first purchase: open ${site}, connect this wallet and sign the terms. Nothing was quoted.`,
       },
     );
     const prepared = await quoteTrade(actionQuoteRequest(basket.id, input));

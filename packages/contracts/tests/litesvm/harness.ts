@@ -1,7 +1,7 @@
 /**
- * LiteSVM harness for Aroma Guard v1 (devnet-mock build). Loads the pinned Subscriptions and
+ * LiteSVM harness for Ovelo Guard v1 (devnet-mock build). Loads the pinned Subscriptions and
  * Pyth receiver binaries, deploys the program as an upgradeable program with a known upgrade
- * authority, and drives it through the hand-written v1 builders in `@aroma/guard`.
+ * authority, and drives it through the hand-written v1 builders in `@ovelo/guard`.
  * Every keypair here is generated in memory for one test and never leaves the process.
  */
 import fs from "node:fs";
@@ -27,11 +27,11 @@ import {
 } from "@solana/kit";
 import { PublicKey, type TransactionInstruction } from "@solana/web3.js";
 import { AccountLayout, MintLayout } from "@solana/spl-token";
-import * as v1 from "@aroma/guard";
+import * as v1 from "@ovelo/guard";
 
 const root = path.resolve(import.meta.dirname, "../..");
 export const PROGRAM_DIR =
-  process.env.AROMA_V1_PROGRAM_DIR ?? path.join(root, "target/test-programs");
+  process.env.OVELO_V1_PROGRAM_DIR ?? path.join(root, "target/test-programs");
 const pins = JSON.parse(
   fs.readFileSync(
     path.join(root, "tests/fixtures/runtime-programs.json"),
@@ -44,11 +44,11 @@ const pins = JSON.parse(
   >;
 };
 export const GUARD_SO =
-  process.env.AROMA_V1_GUARD_SO ??
-  path.join(root, "target/build/devnet-mock/aroma_guard.so");
+  process.env.OVELO_V1_GUARD_SO ??
+  path.join(root, "target/build/devnet-mock/ovelo_guard.so");
 export const MAINNET_SO = path.join(
   root,
-  "target/build/mainnet/aroma_guard.so",
+  "target/build/mainnet/ovelo_guard.so",
 );
 export const LOADER = v1.BPF_LOADER_UPGRADEABLE_ID;
 const enc = getAddressEncoder();
@@ -56,11 +56,11 @@ const enc = getAddressEncoder();
 export const START = 1_800_000_000n; // clock origin for every test
 
 /**
- * `AROMA_V1_SUBSCRIPTIONS=mainnet` runs the suite against mainnet's Subscriptions binary
+ * `OVELO_V1_SUBSCRIPTIONS=mainnet` runs the suite against mainnet's Subscriptions binary
  * (`subscriptions-mainnet.so`, `pnpm test:fixtures:mainnet`), checked against `mainnetSha256`
  * (M8 decision 2). Every other binary is always the devnet pin.
  */
-const MAINNET_SUBSCRIPTIONS = process.env.AROMA_V1_SUBSCRIPTIONS === "mainnet";
+const MAINNET_SUBSCRIPTIONS = process.env.OVELO_V1_SUBSCRIPTIONS === "mainnet";
 
 function pinned(name: string): Uint8Array {
   const mainnet = name === "subscriptions" && MAINNET_SUBSCRIPTIONS;
@@ -123,7 +123,7 @@ export class Env {
     );
     const env = new Env(svm);
     await env.deployUpgradeable(
-      v1.AROMA_GUARD_V1_PROGRAM_ID,
+      v1.OVELO_GUARD_V1_PROGRAM_ID,
       fs.readFileSync(soPath),
       upgradeAuthority,
     );

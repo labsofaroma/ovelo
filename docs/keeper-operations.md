@@ -1,6 +1,6 @@
-# Keeper operations (Aroma Guard v1, devnet)
+# Keeper operations (Ovelo Guard v1, devnet)
 
-The keeper (`apps/keeper`, `@aroma/keeper`) executes due recurring-plan installments. It is a stateless HTTP service: QStash calls `POST /run` every 1–5 minutes, and each run reads everything it needs from the chain, Postgres (`plans_index`, `receipts`) and Redis (leases, dead letters, alert de-duplication). It runs on **devnet only** until Aroma Guard reaches mainnet at M12 (audit, multisig and deploy, when funded). M10 took Path B: no mainnet recurring through Jupiter DCA ([launch/DCA-SPIKE.md](./launch/DCA-SPIKE.md)).
+The keeper (`apps/keeper`, `@ovelo/keeper`) executes due recurring-plan installments. It is a stateless HTTP service: QStash calls `POST /run` every 1–5 minutes, and each run reads everything it needs from the chain, Postgres (`plans_index`, `receipts`) and Redis (leases, dead letters, alert de-duplication). It runs on **devnet only** until Ovelo Guard reaches mainnet at M12 (audit, multisig and deploy, when funded). M10 took Path B: no mainnet recurring through Jupiter DCA ([launch/DCA-SPIKE.md](./launch/DCA-SPIKE.md)).
 
 ## How a run works
 
@@ -54,7 +54,7 @@ The CLI reads the same environment as the server.
 
 ## Runbooks
 
-- **`installment_failed` with `PROGRAM_ERROR`.** Read the logs in the alert/dead letter. Usual causes: the owner's test USD balance is below the installment (the owner tops up; the period may then be skipped), the plan or config was paused, an asset was disabled, or the delegation was revoked outside Aroma. Fix the cause, then `dlq replay <id>`; if the period is gone, `dlq drop <id>`.
+- **`installment_failed` with `PROGRAM_ERROR`.** Read the logs in the alert/dead letter. Usual causes: the owner's test USD balance is below the installment (the owner tops up; the period may then be skipped), the plan or config was paused, an asset was disabled, or the delegation was revoked outside Ovelo. Fix the cause, then `dlq replay <id>`; if the period is gone, `dlq drop <id>`.
 - **`RETRIES_EXHAUSTED`.** RPC trouble: check `rpc_degraded`, switch `KEEPER_RPC_URL` to a healthy devnet endpoint, `dlq replay all`.
 - **`hermes_unavailable: unauthorized`.** The Pyth API key is missing or revoked: set `PYTH_API_KEY`. **`stale`** outside US market hours is expected for equity feeds.
 - **`keeper_balance_low`.** `solana airdrop 2 <keeper> --url devnet` (devnet only). Each 3-leg installment costs a few transactions' fees plus temporarily the encoded-VAA and price-update rent, returned by cleanup.

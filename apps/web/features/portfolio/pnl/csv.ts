@@ -4,7 +4,7 @@ import type { Fills } from "./fills";
 import type { PnlView } from "./schema";
 
 /**
- * CSV export (M11 Step 2): this wallet's Aroma orders and its P&L rows, raw and display amounts
+ * CSV export (M11 Step 2): this wallet's Ovelo orders and its P&L rows, raw and display amounts
  * side by side. Pure: built server-side from the same data as the page. Cells that a spreadsheet
  * would read as a formula are prefixed with `'` (CSV injection).
  */

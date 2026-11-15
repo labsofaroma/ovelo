@@ -1,9 +1,9 @@
 /**
- * Read-only audit of an Aroma Guard v1 devnet deployment. Uses only `READ_METHODS`; it never signs
+ * Read-only audit of an Ovelo Guard v1 devnet deployment. Uses only `READ_METHODS`; it never signs
  * and never sends a transaction.
  */
 import { getAddressDecoder, getBase58Decoder, type Address } from "@solana/kit";
-import * as v1 from "@aroma/guard";
+import * as v1 from "@ovelo/guard";
 import { GENESIS } from "./cluster";
 import { readOnly, type JsonRpc } from "./jsonrpc";
 import { parseMintFacts } from "./provision";

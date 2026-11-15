@@ -1,8 +1,8 @@
-# Aroma
+# Ovelo
 
-A self-custody interface for tokenized securities on Solana. You can research stocks, buy single xStocks or stock baskets through Jupiter on **mainnet**, practise with paper trading, and test recurring investing (SIP/DCA) on **devnet** through the Aroma Guard program.
+A self-custody interface for tokenized securities on Solana. You can research stocks, buy single xStocks or stock baskets through Jupiter on **mainnet**, practise with paper trading, and test recurring investing (SIP/DCA) on **devnet** through the Ovelo Guard program.
 
-> ⚠️ This repository is the **prototype**. Aroma v1 is being rebuilt from the ground up; see [docs/ROADMAP.md](docs/ROADMAP.md). Recurring investing here is devnet-only and uses valueless test tokens.
+> ⚠️ This repository is the **prototype**. Ovelo v1 is being rebuilt from the ground up; see [docs/ROADMAP.md](docs/ROADMAP.md). Recurring investing here is devnet-only and uses valueless test tokens.
 
 ## Monorepo layout
 
@@ -16,9 +16,9 @@ apps/
     e2e/            Playwright suites (smoke, local mainnet fork, local validator)
   keeper/           QStash-triggered recurring-plan keeper (devnet today)
 packages/
-  contracts/        Aroma Guard v1 Anchor program (Rust) + LiteSVM tests
-  guard/            @aroma/guard: Codama client, builders, Pyth and Jupiter helpers
-  ui/               @aroma/ui: tokens.css, primitives, Brand, AssetAvatar
+  contracts/        Ovelo Guard v1 Anchor program (Rust) + LiteSVM tests
+  guard/            @ovelo/guard: Codama client, builders, Pyth and Jupiter helpers
+  ui/               @ovelo/ui: tokens.css, primitives, Brand, AssetAvatar
   config/           shared tsconfig, ESLint, Prettier and Vitest presets
 docs/               architecture, protocol, operations, audit, launch runbooks
 ```
@@ -35,7 +35,7 @@ pnpm install
 cp apps/web/.env.example apps/web/.env.local   # fill in what you need
 pnpm dev:web                                   # http://localhost:3000
 ```
-Every variable is documented inline in `apps/web/.env.example`; copy it to `apps/web/.env.local` (its placeholders boot the app and connect to nothing). Boot and build always require `SOLANA_RPC_URL`, `DATABASE_URL`, `UPSTASH_REDIS_REST_URL`/`_TOKEN` and `AROMA_TRADE_SECRET`; real trading also needs `JUPITER_API_KEY`. `AROMA_TRADING=off` pauses trading.
+Every variable is documented inline in `apps/web/.env.example`; copy it to `apps/web/.env.local` (its placeholders boot the app and connect to nothing). Boot and build always require `SOLANA_RPC_URL`, `DATABASE_URL`, `UPSTASH_REDIS_REST_URL`/`_TOKEN` and `OVELO_TRADE_SECRET`; real trading also needs `JUPITER_API_KEY`. `OVELO_TRADING=off` pauses trading.
 
 ## Scripts
 | Command | What it does |
@@ -48,26 +48,26 @@ Every variable is documented inline in `apps/web/.env.example`; copy it to `apps
 | `pnpm format:check` | Prettier on new code (prototype paths are listed in `.prettierignore`) |
 | `pnpm db:generate` / `pnpm db:migrate` | Drizzle: generate a migration from `apps/web/server/db/schema.ts` / apply migrations to `DATABASE_URL` (Neon) |
 | `pnpm check:prod-env [--profile beta]` | Production env check, names and statuses only (M11: channels, worker secret, fees) |
-| `pnpm --filter @aroma/web notify:vapid` | Print a fresh VAPID key pair for web push (owner, once per deployment; never committed) |
-| `pnpm --filter @aroma/web perf:p95 -- --base <url>` | p95 latency of `/markets` and `/api/v1/prices` against a running app (read-only GETs) |
+| `pnpm --filter @ovelo/web notify:vapid` | Print a fresh VAPID key pair for web push (owner, once per deployment; never committed) |
+| `pnpm --filter @ovelo/web perf:p95 -- --base <url>` | p95 latency of `/markets` and `/api/v1/prices` against a running app (read-only GETs) |
 | `pnpm test:anchor` | Rust unit tests + IDL check + LiteSVM runtime tests |
 | `pnpm build:anchor` | `anchor build` |
 
 The prototype scripts that pointed at files that were never committed (`dev:mobile`, `keeper:trigger`, `dev:api-tunnel`, `devnet:create-xstocks`) were removed in M0. Planned replacements: the keeper trigger moves to `apps/keeper` on QStash (M6); devnet asset provisioning is rewritten against the v1 asset registry (M6); the mobile app and its tunnel are out of v1 scope. Tests that depend on the missing scripts are skipped with `TODO(Mx)` markers. See [AUDIT §3](docs/AUDIT.md#3-repository-tooling-and-ci).
 
 ## Docs
-- [PRODUCT.md](PRODUCT.md): what Aroma is and the product rules
+- [PRODUCT.md](PRODUCT.md): what Ovelo is and the product rules
 - [AGENTS.md](AGENTS.md): conventions for contributors and AI agents
 - [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md)
-- [docs/aroma-guard-v1.md](docs/aroma-guard-v1.md): the Aroma Guard v1 program (devnet until M12)
+- [docs/ovelo-guard-v1.md](docs/ovelo-guard-v1.md): the Ovelo Guard v1 program (devnet until M12)
 - [docs/keeper-operations.md](docs/keeper-operations.md): the recurring keeper, operations and alerts
 - [docs/launch/CUTOVER-RUNBOOK.md](docs/launch/CUTOVER-RUNBOOK.md): the public spot launch, step by step (owner)
 - [docs/launch/BETA-RUNBOOK.md](docs/launch/BETA-RUNBOOK.md) and [docs/launch/LAUNCH-CHECKLIST.md](docs/launch/LAUNCH-CHECKLIST.md): the beta deploy (owner) and the launch status
 - [docs/AUDIT.md](docs/AUDIT.md): known flaws, ranked
-- [docs/CONTRACT-V1-SPEC.md](docs/CONTRACT-V1-SPEC.md): Aroma Guard v1 contract spec (ground-up rebuild)
+- [docs/CONTRACT-V1-SPEC.md](docs/CONTRACT-V1-SPEC.md): Ovelo Guard v1 contract spec (ground-up rebuild)
 - [docs/ROADMAP.md](docs/ROADMAP.md): v1 rebuild plan (phases and launch scope)
 - [docs/REWRITE-PLAN.md](docs/REWRITE-PLAN.md): full codebase rewrite: target architecture, module-by-module mapping, milestones
 - [SECURITY.md](SECURITY.md) · [CONTRIBUTING.md](CONTRIBUTING.md)
 
 ## Disclaimer
-Aroma is software, not a broker or adviser. Tokenized stocks are issued by third parties (for example Backed xStocks), are not available in every jurisdiction, and carry issuer, smart-contract and market risk.
+Ovelo is software, not a broker or adviser. Tokenized stocks are issued by third parties (for example Backed xStocks), are not available in every jurisdiction, and carry issuer, smart-contract and market risk.

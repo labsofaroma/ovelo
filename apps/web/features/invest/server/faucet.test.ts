@@ -210,7 +210,7 @@ describe("verifyTurnstile", () => {
       seen.push(init.body as URLSearchParams);
       return Response.json({
         success: true,
-        hostname: "aroma.test",
+        hostname: "ovelo.test",
         action: "faucet",
       });
     });
@@ -221,7 +221,7 @@ describe("verifyTurnstile", () => {
         remoteIp: "203.0.113.7",
         fetch: capture as unknown as typeof fetch,
       }),
-    ).resolves.toEqual({ hostname: "aroma.test", action: "faucet" });
+    ).resolves.toEqual({ hostname: "ovelo.test", action: "faucet" });
     expect(seen[0]!.get("remoteip")).toBe("203.0.113.7");
     await verifyTurnstile({
       secret: "s",

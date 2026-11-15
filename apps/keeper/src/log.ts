@@ -47,7 +47,7 @@ export function createLogger(
   return pino(
     {
       level,
-      base: { service: "aroma-keeper" },
+      base: { service: "ovelo-keeper" },
       timestamp: pino.stdTimeFunctions.isoTime,
       formatters: { log: (object) => scrub(object) as Record<string, unknown> },
     },

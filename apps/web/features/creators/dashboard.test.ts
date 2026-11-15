@@ -154,7 +154,7 @@ describe("GET /api/v1/creators/dashboard", () => {
   const get = (query = "", authorization?: string) =>
     route.GET(
       new Request(
-        `https://aroma.example/api/v1/creators/dashboard${query}`,
+        `https://ovelo.example/api/v1/creators/dashboard${query}`,
         authorization ? { headers: { authorization } } : {},
       ),
     );

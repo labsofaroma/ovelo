@@ -31,7 +31,7 @@ type Row = {
 
 const PROD = { NODE_ENV: "production" };
 const SECRET = "test-origin-secret-0123456789abcdefABCDEF";
-const SELF = { AROMA_PLATFORM: "selfhost" };
+const SELF = { OVELO_PLATFORM: "selfhost" };
 
 /** Every (platform, deploy env) combination, plus the contradictions and the missing answers. */
 const TABLE: Row[] = [
@@ -50,7 +50,7 @@ const TABLE: Row[] = [
       ...PROD,
       VERCEL: "1",
       VERCEL_ENV: "production",
-      AROMA_DEPLOY_ENV: "beta",
+      OVELO_DEPLOY_ENV: "beta",
     },
     platform: "vercel",
     deployEnv: "beta",
@@ -58,12 +58,12 @@ const TABLE: Row[] = [
     refused: [],
   },
   {
-    name: "vercel with an explicit AROMA_PLATFORM=vercel",
+    name: "vercel with an explicit OVELO_PLATFORM=vercel",
     env: {
       ...PROD,
       VERCEL: "1",
       VERCEL_ENV: "preview",
-      AROMA_PLATFORM: "vercel",
+      OVELO_PLATFORM: "vercel",
     },
     platform: "vercel",
     deployEnv: "preview",
@@ -73,7 +73,7 @@ const TABLE: Row[] = [
   // Self-host: both variables, every deploy environment.
   ...(["production", "beta", "preview", "development"] as const).map((d) => ({
     name: `selfhost ${d}`,
-    env: { ...PROD, ...SELF, AROMA_DEPLOY_ENV: d },
+    env: { ...PROD, ...SELF, OVELO_DEPLOY_ENV: d },
     platform: "selfhost" as const,
     deployEnv: d,
     production: d === "production" || d === "beta",
@@ -86,7 +86,7 @@ const TABLE: Row[] = [
     platform: null,
     deployEnv: "development",
     production: true,
-    refused: ["AROMA_PLATFORM"],
+    refused: ["OVELO_PLATFORM"],
   },
   {
     name: "next build without a platform (exempt; still fail closed)",
@@ -97,20 +97,20 @@ const TABLE: Row[] = [
     refused: [],
   },
   {
-    name: "selfhost without AROMA_DEPLOY_ENV",
+    name: "selfhost without OVELO_DEPLOY_ENV",
     env: { ...PROD, ...SELF },
     platform: "selfhost",
     deployEnv: "development",
     production: true,
-    refused: ["AROMA_DEPLOY_ENV"],
+    refused: ["OVELO_DEPLOY_ENV"],
   },
   {
-    name: "AROMA_DEPLOY_ENV without a platform",
-    env: { ...PROD, AROMA_DEPLOY_ENV: "production" },
+    name: "OVELO_DEPLOY_ENV without a platform",
+    env: { ...PROD, OVELO_DEPLOY_ENV: "production" },
     platform: null,
     deployEnv: "development",
     production: true,
-    refused: ["AROMA_PLATFORM"],
+    refused: ["OVELO_PLATFORM"],
   },
   {
     name: "Vercel flag without VERCEL_ENV in production",
@@ -122,71 +122,71 @@ const TABLE: Row[] = [
   },
   // Contradictions.
   {
-    name: "VERCEL_ENV=production and AROMA_DEPLOY_ENV=development",
-    env: { ...PROD, VERCEL_ENV: "production", AROMA_DEPLOY_ENV: "development" },
+    name: "VERCEL_ENV=production and OVELO_DEPLOY_ENV=development",
+    env: { ...PROD, VERCEL_ENV: "production", OVELO_DEPLOY_ENV: "development" },
     platform: "vercel",
     deployEnv: "production",
     production: true,
-    refused: ["AROMA_DEPLOY_ENV"],
+    refused: ["OVELO_DEPLOY_ENV"],
   },
   {
-    name: "VERCEL_ENV=preview and AROMA_DEPLOY_ENV=production",
-    env: { ...PROD, VERCEL_ENV: "preview", AROMA_DEPLOY_ENV: "production" },
+    name: "VERCEL_ENV=preview and OVELO_DEPLOY_ENV=production",
+    env: { ...PROD, VERCEL_ENV: "preview", OVELO_DEPLOY_ENV: "production" },
     platform: "vercel",
     deployEnv: "preview",
     production: true,
-    refused: ["AROMA_DEPLOY_ENV"],
+    refused: ["OVELO_DEPLOY_ENV"],
   },
   {
     name: "VERCEL_ENV=preview refined to beta (beta is production only)",
-    env: { ...PROD, VERCEL_ENV: "preview", AROMA_DEPLOY_ENV: "beta" },
+    env: { ...PROD, VERCEL_ENV: "preview", OVELO_DEPLOY_ENV: "beta" },
     platform: "vercel",
     deployEnv: "preview",
     production: true,
-    refused: ["AROMA_DEPLOY_ENV"],
+    refused: ["OVELO_DEPLOY_ENV"],
   },
   {
-    name: "AROMA_PLATFORM=selfhost on Vercel",
+    name: "OVELO_PLATFORM=selfhost on Vercel",
     env: {
       ...PROD,
       ...SELF,
-      AROMA_DEPLOY_ENV: "production",
+      OVELO_DEPLOY_ENV: "production",
       VERCEL: "1",
       VERCEL_ENV: "production",
     },
     platform: "vercel",
     deployEnv: "production",
     production: true,
-    refused: ["AROMA_PLATFORM"],
+    refused: ["OVELO_PLATFORM"],
   },
   {
-    name: "AROMA_PLATFORM=vercel off Vercel",
-    env: { ...PROD, AROMA_PLATFORM: "vercel", AROMA_DEPLOY_ENV: "development" },
+    name: "OVELO_PLATFORM=vercel off Vercel",
+    env: { ...PROD, OVELO_PLATFORM: "vercel", OVELO_DEPLOY_ENV: "development" },
     platform: "vercel",
     deployEnv: "development",
     production: true,
-    refused: ["AROMA_PLATFORM"],
+    refused: ["OVELO_PLATFORM"],
   },
   // Unreadable values.
   {
-    name: "unknown AROMA_PLATFORM",
+    name: "unknown OVELO_PLATFORM",
     env: {
       ...PROD,
-      AROMA_PLATFORM: "hostinger",
-      AROMA_DEPLOY_ENV: "production",
+      OVELO_PLATFORM: "hostinger",
+      OVELO_DEPLOY_ENV: "production",
     },
     platform: null,
     deployEnv: "development",
     production: true,
-    refused: ["AROMA_PLATFORM"],
+    refused: ["OVELO_PLATFORM"],
   },
   {
-    name: "unknown AROMA_DEPLOY_ENV",
-    env: { ...PROD, ...SELF, AROMA_DEPLOY_ENV: "staging" },
+    name: "unknown OVELO_DEPLOY_ENV",
+    env: { ...PROD, ...SELF, OVELO_DEPLOY_ENV: "staging" },
     platform: "selfhost",
     deployEnv: "development",
     production: true,
-    refused: ["AROMA_DEPLOY_ENV"],
+    refused: ["OVELO_DEPLOY_ENV"],
   },
   {
     name: "VERCEL set to something other than 1",
@@ -235,7 +235,7 @@ describe("server/platform.ts: the (platform, deploy env) table", () => {
     // (Step 2); give them so only the platform answer decides.
     const edge =
       row.platform === "selfhost"
-        ? { AROMA_PROXY_MODE: "cloudflare", AROMA_ORIGIN_SECRET: SECRET }
+        ? { OVELO_PROXY_MODE: "cloudflare", OVELO_ORIGIN_SECRET: SECRET }
         : {};
     const result = parseEnv({ ...BASE, ...edge, ...row.env });
     const named = result.ok ? [] : result.error.issues.map((i) => i.variable);
@@ -251,7 +251,7 @@ describe("server/platform.ts: the (platform, deploy env) table", () => {
       expect(
         testSwitchesAllowed({
           ...row.env,
-          AROMA_V1_ALLOW_TEST_SWITCHES: "true",
+          OVELO_V1_ALLOW_TEST_SWITCHES: "true",
         }),
       ).toBe(!p);
       // HSTS: only production rules, over HTTPS, never on loopback.
@@ -268,23 +268,23 @@ describe("server/platform.ts: the (platform, deploy env) table", () => {
         ...BASE,
         ...PROD,
         ...SELF,
-        AROMA_DEPLOY_ENV: deploy,
-        AROMA_MAX_TRADE_USDC_RAW: "50000000",
-        AROMA_MAX_DAILY_USDC_RAW: "200000000",
-        AROMA_V1_ALLOW_TEST_SWITCHES: "true",
-        AROMA_V1_TEST_FORK_GENESIS: "11111111111111111111111111111111",
-        AROMA_V1_TEST_JUPITER_URL: "http://127.0.0.1:9",
-        NEXT_PUBLIC_AROMA_E2E_WALLET: "true",
+        OVELO_DEPLOY_ENV: deploy,
+        OVELO_MAX_TRADE_USDC_RAW: "50000000",
+        OVELO_MAX_DAILY_USDC_RAW: "200000000",
+        OVELO_V1_ALLOW_TEST_SWITCHES: "true",
+        OVELO_V1_TEST_FORK_GENESIS: "11111111111111111111111111111111",
+        OVELO_V1_TEST_JUPITER_URL: "http://127.0.0.1:9",
+        NEXT_PUBLIC_OVELO_E2E_WALLET: "true",
         TURNSTILE_SECRET_KEY: "1x0000000000000000000000000000000AA",
       });
       expect(result.ok).toBe(false);
       if (!result.ok)
         expect(result.error.issues.map((i) => i.variable)).toEqual(
           expect.arrayContaining([
-            "AROMA_V1_ALLOW_TEST_SWITCHES",
-            "AROMA_V1_TEST_FORK_GENESIS",
-            "AROMA_V1_TEST_JUPITER_URL",
-            "NEXT_PUBLIC_AROMA_E2E_WALLET",
+            "OVELO_V1_ALLOW_TEST_SWITCHES",
+            "OVELO_V1_TEST_FORK_GENESIS",
+            "OVELO_V1_TEST_JUPITER_URL",
+            "NEXT_PUBLIC_OVELO_E2E_WALLET",
             "TURNSTILE_SECRET_KEY",
           ]),
         );
@@ -293,22 +293,22 @@ describe("server/platform.ts: the (platform, deploy env) table", () => {
 
   it("requires the caps on self-host production (as on Vercel production)", () => {
     const {
-      AROMA_MAX_TRADE_USDC_RAW: _trade,
-      AROMA_MAX_DAILY_USDC_RAW: _daily,
+      OVELO_MAX_TRADE_USDC_RAW: _trade,
+      OVELO_MAX_DAILY_USDC_RAW: _daily,
       ...uncapped
     } = BASE;
     const result = parseEnv({
       ...uncapped,
       ...PROD,
       ...SELF,
-      AROMA_DEPLOY_ENV: "production",
+      OVELO_DEPLOY_ENV: "production",
     });
     expect(result.ok).toBe(false);
     if (!result.ok)
       expect(result.error.issues.map((i) => i.variable)).toEqual(
         expect.arrayContaining([
-          "AROMA_MAX_TRADE_USDC_RAW",
-          "AROMA_MAX_DAILY_USDC_RAW",
+          "OVELO_MAX_TRADE_USDC_RAW",
+          "OVELO_MAX_DAILY_USDC_RAW",
         ]),
       );
   });

@@ -1,11 +1,11 @@
 import {
-  AROMA_GUARD_V1_PROGRAM_ID,
+  OVELO_GUARD_V1_PROGRAM_ID,
   BPF_LOADER_UPGRADEABLE_ID,
   DEVNET_GENESIS_HASH,
   MAINNET_GENESIS_HASH,
   findConfigPda,
-} from "@aroma/guard";
-import { CONFIG_DISCRIMINATOR, getConfigEncoder } from "@aroma/guard/generated";
+} from "@ovelo/guard";
+import { CONFIG_DISCRIMINATOR, getConfigEncoder } from "@ovelo/guard/generated";
 import { address, getAddressEncoder, none, some } from "@solana/kit";
 import { describe, expect, it, vi } from "vitest";
 import {
@@ -63,7 +63,7 @@ function configAccount(admin: string, keeper: string | null) {
     Buffer.from(CONFIG_DISCRIMINATOR),
   );
   return {
-    owner: AROMA_GUARD_V1_PROGRAM_ID,
+    owner: OVELO_GUARD_V1_PROGRAM_ID,
     data: [b64(Uint8Array.from(bytes)), "base64"],
   };
 }
@@ -87,7 +87,7 @@ describe("checkCustody (read-only)", () => {
   it("multisig verified: upgrade authority, admin and keeper match; only reads", async () => {
     const config = await findConfigPda();
     const { rpc, methods } = await fakeRpc({
-      [AROMA_GUARD_V1_PROGRAM_ID]: programAccount(),
+      [OVELO_GUARD_V1_PROGRAM_ID]: programAccount(),
       [PROGRAM_DATA]: programDataAccount(SQUADS),
       [config]: configAccount(SQUADS, KEEPER),
     });
@@ -110,7 +110,7 @@ describe("checkCustody (read-only)", () => {
 
   it("a deployer (not the multisig) as upgrade authority is a mismatch", async () => {
     const { rpc } = await fakeRpc({
-      [AROMA_GUARD_V1_PROGRAM_ID]: programAccount(),
+      [OVELO_GUARD_V1_PROGRAM_ID]: programAccount(),
       [PROGRAM_DATA]: programDataAccount(DEPLOYER),
     });
     const report = await checkCustody(rpc, {
@@ -124,7 +124,7 @@ describe("checkCustody (read-only)", () => {
 
   it("an immutable program (no authority) is reported as none", async () => {
     const { rpc } = await fakeRpc({
-      [AROMA_GUARD_V1_PROGRAM_ID]: programAccount(),
+      [OVELO_GUARD_V1_PROGRAM_ID]: programAccount(),
       [PROGRAM_DATA]: programDataAccount(null),
     });
     const report = await checkCustody(rpc, { cluster: "mainnet", expect: {} });
@@ -148,7 +148,7 @@ describe("checkCustody (read-only)", () => {
 
   it("an account not owned by the upgradeable loader is invalid", async () => {
     const { rpc } = await fakeRpc({
-      [AROMA_GUARD_V1_PROGRAM_ID]: {
+      [OVELO_GUARD_V1_PROGRAM_ID]: {
         ...programAccount(),
         owner: "11111111111111111111111111111111",
       },

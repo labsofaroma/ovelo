@@ -173,12 +173,12 @@ export async function getMainnetConnection(): Promise<
   return verifyGenesis(cached("mainnet-beta", url), "mainnet-beta");
 }
 
-/** Devnet: AROMA_RECURRING_RPC_URL only (never the mainnet or browser variables). */
+/** Devnet: OVELO_RECURRING_RPC_URL only (never the mainnet or browser variables). */
 export async function getDevnetConnection(): Promise<
   ClusterConnection<"devnet">
 > {
   const url = assertDevnetRpcUrl(
-    envOrThrow().devnet.AROMA_RECURRING_RPC_URL ?? DEFAULT_DEVNET_RPC,
+    envOrThrow().devnet.OVELO_RECURRING_RPC_URL ?? DEFAULT_DEVNET_RPC,
   );
   return verifyGenesis(cached("devnet", url), "devnet");
 }

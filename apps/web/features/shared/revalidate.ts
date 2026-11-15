@@ -31,7 +31,7 @@ export function assertRevalidateAuthorized(
 ): void {
   if (!secret)
     throw new AppError("SERVICE_UNAVAILABLE", {
-      detail: "AROMA_REVALIDATE_SECRET is not set",
+      detail: "OVELO_REVALIDATE_SECRET is not set",
     });
   const match = /^Bearer (\S+)$/.exec(authorization ?? "");
   if (!match?.[1] || !timingSafeEqual(digest(match[1]), digest(secret)))

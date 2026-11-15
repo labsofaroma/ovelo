@@ -1,4 +1,4 @@
-import { formatUnits } from "@aroma/ui";
+import { formatUnits } from "@ovelo/ui";
 import { formatObservedAt } from "../../shared/freshness";
 import type { UsageView, UsageWindow } from "../schema";
 

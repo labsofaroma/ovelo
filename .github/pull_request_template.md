@@ -6,7 +6,7 @@
 
 ## Checklist (AGENTS.md)
 - [ ] `pnpm lint`, `pnpm typecheck` and `pnpm test` pass locally
-- [ ] `pnpm test:contracts` passes (if the program changed), and the IDL and generated client leave no diff (`pnpm --filter @aroma/contracts idl:check`)
+- [ ] `pnpm test:contracts` passes (if the program changed), and the IDL and generated client leave no diff (`pnpm --filter @ovelo/contracts idl:check`)
 - [ ] No private keys handled by the server; the server prepares transactions and wallets sign
 - [ ] State-changing API routes need a signature, HMAC token or bearer secret, and read bodies with `readLimitedJson`
 - [ ] Devnet code paths verify the devnet genesis hash; no devnet secret can reach mainnet

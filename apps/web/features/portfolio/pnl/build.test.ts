@@ -57,7 +57,7 @@ const receipt = (
 const basketName = (ref: string) => `Basket ${ref}`;
 
 describe("buildPnl", () => {
-  it("a holding bought only through Aroma: exact cost, value and unrealized P&L", () => {
+  it("a holding bought only through Ovelo: exact cost, value and unrealized P&L", () => {
     const r = receipt([{ mint: A, inputAmount: "10000000" }]); // 10 USDC
     const pnl = buildPnl({
       holdings: [withValue(holding(A, "5000000000", "300"))], // 50 tokens × $3.00 = $150
@@ -79,7 +79,7 @@ describe("buildPnl", () => {
     });
   });
 
-  it("holding more than Aroma bought: cost basis unknown (outside), left out of totals", () => {
+  it("holding more than Ovelo bought: cost basis unknown (outside), left out of totals", () => {
     const r = receipt([{ mint: A, inputAmount: "10000000" }]);
     const pnl = buildPnl({
       holdings: [withValue(holding(A, "9000000000", "300"))],
@@ -106,7 +106,7 @@ describe("buildPnl", () => {
     expect(pnl.rows[0]).toMatchObject({ status: "known", costUsdc: "5000000" });
   });
 
-  it("no Aroma purchase, an unread fill, a SOL-funded buy, and USDC itself are each labelled", () => {
+  it("no Ovelo purchase, an unread fill, a SOL-funded buy, and USDC itself are each labelled", () => {
     const pending = receipt([{ mint: B, inputAmount: "1" }]);
     const sol = receipt([{ mint: A, inputAmount: "1" }], { mintIn: SOL });
     const pnl = buildPnl({

@@ -1,4 +1,4 @@
-import { Skeleton } from "@aroma/ui";
+import { Skeleton } from "@ovelo/ui";
 import { pageContainer } from "../styles";
 
 /** Shared `loading.tsx` body: shapes only, never placeholder numbers. */

@@ -3,7 +3,7 @@ import { CURRENT_TERMS_VERSION, TERMS_VERSIONS } from "./terms";
 
 /**
  * Jurisdiction policy (M9 compliance gate, REWRITE-PLAN §7 M9 and §7.1 P1). CONFIGURATION, not
- * code: the defaults below are overridden per deployment by the AROMA_COMPLIANCE_* variables
+ * code: the defaults below are overridden per deployment by the OVELO_COMPLIANCE_* variables
  * (validated in server/env.compliance.ts at boot and again here). Pure: no `server-only`, no I/O,
  * so middleware, routes and the prod-env check all read the same policy.
  *
@@ -60,11 +60,11 @@ export const DEFAULT_POLICY: CompliancePolicy = {
 
 /** The variables that override the defaults. Values are never logged; names are. */
 export const POLICY_ENV = [
-  "AROMA_COMPLIANCE_RESTRICTED_COUNTRIES",
-  "AROMA_COMPLIANCE_MISSING_COUNTRY",
-  "AROMA_COMPLIANCE_BROWSE",
-  "AROMA_COMPLIANCE_DEVNET",
-  "AROMA_TERMS_VERSION",
+  "OVELO_COMPLIANCE_RESTRICTED_COUNTRIES",
+  "OVELO_COMPLIANCE_MISSING_COUNTRY",
+  "OVELO_COMPLIANCE_BROWSE",
+  "OVELO_COMPLIANCE_DEVNET",
+  "OVELO_TERMS_VERSION",
 ] as const;
 
 export class PolicyError extends Error {
@@ -81,39 +81,39 @@ const value = (env: Source, key: string) => env[key]?.trim() || undefined;
 
 /** Defaults merged with the env overrides, then zod-validated. Throws PolicyError (names only). */
 export function loadPolicy(env: Source): CompliancePolicy {
-  const countries = value(env, "AROMA_COMPLIANCE_RESTRICTED_COUNTRIES");
+  const countries = value(env, "OVELO_COMPLIANCE_RESTRICTED_COUNTRIES");
   const candidate = {
     restrictedCountries: countries
       ? countries.split(",").map((c) => c.trim().toUpperCase())
       : DEFAULT_POLICY.restrictedCountries,
     missingCountry:
-      value(env, "AROMA_COMPLIANCE_MISSING_COUNTRY") ??
+      value(env, "OVELO_COMPLIANCE_MISSING_COUNTRY") ??
       DEFAULT_POLICY.missingCountry,
     surfaces: {
       browse:
-        value(env, "AROMA_COMPLIANCE_BROWSE") ?? DEFAULT_POLICY.surfaces.browse,
+        value(env, "OVELO_COMPLIANCE_BROWSE") ?? DEFAULT_POLICY.surfaces.browse,
       trade: "block",
       devnet:
-        value(env, "AROMA_COMPLIANCE_DEVNET") ?? DEFAULT_POLICY.surfaces.devnet,
+        value(env, "OVELO_COMPLIANCE_DEVNET") ?? DEFAULT_POLICY.surfaces.devnet,
     },
     termsVersion:
-      value(env, "AROMA_TERMS_VERSION") ?? DEFAULT_POLICY.termsVersion,
+      value(env, "OVELO_TERMS_VERSION") ?? DEFAULT_POLICY.termsVersion,
   };
   const parsed = policySchema.safeParse(candidate);
   if (parsed.success) return parsed.data;
   const ENV_OF: Record<string, string> = {
-    restrictedCountries: "AROMA_COMPLIANCE_RESTRICTED_COUNTRIES",
-    missingCountry: "AROMA_COMPLIANCE_MISSING_COUNTRY",
-    browse: "AROMA_COMPLIANCE_BROWSE",
-    devnet: "AROMA_COMPLIANCE_DEVNET",
-    termsVersion: "AROMA_TERMS_VERSION",
+    restrictedCountries: "OVELO_COMPLIANCE_RESTRICTED_COUNTRIES",
+    missingCountry: "OVELO_COMPLIANCE_MISSING_COUNTRY",
+    browse: "OVELO_COMPLIANCE_BROWSE",
+    devnet: "OVELO_COMPLIANCE_DEVNET",
+    termsVersion: "OVELO_TERMS_VERSION",
   };
   const names = parsed.error.issues.map((issue) => {
     const leaf =
       issue.path[0] === "surfaces"
         ? String(issue.path[1])
         : String(issue.path[0]);
-    return ENV_OF[leaf] ?? "AROMA_COMPLIANCE";
+    return ENV_OF[leaf] ?? "OVELO_COMPLIANCE";
   });
   throw new PolicyError([...new Set(names)]);
 }

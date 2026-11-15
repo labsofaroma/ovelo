@@ -70,7 +70,7 @@ test("portfolio lists the fork holdings, the confirmed orders and P&L from their
   await page.goto("/portfolio");
   await page.getByRole("button", { name: "Connect wallet" }).first().click();
   await expect(page.getByRole("heading", { name: "Holdings" })).toBeVisible();
-  // M11: P&L from Aroma receipts and the confirmed transactions' exact fills, average cost.
+  // M11: P&L from Ovelo receipts and the confirmed transactions' exact fills, average cost.
   await expect(
     page.getByRole("heading", { name: "Profit and loss" }),
   ).toBeVisible();

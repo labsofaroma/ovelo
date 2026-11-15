@@ -14,14 +14,14 @@ import {
   SYSTEM_PROGRAM_ID,
   type Config,
   type Plan,
-} from "@aroma/guard";
+} from "@ovelo/guard";
 import {
   buildVerifiedPriceUpdates,
   encodedVaaSpace,
   HermesError,
   parseAccumulatorUpdate,
   type HermesLatestUpdates,
-} from "@aroma/guard/pyth";
+} from "@ovelo/guard/pyth";
 import type { KeeperRpc } from "./rpc";
 
 /**

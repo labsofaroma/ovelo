@@ -17,22 +17,22 @@ describe("beta profile", () => {
   it("a complete beta profile passes", () => {
     const findings = beta(BETA_GOOD);
     expect(failed(findings)).toBe(false);
-    expect(statusOf(BETA_GOOD, "AROMA_BETA_GATE")).toEqual(["ok"]);
+    expect(statusOf(BETA_GOOD, "OVELO_BETA_GATE")).toEqual(["ok"]);
   });
 
   it("the gate must be on explicitly: unset is missing, off is forbidden", () => {
-    const { AROMA_BETA_GATE: _, ...unset } = BETA_GOOD;
-    expect(statusOf(unset, "AROMA_BETA_GATE")).toEqual(["missing"]);
+    const { OVELO_BETA_GATE: _, ...unset } = BETA_GOOD;
+    expect(statusOf(unset, "OVELO_BETA_GATE")).toEqual(["missing"]);
     expect(failed(beta(unset))).toBe(true);
     expect(
-      statusOf({ ...BETA_GOOD, AROMA_BETA_GATE: "off" }, "AROMA_BETA_GATE"),
+      statusOf({ ...BETA_GOOD, OVELO_BETA_GATE: "off" }, "OVELO_BETA_GATE"),
     ).toContain("forbidden");
     expect(
-      statusOf({ ...BETA_GOOD, AROMA_BETA_GATE: "yes" }, "AROMA_BETA_GATE"),
+      statusOf({ ...BETA_GOOD, OVELO_BETA_GATE: "yes" }, "OVELO_BETA_GATE"),
     ).toEqual(["invalid"]);
   });
 
-  it.each(["AROMA_MAX_TRADE_USDC_RAW", "AROMA_MAX_DAILY_USDC_RAW"])(
+  it.each(["OVELO_MAX_TRADE_USDC_RAW", "OVELO_MAX_DAILY_USDC_RAW"])(
     "%s unset or 0 fails",
     (name) => {
       const env: Record<string, string> = { ...BETA_GOOD };
@@ -45,10 +45,10 @@ describe("beta profile", () => {
   it("caps above the beta values only warn", () => {
     const env = {
       ...BETA_GOOD,
-      AROMA_MAX_TRADE_USDC_RAW: "100000000",
-      AROMA_MAX_DAILY_USDC_RAW: "500000000",
+      OVELO_MAX_TRADE_USDC_RAW: "100000000",
+      OVELO_MAX_DAILY_USDC_RAW: "500000000",
     };
-    expect(statusOf(env, "AROMA_MAX_TRADE_USDC_RAW")).toContain("warning");
+    expect(statusOf(env, "OVELO_MAX_TRADE_USDC_RAW")).toContain("warning");
     expect(failed(beta(env))).toBe(false);
   });
 
@@ -65,8 +65,8 @@ describe("beta profile", () => {
   });
 
   it("warns when the site is not a beta.<domain> host, and never prints a value", () => {
-    const env = { ...BETA_GOOD, AROMA_SITE_URL: "https://aroma.trade" };
-    expect(statusOf(env, "AROMA_SITE_URL")).toContain("warning");
+    const env = { ...BETA_GOOD, OVELO_SITE_URL: "https://ovelo.trade" };
+    expect(statusOf(env, "OVELO_SITE_URL")).toContain("warning");
     const text = report(beta(env));
     for (const value of Object.values(BETA_GOOD))
       if (value.length > 6) expect(text).not.toContain(value);

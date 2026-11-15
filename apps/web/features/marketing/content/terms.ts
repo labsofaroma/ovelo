@@ -7,15 +7,15 @@ import type { LegalDocument } from "../schema";
 export const termsDocument = {
   title: "Terms & conditions",
   description:
-    "Terms for exploring tokenized assets, paper trading and wallet-approved swaps in Aroma.",
+    "Terms for exploring tokenized assets, paper trading and wallet-approved swaps in Ovelo.",
   introduction:
     "Know what the interface does, what you approve, and where the responsibilities sit.",
   updated: "2026-09-13",
   sections: [
     {
-      heading: "Using Aroma",
+      heading: "Using Ovelo",
       paragraphs: [
-        "Aroma provides market information, a local paper-trading simulation and tools for wallet-approved Solana swaps. Use it only where you are legally eligible and comply with the terms and geographic restrictions of each issuer and service provider. Access to this interface does not establish eligibility to buy any asset.",
+        "Ovelo provides market information, a local paper-trading simulation and tools for wallet-approved Solana swaps. Use it only where you are legally eligible and comply with the terms and geographic restrictions of each issuer and service provider. Access to this interface does not establish eligibility to buy any asset.",
       ],
     },
     {

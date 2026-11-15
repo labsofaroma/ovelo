@@ -8,8 +8,8 @@ import {
   viewPlan,
   type Config,
   type Plan,
-} from "@aroma/guard";
-import type { HermesLatestUpdates } from "@aroma/guard/pyth";
+} from "@ovelo/guard";
+import type { HermesLatestUpdates } from "@ovelo/guard/pyth";
 import { sendAlert, type AlertDeps } from "./alerts";
 import {
   executeInstruction,

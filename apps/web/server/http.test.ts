@@ -138,20 +138,20 @@ describe("assertSameOrigin (AUDIT M-6)", () => {
   });
   it("accepts no Origin (native clients) and refuses a foreign one", () => {
     expect(() =>
-      assertSameOrigin(post("https://aroma.example/x", {})),
+      assertSameOrigin(post("https://ovelo.example/x", {})),
     ).not.toThrow();
     expect(() =>
       assertSameOrigin(
-        post("https://aroma.example/x", {
-          host: "aroma.example",
+        post("https://ovelo.example/x", {
+          host: "ovelo.example",
           origin: "https://evil.example",
         }),
       ),
     ).toThrowError(expect.objectContaining({ code: "ORIGIN_FORBIDDEN" }));
   });
   it("ignores forwarded host headers unless the proxy is trusted", () => {
-    const spoofed = post("https://aroma.example/x", {
-      host: "aroma.example",
+    const spoofed = post("https://ovelo.example/x", {
+      host: "ovelo.example",
       "x-forwarded-host": "evil.example",
       origin: "https://evil.example",
     });

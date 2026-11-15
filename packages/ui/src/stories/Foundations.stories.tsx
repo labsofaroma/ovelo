@@ -30,9 +30,9 @@ function ColorGrid() {
         <div key={role} className="flex flex-col gap-1.5">
           <div
             className="h-14 rounded-control border border-line"
-            style={{ background: `var(--aroma-${role})` }}
+            style={{ background: `var(--ovelo-${role})` }}
           />
-          <code className="text-caption text-ink">--aroma-{role}</code>
+          <code className="text-caption text-ink">--ovelo-{role}</code>
         </div>
       ))}
     </div>
@@ -58,7 +58,7 @@ export const Typography = () => (
         <code className="w-36 shrink-0 text-caption text-muted">
           text-{name} · {px}
         </code>
-        <span style={{ fontSize: `var(--aroma-text-${name})` }}>
+        <span style={{ fontSize: `var(--ovelo-text-${name})` }}>
           Own real stocks from your wallet
         </span>
       </div>
@@ -83,7 +83,7 @@ export const Typography = () => (
 export const Spacing = () => (
   <div className="flex flex-col gap-3">
     <p className={heading}>
-      4px base. --aroma-space-N equals Tailwind's N step (p-4 = 16px).
+      4px base. --ovelo-space-N equals Tailwind's N step (p-4 = 16px).
     </p>
     {SPACES.map((step) => (
       <div key={step} className="flex items-center gap-4">
@@ -92,7 +92,7 @@ export const Spacing = () => (
         </code>
         <div
           className="h-4 rounded-badge bg-accent"
-          style={{ width: `var(--aroma-space-${step})` }}
+          style={{ width: `var(--ovelo-space-${step})` }}
         />
       </div>
     ))}
@@ -106,7 +106,7 @@ export const Radius = () => (
         <div key={name} className="flex flex-col items-center gap-2">
           <div
             className="size-20 border border-border-strong bg-raised"
-            style={{ borderRadius: `var(--aroma-radius-${name})` }}
+            style={{ borderRadius: `var(--ovelo-radius-${name})` }}
           />
           <code className="text-caption">radius-{name}</code>
         </div>
@@ -122,7 +122,7 @@ export const Shadow = () => (
         <div key={name} className="flex flex-col items-center gap-3">
           <div
             className="size-24 rounded-panel border border-line bg-surface"
-            style={{ boxShadow: `var(--aroma-shadow-${name})` }}
+            style={{ boxShadow: `var(--ovelo-shadow-${name})` }}
           />
           <code className="text-caption">shadow-{name}</code>
         </div>
@@ -155,7 +155,7 @@ export const Motion = () => {
       Object.fromEntries(
         DURATIONS.map((name) => [
           name,
-          readDuration(`--aroma-duration-${name}`),
+          readDuration(`--ovelo-duration-${name}`),
         ]),
       ),
     );
@@ -183,7 +183,7 @@ export const Motion = () => {
           {DURATIONS.map((name) => (
             <tr key={name} className="border-t border-line">
               <td className="py-1.5">
-                <code>--aroma-duration-{name}</code>
+                <code>--ovelo-duration-{name}</code>
               </td>
               <td
                 className="py-1.5 tabular-nums"

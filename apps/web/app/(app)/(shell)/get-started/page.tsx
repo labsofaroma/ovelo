@@ -46,7 +46,7 @@ function capText(): string {
 }
 
 export default async function GetStartedPage() {
-  const site = (process.env.AROMA_SITE_URL ?? "https://localhost").replace(
+  const site = (process.env.OVELO_SITE_URL ?? "https://localhost").replace(
     /\/$/,
     "",
   );

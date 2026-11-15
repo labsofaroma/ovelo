@@ -6,7 +6,7 @@ import {
   encodeVaa,
   encodeVaaBody,
   type HermesLatestUpdates,
-} from "@aroma/guard/pyth";
+} from "@ovelo/guard/pyth";
 
 /** A fake Hermes answering with one accumulator for the requested feeds at `publishTime`. */
 export function fakeHermes(publishTime: () => bigint, failure?: Error) {

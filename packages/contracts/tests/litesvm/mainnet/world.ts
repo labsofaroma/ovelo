@@ -3,7 +3,7 @@
  * Orca Whirlpool, Token, Token-2022, pinned in tests/fixtures/mainnet-programs.json), the real
  * USDC and xStocks mints and the Whirlpool pools of three recorded Jupiter routes
  * (jupiter-mainnet-routes.json), the pinned Subscriptions and Pyth receiver binaries, and the
- * Aroma Guard default build. Every keypair is generated in memory for one test.
+ * Ovelo Guard default build. Every keypair is generated in memory for one test.
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -22,7 +22,7 @@ import {
   getScaledUiAmountConfig,
   unpackMint,
 } from "@solana/spl-token";
-import * as v1 from "@aroma/guard";
+import * as v1 from "@ovelo/guard";
 import {
   Env,
   MAINNET_SO,
@@ -54,7 +54,7 @@ const PINS = fixture("mainnet-programs.json") as {
   programs: Record<string, { sha256: string }>;
 };
 export const USDC = address("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v");
-/** xStocks issuer keys (mainnet read, aroma-guard-v1.md Token-2022 policy). */
+/** xStocks issuer keys (mainnet read, ovelo-guard-v1.md Token-2022 policy). */
 export const ISSUER = address("5aMNNLQJwAEeoemTEMkv5NVjqKwvvefRYCQ5Z67HFvEq");
 export const FREEZE = address("JDq14BWvqCRFNu1krb12bcRpbGtJZ1FLEakMw6FdxJNs");
 export const HOUR = 3_600n;

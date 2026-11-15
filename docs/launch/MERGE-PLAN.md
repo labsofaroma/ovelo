@@ -11,7 +11,7 @@ main (= prototype-final, e85d128)
    → phase-a-beta
 ```
 
-Every branch must contain the previous one; `main` becomes the final tip by **fast-forward** (no merge commit, no squash, history kept). State (2026-11-14, after the stacking rebase): the whole stack `main → … → m7-recurring-devnet → m8-mainnet-path → launch-prep` is linear (all ten checks below print `OK`, no merge commits, one author identity). `m8-mainnet-path` was rebased onto the `m7-recurring-devnet` tip (which holds the devnet deployment record) and `launch-prep` onto `m8-mainnet-path`. Only docs conflicted: the critical path, the §7 M8/M9 rows, and the open items in `aroma-guard-v1.md`. M8's own files were updated to the budget plan (mainnet keeper, multisig and audit at M12). The terms migration stayed `0004`, because M8 added no migration. The pre-rebase tips are kept locally as `backup/m8-mainnet-path-pre-rebase` and `backup/launch-prep-pre-rebase`; never push them.
+Every branch must contain the previous one; `main` becomes the final tip by **fast-forward** (no merge commit, no squash, history kept). State (2026-11-14, after the stacking rebase): the whole stack `main → … → m7-recurring-devnet → m8-mainnet-path → launch-prep` is linear (all ten checks below print `OK`, no merge commits, one author identity). `m8-mainnet-path` was rebased onto the `m7-recurring-devnet` tip (which holds the devnet deployment record) and `launch-prep` onto `m8-mainnet-path`. Only docs conflicted: the critical path, the §7 M8/M9 rows, and the open items in `ovelo-guard-v1.md`. M8's own files were updated to the budget plan (mainnet keeper, multisig and audit at M12). The terms migration stayed `0004`, because M8 added no migration. The pre-rebase tips are kept locally as `backup/m8-mainnet-path-pre-rebase` and `backup/launch-prep-pre-rebase`; never push them.
 
 ### Verify linearity (read-only)
 
@@ -78,7 +78,7 @@ GitHub matches a required check by the job's `name:`.
 ```bash
 # Branch protection on main: required checks, 1 approving review, code owners, linear history,
 # no force-push, no deletion, conversations resolved, admins included.
-gh api -X PUT repos/aromalabs/aroma/branches/main/protection \
+gh api -X PUT repos/labsofovelo/ovelo/branches/main/protection \
   -H "Accept: application/vnd.github+json" --input - <<'JSON'
 {
   "required_status_checks": {
@@ -103,10 +103,10 @@ gh api -X PUT repos/aromalabs/aroma/branches/main/protection \
 JSON
 
 # Check what is set:
-gh api repos/aromalabs/aroma/branches/main/protection --jq '{checks: .required_status_checks.contexts, linear: .required_linear_history.enabled, force: .allow_force_pushes.enabled}'
+gh api repos/labsofovelo/ovelo/branches/main/protection --jq '{checks: .required_status_checks.contexts, linear: .required_linear_history.enabled, force: .allow_force_pushes.enabled}'
 
 # Protect the rollback tag from deletion or moving (repository ruleset):
-gh api -X POST repos/aromalabs/aroma/rulesets -H "Accept: application/vnd.github+json" --input - <<'JSON'
+gh api -X POST repos/labsofovelo/ovelo/rulesets -H "Accept: application/vnd.github+json" --input - <<'JSON'
 {
   "name": "protect prototype-final",
   "target": "tag",
@@ -150,5 +150,5 @@ Run on macOS (Node 24.21.0, pnpm 10.31.0), branch `launch-prep` on top of `m7-re
 | `pnpm build:web` (flag off) | pass; `check-client-secrets: OK` (633 files) |
 | `pnpm build:web` (flag on, `.env.example` placeholders) | pass; `env check: ok`; `check-client-secrets: OK` (633 files) |
 | `pnpm test:contracts` | pass: cargo 25 + 25, clippy clean, both builds, `idl:check` "IDL and generated client match the Rust program", vitest 18, LiteSVM 62 |
-| Fork E2E (`E2E_STOCK=TSLA pnpm --filter @aroma/web e2e:fork`) | 26/26 passed (8 compliance, 9 buy, 9 creator). With the default stock (AAPLx) the recorded route's simulation failed on the fork (`HADRo…` program error 0x25): an environment issue with that route, not the app |
+| Fork E2E (`E2E_STOCK=TSLA pnpm --filter @ovelo/web e2e:fork`) | 26/26 passed (8 compliance, 9 buy, 9 creator). With the default stock (AAPLx) the recorded route's simulation failed on the fork (`HADRo…` program error 0x25): an environment issue with that route, not the app |
 | `actionlint` | 0 errors; 2 shellcheck info notes |

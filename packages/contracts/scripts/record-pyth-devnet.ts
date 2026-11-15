@@ -4,7 +4,7 @@
  * and data source (Pythnet chain 26 and its emitter). Tests WRITE their own config and guardian
  * set with a test key; this file is reference data only. Never loads a wallet or sends.
  *
- *   pnpm --filter @aroma/contracts exec vite-node scripts/record-pyth-devnet.ts
+ *   pnpm --filter @ovelo/contracts exec vite-node scripts/record-pyth-devnet.ts
  */
 import fs from "node:fs";
 import path from "node:path";
@@ -14,12 +14,12 @@ import {
   findGuardianSetPda,
   findReceiverConfigPda,
   WORMHOLE_PROGRAM_ID,
-} from "@aroma/guard/pyth";
+} from "@ovelo/guard/pyth";
 import { httpRpc, readOnly } from "./lib/jsonrpc";
 import { CONTRACTS_ROOT } from "./lib/keys";
 
 const DEVNET_GENESIS = "EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG";
-const url = process.env.AROMA_V1_FIXTURE_RPC ?? "https://api.devnet.solana.com";
+const url = process.env.OVELO_V1_FIXTURE_RPC ?? "https://api.devnet.solana.com";
 
 type Info = {
   value: { owner: string; lamports: number; data: [string, string] } | null;

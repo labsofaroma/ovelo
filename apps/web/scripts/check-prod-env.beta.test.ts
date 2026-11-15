@@ -28,7 +28,7 @@ describe("check:prod-env --profile beta", () => {
   });
 
   it("the CLI exits 0 on a complete beta file (offline) and 1 with an unknown browser variable set; values never printed", () => {
-    const dir = mkdtempSync(join(tmpdir(), "aroma-beta-env-"));
+    const dir = mkdtempSync(join(tmpdir(), "ovelo-beta-env-"));
     const file = join(dir, "beta.env");
     const run = (env: Record<string, string>) => {
       writeFileSync(
@@ -77,7 +77,7 @@ describe("check:prod-env --profile beta", () => {
       expect(bad.code).toBe(1);
       expect(bad.out).toMatch(/FORBIDDEN +NEXT_PUBLIC_LEGACY_LOGIN_APP_ID/);
       expect(bad.out).not.toContain("legacy-login-id-value");
-      expect(bad.out).not.toContain(BETA_GOOD.AROMA_TRADE_SECRET);
+      expect(bad.out).not.toContain(BETA_GOOD.OVELO_TRADE_SECRET);
     } finally {
       rmSync(dir, { recursive: true, force: true });
     }

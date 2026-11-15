@@ -25,7 +25,7 @@ const deliver = await import("@/app/api/v1/notifications/deliver/route");
 const telegram = await import("@/app/api/v1/notifications/telegram/route");
 const config = await import("@/app/api/v1/notifications/config/route");
 
-const SITE = "https://aroma.example";
+const SITE = "https://ovelo.example";
 const WORKER = "w".repeat(40);
 const HOOK = "h".repeat(40);
 const req = (
@@ -66,9 +66,9 @@ beforeEach(async () => {
     push: {
       publicKey: "PUB",
       privateKey: "PRIV",
-      subject: "mailto:ops@aroma.example",
+      subject: "mailto:ops@ovelo.example",
     },
-    telegram: { token: "1:x", bot: "aroma_bot", webhookSecret: HOOK },
+    telegram: { token: "1:x", bot: "ovelo_bot", webhookSecret: HOOK },
     sinkUrl: null,
   };
   const store = memoryStore();
@@ -140,7 +140,7 @@ describe("config", () => {
     expect(body).toEqual({
       enabled: true,
       push: { publicKey: "PUB" },
-      telegram: { bot: "aroma_bot" },
+      telegram: { bot: "ovelo_bot" },
     });
     expect(JSON.stringify(body)).not.toMatch(/PRIV|1:x|hhhh/);
   });
@@ -310,7 +310,7 @@ describe("test send, worker and deletes", () => {
     expect(report).toMatchObject({ paused: false, sent: 1 });
     await run();
     expect(mem.sent.map((d) => d.message.title)).toEqual([
-      "Test notification from Aroma",
+      "Test notification from Ovelo",
     ]);
     expect(mem.sent[0]?.address).toEqual({ chatId: 777 });
   });

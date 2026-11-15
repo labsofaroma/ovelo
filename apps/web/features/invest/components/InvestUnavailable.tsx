@@ -1,7 +1,7 @@
 import { ClusterLabel } from "../../wallet/ClusterLabel";
 
 export const NOT_DEPLOYED_MESSAGE =
-  "Recurring investing is not available on devnet yet: Aroma Guard v1 has not been deployed there.";
+  "Recurring investing is not available on devnet yet: Ovelo Guard v1 has not been deployed there.";
 
 /** The honest unavailable state: nothing interactive, nothing faked. */
 export function InvestUnavailable({

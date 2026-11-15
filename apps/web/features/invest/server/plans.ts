@@ -5,7 +5,7 @@ import {
   planTimeline,
   viewPlan,
   type Timeline,
-} from "@aroma/guard";
+} from "@ovelo/guard";
 import type { PlansResponse, PlanView } from "../schema";
 import { buildCatalog, type CatalogAsset } from "./catalog";
 import {
@@ -29,7 +29,7 @@ export type PlansDeps = {
 };
 
 export const PLANS_SOURCE =
-  "Aroma Guard v1 plan accounts and installment events on Solana";
+  "Ovelo Guard v1 plan accounts and installment events on Solana";
 
 async function timelineFor(
   deps: PlansDeps,

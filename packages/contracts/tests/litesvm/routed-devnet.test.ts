@@ -1,7 +1,7 @@
 /** The devnet-mock build has no swap path: the routed instruction is refused (M8). */
 import { expect, test } from "vitest";
-import { getExecuteInstallmentRoutedInstruction } from "@aroma/guard/generated";
-import * as v1 from "@aroma/guard";
+import { getExecuteInstallmentRoutedInstruction } from "@ovelo/guard/generated";
+import * as v1 from "@ovelo/guard";
 import { errorCode, World } from "./world";
 
 test("devnet-mock build refuses execute_installment_routed", async () => {

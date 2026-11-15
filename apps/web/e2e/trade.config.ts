@@ -2,7 +2,7 @@ import { edgeHeaders } from "./local-start";
 import { defineConfig, devices } from "@playwright/test";
 
 /**
- * M4 trade E2E (LOCAL FORK ONLY). Started by `pnpm --filter @aroma/web e2e:fork`
+ * M4 trade E2E (LOCAL FORK ONLY). Started by `pnpm --filter @ovelo/web e2e:fork`
  * (e2e/fork/run.ts), which brings up the fork, the Jupiter stand-in and the E2E build first.
  * Serial: the specs share one funded test wallet and one rate-limit window.
  */

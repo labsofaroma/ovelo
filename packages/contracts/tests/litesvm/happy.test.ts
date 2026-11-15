@@ -3,7 +3,7 @@ import fs from "node:fs";
 import path from "node:path";
 import { describe, expect, test } from "vitest";
 import { address, generateKeyPairSigner } from "@solana/kit";
-import * as v1 from "@aroma/guard";
+import * as v1 from "@ovelo/guard";
 import { ataIx, errorCode, evenWeights, World } from "./world";
 
 describe("execute_installment happy paths (devnet-mock)", () => {

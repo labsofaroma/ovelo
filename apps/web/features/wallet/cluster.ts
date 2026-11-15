@@ -5,7 +5,7 @@
  * boundary is now scoped to ONE cluster, chosen by the server page that renders it:
  * - `mainnet`: every trade surface (the default; unchanged behaviour).
  * - `devnet`: `/invest` only. The browser RPC must report devnet's genesis.
- * - `localnet`: test builds only (`NEXT_PUBLIC_AROMA_LOCALNET=true` at BUILD time, refused in
+ * - `localnet`: test builds only (`NEXT_PUBLIC_OVELO_LOCALNET=true` at BUILD time, refused in
  *   production by the env schema and by the client-secret scan), for the E2E on a local
  *   validator. Its genesis is random per validator, so the server passes the one it verified.
  *
@@ -47,7 +47,7 @@ export const CLUSTER_LABEL: Record<WalletCluster, string | null> = {
 export function wrongNetworkMessage(cluster: WalletCluster): string {
   switch (cluster) {
     case "mainnet":
-      return "Aroma trades on Solana mainnet only. Switch your wallet or network to mainnet.";
+      return "Ovelo trades on Solana mainnet only. Switch your wallet or network to mainnet.";
     case "devnet":
       return "Recurring investing runs on Solana devnet only. Switch your wallet or network to devnet.";
     case "localnet":
@@ -68,11 +68,11 @@ export const WRONG_NETWORK_SHORT: Record<WalletCluster, string> = {
  */
 export function storageKey(cluster: WalletCluster): string {
   if (cluster === "mainnet") return "walletName";
-  if (cluster === "devnet") return "aroma.wallet.devnet";
+  if (cluster === "devnet") return "ovelo.wallet.devnet";
   // Written inline so production builds (flag "false") drop the localnet marker entirely.
-  return process.env.NEXT_PUBLIC_AROMA_LOCALNET === "true"
-    ? "aromaLocalnetCluster"
-    : "aroma.wallet.localnet-unavailable";
+  return process.env.NEXT_PUBLIC_OVELO_LOCALNET === "true"
+    ? "oveloLocalnetCluster"
+    : "ovelo.wallet.localnet-unavailable";
 }
 
 export function mainnetConfig(rpcUrl?: string): ClusterConfig {
@@ -104,7 +104,7 @@ export function localnetConfig(
   rpcUrl: string,
   genesisHash: string,
 ): ClusterConfig | null {
-  if (process.env.NEXT_PUBLIC_AROMA_LOCALNET !== "true") return null;
+  if (process.env.NEXT_PUBLIC_OVELO_LOCALNET !== "true") return null;
   if (!LOOPBACK_RPC.test(rpcUrl) || !BASE58_HASH.test(genesisHash)) return null;
   if (genesisHash === MAINNET_GENESIS || genesisHash === DEVNET_GENESIS)
     return null;

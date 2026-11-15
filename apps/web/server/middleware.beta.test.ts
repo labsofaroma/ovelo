@@ -36,8 +36,8 @@ beforeEach(() => {
   stubBaseEnv();
   vi.stubEnv("NODE_ENV", "development");
   vi.stubEnv("VERCEL", "1");
-  vi.stubEnv("AROMA_BETA_GATE", "on");
-  vi.stubEnv("AROMA_TRADE_SECRET", "s".repeat(40));
+  vi.stubEnv("OVELO_BETA_GATE", "on");
+  vi.stubEnv("OVELO_TRADE_SECRET", "s".repeat(40));
   resetEnvCacheForTests();
   hasAccess.wallets = new Set([ALLOWED]);
   hasAccess.down = false;
@@ -146,7 +146,7 @@ describe("beta gate in middleware", () => {
 
   it("the allowlist grants access without the database", async () => {
     hasAccess.down = true;
-    vi.stubEnv("AROMA_BETA_WALLETS", OTHER);
+    vi.stubEnv("OVELO_BETA_WALLETS", OTHER);
     expect(
       await code(await post("/api/v1/trade/quote", { taker: OTHER })),
     ).toBe("pass");
@@ -154,7 +154,7 @@ describe("beta gate in middleware", () => {
 
   it("the removed prototype trading routes answer 410 GONE, gate on or off (M9)", async () => {
     for (const gate of ["on", "off"]) {
-      vi.stubEnv("AROMA_BETA_GATE", gate);
+      vi.stubEnv("OVELO_BETA_GATE", gate);
       for (const path of [
         "/api/trade/execute",
         "/api/buy-basket",
@@ -191,7 +191,7 @@ describe("beta gate in middleware", () => {
   });
 
   it("the gate off changes nothing", async () => {
-    vi.stubEnv("AROMA_BETA_GATE", "off");
+    vi.stubEnv("OVELO_BETA_GATE", "off");
     expect(
       await code(await post("/api/v1/trade/quote", { taker: OTHER })),
     ).toBe("pass");

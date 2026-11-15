@@ -15,7 +15,7 @@ Same numbers as the M10 / Phase C final evidence (REWRITE-PLAN, "M10 / Phase C s
 | `pnpm test --force` | web 1,644 passed / 3 skipped (199 files), guard 99, keeper 47, contracts 30, ui 173, config 2 |
 | `pnpm build:web` (`.env.example` placeholders in the environment) | env check ok; `/markets` first-load JS 145 kB; `check-client-secrets: OK`, 260 files |
 
-Local Node is 24.21.0; AGENTS.md pins 24.12.0. Without the placeholders, `build:web` stops at the env check as designed: `SOLANA_RPC_URL`, `DATABASE_URL`, `UPSTASH_REDIS_REST_*` and `AROMA_TRADE_SECRET` are required.
+Local Node is 24.21.0; AGENTS.md pins 24.12.0. Without the placeholders, `build:web` stops at the env check as designed: `SOLANA_RPC_URL`, `DATABASE_URL`, `UPSTASH_REDIS_REST_*` and `OVELO_TRADE_SECRET` are required.
 
 ## 1. Notifications
 
@@ -60,7 +60,7 @@ Local Node is 24.21.0; AGENTS.md pins 24.12.0. Without the placeholders, `build:
 
 **What exists**
 - **`features/portfolio/components/PnLSummary.tsx`** (used by `PortfolioIsland.tsx:84`):
-  - three cards: priced value plus the unpriced count; "Spent through Aroma (confirmed)", a bigint sum of `amountIn` per `mintIn`; and "Profit and loss: Not shown: the cost basis of these holdings is unknown";
+  - three cards: priced value plus the unpriced count; "Spent through Ovelo (confirmed)", a bigint sum of `amountIn` per `mintIn`; and "Profit and loss: Not shown: the cost basis of these holdings is unknown";
   - its doc comment still says "Full P&L arrives with M8" (stale; it is now M11).
 - **`features/portfolio/valuation.ts`.** Integer fixed-point math: `valueOf` (raw × price / 10^dec, truncated), `sumFixed`, `allocationBps`.
 - **`features/portfolio/server.ts`.** `getPortfolio` (SOL and token accounts, catalog prices); `toActivity`. Activity kinds are `spot | basket`.
@@ -73,7 +73,7 @@ Local Node is 24.21.0; AGENTS.md pins 24.12.0. Without the placeholders, `build:
 
 **Missing**
 - Cost basis, realized and unrealized P&L, and per-basket grouping.
-- Sells: no sell receipts exist (Aroma buys only), so "a sell or transfer out" can only be seen from the wallet's balances or on-chain history.
+- Sells: no sell receipts exist (Ovelo buys only), so "a sell or transfer out" can only be seen from the wallet's balances or on-chain history.
 - CSV export.
 
 ## 3. Onboarding
@@ -90,7 +90,7 @@ Local Node is 24.21.0; AGENTS.md pins 24.12.0. Without the placeholders, `build:
   - The adapter is in `WalletStack.tsx`. On Android, Mobile Wallet Adapter comes from the library.
 - **Balances.** Read server side only: `features/portfolio/server.ts`, and the debit check in `features/trade/server/quote.ts:197`.
 - **Analytics.**
-  - `features/shared/components/ConsentBanner.tsx`: opt-in, stored under localStorage `aroma.privacy.v1` for 180 days, reopened through `PrivacyChoicesButton`.
+  - `features/shared/components/ConsentBanner.tsx`: opt-in, stored under localStorage `ovelo.privacy.v1` for 180 days, reopened through `PrivacyChoicesButton`.
   - Plausible is called through `fetch` and enabled by `NEXT_PUBLIC_PLAUSIBLE_DOMAIN`.
   - The only event is `pageview`, with paths reduced to categories.
 
@@ -127,7 +127,7 @@ Local Node is 24.21.0; AGENTS.md pins 24.12.0. Without the placeholders, `build:
 
 **What exists**
 - `features/trade/server/fees.ts` `feeSummary` returns `platformFeeBps: 0`, typed as the literal `0`.
-- The schema enforces `z.literal(0)` (`features/trade/schema.ts:111`), and the review screen hardcodes the row "Aroma fee: None" (`ReviewPanel.tsx:147`).
+- The schema enforces `z.literal(0)` (`features/trade/schema.ts:111`), and the review screen hardcodes the row "Ovelo fee: None" (`ReviewPanel.tsx:147`).
 - The Jupiter build (`features/trade/server/route.ts`, `jupiter.ts`) sends no `platformFeeBps` or `feeAccount`, and rejects a route whose `platformFee.feeBps` is not 0.
 - Zero is also enforced in `lib/sdk/jupiter/instruction.ts`, `packages/guard/src/jupiter/instruction.ts:176`, `packages/guard/src/v1/mainnet/route.ts:134`, the program's `integrations/jupiter.rs:99` and `docs/audit/threat-model.md` A7.
 - The fee-account budget is in `docs/REWRITE-PLAN.md:278`.

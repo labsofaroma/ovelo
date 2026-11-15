@@ -9,7 +9,7 @@ import {
   SUBSCRIPTIONS_PROGRAM_ID,
   TOKEN_PROGRAM_ID,
   V1_PROGRAM_ID,
-} from "@aroma/guard";
+} from "@ovelo/guard";
 import { getSubscriptionAuthorityEncoder } from "@solana/subscriptions";
 import { describe, expect, it } from "vitest";
 import { createKeyring } from "@/server/auth/trade";

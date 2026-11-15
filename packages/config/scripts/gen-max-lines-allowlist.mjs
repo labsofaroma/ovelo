@@ -1,6 +1,6 @@
 // Regenerates max-lines-allowlist.json: the repo-relative paths of source files that
 // already exceed the 400-line cap. The list may only SHRINK. New files over the cap fail lint.
-// Usage: pnpm --filter @aroma/config allowlist
+// Usage: pnpm --filter @ovelo/config allowlist
 import { readdirSync, readFileSync, writeFileSync, statSync } from "node:fs";
 import { join, relative, dirname } from "node:path";
 import { fileURLToPath } from "node:url";

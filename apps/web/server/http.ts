@@ -108,7 +108,7 @@ export function errorResponse(
 
 /**
  * AUDIT M-6: a state-changing /api/v1 request that carries an `Origin` must come from this site
- * (its own origin, AROMA_SITE_URL, or an exact entry of AROMA_ALLOWED_ORIGINS). A request with
+ * (its own origin, OVELO_SITE_URL, or an exact entry of OVELO_ALLOWED_ORIGINS). A request with
  * no Origin (a native app, a server) is allowed here only because every such route ALSO needs a
  * signature, an HMAC token or a bearer secret.
  */
@@ -125,8 +125,8 @@ export function assertSameOrigin(request: Request): void {
     [
       url.origin,
       host ? `${protocol}://${host}` : undefined,
-      process.env.AROMA_SITE_URL,
-      ...(process.env.AROMA_ALLOWED_ORIGINS ?? "").split(","),
+      process.env.OVELO_SITE_URL,
+      ...(process.env.OVELO_ALLOWED_ORIGINS ?? "").split(","),
     ]
       .map((value) => value?.trim().replace(/\/$/, ""))
       .filter((value): value is string => Boolean(value)),

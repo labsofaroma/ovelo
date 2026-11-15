@@ -18,7 +18,7 @@ import { AppError } from "@/server/errors";
 export type BetaDb = CreatorsDb;
 
 export const BETA_INVITE_MAX_DAYS = INVITE_MAX_DAYS;
-const CODE_PREFIX = "aroma-beta-";
+const CODE_PREFIX = "ovelo-beta-";
 
 /** 160 random bits, URL-safe. Shown once by the CLI; only its hash is stored. */
 export function generateBetaCode(): string {

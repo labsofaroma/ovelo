@@ -1,8 +1,8 @@
-# Aroma Guard v1: audit package
+# Ovelo Guard v1: audit package
 
 _Prepared in M8 (14 November 2026) for the external audit booked for M12, when the mainnet deploy is funded (REWRITE-PLAN §7.1 P2, §7.2)._
 
-Aroma Guard v1 is a standalone Solana program for recurring investing. An owner approves a bounded recurring grant of a stablecoin (the Solana Foundation **Subscriptions** program). Each period the program pulls one installment into a plan-owned staging account, swaps each leg's share through **Jupiter** into tokenized stocks (**xStocks**, Token-2022), and accepts the swap only if the owner's own token account received at least an **oracle-bounded** minimum (**Pyth**).
+Ovelo Guard v1 is a standalone Solana program for recurring investing. An owner approves a bounded recurring grant of a stablecoin (the Solana Foundation **Subscriptions** program). Each period the program pulls one installment into a plan-owned staging account, swaps each leg's share through **Jupiter** into tokenized stocks (**xStocks**, Token-2022), and accepts the swap only if the owner's own token account received at least an **oracle-bounded** minimum (**Pyth**).
 
 | Document | Contents |
 |---|---|
@@ -14,7 +14,7 @@ Aroma Guard v1 is a standalone Solana program for recurring investing. An owner 
 
 ## Scope
 
-**In scope: the on-chain program**, `packages/contracts/programs/aroma_guard/src/` (3,646 lines of Rust including unit tests), at program-source commit **`85351503f81f87056c0bccab8ed48c7abe7b65dd`** on branch `m8-mainnet-path`. The program sources have not changed in any later M8 commit (`git log -- packages/contracts/programs` shows that commit last). The owner will name the final audit commit when the branch is merged (P6).
+**In scope: the on-chain program**, `packages/contracts/programs/ovelo_guard/src/` (3,646 lines of Rust including unit tests), at program-source commit **`85351503f81f87056c0bccab8ed48c7abe7b65dd`** on branch `m8-mainnet-path`. The program sources have not changed in any later M8 commit (`git log -- packages/contracts/programs` shows that commit last). The owner will name the final audit commit when the branch is merged (P6).
 
 | Path | What it is | Priority |
 |---|---|---|
@@ -62,7 +62,7 @@ This local hash depends on the machine (release binaries can embed paths). The h
 
 ```bash
 docker pull solanafoundation/solana-verifiable-build:3.1.10   # record the image digest
-cd packages/contracts && bash scripts/verify-build.sh --docker  # = solana-verify build --library-name aroma_guard --arch v0 --base-image <image> .
+cd packages/contracts && bash scripts/verify-build.sh --docker  # = solana-verify build --library-name ovelo_guard --arch v0 --base-image <image> .
 ```
 
 Record the result as `docker` in `packages/contracts/verifiable-build.json`. CI's `verifiable-build` job runs the same command; CI is not verified yet.
@@ -81,7 +81,7 @@ pnpm test:litesvm                            # LiteSVM: devnet-mock and default 
 pnpm test:litesvm:subscriptions-mainnet      # the same suite against mainnet's Subscriptions binary
 pnpm idl:check                               # IDL and Codama client = Rust program
 pnpm e2e:fork                                # mainnet fork, 3 one-hour periods (~2.5 h); E2E_FORK_PERIODS=1 for ~3 min
-cargo llvm-cov -p aroma_guard --summary-only # host coverage (cargo-llvm-cov)
+cargo llvm-cov -p ovelo_guard --summary-only # host coverage (cargo-llvm-cov)
 ```
 
 | Layer | Count (M8) | Where |

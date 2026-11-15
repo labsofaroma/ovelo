@@ -56,7 +56,7 @@ const submit = await import("@/app/api/v1/trade/submit/route");
 const status = await import("@/app/api/v1/trade/[id]/route");
 const portfolio = await import("@/app/api/v1/portfolio/[wallet]/route");
 
-const URL_BASE = "https://aroma.example";
+const URL_BASE = "https://ovelo.example";
 const post = (
   path: string,
   body: unknown,

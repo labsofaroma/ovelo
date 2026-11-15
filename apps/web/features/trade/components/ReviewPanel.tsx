@@ -1,5 +1,5 @@
-import { Badge, Button } from "@aroma/ui";
-import { formatUnits } from "@aroma/ui/format";
+import { Badge, Button } from "@ovelo/ui";
+import { formatUnits } from "@ovelo/ui/format";
 import { Fragment, useEffect, useState } from "react";
 import { quoteClock, type AnyQuote } from "../flow";
 import { usd } from "../../caps/config";
@@ -144,7 +144,7 @@ export function ReviewPanel({
                 value={`${sol(quote.quote.fees.tipLamports)} SOL`}
               />
             ) : null}
-            <Row label="Aroma fee" value="None" />
+            <Row label="Ovelo fee" value="None" />
             <Row
               label="Transactions to sign"
               value={String(quote.transactions.length)}

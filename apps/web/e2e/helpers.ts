@@ -9,7 +9,7 @@ export async function useTheme(page: Page, theme: Theme): Promise<void> {
   await page.emulateMedia({ colorScheme: theme, reducedMotion: "reduce" });
   await page.addInitScript((value) => {
     try {
-      window.localStorage.setItem("aroma-theme", value);
+      window.localStorage.setItem("ovelo-theme", value);
     } catch {
       // ignore
     }

@@ -50,7 +50,7 @@ const ACCOUNT = "4Nd1mYQzvgp7uVDYiHn9wrpTkMtZpZyV9pR9ZJ2q5vPz";
 const params = (id: string) => ({ params: Promise.resolve({ id }) });
 const setup = () => {
   stubBaseEnv();
-  vi.stubEnv("AROMA_SITE_URL", "https://aroma.example");
+  vi.stubEnv("OVELO_SITE_URL", "https://ovelo.example");
   resetEnvCacheForTests();
 };
 afterEach(() => {
@@ -71,7 +71,7 @@ describe("v1 Actions", () => {
   it("GET returns metadata for a curated basket; unknown is 404 { code, message }", async () => {
     setup();
     const ok = await actions.GET(
-      new Request("https://aroma.example/x"),
+      new Request("https://ovelo.example/x"),
       params("test-basket"),
     );
     expect(ok.status).toBe(200);
@@ -79,7 +79,7 @@ describe("v1 Actions", () => {
       /Test basket/,
     );
     const missing = await actions.GET(
-      new Request("https://aroma.example/x"),
+      new Request("https://ovelo.example/x"),
       params("nope"),
     );
     expect(missing.status).toBe(404);
@@ -99,7 +99,7 @@ describe("v1 Actions", () => {
     });
     const response = await actions.POST(
       new Request(
-        "https://aroma.example/api/v1/actions/baskets/test-basket?amount=2",
+        "https://ovelo.example/api/v1/actions/baskets/test-basket?amount=2",
         {
           method: "POST",
           headers: { "content-type": "application/json" },
@@ -122,17 +122,17 @@ describe("v1 Actions", () => {
     });
   });
 
-  it("AROMA_ACTIONS=off disables the GET and refuses the POST before any quote", async () => {
+  it("OVELO_ACTIONS=off disables the GET and refuses the POST before any quote", async () => {
     setup();
-    vi.stubEnv("AROMA_ACTIONS", "off");
+    vi.stubEnv("OVELO_ACTIONS", "off");
     const get = await actions.GET(
-      new Request("https://aroma.example/x"),
+      new Request("https://ovelo.example/x"),
       params("test-basket"),
     );
     expect(await get.json()).toMatchObject({ disabled: true });
     const post = await actions.POST(
       new Request(
-        "https://aroma.example/api/v1/actions/baskets/test-basket?amount=2",
+        "https://ovelo.example/api/v1/actions/baskets/test-basket?amount=2",
         {
           method: "POST",
           headers: { "content-type": "application/json" },
@@ -154,7 +154,7 @@ describe("v1 Actions", () => {
       }),
     );
     const response = await actions.POST(
-      new Request("https://aroma.example/x?amount=2", {
+      new Request("https://ovelo.example/x?amount=2", {
         method: "POST",
         headers: { "content-type": "application/json" },
         body: JSON.stringify({ account: ACCOUNT }),

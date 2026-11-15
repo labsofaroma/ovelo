@@ -4,14 +4,14 @@ import { productionRules } from "./platform";
 /**
  * Solana Actions (Blinks) switch. A Blink client may fetch the Action POST through its own
  * servers, so the location the compliance gate sees can be the client's, not the user's. Until
- * counsel accepts that, Actions are OFF under the production rules unless AROMA_ACTIONS=on is
- * set explicitly; elsewhere (development, tests, previews) they default on. AROMA_ACTIONS=off
+ * counsel accepts that, Actions are OFF under the production rules unless OVELO_ACTIONS=on is
+ * set explicitly; elsewhere (development, tests, previews) they default on. OVELO_ACTIONS=off
  * always turns them off. The confirm callback stays open so receipts still record.
  */
 export function actionsOff(
   env: Readonly<Record<string, string | undefined>> = process.env,
 ): boolean {
-  const value = env.AROMA_ACTIONS?.trim().toLowerCase();
+  const value = env.OVELO_ACTIONS?.trim().toLowerCase();
   if (value === "off") return true;
   if (value === "on") return false;
   return productionRules(env);
@@ -26,6 +26,6 @@ export function assertActionsOpen(
   if (actionsOff(env))
     throw new AppError("TRADING_UNAVAILABLE", {
       publicMessage: ACTIONS_OFF_MESSAGE,
-      detail: "Solana Actions are off (AROMA_ACTIONS)",
+      detail: "Solana Actions are off (OVELO_ACTIONS)",
     });
 }

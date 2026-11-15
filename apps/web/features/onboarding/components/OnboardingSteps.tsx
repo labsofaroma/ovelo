@@ -1,7 +1,7 @@
 "use client";
 
-import { Badge } from "@aroma/ui";
-import { formatUnits } from "@aroma/ui/format";
+import { Badge } from "@ovelo/ui";
+import { formatUnits } from "@ovelo/ui/format";
 import Link from "next/link";
 import { routes } from "../../shared/routes";
 import { ConnectButton } from "../../wallet/ConnectButton";

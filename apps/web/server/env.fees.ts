@@ -6,7 +6,7 @@ import { z } from "zod";
  * counsel's approval and its own reviewed change to the trade path; until then boot refuses it.
  */
 export const feeShape = {
-  AROMA_PLATFORM_FEE_BPS: z
+  OVELO_PLATFORM_FEE_BPS: z
     .string()
     .regex(
       /^0$/,
@@ -14,7 +14,7 @@ export const feeShape = {
     )
     .optional(),
   /** The creator's share of the platform fee, recorded in the ledger (0-10000 bps). Default 0. */
-  AROMA_CREATOR_FEE_SHARE_BPS: z
+  OVELO_CREATOR_FEE_SHARE_BPS: z
     .string()
     .regex(/^\d{1,5}$/, "must be an integer")
     .refine((v) => Number(v) <= 10_000, {
@@ -28,7 +28,7 @@ export type FeeSettings = { platformFeeBps: 0; creatorShareBps: number };
 export function feeSettings(
   source: Record<string, string | undefined>,
 ): FeeSettings {
-  const share = Number(source.AROMA_CREATOR_FEE_SHARE_BPS?.trim() || "0");
+  const share = Number(source.OVELO_CREATOR_FEE_SHARE_BPS?.trim() || "0");
   return {
     platformFeeBps: 0,
     creatorShareBps:

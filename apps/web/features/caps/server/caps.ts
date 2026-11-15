@@ -180,7 +180,7 @@ export async function reserveForSubmit(
 }
 
 /**
- * Solana Action quotes: a Blink client signs and sends the transaction itself, so Aroma never sees
+ * Solana Action quotes: a Blink client signs and sends the transaction itself, so Ovelo never sees
  * a submit. The Action POST reserves the notional as PENDING, tied to the one authorized message.
  * The confirm callback settles it when the client calls back; otherwise, after the resolve time,
  * the wallet's transactions are searched for that message (action-outcome.ts): sent → kept,

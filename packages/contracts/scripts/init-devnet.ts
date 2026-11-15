@@ -1,7 +1,7 @@
 #!/usr/bin/env vite-node
 /**
  * Devnet only (refuses any other genesis). Run by the owner after deploy-devnet.sh:
- *   pnpm --filter @aroma/contracts devnet:init [--rpc URL] [--deployer PATH] [--dry-run]
+ *   pnpm --filter @ovelo/contracts devnet:init [--rpc URL] [--deployer PATH] [--dry-run]
  * 1. Creates the test USD (classic SPL, 6 dp) if it does not exist. Its mint authority is the
  *    devnet-only FAUCET key (.keys/devnet-faucet.json, created here when missing; M7 decision),
  *    never the deployer: the faucet key becomes a server secret, the deployer never does.
@@ -13,7 +13,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { address, type Address } from "@solana/kit";
-import * as v1 from "@aroma/guard";
+import * as v1 from "@ovelo/guard";
 import { DEFAULT_DEPLOYER, DEFAULT_DEVNET_RPC, parseArgs } from "./lib/args";
 import { assertDevnet } from "./lib/cluster";
 import { devnetConfig } from "./lib/devnet-config";
@@ -129,7 +129,7 @@ async function faucetAuthority(given: string | undefined): Promise<Address> {
   const signer = await ensureKeypair(file);
   if (created)
     console.error(
-      `Created the devnet-only faucet key ${signer.address} in .keys/devnet-faucet.json (git-ignored). Back it up; it becomes AROMA_V1_FAUCET_KEYPAIR.`,
+      `Created the devnet-only faucet key ${signer.address} in .keys/devnet-faucet.json (git-ignored). Back it up; it becomes OVELO_V1_FAUCET_KEYPAIR.`,
     );
   return signer.address;
 }

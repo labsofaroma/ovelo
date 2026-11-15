@@ -17,7 +17,7 @@ describe("NotFound (global 404 body)", () => {
       screen.getByRole("link", { name: "Browse markets" }).getAttribute("href"),
     ).toBe(routes.markets);
     expect(
-      screen.getByRole("link", { name: "Aroma home" }).getAttribute("href"),
+      screen.getByRole("link", { name: "Ovelo home" }).getAttribute("href"),
     ).toBe(routes.home);
   });
 });

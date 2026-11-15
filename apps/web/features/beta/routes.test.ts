@@ -58,7 +58,7 @@ const termsChallenge =
   await import("@/app/api/v1/compliance/terms/challenge/route");
 const termsAccept = await import("@/app/api/v1/compliance/terms/accept/route");
 
-const SITE = "https://aroma.example";
+const SITE = "https://ovelo.example";
 const DE = { "x-vercel-ip-country": "DE" };
 const US = { "x-vercel-ip-country": "US" };
 const json = (
@@ -90,13 +90,13 @@ afterAll(async () => client.close());
 
 beforeEach(() => {
   stubBaseEnv();
-  vi.stubEnv("AROMA_SITE_URL", SITE);
+  vi.stubEnv("OVELO_SITE_URL", SITE);
   vi.stubEnv("VERCEL", "1");
-  vi.stubEnv("AROMA_BETA_GATE", "on");
-  vi.stubEnv("AROMA_TRADE_SECRET", "s".repeat(40));
+  vi.stubEnv("OVELO_BETA_GATE", "on");
+  vi.stubEnv("OVELO_TRADE_SECRET", "s".repeat(40));
   // The rest of the v1-required set, so the validated env (and the trade keyring) loads.
   vi.stubEnv("SOLANA_RPC_URL", "https://rpc.example.test");
-  vi.stubEnv("DATABASE_URL", "postgres://u:p@db.example.test/aroma");
+  vi.stubEnv("DATABASE_URL", "postgres://u:p@db.example.test/ovelo");
   vi.stubEnv("UPSTASH_REDIS_REST_URL", "https://redis.example.test");
   vi.stubEnv("UPSTASH_REDIS_REST_TOKEN", "token");
   resetEnvCacheForTests();
@@ -225,7 +225,7 @@ describe("quote with the gate on", () => {
 
   it("an allowlisted wallet needs no invite", async () => {
     const signer = await makeSigner();
-    vi.stubEnv("AROMA_BETA_WALLETS", signer.wallet);
+    vi.stubEnv("OVELO_BETA_WALLETS", signer.wallet);
     await acceptTerms(signer);
     expect(
       (await quote.POST(json("/api/v1/trade/quote", quoteBody(signer.wallet))))
@@ -245,7 +245,7 @@ describe("quote with the gate on", () => {
   });
 
   it("the gate off lets every allowed wallet through (Phase B)", async () => {
-    vi.stubEnv("AROMA_BETA_GATE", "off");
+    vi.stubEnv("OVELO_BETA_GATE", "off");
     const signer = await makeSigner();
     await acceptTerms(signer);
     expect(

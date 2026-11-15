@@ -1,7 +1,7 @@
 /**
  * The M4 validator on a REAL mainnet `route_v2` build (USDC → AAPLx through Orca Whirlpool,
  * recorded read-only in packages/contracts/tests/fixtures/jupiter-mainnet-routes.json, taker =
- * the Aroma Guard v1 swap authority). The web app keeps its own suite for the other variants.
+ * the Ovelo Guard v1 swap authority). The web app keeps its own suite for the other variants.
  */
 import { describe, expect, test } from "vitest";
 import {

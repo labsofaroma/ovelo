@@ -36,7 +36,7 @@ import {
 
 /**
  * Middleware (M4 B8; closes AUDIT H-4 and H-6 for v1, and the L-2 HSTS item).
- * - HTTPS: redirect to AROMA_SITE_URL in production, then ONE HSTS header with includeSubDomains
+ * - HTTPS: redirect to OVELO_SITE_URL in production, then ONE HSTS header with includeSubDomains
  *   and preload, on production deployments only (M9: never on previews or local runs).
  * - Every route: a per-request nonce CSP (no 'unsafe-inline' scripts), the nonce passed to
  *   Next via the request headers.
@@ -45,7 +45,7 @@ import {
  *   locks everyone out). Every refusal is `{ code, message }`.
  * - M9: the removed prototype APIs answer 410 GONE (server/gone.ts) before any other guard.
  * - Phase H: in cloudflare proxy mode, the origin lock runs FIRST: a request without the edge's
- *   x-aroma-origin secret gets 403 ORIGIN_REFUSED, whatever its path (pages, APIs, Actions,
+ *   x-ovelo-origin secret gets 403 ORIGIN_REFUSED, whatever its path (pages, APIs, Actions,
  *   the notifications worker, the image optimizer). The header is then stripped, so no route
  *   ever sees it.
  * Runs on the Node.js runtime so it can use the server modules (pino, Upstash).
@@ -137,7 +137,7 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   );
 
   if (!development && !local && protocol !== "https") {
-    const target = env.AROMA_SITE_URL;
+    const target = env.OVELO_SITE_URL;
     try {
       const destination = new URL(target ?? "");
       if (
@@ -202,7 +202,7 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
       !allowedOrigin(
         origin,
         effectiveOrigin,
-        env.AROMA_ALLOWED_ORIGINS ?? "",
+        env.OVELO_ALLOWED_ORIGINS ?? "",
         development,
       )
     )
@@ -235,7 +235,7 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
           maxBodyBytes(gatePath)
       )
         response = reject("PAYLOAD_TOO_LARGE");
-      // M9 emergency stop: AROMA_TRADING=off closes every mainnet trading entry point.
+      // M9 emergency stop: OVELO_TRADING=off closes every mainnet trading entry point.
       else if (
         tradingOff(env) &&
         gatedSurface(gatePath, request.method) === "trade"

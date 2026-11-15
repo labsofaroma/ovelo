@@ -2,7 +2,7 @@ import { edgeHeaders } from "./local-start";
 import { defineConfig, devices } from "@playwright/test";
 
 /**
- * M7 invest E2E (LOCAL VALIDATOR ONLY). Started by `pnpm --filter @aroma/web e2e:invest`
+ * M7 invest E2E (LOCAL VALIDATOR ONLY). Started by `pnpm --filter @ovelo/web e2e:invest`
  * (e2e/invest/run.ts), which brings up the chain, Postgres, Redis, the app and the keeper first.
  * Serial: one plan moves through its periods in real (validator) time.
  */

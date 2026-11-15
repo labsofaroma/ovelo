@@ -1,14 +1,14 @@
 # Self-host map: every Vercel coupling (Phase H, Step 0)
 
-Phase H runs Aroma v1 on a Hostinger VPS behind Cloudflare, and keeps Vercel supported. This map lists every place the app depends on Vercel today, what it does, its self-host equivalent, and what goes wrong if the equivalent is done badly. It is the work list for Steps 1 to 5.
+Phase H runs Ovelo v1 on a Hostinger VPS behind Cloudflare, and keeps Vercel supported. This map lists every place the app depends on Vercel today, what it does, its self-host equivalent, and what goes wrong if the equivalent is done badly. It is the work list for Steps 1 to 5.
 
 Generated on 2026-11-15 from `m11-launch` at `49067ac` with the commands in [§9](#9-how-this-list-was-generated). Re-run them before trusting this list on a later commit.
 
 ## 0. Headline findings
 
-1. **On a self-hosted `next start` today, the production refusals don't run.** Every hard production rule keys on `VERCEL_ENV === "production"`: test switches, the fork genesis, the Jupiter stand-in, the E2E wallet, localnet, the Turnstile test secrets, required caps, the beta-gate profile, the notify worker secret, the notify test sink and `AROMA_SKIP_ENV_CHECK`. Off Vercel, `VERCEL_ENV` is unset, so a self-hosted production box would accept all of them. Only the rules that also read `NODE_ENV` (beta gate default, caps refusal, `testSwitchesAllowed`, HSTS) still hold. **Step 1 closes this with fail-closed platform detection.**
-2. **Without a trusted proxy, every visitor shares one rate-limit key.** `clientIp` returns the literal `"local"` when it doesn't trust the proxy. Behind cloudflared with `AROMA_TRUST_PROXY=false`, the whole internet shares one `trade` bucket (10/min), which lets anyone lock everyone out. With `AROMA_TRUST_PROXY=true`, the app trusts `X-Real-IP` and `X-Forwarded-For`, which Cloudflare passes through from the client, so anyone can spoof them. **Neither setting is safe on self-host. Step 2 adds `cloudflare` mode, which reads only `CF-Connecting-IP`.**
-3. **The country header is Vercel's.** `x-vercel-ip-country` is the only country source. Cloudflare sends `CF-IPCountry` and doesn't strip a client-supplied `x-vercel-ip-country`. So with `AROMA_TRUST_PROXY=true` behind Cloudflare, **the geo gate can be bypassed by sending one header**. Step 2 fixes this.
+1. **On a self-hosted `next start` today, the production refusals don't run.** Every hard production rule keys on `VERCEL_ENV === "production"`: test switches, the fork genesis, the Jupiter stand-in, the E2E wallet, localnet, the Turnstile test secrets, required caps, the beta-gate profile, the notify worker secret, the notify test sink and `OVELO_SKIP_ENV_CHECK`. Off Vercel, `VERCEL_ENV` is unset, so a self-hosted production box would accept all of them. Only the rules that also read `NODE_ENV` (beta gate default, caps refusal, `testSwitchesAllowed`, HSTS) still hold. **Step 1 closes this with fail-closed platform detection.**
+2. **Without a trusted proxy, every visitor shares one rate-limit key.** `clientIp` returns the literal `"local"` when it doesn't trust the proxy. Behind cloudflared with `OVELO_TRUST_PROXY=false`, the whole internet shares one `trade` bucket (10/min), which lets anyone lock everyone out. With `OVELO_TRUST_PROXY=true`, the app trusts `X-Real-IP` and `X-Forwarded-For`, which Cloudflare passes through from the client, so anyone can spoof them. **Neither setting is safe on self-host. Step 2 adds `cloudflare` mode, which reads only `CF-Connecting-IP`.**
+3. **The country header is Vercel's.** `x-vercel-ip-country` is the only country source. Cloudflare sends `CF-IPCountry` and doesn't strip a client-supplied `x-vercel-ip-country`. So with `OVELO_TRUST_PROXY=true` behind Cloudflare, **the geo gate can be bypassed by sending one header**. Step 2 fixes this.
 4. **The edge runtime isn't used anywhere.** All 38 route handlers declare `runtime = "nodejs"`, and the middleware is `runtime: "nodejs"` (Next 15.5.24). The build emits `.next/server/middleware.js` with its trace file. The fork and invest E2E and the Playwright smoke suite already run the app under `next start`, so the middleware is proven under `next start`. Under `output: "standalone"` it's not proven yet: Step 3 must show that the traced standalone bundle loads the middleware's server modules (pino, Upstash).
 5. **Nothing uses Vercel Cron, `@vercel/*` packages, Edge Config, Blob or KV.** The lockfile has 0 `@vercel/` entries. Scheduled work is QStash calling public signed routes, which is platform-neutral.
 
@@ -17,7 +17,7 @@ Generated on 2026-11-15 from `m11-launch` at `49067ac` with the commands in [§9
 | Where (file:line) | What it does today | Self-host equivalent | Risk if wrong |
 |---|---|---|---|
 | `server/env.schema.ts:116` | `VERCEL_ENV` enum in the boot schema | `server/platform.ts` derives the deploy env; schema keeps `VERCEL_ENV` only as an input to it | Two sources of truth disagree |
-| `server/env.schema.ts:232–253` | Refuses `AROMA_V1_ALLOW_TEST_SWITCHES`, `AROMA_V1_TEST_FORK_GENESIS`, `AROMA_V1_TEST_JUPITER_URL`, `NEXT_PUBLIC_AROMA_E2E_WALLET=true` in production | Same refusals when `platform.productionRules` | **Self-host production accepts a fork genesis or a Jupiter stand-in** (finding 1) |
+| `server/env.schema.ts:232–253` | Refuses `OVELO_V1_ALLOW_TEST_SWITCHES`, `OVELO_V1_TEST_FORK_GENESIS`, `OVELO_V1_TEST_JUPITER_URL`, `NEXT_PUBLIC_OVELO_E2E_WALLET=true` in production | Same refusals when `platform.productionRules` | **Self-host production accepts a fork genesis or a Jupiter stand-in** (finding 1) |
 | `server/env.schema.ts:388` `testSwitchesAllowed` | Off on Vercel production; on under `NODE_ENV=production` only with the opt-in | Off whenever production rules apply, on any platform | Outage simulation or the E2E wallet live in production |
 | `server/env.rules.ts:25,36` `localnetRules` | Localnet, the Turnstile test secrets and the `http://` Redis loopback are refused on Vercel production | Production rules from `platform.ts` | Localnet cluster or always-pass Turnstile in production |
 | `server/env.beta.ts:61` | Beta profile checks in production | Same, from `platform.ts` | Beta opens without its gate config |
@@ -29,18 +29,18 @@ Generated on 2026-11-15 from `m11-launch` at `49067ac` with the commands in [§9
 | `server/csp.ts:134` `hstsApplies` | HSTS on Vercel production; off Vercel, on any `NODE_ENV=production` | `platform.ts` (self-host beta and production send it; preview and development don't) | Preload HSTS committed from a non-production host, or missing in production |
 | `app/robots.ts:9` | Disallow all on non-production Vercel | `platform.ts`: disallow unless deploy env is `production` | A beta or preview host indexed by search engines |
 | `app/(app)/ui-preview/page.tsx:45` | 404 on Vercel production | `platform.ts` | Internal UI preview public in production |
-| `scripts/check-env.ts:12` | Refuses `AROMA_SKIP_ENV_CHECK` on a Vercel production build | Refuse it whenever production rules apply; the image build stage sets it only for the build (Step 3) and the runtime boot validates | A production image that never validated its env |
-| `server/prod-env.ts:102–106` `check:prod-env` | Validates with `VERCEL_ENV=production` forced | `--platform vercel|selfhost`; selfhost also validates `AROMA_PLATFORM`, `AROMA_DEPLOY_ENV`, `AROMA_PROXY_MODE`, `AROMA_ORIGIN_SECRET` | Owner validates a profile that isn't what runs |
+| `scripts/check-env.ts:12` | Refuses `OVELO_SKIP_ENV_CHECK` on a Vercel production build | Refuse it whenever production rules apply; the image build stage sets it only for the build (Step 3) and the runtime boot validates | A production image that never validated its env |
+| `server/prod-env.ts:102–106` `check:prod-env` | Validates with `VERCEL_ENV=production` forced | `--platform vercel|selfhost`; selfhost also validates `OVELO_PLATFORM`, `OVELO_DEPLOY_ENV`, `OVELO_PROXY_MODE`, `OVELO_ORIGIN_SECRET` | Owner validates a profile that isn't what runs |
 | `observability/sentry-options.ts:26` | Environment = `SENTRY_ENVIRONMENT`, else `NODE_ENV` | Default from `platform.ts` deploy env; release from the image's commit label (Step 4) | Beta errors filed as production |
-| `features/shared/site.ts:12` | Site URL falls back to `VERCEL_PROJECT_PRODUCTION_URL` | Self-host requires `AROMA_SITE_URL` (no fallback) | Links, Blinks and OG URLs point to localhost |
-| `scripts/check-client-secrets.mjs:34`, `turbo.json:22` | `VERCEL_ENV` marked not secret; passed to turbo's cache key | Add `AROMA_PLATFORM` and `AROMA_DEPLOY_ENV` the same way | A build cached across environments |
+| `features/shared/site.ts:12` | Site URL falls back to `VERCEL_PROJECT_PRODUCTION_URL` | Self-host requires `OVELO_SITE_URL` (no fallback) | Links, Blinks and OG URLs point to localhost |
+| `scripts/check-client-secrets.mjs:34`, `turbo.json:22` | `VERCEL_ENV` marked not secret; passed to turbo's cache key | Add `OVELO_PLATFORM` and `OVELO_DEPLOY_ENV` the same way | A build cached across environments |
 | `features/trade/server/local.ts:8` (comment) | Documents the Vercel rule | Comment update only | None |
 
 ## 2. Client IP, protocol, host, country (Step 2)
 
 | Where | What it does today | Self-host equivalent | Risk if wrong |
 |---|---|---|---|
-| `server/request-guard.ts:39–41` `trustsProxy` | `VERCEL === "1"` or `AROMA_TRUST_PROXY=true` | `AROMA_PROXY_MODE = vercel \| cloudflare \| none` | Trusting spoofable headers (finding 2) |
+| `server/request-guard.ts:39–41` `trustsProxy` | `VERCEL === "1"` or `OVELO_TRUST_PROXY=true` | `OVELO_PROXY_MODE = vercel \| cloudflare \| none` | Trusting spoofable headers (finding 2) |
 | `server/request-guard.ts:45–53` `clientIp` | `X-Real-IP`, then the first `X-Forwarded-For`; `"local"` if untrusted | `cloudflare`: only `CF-Connecting-IP`; `none`: socket peer or unknown | Rate limits and per-IP caps (beta, faucet, creators) bypassed, or one global bucket |
 | `server/request-guard.ts:109–120` `requestProtocol` | `X-Forwarded-Proto` behind a trusted proxy | `cloudflare`: cloudflared's `X-Forwarded-Proto`, only after the origin lock | HTTPS redirect loop, or HSTS/redirect skipped |
 | `server/request-guard.ts:123–147` `requestHost(name)` | `X-Forwarded-Host` behind a trusted proxy | `cloudflare`: `Host` (the tunnel keeps the public hostname) | Same-origin check passes for a forged host |
@@ -51,7 +51,7 @@ Generated on 2026-11-15 from `m11-launch` at `49067ac` with the commands in [§9
 | `features/invest/server/deps.ts:90` | Per-IP devnet limits through `clientIp` | Same module | Faucet drained from one IP |
 | `middleware.ts:98–105,168,184` | Protocol, loopback check, effective origin, rate-limit key | Same module, plus the origin lock (403 `ORIGIN_REFUSED`) before anything else | Origin reachable without Cloudflare |
 | `middleware.ts:274` matcher | Skips `_next/static`, `_next/image`, `icon.svg`, `favicon.ico` | Origin lock must also cover `/_next/image` (optimizer CPU, outbound fetches) | Image optimizer usable directly as a CPU sink |
-| `.env.example:52–54,133`, `e2e/fork/run.ts:336`, `e2e/invest/run.ts:213` | `AROMA_TRUST_PROXY` | Boot error naming the replacement; E2E sets `AROMA_PROXY_MODE` | Silently trusting headers after the rename |
+| `.env.example:52–54,133`, `e2e/fork/run.ts:336`, `e2e/invest/run.ts:213` | `OVELO_TRUST_PROXY` | Boot error naming the replacement; E2E sets `OVELO_PROXY_MODE` | Silently trusting headers after the rename |
 | Tests and E2E sending `x-vercel-ip-country` or `x-real-ip` (19 files) | Vercel-mode fixtures | Stay as Vercel-mode tests, unchanged (rule 8); new Cloudflare-mode tests beside them | Vercel path regresses unnoticed |
 
 ## 3. Function limits and runtime
@@ -112,7 +112,7 @@ From the repo root, on `49067ac`:
 ```bash
 git grep -n -I -E 'VERCEL' -- apps packages scripts turbo.json ':!*.test.ts' ':!*.md' ':!apps/web/e2e' ':!apps/web/.env.example'
 git grep -n -I -i 'x-vercel-' -- apps ':!*.test.ts' ':!apps/web/e2e'
-git grep -n -I -E 'AROMA_TRUST_PROXY|x-forwarded-|x-real-ip' -- apps ':!*.test.ts' ':!*.md'
+git grep -n -I -E 'OVELO_TRUST_PROXY|x-forwarded-|x-real-ip' -- apps ':!*.test.ts' ':!*.md'
 git grep -n -I 'maxDuration' -- apps
 git grep -n -I -E "runtime *[:=] *['\"](edge|experimental-edge)" -- apps          # no match
 git grep -l 'export const runtime = "nodejs"' -- apps/web/app | wc -l              # 38 of 38 routes

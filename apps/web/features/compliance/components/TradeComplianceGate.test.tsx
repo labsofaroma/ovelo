@@ -83,7 +83,7 @@ describe("TradeComplianceGate", () => {
       if (url.includes("/terms/challenge"))
         return {
           nonce: "n".repeat(32),
-          message: "Aroma: sign",
+          message: "Ovelo: sign",
           version: "v",
           hash: "h",
           expiresAt: "t",
@@ -111,7 +111,7 @@ describe("TradeComplianceGate", () => {
       await screen.findByRole("button", { name: "Get quote" }),
     ).toBeTruthy();
     expect(new TextDecoder().decode(signMessage.mock.calls[0]![0])).toBe(
-      "Aroma: sign",
+      "Ovelo: sign",
     );
     const acceptCall = fetch.mock.calls.find(([u]) =>
       u.includes("/terms/accept"),

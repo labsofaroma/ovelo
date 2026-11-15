@@ -1,15 +1,15 @@
 import {
-  AROMA_GUARD_V1_PROGRAM_ID,
+  OVELO_GUARD_V1_PROGRAM_ID,
   BPF_LOADER_UPGRADEABLE_ID,
   DEVNET_GENESIS_HASH,
   MAINNET_GENESIS_HASH,
   decodeConfigAccount,
   findConfigPda,
-} from "@aroma/guard";
+} from "@ovelo/guard";
 import { address, getAddressDecoder, type Address } from "@solana/kit";
 
 /**
- * Read-only custody check (P4, `pnpm check:custody`): for an Aroma Guard v1 program on a
+ * Read-only custody check (P4, `pnpm check:custody`): for an Ovelo Guard v1 program on a
  * cluster, the upgrade authority (BPF Upgradeable Loader ProgramData), the config admin and the
  * keeper authority, each compared with an expected value (for M10: the Squads vault). Only
  * `getGenesisHash` and `getAccountInfo` are called; nothing is signed or sent. Addresses are
@@ -86,7 +86,7 @@ export async function checkCustody(
     };
   const programId: Address = input.programId
     ? address(input.programId)
-    : AROMA_GUARD_V1_PROGRAM_ID;
+    : OVELO_GUARD_V1_PROGRAM_ID;
 
   const program = (await getAccount(rpc, programId)).value;
   if (!program) return { state: "not-deployed", programId };

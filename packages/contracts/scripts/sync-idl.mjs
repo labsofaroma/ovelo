@@ -18,10 +18,10 @@ const root = path.resolve(
   path.dirname(new URL(import.meta.url).pathname),
   "..",
 );
-const BUILT_IDL = path.join(root, "target/build/mainnet/aroma_guard.json");
+const BUILT_IDL = path.join(root, "target/build/mainnet/ovelo_guard.json");
 const BUILT_IDL_DEVNET = path.join(
   root,
-  "target/build/devnet-mock/aroma_guard.json",
+  "target/build/devnet-mock/ovelo_guard.json",
 );
 
 const canonical = (json) => JSON.stringify(json, null, 2) + "\n";
@@ -30,7 +30,7 @@ function builtIdl() {
   for (const file of [BUILT_IDL, BUILT_IDL_DEVNET]) {
     if (!fs.existsSync(file))
       throw new Error(
-        `Missing ${path.relative(root, file)}. Run \`pnpm --filter @aroma/contracts build\` first.`,
+        `Missing ${path.relative(root, file)}. Run \`pnpm --filter @ovelo/contracts build\` first.`,
       );
   }
   const mainnet = fs.readFileSync(BUILT_IDL, "utf8");
@@ -58,7 +58,7 @@ async function main() {
       canonical(JSON.parse(fs.readFileSync(COMMITTED_IDL, "utf8"))) !== idl
     )
       throw new Error(
-        "Committed IDL differs from the Rust program. Run `pnpm --filter @aroma/contracts idl:sync`.",
+        "Committed IDL differs from the Rust program. Run `pnpm --filter @ovelo/contracts idl:sync`.",
       );
     const drift = await generatedDrift();
     if (drift.length)

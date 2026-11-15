@@ -4,9 +4,9 @@
  * else (lint rule in packages/config/eslint, AGENTS.md).
  *
  * - Vercel (`VERCEL=1` or `VERCEL_ENV` set): the deploy environment is `VERCEL_ENV`, as before
- *   Phase H. `AROMA_DEPLOY_ENV` may only refine `production` into `beta`; anything else that
+ *   Phase H. `OVELO_DEPLOY_ENV` may only refine `production` into `beta`; anything else that
  *   disagrees with `VERCEL_ENV` is a contradiction.
- * - Self-host: `AROMA_PLATFORM=selfhost` and `AROMA_DEPLOY_ENV` are both required.
+ * - Self-host: `OVELO_PLATFORM=selfhost` and `OVELO_DEPLOY_ENV` are both required.
  * - `NODE_ENV=production` with no platform answer is refused (`next build` alone is exempt:
  *   building is not a deployment, and the runtime boot validates again).
  *
@@ -52,18 +52,18 @@ export function resolvePlatform(env: EnvLike): PlatformAnswer {
   const problem = (variable: string, message: string) =>
     problems.push({ variable, problem: message });
 
-  const declared = text(env, "AROMA_PLATFORM");
-  const deployRaw = text(env, "AROMA_DEPLOY_ENV");
+  const declared = text(env, "OVELO_PLATFORM");
+  const deployRaw = text(env, "OVELO_DEPLOY_ENV");
   const vercelFlag = text(env, "VERCEL");
   const vercelEnvRaw = text(env, "VERCEL_ENV");
   const nodeProduction = text(env, "NODE_ENV") === "production";
   const building = text(env, "NEXT_PHASE") === BUILD_PHASE;
 
   if (declared && !PLATFORMS.includes(declared as Platform))
-    problem("AROMA_PLATFORM", "must be vercel or selfhost");
+    problem("OVELO_PLATFORM", "must be vercel or selfhost");
   if (deployRaw && !DEPLOY_ENVS.includes(deployRaw as DeployEnv))
     problem(
-      "AROMA_DEPLOY_ENV",
+      "OVELO_DEPLOY_ENV",
       "must be production, beta, preview or development",
     );
   const deploy = DEPLOY_ENVS.includes(deployRaw as DeployEnv)
@@ -87,7 +87,7 @@ export function resolvePlatform(env: EnvLike): PlatformAnswer {
   if (onVercel) {
     platform = "vercel";
     if (declared === "selfhost")
-      problem("AROMA_PLATFORM", "is selfhost but this is a Vercel deployment");
+      problem("OVELO_PLATFORM", "is selfhost but this is a Vercel deployment");
     if (vercelEnv) deployEnv = vercelEnv;
     else if (!vercelEnvRaw && nodeProduction)
       problem("VERCEL_ENV", "is required on Vercel in production");
@@ -95,25 +95,25 @@ export function resolvePlatform(env: EnvLike): PlatformAnswer {
       if (deploy === "beta" && deployEnv === "production") deployEnv = "beta";
       else
         problem(
-          "AROMA_DEPLOY_ENV",
+          "OVELO_DEPLOY_ENV",
           `contradicts VERCEL_ENV (${vercelEnv ?? "unset"})`,
         );
     }
   } else if (declared === "vercel") {
     platform = "vercel";
-    problem("AROMA_PLATFORM", "is vercel but VERCEL and VERCEL_ENV are unset");
+    problem("OVELO_PLATFORM", "is vercel but VERCEL and VERCEL_ENV are unset");
   } else if (declared === "selfhost") {
     platform = "selfhost";
     if (deploy) deployEnv = deploy;
     else if (!deployRaw)
-      problem("AROMA_DEPLOY_ENV", "is required when AROMA_PLATFORM=selfhost");
+      problem("OVELO_DEPLOY_ENV", "is required when OVELO_PLATFORM=selfhost");
   } else if (!declared) {
     if (deployRaw)
-      problem("AROMA_PLATFORM", "is required when AROMA_DEPLOY_ENV is set");
+      problem("OVELO_PLATFORM", "is required when OVELO_DEPLOY_ENV is set");
     else if (nodeProduction && !building)
       problem(
-        "AROMA_PLATFORM",
-        "is required in production (selfhost, with AROMA_DEPLOY_ENV; Vercel sets VERCEL_ENV)",
+        "OVELO_PLATFORM",
+        "is required in production (selfhost, with OVELO_DEPLOY_ENV; Vercel sets VERCEL_ENV)",
       );
   }
 
@@ -152,7 +152,7 @@ export function vercelProductionHost(env: EnvLike): string | undefined {
 
 /**
  * Whether this runs on Vercel by its own `VERCEL=1` flag (the pre-Phase-H proxy-trust input,
- * unchanged). Phase H Step 2 replaces proxy trust with AROMA_PROXY_MODE.
+ * unchanged). Phase H Step 2 replaces proxy trust with OVELO_PROXY_MODE.
  */
 export function vercelFlag(env: EnvLike): boolean {
   return text(env, "VERCEL") === "1";

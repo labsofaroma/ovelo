@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Field, Input } from "@aroma/ui";
+import { Button, Field, Input } from "@ovelo/ui";
 import { PublishPanel } from "../../creators/components/PublishPanel";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -41,7 +41,7 @@ const STORAGE_TEXT: Record<Storage, string> = {
   saved: "Draft saved in this browser only.",
   restored: "Restored your draft from this browser.",
   unavailable:
-    "This browser is not letting Aroma save, so the draft will be lost when you leave.",
+    "This browser is not letting Ovelo save, so the draft will be lost when you leave.",
   discarded: "A saved draft could not be read and was ignored.",
   editing:
     "Editing a published basket. Your browser draft is left untouched; publishing creates the next version.",

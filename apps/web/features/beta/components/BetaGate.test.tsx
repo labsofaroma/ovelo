@@ -49,13 +49,13 @@ function renderGate(s: Signer | null) {
 
 describe("BetaBanner", () => {
   it("labels every page while the gate is on and disappears when it is off", () => {
-    const { unmount } = render(<BetaBanner env={{ AROMA_BETA_GATE: "on" }} />);
+    const { unmount } = render(<BetaBanner env={{ OVELO_BETA_GATE: "on" }} />);
     expect(
       screen.getByRole("complementary", { name: "Private beta" }).textContent,
     ).toMatch(/invited wallets only/);
     unmount();
     render(
-      <BetaBanner env={{ AROMA_BETA_GATE: "off", NODE_ENV: "production" }} />,
+      <BetaBanner env={{ OVELO_BETA_GATE: "off", NODE_ENV: "production" }} />,
     );
     expect(screen.queryByRole("complementary")).toBeNull();
   });
@@ -74,11 +74,11 @@ describe("TradeComplianceGate with the beta gate on", () => {
         if (url === "/api/v1/beta/challenge") {
           expect(JSON.parse(String(init?.body))).toEqual({
             wallet: WALLET,
-            code: "aroma-beta-abcdefghijklmnop",
+            code: "ovelo-beta-abcdefghijklmnop",
           });
           return Response.json({
             nonce: "n".repeat(32),
-            message: "Aroma: sign",
+            message: "Ovelo: sign",
             expiresAt: "x",
           });
         }
@@ -100,7 +100,7 @@ describe("TradeComplianceGate with the beta gate on", () => {
       screen.queryByRole("region", { name: "Accept the terms" }),
     ).toBeNull();
     fireEvent.change(screen.getByLabelText("Invite code"), {
-      target: { value: " aroma-beta-abcdefghijklmnop " },
+      target: { value: " ovelo-beta-abcdefghijklmnop " },
     });
     fireEvent.click(
       screen.getByRole("button", { name: "Sign to redeem the invite" }),
@@ -138,7 +138,7 @@ describe("TradeComplianceGate with the beta gate on", () => {
     );
     renderGate(signer(async () => new Uint8Array(64)));
     fireEvent.change(await screen.findByLabelText("Invite code"), {
-      target: { value: "aroma-beta-abcdefghijklmnop" },
+      target: { value: "ovelo-beta-abcdefghijklmnop" },
     });
     fireEvent.click(
       screen.getByRole("button", { name: "Sign to redeem the invite" }),

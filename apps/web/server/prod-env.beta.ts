@@ -15,7 +15,7 @@ import type { Finding } from "./prod-env";
  * - no browser-visible variable v1 does not read: a `NEXT_PUBLIC_*` value ships in the bundle,
  *   and the prototype still reads some (e.g. its embedded-wallet login) that must stay off a
  *   wallet-only v1 deployment;
- * - `AROMA_SITE_URL` on a `beta.` host (a warning: the owner may pick another name).
+ * - `OVELO_SITE_URL` on a `beta.` host (a warning: the owner may pick another name).
  * The mainnet genesis is checked read-only by the shared `genesisFindings`.
  */
 type Env = Record<string, string | undefined>;
@@ -29,26 +29,26 @@ export function betaFindings(env: Env): Finding[] {
   const add = (name: string, status: Finding["status"], detail: string) =>
     findings.push({ name, status, detail });
 
-  const gate = env.AROMA_BETA_GATE?.trim();
+  const gate = env.OVELO_BETA_GATE?.trim();
   if (!gate)
-    add("AROMA_BETA_GATE", "missing", "set it to on explicitly for the beta");
+    add("OVELO_BETA_GATE", "missing", "set it to on explicitly for the beta");
   else if (gate === "off")
-    add("AROMA_BETA_GATE", "forbidden", "off is Phase B; the beta needs on");
+    add("OVELO_BETA_GATE", "forbidden", "off is Phase B; the beta needs on");
   else if (gate === "on" && betaConfig({ ...env, NODE_ENV: "production" }).gate)
-    add("AROMA_BETA_GATE", "ok", "on");
+    add("OVELO_BETA_GATE", "ok", "on");
   // Any other value is reported invalid by the production profile (the boot schema).
 
   try {
     const caps = capsConfig({ ...env, NODE_ENV: "production" });
     if (caps.perTrade > BETA_DEFAULT_TRADE_RAW)
       add(
-        "AROMA_MAX_TRADE_USDC_RAW",
+        "OVELO_MAX_TRADE_USDC_RAW",
         "warning",
         "above the Phase A beta value ($50)",
       );
     if (caps.daily > BETA_DEFAULT_DAILY_RAW)
       add(
-        "AROMA_MAX_DAILY_USDC_RAW",
+        "OVELO_MAX_DAILY_USDC_RAW",
         "warning",
         "above the Phase A beta value ($200)",
       );
@@ -59,9 +59,9 @@ export function betaFindings(env: Env): Finding[] {
   findings.push(...unknownPublicFindings(env, "the beta"));
 
   try {
-    const host = new URL(env.AROMA_SITE_URL ?? "").hostname;
+    const host = new URL(env.OVELO_SITE_URL ?? "").hostname;
     if (!host.startsWith("beta."))
-      add("AROMA_SITE_URL", "warning", "not a beta.<domain> host");
+      add("OVELO_SITE_URL", "warning", "not a beta.<domain> host");
   } catch {
     // Missing or invalid: reported by the production profile.
   }

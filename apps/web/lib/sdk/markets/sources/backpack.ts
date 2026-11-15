@@ -32,7 +32,7 @@ export interface BackpackSecurity {
   withdrawEnabled: boolean;
   /** Observed exchange spot markets only; excludes stock perpetuals. */
   spotMarkets: Array<{ symbol: string; state: string }>;
-  /** false only means eligible for Aroma's onchain validation, not a route guarantee. */
+  /** false only means eligible for Ovelo's onchain validation, not a route guarantee. */
   discoveryOnly: boolean;
 }
 

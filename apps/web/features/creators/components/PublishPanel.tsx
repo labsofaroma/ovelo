@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Field, Input } from "@aroma/ui";
+import { Button, Field, Input } from "@ovelo/ui";
 import Link from "next/link";
 import { useState } from "react";
 import { ConnectButton } from "../../wallet/ConnectButton";

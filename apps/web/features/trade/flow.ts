@@ -154,4 +154,4 @@ export function quoteClock(quote: AnyQuote, now: number) {
 }
 
 /** sessionStorage key holding the in-flight trade id, so a refresh can resume tracking. */
-export const PENDING_TRADE_KEY = "aroma.v1.pendingTrade";
+export const PENDING_TRADE_KEY = "ovelo.v1.pendingTrade";

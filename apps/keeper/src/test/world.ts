@@ -13,7 +13,7 @@ import {
   TOKEN_2022_PROGRAM_ID,
   TOKEN_PROGRAM_ID,
   V1_PROGRAM_ID,
-} from "@aroma/guard";
+} from "@ovelo/guard";
 import {
   getAssetEncoder,
   getConfigEncoder,
@@ -21,7 +21,7 @@ import {
   getPlanDecoder,
   getPlanEncoder,
   type Plan,
-} from "@aroma/guard/generated";
+} from "@ovelo/guard/generated";
 import { createLogger } from "../log";
 import { fakeKeeperChain, v1Logs } from "./chain";
 export { fakeHermes } from "./hermes";

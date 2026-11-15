@@ -40,7 +40,7 @@ afterAll(async () => client.close());
 
 describe("beta invites (0005)", () => {
   it("codes are random and URL-safe; only the hash is stored; the default is single-use", async () => {
-    expect(generateBetaCode()).toMatch(/^aroma-beta-[A-Za-z0-9_-]{27}$/);
+    expect(generateBetaCode()).toMatch(/^ovelo-beta-[A-Za-z0-9_-]{27}$/);
     const invite = await createBetaInvite(db, {
       expiresAt: later(DAY),
       now: NOW,

@@ -15,7 +15,7 @@ CREATE TABLE "basket_versions" (
 ALTER TABLE "basket_versions" ADD CONSTRAINT "basket_versions_basket_id_baskets_id_fk" FOREIGN KEY ("basket_id") REFERENCES "public"."baskets"("id") ON DELETE restrict ON UPDATE no action;--> statement-breakpoint
 CREATE INDEX "receipts_basket_idx" ON "receipts" USING btree ("basket_id");
 --> statement-breakpoint
-CREATE FUNCTION aroma_basket_versions_insert_only() RETURNS trigger
+CREATE FUNCTION ovelo_basket_versions_insert_only() RETURNS trigger
 LANGUAGE plpgsql AS $$
 BEGIN
   RAISE EXCEPTION 'basket_versions is insert-only (% refused)', TG_OP
@@ -25,8 +25,8 @@ $$;
 --> statement-breakpoint
 CREATE TRIGGER basket_versions_no_update_delete
   BEFORE UPDATE OR DELETE ON basket_versions
-  FOR EACH ROW EXECUTE FUNCTION aroma_basket_versions_insert_only();
+  FOR EACH ROW EXECUTE FUNCTION ovelo_basket_versions_insert_only();
 --> statement-breakpoint
 CREATE TRIGGER basket_versions_no_truncate
   BEFORE TRUNCATE ON basket_versions
-  FOR EACH STATEMENT EXECUTE FUNCTION aroma_basket_versions_insert_only();
+  FOR EACH STATEMENT EXECUTE FUNCTION ovelo_basket_versions_insert_only();

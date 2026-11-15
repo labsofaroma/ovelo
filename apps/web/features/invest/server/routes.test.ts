@@ -142,7 +142,7 @@ describe("invest routes", () => {
       cluster: "devnet",
       available: true,
       plans: [],
-      source: expect.stringMatching(/Aroma Guard v1/),
+      source: expect.stringMatching(/Ovelo Guard v1/),
     });
   });
 

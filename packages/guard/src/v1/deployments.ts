@@ -1,10 +1,10 @@
 /**
- * Where Aroma Guard v1 is deployed. Filled in from the owner's deploy output
+ * Where Ovelo Guard v1 is deployed. Filled in from the owner's deploy output
  * (docs/M6-DEVNET-DEPLOY.md, "What to paste back"); `null` means not deployed there yet. The
  * web app must not offer a v1 flow on a cluster whose entry is null.
  */
 import { address, type Address } from "@solana/kit";
-import { AROMA_GUARD_V1_PROGRAM_ID } from "./constants";
+import { OVELO_GUARD_V1_PROGRAM_ID } from "./constants";
 
 /** A registered asset: its mint and the `["asset", mint]` account. */
 export type V1DeployedAsset = {
@@ -94,4 +94,4 @@ export const V1_DEPLOYMENTS: Record<"devnet" | "mainnet", V1Deployment | null> =
   };
 
 /** The expected v1 program ID for every cluster (one keypair, one ID). */
-export const V1_PROGRAM_ID: Address = AROMA_GUARD_V1_PROGRAM_ID;
+export const V1_PROGRAM_ID: Address = OVELO_GUARD_V1_PROGRAM_ID;

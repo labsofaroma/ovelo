@@ -57,7 +57,7 @@ export async function loadConstituentHistoricalBars(
       const res = await (options.fetcher ?? fetch)(url, {
         headers: {
           Accept: "application/json",
-          "User-Agent": "Aroma/1.0 (Thematic Basket Analytics)",
+          "User-Agent": "Ovelo/1.0 (Thematic Basket Analytics)",
         },
         signal: effectiveSignal,
       });

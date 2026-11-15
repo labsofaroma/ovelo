@@ -28,7 +28,7 @@ pub const JUPITER_EVENT_AUTHORITY: Pubkey = pubkey!("D8cy77BBepLMngZx6ZukaTff5hC
 pub const ROUTE_V2_DISCRIMINATOR: [u8; 8] = [187, 100, 250, 204, 49, 196, 175, 20];
 /// Logged once per routed execution; `scripts/check-build.mjs` requires it in the default binary
 /// and its absence from the devnet-mock binary.
-pub const JUPITER_CPI_MARKER: &str = "aroma-guard: jupiter route_v2 cpi";
+pub const JUPITER_CPI_MARKER: &str = "ovelo-guard: jupiter route_v2 cpi";
 
 /// `route_v2` fixed accounts (pinned IDL order). Hop accounts follow from index `PREFIX_LEN`.
 pub mod prefix {

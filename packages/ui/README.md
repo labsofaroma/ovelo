@@ -1,16 +1,16 @@
-# @aroma/ui
+# @ovelo/ui
 
-Aroma's design tokens, Base UI primitives and domain components. **Presentation only**: no app code, no server-only code, no wallet or Solana packages (ESLint enforces it, see [Boundary](#boundary)). Status: M1 of [docs/REWRITE-PLAN.md](../../docs/REWRITE-PLAN.md). The prototype keeps its own `apps/web/styles/*` and `components/*` until M7; this package is additive.
+Ovelo's design tokens, Base UI primitives and domain components. **Presentation only**: no app code, no server-only code, no wallet or Solana packages (ESLint enforces it, see [Boundary](#boundary)). Status: M1 of [docs/REWRITE-PLAN.md](../../docs/REWRITE-PLAN.md). The prototype keeps its own `apps/web/styles/*` and `components/*` until M7; this package is additive.
 
 ```bash
-pnpm --filter @aroma/ui dev              # Ladle workbench at http://localhost:61000
-pnpm --filter @aroma/ui build:stories    # static workbench into dist/stories
-pnpm --filter @aroma/ui test             # unit + token + contrast + logos tests (Vitest)
-pnpm --filter @aroma/ui test:a11y        # real-browser axe, keyboard, reduced motion (needs build:stories first)
-pnpm --filter @aroma/ui gen:logos        # regenerate logos.ts from apps/web/public/company-logos
+pnpm --filter @ovelo/ui dev              # Ladle workbench at http://localhost:61000
+pnpm --filter @ovelo/ui build:stories    # static workbench into dist/stories
+pnpm --filter @ovelo/ui test             # unit + token + contrast + logos tests (Vitest)
+pnpm --filter @ovelo/ui test:a11y        # real-browser axe, keyboard, reduced motion (needs build:stories first)
+pnpm --filter @ovelo/ui gen:logos        # regenerate logos.ts from apps/web/public/company-logos
 ```
 
-First run of `test:a11y` needs a browser: `pnpm --filter @aroma/ui exec playwright install chromium`.
+First run of `test:a11y` needs a browser: `pnpm --filter @ovelo/ui exec playwright install chromium`.
 
 ## What is in the package
 
@@ -18,22 +18,22 @@ First run of `test:a11y` needs a browser: `pnpm --filter @aroma/ui exec playwrig
 | ------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `tokens.css`       | The design tokens: plain CSS custom properties, no framework needed. Light, dark, reduced motion.                                                                                                      |
 | `theme.css`        | Tailwind v4 `@theme inline` mapping of the tokens to utilities (`bg-surface`, `text-muted`, `rounded-control`, `motion-base`, ...).                                                                    |
-| `fonts.css`        | Optional `@font-face` for hosts that do not load Manrope themselves (Ladle). Next apps may use `next/font` and override `--aroma-font-sans`.                                                           |
+| `fonts.css`        | Optional `@font-face` for hosts that do not load Manrope themselves (Ladle). Next apps may use `next/font` and override `--ovelo-font-sans`.                                                           |
 | `src/primitives/*` | Button, IconButton, Input, Label, Field, Select, Checkbox, Switch, RadioGroup, Tabs, Dialog, Sheet, Popover, Tooltip, DropdownMenu, Table, Badge, Card, Skeleton, Spinner, Toast, Separator, Progress. |
 | `src/domain/*`     | Brand (+ OrbitArt), AssetAvatar, Change, SocialLinks.                                                                                                                                                  |
 | `src/format`       | `formatUnits` / `formatSignedUnits`: display formatting for `bigint` + decimals, no float math.                                                                                                        |
 | `src/theme`        | `themeInitScript`: the inline no-flash theme script.                                                                                                                                                   |
 | `logos.ts`         | **Generated** by `scripts/gen-logos.ts`. A test fails if it is stale.                                                                                                                                  |
 
-Public API: `import { Button } from "@aroma/ui"`; `@aroma/ui/theme` (server-safe, no React), `@aroma/ui/format`, `@aroma/ui/logos`, and the CSS files `@aroma/ui/tokens.css`, `@aroma/ui/theme.css`, `@aroma/ui/fonts.css`.
+Public API: `import { Button } from "@ovelo/ui"`; `@ovelo/ui/theme` (server-safe, no React), `@ovelo/ui/format`, `@ovelo/ui/logos`, and the CSS files `@ovelo/ui/tokens.css`, `@ovelo/ui/theme.css`, `@ovelo/ui/fonts.css`.
 
 Components that use hooks or Base UI start with `"use client"`, so they work from Server Components. Brand, Badge, Card, Table, Change, Label, Skeleton, Spinner and SocialLinks stay server-compatible.
 
 ## How tokens flow
 
 ```
-tokens.css            --aroma-bg, --aroma-ink, --aroma-space-4, --aroma-duration-base ...   (runtime CSS variables)
-   │  theme.css       @theme inline { --color-bg: var(--aroma-bg); --text-small: ...; }      (Tailwind reads the names)
+tokens.css            --ovelo-bg, --ovelo-ink, --ovelo-space-4, --ovelo-duration-base ...   (runtime CSS variables)
+   │  theme.css       @theme inline { --color-bg: var(--ovelo-bg); --text-small: ...; }      (Tailwind reads the names)
    ▼
 utilities             bg-bg  text-ink  p-4  rounded-control  motion-base  focus-ring  z-modal
    ▼
@@ -42,13 +42,13 @@ components            only utilities and tokens, never a raw hex value
 
 - **Themes.** `data-theme="light|dark"` on `<html>` wins; with no attribute, `prefers-color-scheme` decides. The attribute works on any element, so a subtree can be scoped (the "Light and dark" stories show both at once). Render `themeInitScript` in `<head>` for no flash of the wrong theme:
   ```tsx
-  import { themeInitScript } from "@aroma/ui/theme";
+  import { themeInitScript } from "@ovelo/ui/theme";
   <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />;
   ```
-  It reads the same `aroma-theme` localStorage key as the prototype, so a saved choice carries over. Tested for stored choice, system fallback, junk values and blocked storage.
-- **Reduced motion.** Every `--aroma-duration-*` collapses to `0.01ms` under `prefers-reduced-motion: reduce`, and `--default-transition-duration` is a token too, so even a bare `transition-colors` follows. Keyframes (`animate-shimmer`, `animate-spin-token`, `animate-indeterminate`) take their duration from tokens. Never hard-code a duration in a component.
-- **Spacing** is 4px based and aligned with Tailwind: `--aroma-space-N` equals the `N` step (`p-4` is 16px).
-- **Lines vs borders.** `--aroma-line` is for decorative dividers and is _below_ 3:1 by design. Anything that marks a control boundary uses `--aroma-border-strong` (3:1 or better).
+  It reads the same `ovelo-theme` localStorage key as the prototype, so a saved choice carries over. Tested for stored choice, system fallback, junk values and blocked storage.
+- **Reduced motion.** Every `--ovelo-duration-*` collapses to `0.01ms` under `prefers-reduced-motion: reduce`, and `--default-transition-duration` is a token too, so even a bare `transition-colors` follows. Keyframes (`animate-shimmer`, `animate-spin-token`, `animate-indeterminate`) take their duration from tokens. Never hard-code a duration in a component.
+- **Spacing** is 4px based and aligned with Tailwind: `--ovelo-space-N` equals the `N` step (`p-4` is 16px).
+- **Lines vs borders.** `--ovelo-line` is for decorative dividers and is _below_ 3:1 by design. Anything that marks a control boundary uses `--ovelo-border-strong` (3:1 or better).
 
 ### Old variable → new token
 
@@ -56,37 +56,37 @@ Every variable in `apps/web/styles/foundation.css` and `theme-surfaces.css`. A t
 
 | Old (`foundation.css`, `theme-surfaces.css`)                                                     | New token                                | Tailwind utility                         | Note                                                                                                       |
 | ------------------------------------------------------------------------------------------------ | ---------------------------------------- | ---------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| `--bg`                                                                                           | `--aroma-bg`                             | `bg-bg`                                  |                                                                                                            |
-| `--surface`                                                                                      | `--aroma-surface`                        | `bg-surface`                             |                                                                                                            |
-| `--raised`                                                                                       | `--aroma-raised`                         | `bg-raised`                              |                                                                                                            |
-| `--ink`                                                                                          | `--aroma-ink`                            | `text-ink`                               |                                                                                                            |
-| `--muted`                                                                                        | `--aroma-muted`                          | `text-muted`                             |                                                                                                            |
-| `--line`                                                                                         | `--aroma-line`                           | `border-line`                            | decorative only; see `--aroma-border-strong`                                                               |
-| `--accent`                                                                                       | `--aroma-accent`                         | `bg-accent`, `text-accent`               |                                                                                                            |
-| `--accent-ink`                                                                                   | `--aroma-accent-ink`                     | `text-accent-ink`                        |                                                                                                            |
-| `--up`                                                                                           | `--aroma-up`                             | `text-up`                                |                                                                                                            |
-| `--down`                                                                                         | `--aroma-down`                           | `text-down`                              |                                                                                                            |
-| `--scrim`                                                                                        | `--aroma-scrim`                          | `bg-scrim`                               |                                                                                                            |
-| `--shadow-float`                                                                                 | `--aroma-shadow-float`                   | `shadow-float`                           |                                                                                                            |
-| `--font-sans`                                                                                    | `--aroma-font-sans`                      | `font-sans`                              | Manrope, Inter, then system. Self-contained: an app using `next/font` overrides `--aroma-font-sans` itself |
+| `--bg`                                                                                           | `--ovelo-bg`                             | `bg-bg`                                  |                                                                                                            |
+| `--surface`                                                                                      | `--ovelo-surface`                        | `bg-surface`                             |                                                                                                            |
+| `--raised`                                                                                       | `--ovelo-raised`                         | `bg-raised`                              |                                                                                                            |
+| `--ink`                                                                                          | `--ovelo-ink`                            | `text-ink`                               |                                                                                                            |
+| `--muted`                                                                                        | `--ovelo-muted`                          | `text-muted`                             |                                                                                                            |
+| `--line`                                                                                         | `--ovelo-line`                           | `border-line`                            | decorative only; see `--ovelo-border-strong`                                                               |
+| `--accent`                                                                                       | `--ovelo-accent`                         | `bg-accent`, `text-accent`               |                                                                                                            |
+| `--accent-ink`                                                                                   | `--ovelo-accent-ink`                     | `text-accent-ink`                        |                                                                                                            |
+| `--up`                                                                                           | `--ovelo-up`                             | `text-up`                                |                                                                                                            |
+| `--down`                                                                                         | `--ovelo-down`                           | `text-down`                              |                                                                                                            |
+| `--scrim`                                                                                        | `--ovelo-scrim`                          | `bg-scrim`                               |                                                                                                            |
+| `--shadow-float`                                                                                 | `--ovelo-shadow-float`                   | `shadow-float`                           |                                                                                                            |
+| `--font-sans`                                                                                    | `--ovelo-font-sans`                      | `font-sans`                              | Manrope, Inter, then system. Self-contained: an app using `next/font` overrides `--ovelo-font-sans` itself |
 | `--font-nav`                                                                                     | none                                     | none                                     | **dropped**: it was an alias of `--font-sans`                                                              |
-| `--space-1` `--space-2` `--space-3` `--space-4` `--space-5` `--space-6` `--space-8` `--space-12` | `--aroma-space-1` ... `--aroma-space-12` | `p-1` ... `p-12`                         | same px values, now in rem                                                                                 |
-| `--text-micro`                                                                                   | `--aroma-text-micro`                     | `text-micro`                             | 11px as `0.6875rem`                                                                                        |
-| `--text-caption`                                                                                 | `--aroma-text-caption`                   | `text-caption`                           | 12px                                                                                                       |
-| `--text-small`                                                                                   | `--aroma-text-small`                     | `text-small`                             | 13px                                                                                                       |
-| `--text-body`                                                                                    | `--aroma-text-body`                      | `text-body`                              | 14px                                                                                                       |
-| `--text-title`                                                                                   | `--aroma-text-title`                     | `text-title`                             | 18px                                                                                                       |
-| `--text-section`                                                                                 | `--aroma-text-section`                   | `text-section`                           | 22px                                                                                                       |
-| `--text-page`                                                                                    | `--aroma-text-page`                      | `text-page`                              | 36px                                                                                                       |
-| `--text-page-mobile`                                                                             | `--aroma-text-page-mobile`               | `text-page-mobile`                       | 28px                                                                                                       |
-| `--radius-badge`                                                                                 | `--aroma-radius-badge`                   | `rounded-badge`                          | 6px                                                                                                        |
-| `--radius-control`                                                                               | `--aroma-radius-control`                 | `rounded-control`                        | 10px                                                                                                       |
-| `--radius-panel`                                                                                 | `--aroma-radius-panel`                   | `rounded-panel`                          | 16px                                                                                                       |
-| `--control-height`                                                                               | `--aroma-control-height`                 | `min-h-(--aroma-control-height)`         | 44px, also the touch target                                                                                |
-| `--control-height-compact`                                                                       | `--aroma-control-height-compact`         | `min-h-(--aroma-control-height-compact)` | 36px                                                                                                       |
-| `--ease-ui`                                                                                      | `--aroma-ease-ui`                        | `ease-ui`                                |                                                                                                            |
+| `--space-1` `--space-2` `--space-3` `--space-4` `--space-5` `--space-6` `--space-8` `--space-12` | `--ovelo-space-1` ... `--ovelo-space-12` | `p-1` ... `p-12`                         | same px values, now in rem                                                                                 |
+| `--text-micro`                                                                                   | `--ovelo-text-micro`                     | `text-micro`                             | 11px as `0.6875rem`                                                                                        |
+| `--text-caption`                                                                                 | `--ovelo-text-caption`                   | `text-caption`                           | 12px                                                                                                       |
+| `--text-small`                                                                                   | `--ovelo-text-small`                     | `text-small`                             | 13px                                                                                                       |
+| `--text-body`                                                                                    | `--ovelo-text-body`                      | `text-body`                              | 14px                                                                                                       |
+| `--text-title`                                                                                   | `--ovelo-text-title`                     | `text-title`                             | 18px                                                                                                       |
+| `--text-section`                                                                                 | `--ovelo-text-section`                   | `text-section`                           | 22px                                                                                                       |
+| `--text-page`                                                                                    | `--ovelo-text-page`                      | `text-page`                              | 36px                                                                                                       |
+| `--text-page-mobile`                                                                             | `--ovelo-text-page-mobile`               | `text-page-mobile`                       | 28px                                                                                                       |
+| `--radius-badge`                                                                                 | `--ovelo-radius-badge`                   | `rounded-badge`                          | 6px                                                                                                        |
+| `--radius-control`                                                                               | `--ovelo-radius-control`                 | `rounded-control`                        | 10px                                                                                                       |
+| `--radius-panel`                                                                                 | `--ovelo-radius-panel`                   | `rounded-panel`                          | 16px                                                                                                       |
+| `--control-height`                                                                               | `--ovelo-control-height`                 | `min-h-(--ovelo-control-height)`         | 44px, also the touch target                                                                                |
+| `--control-height-compact`                                                                       | `--ovelo-control-height-compact`         | `min-h-(--ovelo-control-height-compact)` | 36px                                                                                                       |
+| `--ease-ui`                                                                                      | `--ovelo-ease-ui`                        | `ease-ui`                                |                                                                                                            |
 
-Not in `foundation.css`, added here: `--aroma-border-strong`, `--aroma-accent-hover`, `--aroma-accent-soft`, `--aroma-up-soft`, `--aroma-down-soft`, `--aroma-warning`, `--aroma-warning-soft` (the prototype hard-codes `#f59e0b`, which fails AA on light), `--aroma-focus`, `--aroma-plate` (logo backing), `--aroma-radius-full`, `--aroma-shadow-raised`, z-index (`--aroma-z-*`), durations (`--aroma-duration-*`), breakpoints, layout (`--aroma-content-max`, `--aroma-gutter*`), leading and tracking.
+Not in `foundation.css`, added here: `--ovelo-border-strong`, `--ovelo-accent-hover`, `--ovelo-accent-soft`, `--ovelo-up-soft`, `--ovelo-down-soft`, `--ovelo-warning`, `--ovelo-warning-soft` (the prototype hard-codes `#f59e0b`, which fails AA on light), `--ovelo-focus`, `--ovelo-plate` (logo backing), `--ovelo-radius-full`, `--ovelo-shadow-raised`, z-index (`--ovelo-z-*`), durations (`--ovelo-duration-*`), breakpoints, layout (`--ovelo-content-max`, `--ovelo-gutter*`), leading and tracking.
 
 Also dropped, from `apps/web/tailwind.config.js` (v3): the `sm/md/lg` radius overrides (4/8/12px) and the `out` easing; nothing in `foundation.css` used them. **Prototype bug noticed, not fixed:** that file maps `raised` to `var(--bg-raised)`, a variable that does not exist (it is `--raised`), so `bg-raised` is transparent in the prototype.
 
@@ -96,7 +96,7 @@ Deliberately _not_ tokens: the landing page's editorial display sizes, serif acc
 
 The prototype is on Tailwind v3 and must keep building until M7. v4 is added without touching it:
 
-- **Tailwind v4 only (M9).** `apps/web/app/aroma-ui.css` is the app's single entry, imported by the root layouts: theme, preflight and utilities in declared cascade layers (`theme, base, components, utilities`), then `fonts.css`, `tokens.css` and `theme.css`. Ladle uses `.ladle/styles.css` (the same layers). The prototype's Tailwind v3 chain, its PostCSS router and `foundation.css` were removed in M9.
+- **Tailwind v4 only (M9).** `apps/web/app/ovelo-ui.css` is the app's single entry, imported by the root layouts: theme, preflight and utilities in declared cascade layers (`theme, base, components, utilities`), then `fonts.css`, `tokens.css` and `theme.css`. Ladle uses `.ladle/styles.css` (the same layers). The prototype's Tailwind v3 chain, its PostCSS router and `foundation.css` were removed in M9.
 
 ## Adding a primitive
 
@@ -128,7 +128,7 @@ Fix violations at the token or component, not by suppressing a rule. An unavoida
 
 ## Boundary
 
-`eslint.config.mjs` forbids, in every file of this package: `@aroma/web|keeper`, any path under `apps/`, `server-only` and server folders, `@solana/*`, `@solana-program/*`, `@coral-xyz/*`, `@farcaster/*`, `@wallet-standard/*`, `@reown/*`, `@walletconnect/*`, `viem`, `wagmi`, `ethers`, and `next`/`next/*`. Behaviour comes in through props: `Brand` takes a `LinkComponent`, `AssetAvatar` takes an `ImageComponent` (see `apps/web/app/(app)/ui-preview/NextAvatarImage.tsx`).
+`eslint.config.mjs` forbids, in every file of this package: `@ovelo/web|keeper`, any path under `apps/`, `server-only` and server folders, `@solana/*`, `@solana-program/*`, `@coral-xyz/*`, `@farcaster/*`, `@wallet-standard/*`, `@reown/*`, `@walletconnect/*`, `viem`, `wagmi`, `ethers`, and `next`/`next/*`. Behaviour comes in through props: `Brand` takes a `LinkComponent`, `AssetAvatar` takes an `ImageComponent` (see `apps/web/app/(app)/ui-preview/NextAvatarImage.tsx`).
 
 ## Deferred
 

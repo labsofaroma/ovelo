@@ -26,31 +26,31 @@ afterEach(() => {
 });
 
 describe("expectedOrigin", () => {
-  it("binds to AROMA_SITE_URL when it is set", () => {
-    env({ AROMA_SITE_URL: "https://aroma.example" });
+  it("binds to OVELO_SITE_URL when it is set", () => {
+    env({ OVELO_SITE_URL: "https://ovelo.example" });
     expect(expectedOrigin(request({ host: "other.example" }))).toBe(
-      "https://aroma.example",
+      "https://ovelo.example",
     );
   });
 
   it("uses the client's Host, not request.url (next start rewrites it to localhost)", () => {
-    env({ AROMA_SITE_URL: "", VERCEL: "" });
-    expect(expectedOrigin(request({ host: "aroma.lan:3000" }))).toBe(
-      "http://aroma.lan:3000",
+    env({ OVELO_SITE_URL: "", VERCEL: "" });
+    expect(expectedOrigin(request({ host: "ovelo.lan:3000" }))).toBe(
+      "http://ovelo.lan:3000",
     );
     expect(expectedOrigin(request())).toBe("http://localhost:3000");
   });
 
   it("trusts x-forwarded-proto and x-forwarded-host only behind a trusted proxy", () => {
-    env({ AROMA_SITE_URL: "", VERCEL: "" });
+    env({ OVELO_SITE_URL: "", VERCEL: "" });
     const forwarded = request({
       host: "internal:3000",
       "x-forwarded-proto": "https",
-      "x-forwarded-host": "aroma.example",
+      "x-forwarded-host": "ovelo.example",
     });
     expect(expectedOrigin(forwarded)).toBe("http://internal:3000");
     env({ VERCEL: "1" });
-    expect(expectedOrigin(forwarded)).toBe("https://aroma.example");
+    expect(expectedOrigin(forwarded)).toBe("https://ovelo.example");
   });
 });
 

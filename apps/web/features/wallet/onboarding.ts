@@ -23,7 +23,7 @@ export const WALLET_INSTALL_GUIDES: readonly WalletGuide[] = [
 
 /** The SOL note on the connect screen (mainnet only; devnet uses free test SOL). */
 export function solNeededNote(): string {
-  return `Your first buy of each stock needs about ${NEW_STOCK_ACCOUNT_SOL} SOL in your wallet for its token account, plus network fees. You pay these to the Solana network, not to Aroma.`;
+  return `Your first buy of each stock needs about ${NEW_STOCK_ACCOUNT_SOL} SOL in your wallet for its token account, plus network fees. You pay these to the Solana network, not to Ovelo.`;
 }
 
 /**

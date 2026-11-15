@@ -68,7 +68,7 @@ export interface SelectProps<Value extends string = string> {
 }
 
 const itemClass =
-  "flex min-h-(--aroma-control-height) cursor-pointer items-center gap-2 rounded-control px-3 py-2.5 text-small leading-snug outline-none data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50";
+  "flex min-h-(--ovelo-control-height) cursor-pointer items-center gap-2 rounded-control px-3 py-2.5 text-small leading-snug outline-none data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50";
 const noteClass = "shrink-0 p-3 text-caption leading-normal text-muted";
 
 export function Select<Value extends string = string>({
@@ -220,7 +220,7 @@ export function Select<Value extends string = string>({
     "inline-flex w-full max-w-full min-w-0 cursor-pointer items-center justify-between gap-2 px-3 py-2.5 text-left leading-snug",
     "hover:not-disabled:border-ink data-[popup-open]:border-ink data-[invalid]:border-down aria-invalid:border-down",
     size === "sm" &&
-      "min-h-(--aroma-control-height-compact) py-2 max-md:min-h-(--aroma-control-height)",
+      "min-h-(--ovelo-control-height-compact) py-2 max-md:min-h-(--ovelo-control-height)",
     "transition-colors motion-base",
     focusRing,
     disabledStyles,

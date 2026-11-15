@@ -5,11 +5,11 @@ import {
   partiallySignTransaction,
   type Transaction,
 } from "@solana/kit";
-import { planAddresses, TOKEN_PROGRAM_ID } from "@aroma/guard";
+import { planAddresses, TOKEN_PROGRAM_ID } from "@ovelo/guard";
 import {
   getPlanClosedEventEncoder,
   getPlanCreatedEventEncoder,
-} from "@aroma/guard/generated";
+} from "@ovelo/guard/generated";
 import { describe, expect, it } from "vitest";
 import { createKeyring } from "@/server/auth/trade";
 import { prepareClose, prepareCreate } from "./prepare";

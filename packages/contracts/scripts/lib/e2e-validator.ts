@@ -1,4 +1,4 @@
-/** solana-test-validator with the pinned upstream programs, and a real CLI deploy of Aroma Guard. */
+/** solana-test-validator with the pinned upstream programs, and a real CLI deploy of Ovelo Guard. */
 import fs from "node:fs";
 import path from "node:path";
 import crypto from "node:crypto";
@@ -20,7 +20,7 @@ export function pinnedSo(name: string): string {
   const file = path.join(CONTRACTS_ROOT, "target/test-programs", `${name}.so`);
   if (!fs.existsSync(file))
     throw new Error(
-      `Missing ${name}.so: run \`pnpm --filter @aroma/contracts test:fixtures\`.`,
+      `Missing ${name}.so: run \`pnpm --filter @ovelo/contracts test:fixtures\`.`,
     );
   const sha = crypto
     .createHash("sha256")

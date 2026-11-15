@@ -44,7 +44,7 @@ describe("redacted JSON logs", () => {
     expect(entry).toMatchObject({
       msg: "hello",
       plan: "p1",
-      service: "aroma-keeper",
+      service: "ovelo-keeper",
       KEEPER_KEYPAIR: REDACTED,
     });
     expect(lines.join("")).not.toContain(String(key[5]) + "," + String(key[6]));

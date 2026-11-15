@@ -1,5 +1,5 @@
 {
-  "comment": "Read-only mainnet data for the LiteSVM Jupiter suite (scripts/record-jupiter-mainnet.ts): Jupiter Swap API v2 route_v2 builds with the Aroma Guard v1 swap-authority PDA as taker, and every account they touch at the slot below. Route index 7 (destination) is a placeholder the tests replace with their owner's ATA. Public chain data; no key material.",
+  "comment": "Read-only mainnet data for the LiteSVM Jupiter suite (scripts/record-jupiter-mainnet.ts): Jupiter Swap API v2 route_v2 builds with the Ovelo Guard v1 swap-authority PDA as taker, and every account they touch at the slot below. Route index 7 (destination) is a placeholder the tests replace with their owner's ATA. Public chain data; no key material.",
   "source": "https://api.mainnet-beta.solana.com",
   "genesisHash": "5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d",
   "slot": 469359673,

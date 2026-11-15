@@ -9,7 +9,7 @@ import {
   type Instruction,
   type Signature,
 } from "@solana/kit";
-import { singleTransactionMessage } from "@aroma/guard";
+import { singleTransactionMessage } from "@ovelo/guard";
 import { AppError } from "@/server/errors";
 import { logger } from "@/server/logger";
 import type { InvestRpc } from "./cluster";

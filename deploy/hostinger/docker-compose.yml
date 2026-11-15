@@ -1,20 +1,20 @@
-# Phase H Step 5: Aroma on a Hostinger VPS behind Cloudflare (docs/launch/HOSTINGER-RUNBOOK.md).
-# Deploy ONLY through deploy.sh / rollback.sh, which set AROMA_IMAGE to an image DIGEST and pin
-# it in /opt/aroma/.env (read by Compose), so plain `sudo docker compose -f
-# /opt/aroma/docker-compose.yml ps|logs|exec|stop` work on the running digest.
+# Phase H Step 5: Ovelo on a Hostinger VPS behind Cloudflare (docs/launch/HOSTINGER-RUNBOOK.md).
+# Deploy ONLY through deploy.sh / rollback.sh, which set OVELO_IMAGE to an image DIGEST and pin
+# it in /opt/ovelo/.env (read by Compose), so plain `sudo docker compose -f
+# /opt/ovelo/docker-compose.yml ps|logs|exec|stop` work on the running digest.
 #
 # - Nothing is published on the host: the app is reachable only from cloudflared on the internal
 #   `edge` network, and cloudflared dials OUT to Cloudflare (no inbound 80/443 on the VPS).
-# - No secret is in this file: the app reads /etc/aroma/aroma.env (0600), cloudflared reads the
-#   tunnel token from /etc/aroma/tunnel-token (0400, owned by cloudflared's UID 65532).
+# - No secret is in this file: the app reads /etc/ovelo/ovelo.env (0600), cloudflared reads the
+#   tunnel token from /etc/ovelo/tunnel-token (0400, owned by cloudflared's UID 65532).
 # - One app replica (docs/launch/SELF-HOST.md §6: the caches are local to the instance).
-name: aroma
+name: ovelo
 
 services:
   app:
-    image: ${AROMA_IMAGE:?set AROMA_IMAGE to ghcr.io/aromalabs/aroma-web@sha256:<digest> (deploy.sh does)}
+    image: ${OVELO_IMAGE:?set OVELO_IMAGE to ghcr.io/labsofovelo/ovelo-web@sha256:<digest> (deploy.sh does)}
     env_file:
-      - path: /etc/aroma/aroma.env
+      - path: /etc/ovelo/ovelo.env
         required: true
     init: true
     read_only: true
@@ -63,7 +63,7 @@ services:
       - --token-file
       - /run/secrets/tunnel-token
     volumes:
-      - /etc/aroma/tunnel-token:/run/secrets/tunnel-token:ro
+      - /etc/ovelo/tunnel-token:/run/secrets/tunnel-token:ro
     depends_on:
       app:
         condition: service_healthy
@@ -95,4 +95,4 @@ networks:
 volumes:
   # Image optimizer and data cache. Safe to delete; rebuilt on demand.
   next-cache:
-    name: aroma-next-cache
+    name: ovelo-next-cache

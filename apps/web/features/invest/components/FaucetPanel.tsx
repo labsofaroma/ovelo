@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@aroma/ui";
+import { Button } from "@ovelo/ui";
 import { useEffect, useRef, useState } from "react";
 import { useQueryClient } from "@tanstack/react-query";
 import { assertSignerCluster } from "../../wallet/cluster";

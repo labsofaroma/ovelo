@@ -1,6 +1,6 @@
 "use client";
 
-import { Badge, Input } from "@aroma/ui";
+import { Badge, Input } from "@ovelo/ui";
 import { Check, Plus } from "lucide-react";
 import { useDeferredValue, useId, useMemo, useState } from "react";
 import { MAX_LEGS } from "../../creators/schema";

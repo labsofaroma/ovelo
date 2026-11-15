@@ -2,8 +2,8 @@ import { describe, expect, it } from "vitest";
 import { actionsOff, assertActionsOpen } from "./actions-switch";
 
 const SELF = (deploy: string) => ({
-  AROMA_PLATFORM: "selfhost",
-  AROMA_DEPLOY_ENV: deploy,
+  OVELO_PLATFORM: "selfhost",
+  OVELO_DEPLOY_ENV: deploy,
   NODE_ENV: "production",
 });
 
@@ -16,8 +16,8 @@ describe("Solana Actions switch (server/actions-switch.ts)", () => {
     expect(actionsOff({ NODE_ENV: "production" })).toBe(true);
   });
 
-  it("opens in production only when AROMA_ACTIONS=on is explicit", () => {
-    expect(actionsOff({ ...SELF("production"), AROMA_ACTIONS: "on" })).toBe(
+  it("opens in production only when OVELO_ACTIONS=on is explicit", () => {
+    expect(actionsOff({ ...SELF("production"), OVELO_ACTIONS: "on" })).toBe(
       false,
     );
   });
@@ -25,7 +25,7 @@ describe("Solana Actions switch (server/actions-switch.ts)", () => {
   it("is on in development and previews unless turned off", () => {
     expect(actionsOff({})).toBe(false);
     expect(actionsOff({ VERCEL: "1", VERCEL_ENV: "preview" })).toBe(false);
-    expect(actionsOff({ AROMA_ACTIONS: "off" })).toBe(true);
+    expect(actionsOff({ OVELO_ACTIONS: "off" })).toBe(true);
   });
 
   it("refuses with TRADING_UNAVAILABLE", () => {

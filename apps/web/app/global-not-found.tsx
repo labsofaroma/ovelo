@@ -4,7 +4,7 @@ import { RootDocument } from "@/features/shared/components/RootDocument";
 import { siteUrl } from "@/features/shared/site";
 import { SiteFooter } from "@/features/shared/components/SiteFooter";
 import { SiteHeader } from "@/features/shared/components/SiteHeader";
-import "./aroma-ui.css";
+import "./ovelo-ui.css";
 
 /**
  * Unmatched URLs (experimental.globalNotFound). There is no top-level layout to wrap a 404, so
@@ -13,7 +13,7 @@ import "./aroma-ui.css";
  */
 export const metadata: Metadata = {
   metadataBase: siteUrl(),
-  title: "Page not found | Aroma",
+  title: "Page not found | Ovelo",
   robots: { index: false, follow: false },
 };
 

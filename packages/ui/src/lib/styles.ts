@@ -5,7 +5,7 @@ export const focusRing = "focus-ring";
 
 /** Boundary, surface and sizing shared by text-like controls. */
 export const controlSurface =
-  "min-h-(--aroma-control-height) rounded-control border border-border-strong bg-surface text-ink text-small";
+  "min-h-(--ovelo-control-height) rounded-control border border-border-strong bg-surface text-ink text-small";
 
 export const disabledStyles =
   "disabled:cursor-not-allowed disabled:opacity-50 data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50";

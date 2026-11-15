@@ -3,7 +3,7 @@
  * solana-test-validator on 127.0.0.1 seeded with accounts CLONED from mainnet, the wallet is a
  * deterministic test keypair funded only on the fork, and sendTransaction goes to the fork.
  *
- *   pnpm --filter @aroma/web e2e:fork            (record routes, clone, build, run, tear down)
+ *   pnpm --filter @ovelo/web e2e:fork            (record routes, clone, build, run, tear down)
  *
  * 1. Record Jupiter routes (public API, read-only) for the exact legs the server will request.
  * 2. Clone every account those routes touch (programs, pools, lookup tables, mints) into a fresh
@@ -330,13 +330,13 @@ async function main() {
   const appEnv: Record<string, string> = {
     ...placeholders,
     ...EDGE_START, // Phase H: self-host behind Cloudflare (e2e/local-start.ts)
-    AROMA_V1_ALLOW_TEST_SWITCHES: "true",
-    AROMA_V1_TEST_FORK_GENESIS: genesis,
-    AROMA_V1_TEST_JUPITER_URL: `http://127.0.0.1:${JUPITER_PORT}`,
+    OVELO_V1_ALLOW_TEST_SWITCHES: "true",
+    OVELO_V1_TEST_FORK_GENESIS: genesis,
+    OVELO_V1_TEST_JUPITER_URL: `http://127.0.0.1:${JUPITER_PORT}`,
     SOLANA_RPC_URL: proxyUrl("primary"),
     SOLANA_RPC_FALLBACK_URL: proxyUrl("fallback"),
-    NEXT_PUBLIC_AROMA_E2E_WALLET: "true",
-    AROMA_NEXT_DIST_DIR: ".next-e2e",
+    NEXT_PUBLIC_OVELO_E2E_WALLET: "true",
+    OVELO_NEXT_DIST_DIR: ".next-e2e",
     ...notify.NOTIFY_E2E_ENV,
     ...creatorDb,
   };

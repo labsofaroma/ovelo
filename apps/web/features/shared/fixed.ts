@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { formatSignedUnits, formatUnits } from "@aroma/ui/format";
+import { formatSignedUnits, formatUnits } from "@ovelo/ui/format";
 
 /**
  * A display number as a raw integer plus decimals (AGENTS.md rule 5). JSON-safe, so it can live in
@@ -95,7 +95,7 @@ export function formatBps(bps: number): string {
   return `${formatUnits(BigInt(bps), 2, { fractionDigits: 2 }).text}%`;
 }
 
-/** Props for the `@aroma/ui` `Change` component. */
+/** Props for the `@ovelo/ui` `Change` component. */
 export function changeProp(
   value: Fixed | null,
 ): { value: bigint; decimals: number } | null {

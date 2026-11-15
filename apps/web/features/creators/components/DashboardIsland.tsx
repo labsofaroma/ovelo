@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@aroma/ui";
+import { Button } from "@ovelo/ui";
 import { formatObservedAt } from "../../shared/freshness";
 import { QueryProvider } from "../../shared/components/QueryProvider";
 import { ConnectButton } from "../../wallet/ConnectButton";
@@ -25,7 +25,7 @@ export function DashboardIsland({ origin }: { origin: string }) {
 
 function Connected({ origin: configured }: { origin: string }) {
   const signer = useSigner();
-  // AROMA_SITE_URL when set; otherwise this page's own origin (rendered only after sign-in).
+  // OVELO_SITE_URL when set; otherwise this page's own origin (rendered only after sign-in).
   const origin =
     configured || (typeof window === "undefined" ? "" : window.location.origin);
   const dashboard = useDashboard(signer);

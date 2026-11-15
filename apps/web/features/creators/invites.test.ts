@@ -44,7 +44,7 @@ afterAll(async () => {
 describe("invite codes", () => {
   it("are long, random and URL-safe, and only their hash is stored", async () => {
     const a = generateInviteCode();
-    expect(a).toMatch(/^aroma-inv-[A-Za-z0-9_-]{27}$/);
+    expect(a).toMatch(/^ovelo-inv-[A-Za-z0-9_-]{27}$/);
     expect(generateInviteCode()).not.toBe(a);
     const created = await createInvite(db, {
       expiresAt: later(DAY),
@@ -138,7 +138,7 @@ describe("redeeming", () => {
     });
     const outcomes: AppError[] = [];
     for (const value of [
-      "aroma-inv-doesnotexist000000000000",
+      "ovelo-inv-doesnotexist000000000000",
       "short",
       "legacy-code-without-expiry",
     ]) {

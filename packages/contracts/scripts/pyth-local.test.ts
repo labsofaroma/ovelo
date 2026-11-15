@@ -14,7 +14,7 @@ import {
   PYTH_RECEIVER_ID,
   toHex,
   WORMHOLE_PROGRAM_ID,
-} from "@aroma/guard/pyth";
+} from "@ovelo/guard/pyth";
 import {
   createTestGuardian,
   localPythAccounts,

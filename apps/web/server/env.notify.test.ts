@@ -11,11 +11,11 @@ const vapid = generateVapidKeys();
 const PUSH = {
   VAPID_PUBLIC_KEY: vapid.publicKey,
   VAPID_PRIVATE_KEY: vapid.privateKey,
-  VAPID_SUBJECT: "mailto:ops@aroma.example",
+  VAPID_SUBJECT: "mailto:ops@ovelo.example",
 };
 const TELEGRAM = {
   TELEGRAM_BOT_TOKEN: `123456:${"A".repeat(35)}`,
-  TELEGRAM_BOT_USERNAME: "aroma_alerts_bot",
+  TELEGRAM_BOT_USERNAME: "ovelo_alerts_bot",
   TELEGRAM_WEBHOOK_SECRET: "s".repeat(40),
 };
 const problems = (env: Record<string, string>) => {
@@ -54,31 +54,31 @@ describe("M11 notification variables", () => {
   it("production with a channel needs the worker secret; the E2E sink is refused there", () => {
     const prod = {
       VERCEL_ENV: "production",
-      AROMA_MAX_TRADE_USDC_RAW: "1",
-      AROMA_MAX_DAILY_USDC_RAW: "1",
+      OVELO_MAX_TRADE_USDC_RAW: "1",
+      OVELO_MAX_DAILY_USDC_RAW: "1",
     };
     expect(problems({ ...prod, ...TELEGRAM })).toEqual([
-      "AROMA_NOTIFY_WORKER_SECRET",
+      "OVELO_NOTIFY_WORKER_SECRET",
     ]);
     expect(
       problems({
         ...prod,
         ...TELEGRAM,
-        AROMA_NOTIFY_WORKER_SECRET: "x".repeat(32),
+        OVELO_NOTIFY_WORKER_SECRET: "x".repeat(32),
       }),
     ).toEqual([]);
     expect(
       problems({
         ...prod,
-        AROMA_V1_TEST_NOTIFY_SINK_URL: "http://127.0.0.1:4040/sink",
+        OVELO_V1_TEST_NOTIFY_SINK_URL: "http://127.0.0.1:4040/sink",
       }),
-    ).toEqual(["AROMA_V1_TEST_NOTIFY_SINK_URL"]);
+    ).toEqual(["OVELO_V1_TEST_NOTIFY_SINK_URL"]);
   });
 
   it("the pause switch accepts on or off only", () => {
-    expect(problems({ AROMA_NOTIFICATIONS: "off" })).toEqual([]);
-    expect(problems({ AROMA_NOTIFICATIONS: "paused" })).toEqual([
-      "AROMA_NOTIFICATIONS",
+    expect(problems({ OVELO_NOTIFICATIONS: "off" })).toEqual([]);
+    expect(problems({ OVELO_NOTIFICATIONS: "paused" })).toEqual([
+      "OVELO_NOTIFICATIONS",
     ]);
   });
 });

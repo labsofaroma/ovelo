@@ -1,7 +1,7 @@
 import { defineConfig } from "vitest/config";
 
 // `unit` runs in `pnpm test` (no SBF build needed). `litesvm` needs the devnet-mock build and the
-// pinned upstream binaries (`pnpm --filter @aroma/contracts build && … test:fixtures`).
+// pinned upstream binaries (`pnpm --filter @ovelo/contracts build && … test:fixtures`).
 export default defineConfig({
   test: {
     projects: [

@@ -6,7 +6,7 @@ import { type AccountRole, type Address, type Instruction } from "@solana/kit";
 import {
   getExecuteInstallmentRoutedInstructionDataDecoder,
   getExecuteInstallmentRoutedInstructionDataEncoder,
-} from "@aroma/guard/generated";
+} from "@ovelo/guard/generated";
 
 /** Named accounts of `ExecuteInstallment` (13, the optional fee slot included). */
 export const NAMED = 13;

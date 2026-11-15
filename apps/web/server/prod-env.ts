@@ -28,7 +28,7 @@ export const WEB_PRODUCTION: readonly {
   level: Level;
   milestone: string;
 }[] = [
-  { name: "AROMA_SITE_URL", level: "required", milestone: "M9" },
+  { name: "OVELO_SITE_URL", level: "required", milestone: "M9" },
   { name: "SOLANA_RPC_URL", level: "required", milestone: "M9" },
   // M9 failover (PRODUCTION-ENV §3): a second provider; trading still works without it.
   { name: "SOLANA_RPC_FALLBACK_URL", level: "recommended", milestone: "M9" },
@@ -36,16 +36,16 @@ export const WEB_PRODUCTION: readonly {
   { name: "DATABASE_URL", level: "required", milestone: "M9" },
   { name: "UPSTASH_REDIS_REST_URL", level: "required", milestone: "M9" },
   { name: "UPSTASH_REDIS_REST_TOKEN", level: "required", milestone: "M9" },
-  { name: "AROMA_TRADE_SECRET", level: "required", milestone: "M9" },
+  { name: "OVELO_TRADE_SECRET", level: "required", milestone: "M9" },
   { name: "JUPITER_API_KEY", level: "required", milestone: "M9" },
   // Phase A caps (W3): boot refuses them unset or 0 in production.
-  { name: "AROMA_MAX_TRADE_USDC_RAW", level: "required", milestone: "Phase A" },
-  { name: "AROMA_MAX_DAILY_USDC_RAW", level: "required", milestone: "Phase A" },
+  { name: "OVELO_MAX_TRADE_USDC_RAW", level: "required", milestone: "Phase A" },
+  { name: "OVELO_MAX_DAILY_USDC_RAW", level: "required", milestone: "Phase A" },
   { name: "SENTRY_DSN", level: "required", milestone: "M9" },
   { name: "NEXT_PUBLIC_SENTRY_DSN", level: "required", milestone: "M9" },
   { name: "SENTRY_ENVIRONMENT", level: "recommended", milestone: "M9" },
   { name: "JITO_BLOCK_ENGINE_URL", level: "recommended", milestone: "M9" },
-  { name: "AROMA_REVALIDATE_SECRET", level: "recommended", milestone: "M9" },
+  { name: "OVELO_REVALIDATE_SECRET", level: "recommended", milestone: "M9" },
   { name: "PYTH_API_KEY", level: "recommended", milestone: "M10" },
   {
     name: "NEXT_PUBLIC_TURNSTILE_SITE_KEY",
@@ -61,21 +61,21 @@ export const WEB_PRODUCTION: readonly {
 
 /** Must be unset (or false) in production. */
 const FORBIDDEN_TRUE = [
-  "AROMA_V1_ALLOW_TEST_SWITCHES",
-  "NEXT_PUBLIC_AROMA_E2E_WALLET",
-  "NEXT_PUBLIC_AROMA_LOCALNET",
+  "OVELO_V1_ALLOW_TEST_SWITCHES",
+  "NEXT_PUBLIC_OVELO_E2E_WALLET",
+  "NEXT_PUBLIC_OVELO_LOCALNET",
 ] as const;
 const FORBIDDEN_SET = [
-  "AROMA_V1_TEST_FORK_GENESIS",
-  "AROMA_V1_TEST_JUPITER_URL",
-  "AROMA_V1_SIMULATE_UPSTREAM_OUTAGE",
-  "AROMA_V1_LOCALNET_RPC_URL",
-  "AROMA_V1_LOCALNET_GENESIS",
-  "AROMA_V1_LOCALNET_FUNDING_MINT",
-  "AROMA_LOCAL_NEON_WS_PROXY",
-  "AROMA_SKIP_ENV_CHECK",
+  "OVELO_V1_TEST_FORK_GENESIS",
+  "OVELO_V1_TEST_JUPITER_URL",
+  "OVELO_V1_SIMULATE_UPSTREAM_OUTAGE",
+  "OVELO_V1_LOCALNET_RPC_URL",
+  "OVELO_V1_LOCALNET_GENESIS",
+  "OVELO_V1_LOCALNET_FUNDING_MINT",
+  "OVELO_LOCAL_NEON_WS_PROXY",
+  "OVELO_SKIP_ENV_CHECK",
   // M11: the E2E notification sink.
-  "AROMA_V1_TEST_NOTIFY_SINK_URL",
+  "OVELO_V1_TEST_NOTIFY_SINK_URL",
 ] as const;
 
 /** Cloudflare's published Turnstile test SITE keys (secrets are in env.rules). */
@@ -88,9 +88,9 @@ const TURNSTILE_TEST_SITE_KEYS = new Set([
 ]);
 
 const PLACEHOLDER =
-  /(\.invalid\b|placeholder|changeme|replace[-_ ]?me|example\.(com|org)|aroma-local-only)/i;
+  /(\.invalid\b|placeholder|changeme|replace[-_ ]?me|example\.(com|org)|ovelo-local-only)/i;
 const APP_VARIABLE =
-  /^(AROMA_|NEXT_PUBLIC_|SOLANA_|UPSTASH_|DATABASE_URL|JUPITER_|PYTH_|SENTRY_|JITO_|TURNSTILE_|QSTASH_|KEEPER_|CREATOR_|HERMES_|VAPID_|TELEGRAM_)/;
+  /^(OVELO_|NEXT_PUBLIC_|SOLANA_|UPSTASH_|DATABASE_URL|JUPITER_|PYTH_|SENTRY_|JITO_|TURNSTILE_|QSTASH_|KEEPER_|CREATOR_|HERMES_|VAPID_|TELEGRAM_)/;
 const NON_MAINNET_RPC = /(devnet|testnet|localhost|127\.0\.0\.1|\[::1\])/i;
 export const MAINNET_GENESIS = "5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d";
 
@@ -105,8 +105,8 @@ export function staticFindings(
     findings.push({ name, status, detail });
 
   // 1. The real boot schema, in production mode. On Vercel, VERCEL_ENV=production is what the
-  // platform sets; on self-host the env file itself must say AROMA_PLATFORM and
-  // AROMA_DEPLOY_ENV (platformFindings), and nothing is forced.
+  // platform sets; on self-host the env file itself must say OVELO_PLATFORM and
+  // OVELO_DEPLOY_ENV (platformFindings), and nothing is forced.
   const parsed = parseEnv(
     platform === "vercel"
       ? { ...env, NODE_ENV: "production", VERCEL_ENV: "production" }
@@ -139,8 +139,8 @@ export function staticFindings(
         `${item.level} for ${item.milestone}; not set`,
       );
   }
-  if (env.AROMA_TRADING?.trim().toLowerCase() === "off")
-    add("AROMA_TRADING", "warning", "trading is paused (emergency stop)");
+  if (env.OVELO_TRADING?.trim().toLowerCase() === "off")
+    add("OVELO_TRADING", "warning", "trading is paused (emergency stop)");
 
   // 3. Test and local switches.
   for (const name of FORBIDDEN_TRUE)
@@ -149,8 +149,8 @@ export function staticFindings(
   for (const name of FORBIDDEN_SET)
     if (present(env, name))
       add(name, "forbidden", "test or local only; must be unset in production");
-  if (env.AROMA_V1_INVEST_CLUSTER?.trim() === "localnet")
-    add("AROMA_V1_INVEST_CLUSTER", "forbidden", "localnet in production");
+  if (env.OVELO_V1_INVEST_CLUSTER?.trim() === "localnet")
+    add("OVELO_V1_INVEST_CLUSTER", "forbidden", "localnet in production");
   if (
     env.TURNSTILE_SECRET_KEY &&
     TURNSTILE_TEST_SECRETS.has(env.TURNSTILE_SECRET_KEY.trim())
@@ -203,19 +203,19 @@ export function staticFindings(
     const policy = loadPolicy(env);
     if (policy.missingCountry !== "block")
       add(
-        "AROMA_COMPLIANCE_MISSING_COUNTRY",
+        "OVELO_COMPLIANCE_MISSING_COUNTRY",
         "forbidden",
         "must be block in production (fail closed)",
       );
     if (!policy.restrictedCountries.includes("US"))
       add(
-        "AROMA_COMPLIANCE_RESTRICTED_COUNTRIES",
+        "OVELO_COMPLIANCE_RESTRICTED_COUNTRIES",
         "forbidden",
         "must include US",
       );
   } catch (error) {
     const names = (error as { variables?: string[] }).variables ?? [
-      "AROMA_COMPLIANCE",
+      "OVELO_COMPLIANCE",
     ];
     for (const name of names) add(name, "invalid", "invalid compliance policy");
   }
@@ -224,9 +224,9 @@ export function staticFindings(
   findings.push(...m11Findings(env));
 
   // 8. Rotation hygiene.
-  if (present(env, "AROMA_TRADE_SECRET_PREVIOUS"))
+  if (present(env, "OVELO_TRADE_SECRET_PREVIOUS"))
     add(
-      "AROMA_TRADE_SECRET_PREVIOUS",
+      "OVELO_TRADE_SECRET_PREVIOUS",
       "warning",
       "a rotation is in progress; remove it after one quote lifetime",
     );
@@ -318,8 +318,8 @@ const PROFILE_DEPLOY_ENV: Record<"production" | "beta", DeployEnv> = {
 
 /**
  * Phase H: the platform answer the env file gives (server/platform.ts), checked against the
- * platform and profile the owner validates for. Self-host needs AROMA_PLATFORM=selfhost and the
- * profile's AROMA_DEPLOY_ENV; Vercel needs neither (it sets VERCEL_ENV), and a Vercel env file
+ * platform and profile the owner validates for. Self-host needs OVELO_PLATFORM=selfhost and the
+ * profile's OVELO_DEPLOY_ENV; Vercel needs neither (it sets VERCEL_ENV), and a Vercel env file
  * that says selfhost is a contradiction the boot would refuse.
  */
 export function platformFindings(
@@ -337,7 +337,7 @@ export function platformFindings(
     if (answer.problems.length) return []; // reported by the boot schema (step 1)
     return [
       {
-        name: "AROMA_PLATFORM",
+        name: "OVELO_PLATFORM",
         status: "ok",
         detail: `vercel, ${answer.deployEnv} (VERCEL_ENV set by Vercel)`,
       },
@@ -345,49 +345,49 @@ export function platformFindings(
   }
   const answer = resolvePlatform({ ...env, NODE_ENV: "production" });
   const findings: Finding[] = [];
-  if (env.AROMA_PLATFORM?.trim() !== "selfhost")
+  if (env.OVELO_PLATFORM?.trim() !== "selfhost")
     findings.push({
-      name: "AROMA_PLATFORM",
-      status: env.AROMA_PLATFORM?.trim() ? "invalid" : "missing",
+      name: "OVELO_PLATFORM",
+      status: env.OVELO_PLATFORM?.trim() ? "invalid" : "missing",
       detail: "must be selfhost on the self-host platform",
     });
   else if (answer.platform !== "selfhost")
     findings.push({
-      name: "AROMA_PLATFORM",
+      name: "OVELO_PLATFORM",
       status: "invalid",
       detail: "contradicts VERCEL or VERCEL_ENV in the same file",
     });
   else
-    findings.push({ name: "AROMA_PLATFORM", status: "ok", detail: "selfhost" });
+    findings.push({ name: "OVELO_PLATFORM", status: "ok", detail: "selfhost" });
   // Phase H Step 2: behind Cloudflare with the origin lock (server/proxy.ts, origin-lock.ts).
   findings.push(
-    env.AROMA_PROXY_MODE?.trim() === "cloudflare"
-      ? { name: "AROMA_PROXY_MODE", status: "ok", detail: "cloudflare" }
+    env.OVELO_PROXY_MODE?.trim() === "cloudflare"
+      ? { name: "OVELO_PROXY_MODE", status: "ok", detail: "cloudflare" }
       : {
-          name: "AROMA_PROXY_MODE",
-          status: env.AROMA_PROXY_MODE?.trim() ? "invalid" : "missing",
+          name: "OVELO_PROXY_MODE",
+          status: env.OVELO_PROXY_MODE?.trim() ? "invalid" : "missing",
           detail:
             "must be cloudflare on self-host (client IP and country from Cloudflare)",
         },
-    ORIGIN_SECRET_PATTERN.test(env.AROMA_ORIGIN_SECRET?.trim() ?? "")
+    ORIGIN_SECRET_PATTERN.test(env.OVELO_ORIGIN_SECRET?.trim() ?? "")
       ? {
-          name: "AROMA_ORIGIN_SECRET",
+          name: "OVELO_ORIGIN_SECRET",
           status: "ok",
           detail:
             "set (the Cloudflare Transform Rule must send the same value)",
         }
       : {
-          name: "AROMA_ORIGIN_SECRET",
-          status: env.AROMA_ORIGIN_SECRET?.trim() ? "invalid" : "missing",
+          name: "OVELO_ORIGIN_SECRET",
+          status: env.OVELO_ORIGIN_SECRET?.trim() ? "invalid" : "missing",
           detail: "32+ characters (openssl rand -base64 48)",
         },
   );
-  const deploy = env.AROMA_DEPLOY_ENV?.trim();
+  const deploy = env.OVELO_DEPLOY_ENV?.trim();
   findings.push(
     deploy === want
-      ? { name: "AROMA_DEPLOY_ENV", status: "ok", detail: want }
+      ? { name: "OVELO_DEPLOY_ENV", status: "ok", detail: want }
       : {
-          name: "AROMA_DEPLOY_ENV",
+          name: "OVELO_DEPLOY_ENV",
           status: deploy ? "invalid" : "missing",
           detail: `must be ${want} for the ${profile} profile`,
         },

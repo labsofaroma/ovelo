@@ -16,7 +16,7 @@ export const metadata: Metadata = v1Metadata({
 });
 
 export default function CreatorDashboardPage() {
-  const origin = (process.env.AROMA_SITE_URL ?? "").replace(/\/$/, "");
+  const origin = (process.env.OVELO_SITE_URL ?? "").replace(/\/$/, "");
   return (
     <main
       id="main-content"

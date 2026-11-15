@@ -1,6 +1,6 @@
 # Architecture
 
-Aroma v1 as built (M9, Phase B; M11 launch features on branch `m11-launch`). Own tokenized stocks on Solana from your own wallet: research, buy single names or themed baskets (mainnet spot through Jupiter), practise on paper, and try recurring plans on devnet. The server prepares and checks transactions; **wallets sign them**; no user key ever reaches the server.
+Ovelo v1 as built (M9, Phase B; M11 launch features on branch `m11-launch`). Own tokenized stocks on Solana from your own wallet: research, buy single names or themed baskets (mainnet spot through Jupiter), practise on paper, and try recurring plans on devnet. The server prepares and checks transactions; **wallets sign them**; no user key ever reaches the server.
 
 ## Repository
 
@@ -11,9 +11,9 @@ Aroma v1 as built (M9, Phase B; M11 launch features on branch `m11-launch`). Own
 | `apps/web/server` | Server infrastructure: validated env (`env.schema.ts`), RPC (`rpc.ts`), auth tokens (`auth/`), Postgres (`db/`), Redis, rate limits, CSP, errors, telemetry, the 410 rule (`gone.ts`), the trading switch |
 | `apps/web/lib/sdk` | Chain, market and basket helpers: catalog and sources, research, Jupiter, Pyth, basket math, paper trading |
 | `apps/keeper` | The recurring-plan keeper, triggered by QStash ([keeper-operations.md](./keeper-operations.md)); devnet today, mainnet at M12 ([keeper-mainnet.md](./keeper-mainnet.md)) |
-| `packages/contracts` | Aroma Guard v1, the Anchor program for recurring plans, with its LiteSVM suite ([aroma-guard-v1.md](./aroma-guard-v1.md), [CONTRACT-V1-SPEC.md](./CONTRACT-V1-SPEC.md)). Devnet only until M12 |
-| `packages/guard` | `@aroma/guard`: the Codama-generated client, builders and decoders for Aroma Guard v1, plus the Pyth and Jupiter pieces the app and the keeper share |
-| `packages/ui` | `@aroma/ui`: `tokens.css` (design tokens), Tailwind v4 theme, primitives, `Brand`, `AssetAvatar` |
+| `packages/contracts` | Ovelo Guard v1, the Anchor program for recurring plans, with its LiteSVM suite ([ovelo-guard-v1.md](./ovelo-guard-v1.md), [CONTRACT-V1-SPEC.md](./CONTRACT-V1-SPEC.md)). Devnet only until M12 |
+| `packages/guard` | `@ovelo/guard`: the Codama-generated client, builders and decoders for Ovelo Guard v1, plus the Pyth and Jupiter pieces the app and the keeper share |
+| `packages/ui` | `@ovelo/ui`: `tokens.css` (design tokens), Tailwind v4 theme, primitives, `Brand`, `AssetAvatar` |
 | `packages/config` | Shared tsconfig, ESLint, Prettier and Vitest presets |
 
 ## Pages
@@ -25,12 +25,12 @@ All server-rendered (RSC) with small client islands; every page is dynamic becau
 ## A request, end to end
 
 1. **Middleware** (`apps/web/middleware.ts`, Node.js runtime), on every route:
-   - Phase H, self-host only: the **origin lock** first. In `cloudflare` proxy mode, a request without the edge's `x-aroma-origin` secret gets 403 `ORIGIN_REFUSED`; the header is then stripped;
-   - HTTPS redirect to `AROMA_SITE_URL` in production; HSTS (`includeSubDomains; preload`) on production deployments only;
+   - Phase H, self-host only: the **origin lock** first. In `cloudflare` proxy mode, a request without the edge's `x-ovelo-origin` secret gets 403 `ORIGIN_REFUSED`; the header is then stripped;
+   - HTTPS redirect to `OVELO_SITE_URL` in production; HSTS (`includeSubDomains; preload`) on production deployments only;
    - removed prototype APIs → 410 `{ code: "GONE", message }`, before anything else;
    - a per-request nonce CSP (`script-src 'self' 'nonce-…' 'strict-dynamic'`, explicit `connect-src`, `frame-ancestors 'none'`);
    - for APIs: origin allowlist, JSON-only mutations, body caps, Upstash rate limits per bucket (read, write, trade, creator, faucet);
-   - the trading gates at the edge, in order: **emergency stop** (`AROMA_TRADING=off`) → **location** (geo-block) → **beta access** (while the private beta is on).
+   - the trading gates at the edge, in order: **emergency stop** (`OVELO_TRADING=off`) → **location** (geo-block) → **beta access** (while the private beta is on).
 2. **Route handler** (`app/api/v1/**/route.ts`): thin. Parse with zod, call a feature service, return the typed result or `mapError` → `{ code, message }` only (`server/route-contract.test.ts`). Every state-changing route needs a wallet signature, an HMAC authorization or a bearer secret.
 3. **Feature service** (`features/*/server`): the logic, against `lib/sdk`, Postgres, Redis and the RPC.
 
@@ -50,23 +50,23 @@ The gates every route must have are pinned in `server/route-gates.test.ts` (a ne
 ## Compliance, beta access and caps
 
 - **Compliance** ([launch/COMPLIANCE.md](./launch/COMPLIANCE.md)): IP geo-blocking from the trusted platform header at every trading entry point (edge and route), terms acceptance signed by the wallet before the first quote, a risk disclosure on every review. Fails closed when the country is missing or the policy is invalid.
-- **Beta access** ([launch/BETA-ACCESS.md](./launch/BETA-ACCESS.md)): wallet allowlist and single-use invites while `AROMA_BETA_GATE=on`; switched off for the public launch.
+- **Beta access** ([launch/BETA-ACCESS.md](./launch/BETA-ACCESS.md)): wallet allowlist and single-use invites while `OVELO_BETA_GATE=on`; switched off for the public launch.
 - **Caps** ([launch/TRADE-CAPS.md](./launch/TRADE-CAPS.md)): per-trade and per-wallet-per-day maximums in raw USDC (`bigint`), checked at quote, reserved atomically at submit.
-- **Emergency stop:** `AROMA_TRADING=off` → 503 on every trading entry point; reads, receipts and plan closes stay open.
+- **Emergency stop:** `OVELO_TRADING=off` → 503 on every trading entry point; reads, receipts and plan closes stay open.
 
 ## Recurring plans (devnet)
 
-`/invest` creates and closes Aroma Guard v1 plans on **devnet** with test tokens of no value (`features/invest`; prepare → wallet signs → submit). The keeper (`apps/keeper`) executes due installments: QStash calls `POST /run` (signature verified), it takes a lease per plan and period, posts a fresh Pyth price, executes oldest period first, records skipped periods, retries with backoff, keeps a dead-letter list and alerts a webhook. Mainnet recurring is not offered: `/invest` shows the devnet plans under a "Mainnet recurring: coming" notice. M10 took **Path B** (owner, 2026-11-15): Jupiter's on-chain Recurring API rejects every xStock (Token-2022), and its successor holds deposits in a Jupiter-controlled custodial vault with off-chain orders ([launch/DCA-SPIKE.md](./launch/DCA-SPIKE.md)). **M12** (Aroma Guard on mainnet, when funded) is the mainnet recurring path.
+`/invest` creates and closes Ovelo Guard v1 plans on **devnet** with test tokens of no value (`features/invest`; prepare → wallet signs → submit). The keeper (`apps/keeper`) executes due installments: QStash calls `POST /run` (signature verified), it takes a lease per plan and period, posts a fresh Pyth price, executes oldest period first, records skipped periods, retries with backoff, keeps a dead-letter list and alerts a webhook. Mainnet recurring is not offered: `/invest` shows the devnet plans under a "Mainnet recurring: coming" notice. M10 took **Path B** (owner, 2026-11-15): Jupiter's on-chain Recurring API rejects every xStock (Token-2022), and its successor holds deposits in a Jupiter-controlled custodial vault with off-chain orders ([launch/DCA-SPIKE.md](./launch/DCA-SPIKE.md)). **M12** (Ovelo Guard on mainnet, when funded) is the mainnet recurring path.
 
 ## Launch features (M11)
 
 - **Notifications outbox** (`features/notifications`, migration `0007`):
-  - `notification_events` holds one row per fact, with a deterministic id. Trade and creator-buy events come from a scan of Aroma's receipts (the trade path stays frozen). Devnet round events are written by the keeper in the same step (`apps/keeper/src/notify.ts`), only for owners with an active subscription.
+  - `notification_events` holds one row per fact, with a deterministic id. Trade and creator-buy events come from a scan of Ovelo's receipts (the trade path stays frozen). Devnet round events are written by the keeper in the same step (`apps/keeper/src/notify.ts`), only for owners with an active subscription.
   - The worker (`POST /api/v1/notifications/deliver`, bearer secret, QStash every minute) fans each event out into one `notifications` row per active channel (unique on event and channel). It then claims due rows with `SKIP LOCKED` and a 60 s lease, sends, and settles them as sent, retried (exponential back-off) or dead (6 attempts, or a permanent failure).
   - Delivery is at-least-once; push dedupes on the receiver (`tag` = event id).
   - Channels sit behind `NotificationChannel`, with local fakes: web push (RFC 8291/8292 on `node:crypto`, endpoints restricted to known push services) and Telegram (Bot API over `fetch`, verified by a one-time `/start` code). Email is off.
   - Opt-in is wallet-signed per channel (`server/wallet-challenge.ts`); reads and changes use a 15-minute `ws1` session (`server/wallet-session.ts`). Unsubscribe and "delete all" are hard deletes.
-- **P&L** (`features/portfolio/pnl`): confirmed receipts plus the exact fill of each confirmed transaction (the token-balance change, read once over read-only RPC and cached in Redis), replayed as average cost in `bigint` against the balance on chain now. A holding larger than Aroma bought is "cost basis unknown"; a smaller one left at average cost. Views per holding, per basket and in totals over what is known. The CSV is served to the signed-in wallet only (`ws1` portfolio session).
+- **P&L** (`features/portfolio/pnl`): confirmed receipts plus the exact fill of each confirmed transaction (the token-balance change, read once over read-only RPC and cached in Redis), replayed as average cost in `bigint` against the balance on chain now. A holding larger than Ovelo bought is "cost basis unknown"; a smaller one left at average cost. Views per holding, per basket and in totals over what is known. The CSV is served to the signed-in wallet only (`ws1` portfolio session).
 - **Onboarding funnel** (`features/onboarding`, `/get-started`): wallet → real SOL and USDC balances against the SOL the suggested basket needs → a catalog basket chosen by a stated rule, into the trade ticket with the usual gates. Four events, consent-gated, with no wallet address (`features/shared/analytics.ts`).
 - **Creator dashboard** (`/creators/dashboard`, `GET /api/v1/creators/dashboard`, `ws1` creator session): the wallet's own baskets only (403 otherwise), with usage from confirmed receipts and the version history. The Blink share comes from `purchase_channels` (migration `0008`, written by the Action confirm callback).
 - **Fee-share ledger** (`features/creators/fee-share.ts`, migration `0009`): accounting only. One row per confirmed creator-basket order, with the fee at 0; boot refuses a non-zero platform fee. No payout exists.
@@ -94,7 +94,7 @@ Who the client is (IP, country, scheme, host) comes from one module, `server/pro
 
 ```
 User ──HTTPS──▶ Cloudflare edge: DNS, TLS, WAF (+ trading geo backup), rate limits,
-                cache rules (HTML and /api bypassed), Transform Rule sets x-aroma-origin
+                cache rules (HTML and /api bypassed), Transform Rule sets x-ovelo-origin
                     │  Cloudflare Tunnel (outbound-only from the VPS; no inbound 80/443)
                     ▼
 Hostinger VPS (Ubuntu 24.04; ufw + Hostinger firewall: SSH over Tailscale only)
@@ -102,7 +102,7 @@ Hostinger VPS (Ubuntu 24.04; ufw + Hostinger firewall: SSH over Tailscale only)
     cloudflared ──[internal network "edge"]──▶ app :3000 (not published on the host)
       app: image by digest (cosign-verified), read-only root, tmpfs /tmp, cache volume,
            UID 10001, cap_drop ALL, no-new-privileges, 1 GiB / 1.5 CPU, 65 s drain,
-           AROMA_PLATFORM=selfhost, AROMA_PROXY_MODE=cloudflare (CF-Connecting-IP, CF-IPCountry)
+           OVELO_PLATFORM=selfhost, OVELO_PROXY_MODE=cloudflare (CF-Connecting-IP, CF-IPCountry)
     app ──[network "egress"]──▶ Neon, Upstash (Redis, QStash), RPC primary and fallback,
                                  Jupiter, Pyth Hermes, Jito, Sentry, push, Telegram
 CI (.github/workflows/image.yml): test gate → build → Trivy → SBOM → cosign sign → attest
@@ -113,4 +113,4 @@ One app instance: the page, data and image caches are local to it.
 
 ## Further reading
 
-[REWRITE-PLAN.md](./REWRITE-PLAN.md) (milestones and status), [AUDIT.md](./AUDIT.md), [aroma-guard-v1.md](./aroma-guard-v1.md), [keeper-operations.md](./keeper-operations.md), and the launch runbooks in [launch/](./launch): [CUTOVER-RUNBOOK.md](./launch/CUTOVER-RUNBOOK.md), [PRODUCTION-ENV.md](./launch/PRODUCTION-ENV.md), [KEY-CUSTODY.md](./launch/KEY-CUSTODY.md), [MERGE-PLAN.md](./launch/MERGE-PLAN.md), and for self-host [SELF-HOST.md](./launch/SELF-HOST.md) and [HOSTINGER-RUNBOOK.md](./launch/HOSTINGER-RUNBOOK.md).
+[REWRITE-PLAN.md](./REWRITE-PLAN.md) (milestones and status), [AUDIT.md](./AUDIT.md), [ovelo-guard-v1.md](./ovelo-guard-v1.md), [keeper-operations.md](./keeper-operations.md), and the launch runbooks in [launch/](./launch): [CUTOVER-RUNBOOK.md](./launch/CUTOVER-RUNBOOK.md), [PRODUCTION-ENV.md](./launch/PRODUCTION-ENV.md), [KEY-CUSTODY.md](./launch/KEY-CUSTODY.md), [MERGE-PLAN.md](./launch/MERGE-PLAN.md), and for self-host [SELF-HOST.md](./launch/SELF-HOST.md) and [HOSTINGER-RUNBOOK.md](./launch/HOSTINGER-RUNBOOK.md).

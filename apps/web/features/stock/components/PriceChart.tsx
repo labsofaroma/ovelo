@@ -1,7 +1,7 @@
 "use client";
 
 import { useId, useMemo, useState } from "react";
-import { cn } from "@aroma/ui";
+import { cn } from "@ovelo/ui";
 import { formatPercent, formatUsd, toBigInt } from "../../shared/fixed";
 import { formatDay } from "../../shared/freshness";
 import {
@@ -50,7 +50,7 @@ export default function PriceChart({ closes, symbol }: PriceChartProps) {
             aria-pressed={range === item.id}
             onClick={() => setRange(item.id)}
             className={cn(
-              "min-h-(--aroma-control-height-compact) rounded-control px-3 text-caption font-semibold transition-colors motion-base focus-ring max-md:min-h-(--aroma-control-height)",
+              "min-h-(--ovelo-control-height-compact) rounded-control px-3 text-caption font-semibold transition-colors motion-base focus-ring max-md:min-h-(--ovelo-control-height)",
               range === item.id
                 ? "bg-raised text-ink"
                 : "text-muted hover:text-ink",

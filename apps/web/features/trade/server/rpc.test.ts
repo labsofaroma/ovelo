@@ -98,7 +98,7 @@ describe("mainnet endpoint", () => {
 
   it("a local fork is honoured only with test switches allowed and a loopback URL", () => {
     vi.stubEnv("SOLANA_RPC_URL", "http://127.0.0.1:8899");
-    vi.stubEnv("AROMA_V1_TEST_FORK_GENESIS", GENESIS_HASHES.devnet);
+    vi.stubEnv("OVELO_V1_TEST_FORK_GENESIS", GENESIS_HASHES.devnet);
     vi.stubEnv("NODE_ENV", "test");
     expect(mainnetEndpoint()).toMatchObject({ fork: true });
     vi.stubEnv("NODE_ENV", "production");

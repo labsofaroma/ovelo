@@ -40,7 +40,7 @@ const status = await import("@/app/api/v1/compliance/status/route");
 const challenge = await import("@/app/api/v1/compliance/terms/challenge/route");
 const accept = await import("@/app/api/v1/compliance/terms/accept/route");
 
-const SITE = "https://aroma.example";
+const SITE = "https://ovelo.example";
 const json = (
   path: string,
   body: unknown,
@@ -65,7 +65,7 @@ const quoteBody = (taker: string) => ({
 let terms: ReturnType<typeof memoryTermsStore>;
 beforeEach(() => {
   stubBaseEnv();
-  vi.stubEnv("AROMA_SITE_URL", SITE);
+  vi.stubEnv("OVELO_SITE_URL", SITE);
   vi.stubEnv("VERCEL", "1");
   resetEnvCacheForTests();
   terms = memoryTermsStore();

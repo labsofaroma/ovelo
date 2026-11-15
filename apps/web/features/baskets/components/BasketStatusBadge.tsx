@@ -1,4 +1,4 @@
-import { Badge } from "@aroma/ui";
+import { Badge } from "@ovelo/ui";
 import type { BasketSummary } from "../../markets/schema";
 
 /** Availability from lib/sdk, in words. "Complete" is not a promise that a route exists. */

@@ -160,7 +160,7 @@ test("focus ring: a keyboard-focused control shows the 2px token-colored outline
         style: style.outlineStyle,
         color: style.outlineColor,
         expected: getComputedStyle(document.documentElement)
-          .getPropertyValue("--aroma-focus")
+          .getPropertyValue("--ovelo-focus")
           .trim(),
       };
     });
@@ -184,7 +184,7 @@ test("typography: Manrope is the font actually used, not a silent fallback", asy
         (f) => f.family === "Manrope" && f.status === "loaded",
       ),
       token: getComputedStyle(document.documentElement)
-        .getPropertyValue("--aroma-font-sans")
+        .getPropertyValue("--ovelo-font-sans")
         .trim(),
     };
   });

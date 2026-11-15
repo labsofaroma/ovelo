@@ -1,9 +1,9 @@
-import { Badge } from "@aroma/ui";
-import { formatUnits } from "@aroma/ui/format";
+import { Badge } from "@ovelo/ui";
+import { formatUnits } from "@ovelo/ui/format";
 import { FUNDING_TOKENS } from "../../trade/schema";
 import type { ActivityItem } from "../schema";
 
-/** Orders this wallet placed through Aroma, from our receipts (one row per transaction). */
+/** Orders this wallet placed through Ovelo, from our receipts (one row per transaction). */
 export function ActivityList({
   activity,
 }: {
@@ -19,7 +19,7 @@ export function ActivityList({
   if (!activity.length)
     return (
       <p className="text-small text-muted">
-        No orders placed through Aroma yet.
+        No orders placed through Ovelo yet.
       </p>
     );
   return (

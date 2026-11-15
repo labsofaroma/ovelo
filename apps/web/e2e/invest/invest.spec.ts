@@ -5,7 +5,7 @@ import {
   type Page,
 } from "@playwright/test";
 import { createSolanaRpc, type Address } from "@solana/kit";
-import { planAddresses, TOKEN_PROGRAM_ID } from "@aroma/guard";
+import { planAddresses, TOKEN_PROGRAM_ID } from "@ovelo/guard";
 import { signQStashRequest } from "../../../keeper/src/qstash";
 import { expectNoAxeViolations, THEMES, useTheme } from "../helpers";
 import { installWallet, signTransaction, state } from "./wallet";

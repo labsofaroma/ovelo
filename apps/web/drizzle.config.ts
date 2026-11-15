@@ -6,7 +6,7 @@ export default defineConfig({
   out: "./server/db/migrations",
   // Only used by `drizzle-kit migrate/push/studio`. `generate` and `check` never connect.
   dbCredentials: {
-    url: process.env.DATABASE_URL ?? "postgres://localhost:5432/aroma",
+    url: process.env.DATABASE_URL ?? "postgres://localhost:5432/ovelo",
   },
   strict: true,
   verbose: true,

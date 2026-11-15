@@ -18,7 +18,7 @@ import {
   type ExecuteInstallmentInstruction,
 } from "./generated";
 import {
-  AROMA_GUARD_V1_PROGRAM_ID,
+  OVELO_GUARD_V1_PROGRAM_ID,
   SUBSCRIPTIONS_PROGRAM_ID,
   TOKEN_2022_PROGRAM_ID,
   TOKEN_PROGRAM_ID,
@@ -74,7 +74,7 @@ describe("create plan", () => {
     expect(ixs.map((ix) => ix.programAddress)).toEqual([
       SUBSCRIPTIONS_PROGRAM_ID,
       SUBSCRIPTIONS_PROGRAM_ID,
-      AROMA_GUARD_V1_PROGRAM_ID,
+      OVELO_GUARD_V1_PROGRAM_ID,
     ]);
     const delegation = parseCreateRecurringDelegationInstruction(
       ixs[1] as CreateRecurringDelegationInstruction,
@@ -162,7 +162,7 @@ describe("close + revoke", () => {
       revokeAuthority: true,
     });
     expect(ixs.map((ix) => ix.programAddress)).toEqual([
-      AROMA_GUARD_V1_PROGRAM_ID,
+      OVELO_GUARD_V1_PROGRAM_ID,
       SUBSCRIPTIONS_PROGRAM_ID,
       SUBSCRIPTIONS_PROGRAM_ID,
     ]);
@@ -177,7 +177,7 @@ describe("close + revoke", () => {
       revokeAuthority: false,
     });
     expect(two.map((ix) => ix.programAddress)).toEqual([
-      AROMA_GUARD_V1_PROGRAM_ID,
+      OVELO_GUARD_V1_PROGRAM_ID,
       SUBSCRIPTIONS_PROGRAM_ID,
     ]);
     expect(two[1]!.accounts?.[1]?.address).toBe(p.recurringDelegation);
@@ -238,7 +238,7 @@ describe("admin builders", () => {
       await buildSetPausedInstruction(admin, true),
       await buildSetAssetEnabledInstruction(admin, k(4), false),
     ]) {
-      expect(ix.programAddress).toBe(AROMA_GUARD_V1_PROGRAM_ID);
+      expect(ix.programAddress).toBe(OVELO_GUARD_V1_PROGRAM_ID);
     }
     const reg = await buildRegisterAssetInstruction({
       admin,

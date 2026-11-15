@@ -1,6 +1,6 @@
 # syntax=docker/dockerfile:1.7
 #
-# Phase H: the Aroma web image for self-host (Hostinger VPS behind Cloudflare).
+# Phase H: the Ovelo web image for self-host (Hostinger VPS behind Cloudflare).
 # Build from the repo root:  docker build -f deploy/Dockerfile .          (target: runtime)
 #
 # - Base: the official node:24.12.0-slim (Debian bookworm, glibc), pinned by index digest so
@@ -8,7 +8,7 @@
 #   binaries target glibc first, and musl differences are a class of prod-only bugs we avoid.
 #   Both FROM lines below use the same literal reference so Dependabot can bump them together.
 # - Build inputs: ONLY NEXT_PUBLIC_* build args (public by definition, inlined into the browser
-#   bundle) and AROMA_SKIP_ENV_CHECK=1 for the build stage. No secret is a build arg, an ENV or a
+#   bundle) and OVELO_SKIP_ENV_CHECK=1 for the build stage. No secret is a build arg, an ENV or a
 #   layer; the runtime refuses to boot without a valid env (server/platform.ts, env.schema.ts).
 # - Runtime: Next's traced standalone server (no dev dependencies, no package manager), non-root
 #   UID 10001, read-only root filesystem friendly (writes only to /tmp and .next/cache).
@@ -33,7 +33,7 @@ COPY packages/guard/package.json packages/guard/
 COPY packages/config/package.json packages/config/
 COPY packages/contracts/package.json packages/contracts/
 RUN --mount=type=cache,id=pnpm-store,target=/pnpm/store \
-    pnpm install --frozen-lockfile --filter "@aroma/web..."
+    pnpm install --frozen-lockfile --filter "@ovelo/web..."
 COPY . .
 # Public, build-time values only (repository VARIABLES in CI, never secrets).
 ARG NEXT_PUBLIC_SOLANA_RPC_URL=https://api.mainnet-beta.solana.com
@@ -63,23 +63,23 @@ FROM node:24.12.0-slim@sha256:7326fb2dbdce998edd72140946851be64ef4a643e8715e138c
 RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack \
            /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack \
            /usr/local/bin/yarn /usr/local/bin/yarnpkg /opt/yarn-* \
- && groupadd --system --gid 10001 aroma \
- && useradd --system --uid 10001 --gid aroma --no-create-home --home-dir /nonexistent \
-            --shell /usr/sbin/nologin aroma
-ARG AROMA_REVISION=unknown
-ARG AROMA_VERSION=0.0.0-local
-LABEL org.opencontainers.image.title="aroma-web" \
-      org.opencontainers.image.source="https://github.com/aromalabs/aroma" \
-      org.opencontainers.image.revision="${AROMA_REVISION}" \
-      org.opencontainers.image.version="${AROMA_VERSION}" \
+ && groupadd --system --gid 10001 ovelo \
+ && useradd --system --uid 10001 --gid ovelo --no-create-home --home-dir /nonexistent \
+            --shell /usr/sbin/nologin ovelo
+ARG OVELO_REVISION=unknown
+ARG OVELO_VERSION=0.0.0-local
+LABEL org.opencontainers.image.title="ovelo-web" \
+      org.opencontainers.image.source="https://github.com/labsofovelo/ovelo" \
+      org.opencontainers.image.revision="${OVELO_REVISION}" \
+      org.opencontainers.image.version="${OVELO_VERSION}" \
       org.opencontainers.image.licenses="NOASSERTION"
 ENV NODE_ENV=production \
     NEXT_TELEMETRY_DISABLED=1 \
     NEXT_MANUAL_SIG_HANDLE=true \
     HOSTNAME=0.0.0.0 \
     PORT=3000 \
-    AROMA_REVISION=${AROMA_REVISION} \
-    AROMA_VERSION=${AROMA_VERSION}
+    OVELO_REVISION=${OVELO_REVISION} \
+    OVELO_VERSION=${OVELO_VERSION}
 WORKDIR /app
 USER 10001:10001
 EXPOSE 3000
@@ -90,9 +90,9 @@ CMD ["node", "/app/deploy/server.mjs"]
 
 # ---------- LOCAL fork-E2E variant (explicit --target only; never built by CI) ----------
 FROM runtime-base AS runtime-e2e
-LABEL org.aroma.e2e="true"
+LABEL org.ovelo.e2e="true"
 # Makes the boot refuse this image whenever the production rules apply (env.schema.ts).
-ENV NEXT_PUBLIC_AROMA_E2E_WALLET=true
+ENV NEXT_PUBLIC_OVELO_E2E_WALLET=true
 COPY --from=build-e2e --chown=root:root /out/ /app/
 USER 0
 RUN chown 10001:10001 /app/apps/web/.next/cache

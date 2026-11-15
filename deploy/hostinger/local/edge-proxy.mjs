@@ -4,7 +4,7 @@
 //   - CF-Connecting-IP and CF-IPCountry are SET (overwritten) from where the client "is":
 //     x-edge-client-ip / x-edge-client-country (test-only inputs, then removed), else the socket
 //     address and DE. A client-sent CF-* value never survives, exactly as at Cloudflare.
-//   - x-aroma-origin is SET to the origin secret (the Transform Rule), overwriting a client value.
+//   - x-ovelo-origin is SET to the origin secret (the Transform Rule), overwriting a client value.
 //   - X-Forwarded-Proto and CF-Visitor = the scheme the client used at the edge (https in
 //     production), and Host = the public hostname, as Cloudflare forwards them. In the fork E2E
 //     the browser really is at http://127.0.0.1:<port>, so that mode keeps the client's own Host
@@ -20,7 +20,7 @@ import http from "node:http";
 
 const upstream = new URL(process.env.EDGE_UPSTREAM ?? "http://app:3000");
 const port = Number(process.env.EDGE_PORT ?? 8080);
-const host = process.env.EDGE_HOST ?? "beta.aroma.test";
+const host = process.env.EDGE_HOST ?? "beta.ovelo.test";
 const scheme = process.env.EDGE_SCHEME === "http" ? "http" : "https";
 const secret = (
   process.env.EDGE_ORIGIN_SECRET_FILE
@@ -58,7 +58,7 @@ const server = http.createServer((req, res) => {
     "cf-ipcountry": country,
     "cf-visitor": JSON.stringify({ scheme }),
     "x-forwarded-proto": scheme,
-    "x-aroma-origin": secret,
+    "x-ovelo-origin": secret,
   });
   const out = http.request(
     {

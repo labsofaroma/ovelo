@@ -1,6 +1,6 @@
 /**
  * Mainnet (default build) execution constants. Each must match the Rust program:
- * `integrations/jupiter.rs` and `constants.rs` in `packages/contracts/programs/aroma_guard`.
+ * `integrations/jupiter.rs` and `constants.rs` in `packages/contracts/programs/ovelo_guard`.
  */
 import { address } from "@solana/kit";
 

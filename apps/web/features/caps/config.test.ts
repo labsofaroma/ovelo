@@ -24,8 +24,8 @@ describe("W3 caps config", () => {
     expect(
       capsConfig({
         NODE_ENV: "production",
-        AROMA_MAX_TRADE_USDC_RAW: "25000000",
-        AROMA_MAX_DAILY_USDC_RAW: "18446744073709551615",
+        OVELO_MAX_TRADE_USDC_RAW: "25000000",
+        OVELO_MAX_DAILY_USDC_RAW: "18446744073709551615",
       }),
     ).toEqual({ perTrade: 25_000_000n, daily: 18_446_744_073_709_551_615n });
   });
@@ -33,21 +33,21 @@ describe("W3 caps config", () => {
   it.each([
     [
       { NODE_ENV: "production" },
-      ["AROMA_MAX_TRADE_USDC_RAW", "AROMA_MAX_DAILY_USDC_RAW"],
+      ["OVELO_MAX_TRADE_USDC_RAW", "OVELO_MAX_DAILY_USDC_RAW"],
     ],
     [
-      { VERCEL_ENV: "production", AROMA_MAX_TRADE_USDC_RAW: "1" },
-      ["AROMA_MAX_DAILY_USDC_RAW"],
+      { VERCEL_ENV: "production", OVELO_MAX_TRADE_USDC_RAW: "1" },
+      ["OVELO_MAX_DAILY_USDC_RAW"],
     ],
-    [{ AROMA_MAX_TRADE_USDC_RAW: "0" }, ["AROMA_MAX_TRADE_USDC_RAW"]],
-    [{ AROMA_MAX_TRADE_USDC_RAW: "1.5" }, ["AROMA_MAX_TRADE_USDC_RAW"]],
+    [{ OVELO_MAX_TRADE_USDC_RAW: "0" }, ["OVELO_MAX_TRADE_USDC_RAW"]],
+    [{ OVELO_MAX_TRADE_USDC_RAW: "1.5" }, ["OVELO_MAX_TRADE_USDC_RAW"]],
     [
-      { AROMA_MAX_DAILY_USDC_RAW: "18446744073709551616" },
-      ["AROMA_MAX_DAILY_USDC_RAW"],
+      { OVELO_MAX_DAILY_USDC_RAW: "18446744073709551616" },
+      ["OVELO_MAX_DAILY_USDC_RAW"],
     ],
     [
-      { AROMA_MAX_TRADE_USDC_RAW: "300", AROMA_MAX_DAILY_USDC_RAW: "200" },
-      ["AROMA_MAX_DAILY_USDC_RAW"],
+      { OVELO_MAX_TRADE_USDC_RAW: "300", OVELO_MAX_DAILY_USDC_RAW: "200" },
+      ["OVELO_MAX_DAILY_USDC_RAW"],
     ],
   ])(
     "refuses %j (unset or 0 in production, malformed, daily below per-trade)",
@@ -67,8 +67,8 @@ describe("W3 caps config", () => {
     const issues = (env: Record<string, string>) => {
       // Everything required except the caps under test.
       const {
-        AROMA_MAX_TRADE_USDC_RAW: _trade,
-        AROMA_MAX_DAILY_USDC_RAW: _daily,
+        OVELO_MAX_TRADE_USDC_RAW: _trade,
+        OVELO_MAX_DAILY_USDC_RAW: _daily,
         ...required
       } = BASE_ENV;
       const result = parseEnv({ ...required, ...env });
@@ -76,20 +76,20 @@ describe("W3 caps config", () => {
     };
     expect(issues(base)).toEqual(
       expect.arrayContaining([
-        "AROMA_MAX_TRADE_USDC_RAW",
-        "AROMA_MAX_DAILY_USDC_RAW",
+        "OVELO_MAX_TRADE_USDC_RAW",
+        "OVELO_MAX_DAILY_USDC_RAW",
       ]),
     );
-    expect(issues({ AROMA_MAX_TRADE_USDC_RAW: "0" })).toEqual([
-      "AROMA_MAX_TRADE_USDC_RAW",
+    expect(issues({ OVELO_MAX_TRADE_USDC_RAW: "0" })).toEqual([
+      "OVELO_MAX_TRADE_USDC_RAW",
     ]);
-    expect(issues({ AROMA_MAX_DAILY_USDC_RAW: "2e8" })).toEqual([
-      "AROMA_MAX_DAILY_USDC_RAW",
+    expect(issues({ OVELO_MAX_DAILY_USDC_RAW: "2e8" })).toEqual([
+      "OVELO_MAX_DAILY_USDC_RAW",
     ]);
     expect(
       issues({
-        AROMA_MAX_TRADE_USDC_RAW: "50000000",
-        AROMA_MAX_DAILY_USDC_RAW: "200000000",
+        OVELO_MAX_TRADE_USDC_RAW: "50000000",
+        OVELO_MAX_DAILY_USDC_RAW: "200000000",
       }),
     ).toEqual([]);
   });

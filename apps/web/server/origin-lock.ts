@@ -3,7 +3,7 @@ import { ORIGIN_HEADER, ORIGIN_SECRET_PATTERN, proxyMode } from "./proxy";
 
 /**
  * Phase H Step 2: the origin lock. In `cloudflare` proxy mode every request must carry
- * `x-aroma-origin: <AROMA_ORIGIN_SECRET>`, which a Cloudflare Transform Rule sets at the edge
+ * `x-ovelo-origin: <OVELO_ORIGIN_SECRET>`, which a Cloudflare Transform Rule sets at the edge
  * (overwriting anything the client sent). A request that reaches the app any other way, for
  * example straight to the VPS or from another container, is refused with 403 ORIGIN_REFUSED.
  * It is defence in depth on top of the outbound-only tunnel.
@@ -28,7 +28,7 @@ const digest = (value: string) => createHash("sha256").update(value).digest();
 export type OriginCheck = "ok" | "missing" | "mismatch" | "unconfigured";
 
 export function checkOrigin(headers: Headers, env: EnvLike): OriginCheck {
-  const raw = env.AROMA_ORIGIN_SECRET;
+  const raw = env.OVELO_ORIGIN_SECRET;
   const secret = typeof raw === "string" ? raw.trim() : "";
   if (!ORIGIN_SECRET_PATTERN.test(secret)) return "unconfigured";
   const sent = headers.get(ORIGIN_HEADER);

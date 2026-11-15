@@ -1,60 +1,60 @@
 /*
  * Tailwind v4 CSS-first theme, fed by tokens.css. `inline` makes utilities reference the
- * runtime --aroma-* variables, so theme switching needs no rebuild.
+ * runtime --ovelo-* variables, so theme switching needs no rebuild.
  * Import after tokens.css, in an entry that also imports Tailwind (see README.md).
  */
 @theme inline {
   --color-*: initial; /* only semantic roles exist; no raw palette utilities */
-  --color-bg: var(--aroma-bg);
-  --color-surface: var(--aroma-surface);
-  --color-raised: var(--aroma-raised);
-  --color-ink: var(--aroma-ink);
-  --color-muted: var(--aroma-muted);
-  --color-line: var(--aroma-line);
-  --color-border-strong: var(--aroma-border-strong);
-  --color-accent: var(--aroma-accent);
-  --color-accent-hover: var(--aroma-accent-hover);
-  --color-accent-ink: var(--aroma-accent-ink);
-  --color-accent-soft: var(--aroma-accent-soft);
-  --color-up: var(--aroma-up);
-  --color-up-soft: var(--aroma-up-soft);
-  --color-down: var(--aroma-down);
-  --color-down-soft: var(--aroma-down-soft);
-  --color-warning: var(--aroma-warning);
-  --color-warning-soft: var(--aroma-warning-soft);
-  --color-focus: var(--aroma-focus);
-  --color-plate: var(--aroma-plate);
-  --color-scrim: var(--aroma-scrim);
+  --color-bg: var(--ovelo-bg);
+  --color-surface: var(--ovelo-surface);
+  --color-raised: var(--ovelo-raised);
+  --color-ink: var(--ovelo-ink);
+  --color-muted: var(--ovelo-muted);
+  --color-line: var(--ovelo-line);
+  --color-border-strong: var(--ovelo-border-strong);
+  --color-accent: var(--ovelo-accent);
+  --color-accent-hover: var(--ovelo-accent-hover);
+  --color-accent-ink: var(--ovelo-accent-ink);
+  --color-accent-soft: var(--ovelo-accent-soft);
+  --color-up: var(--ovelo-up);
+  --color-up-soft: var(--ovelo-up-soft);
+  --color-down: var(--ovelo-down);
+  --color-down-soft: var(--ovelo-down-soft);
+  --color-warning: var(--ovelo-warning);
+  --color-warning-soft: var(--ovelo-warning-soft);
+  --color-focus: var(--ovelo-focus);
+  --color-plate: var(--ovelo-plate);
+  --color-scrim: var(--ovelo-scrim);
   --color-transparent: transparent;
   --color-current: currentColor;
 
-  --font-sans: var(--aroma-font-sans);
-  --font-serif: var(--aroma-font-serif);
+  --font-sans: var(--ovelo-font-sans);
+  --font-serif: var(--ovelo-font-serif);
 
-  --text-micro: var(--aroma-text-micro);
-  --text-caption: var(--aroma-text-caption);
-  --text-small: var(--aroma-text-small);
-  --text-body: var(--aroma-text-body);
-  --text-title: var(--aroma-text-title);
-  --text-section: var(--aroma-text-section);
-  --text-page-mobile: var(--aroma-text-page-mobile);
-  --text-page: var(--aroma-text-page);
+  --text-micro: var(--ovelo-text-micro);
+  --text-caption: var(--ovelo-text-caption);
+  --text-small: var(--ovelo-text-small);
+  --text-body: var(--ovelo-text-body);
+  --text-title: var(--ovelo-text-title);
+  --text-section: var(--ovelo-text-section);
+  --text-page-mobile: var(--ovelo-text-page-mobile);
+  --text-page: var(--ovelo-text-page);
 
-  --spacing: var(--aroma-space-unit);
+  --spacing: var(--ovelo-space-unit);
 
-  --radius-badge: var(--aroma-radius-badge);
-  --radius-control: var(--aroma-radius-control);
-  --radius-panel: var(--aroma-radius-panel);
-  --radius-full: var(--aroma-radius-full);
+  --radius-badge: var(--ovelo-radius-badge);
+  --radius-control: var(--ovelo-radius-control);
+  --radius-panel: var(--ovelo-radius-panel);
+  --radius-full: var(--ovelo-radius-full);
 
-  --shadow-float: var(--aroma-shadow-float);
-  --shadow-raised: var(--aroma-shadow-raised);
+  --shadow-float: var(--ovelo-shadow-float);
+  --shadow-raised: var(--ovelo-shadow-raised);
 
-  --ease-ui: var(--aroma-ease-ui);
+  --ease-ui: var(--ovelo-ease-ui);
   /* Every `transition-*` utility defaults to the token duration, so reduced motion applies
      even where a component forgot a motion-* class. */
-  --default-transition-duration: var(--aroma-duration-base);
-  --default-transition-timing-function: var(--aroma-ease-ui);
+  --default-transition-duration: var(--ovelo-duration-base);
+  --default-transition-timing-function: var(--ovelo-ease-ui);
 
   --breakpoint-*: initial;
   --breakpoint-sm: 40rem;
@@ -65,74 +65,74 @@
 
 /* Token-backed utilities that Tailwind has no theme namespace for. */
 @utility z-base {
-  z-index: var(--aroma-z-base);
+  z-index: var(--ovelo-z-base);
 }
 @utility z-sticky {
-  z-index: var(--aroma-z-sticky);
+  z-index: var(--ovelo-z-sticky);
 }
 @utility z-dropdown {
-  z-index: var(--aroma-z-dropdown);
+  z-index: var(--ovelo-z-dropdown);
 }
 @utility z-overlay {
-  z-index: var(--aroma-z-overlay);
+  z-index: var(--ovelo-z-overlay);
 }
 @utility z-modal {
-  z-index: var(--aroma-z-modal);
+  z-index: var(--ovelo-z-modal);
 }
 @utility z-popover {
-  z-index: var(--aroma-z-popover);
+  z-index: var(--ovelo-z-popover);
 }
 @utility z-toast {
-  z-index: var(--aroma-z-toast);
+  z-index: var(--ovelo-z-toast);
 }
 @utility z-tooltip {
-  z-index: var(--aroma-z-tooltip);
+  z-index: var(--ovelo-z-tooltip);
 }
 
 @utility motion-instant {
-  transition-duration: var(--aroma-duration-instant);
-  transition-timing-function: var(--aroma-ease-ui);
+  transition-duration: var(--ovelo-duration-instant);
+  transition-timing-function: var(--ovelo-ease-ui);
 }
 @utility motion-fast {
-  transition-duration: var(--aroma-duration-fast);
-  transition-timing-function: var(--aroma-ease-ui);
+  transition-duration: var(--ovelo-duration-fast);
+  transition-timing-function: var(--ovelo-ease-ui);
 }
 @utility motion-base {
-  transition-duration: var(--aroma-duration-base);
-  transition-timing-function: var(--aroma-ease-ui);
+  transition-duration: var(--ovelo-duration-base);
+  transition-timing-function: var(--ovelo-ease-ui);
 }
 @utility motion-pop {
-  transition-duration: var(--aroma-duration-pop);
-  transition-timing-function: var(--aroma-ease-ui);
+  transition-duration: var(--ovelo-duration-pop);
+  transition-timing-function: var(--ovelo-ease-ui);
 }
 @utility motion-slow {
-  transition-duration: var(--aroma-duration-slow);
-  transition-timing-function: var(--aroma-ease-ui);
+  transition-duration: var(--ovelo-duration-slow);
+  transition-timing-function: var(--ovelo-ease-ui);
 }
 
 /* Keyframes read their duration from tokens, so reduced motion collapses them too. */
 @utility animate-shimmer {
-  animation: aroma-shimmer var(--aroma-duration-shimmer) linear infinite;
+  animation: ovelo-shimmer var(--ovelo-duration-shimmer) linear infinite;
 }
 @utility animate-spin-token {
-  animation: aroma-spin var(--aroma-duration-spin) linear infinite;
+  animation: ovelo-spin var(--ovelo-duration-spin) linear infinite;
 }
 @utility animate-indeterminate {
-  animation: aroma-indeterminate var(--aroma-duration-shimmer)
-    var(--aroma-ease-ui) infinite;
+  animation: ovelo-indeterminate var(--ovelo-duration-shimmer)
+    var(--ovelo-ease-ui) infinite;
 }
 
-@keyframes aroma-shimmer {
+@keyframes ovelo-shimmer {
   to {
     background-position: -200% 0;
   }
 }
-@keyframes aroma-spin {
+@keyframes ovelo-spin {
   to {
     transform: rotate(360deg);
   }
 }
-@keyframes aroma-indeterminate {
+@keyframes ovelo-indeterminate {
   from {
     transform: translateX(-100%);
   }
@@ -144,7 +144,7 @@
 /* One focus ring for every interactive primitive. */
 @utility focus-ring {
   &:focus-visible {
-    outline: 2px solid var(--aroma-focus);
+    outline: 2px solid var(--ovelo-focus);
     outline-offset: 2px;
   }
 }

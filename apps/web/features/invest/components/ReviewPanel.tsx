@@ -1,6 +1,6 @@
 "use client";
 
-import { Badge, Button } from "@aroma/ui";
+import { Badge, Button } from "@ovelo/ui";
 import { RiskDisclosure } from "../../compliance/components/RiskDisclosure";
 import type { PlanSummary } from "../schema";
 import type { FlowStep } from "../queries";

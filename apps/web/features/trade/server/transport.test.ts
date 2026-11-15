@@ -151,12 +151,12 @@ describe("Jupiter build", () => {
   });
 
   it("the loopback stand-in is used only while test switches are allowed", () => {
-    vi.stubEnv("AROMA_V1_TEST_JUPITER_URL", "http://127.0.0.1:4010");
+    vi.stubEnv("OVELO_V1_TEST_JUPITER_URL", "http://127.0.0.1:4010");
     expect(jupiterBase()).toBe("http://127.0.0.1:4010");
     vi.stubEnv("NODE_ENV", "production");
     expect(jupiterBase()).toBe("https://api.jup.ag");
     vi.stubEnv("NODE_ENV", "test");
-    vi.stubEnv("AROMA_V1_TEST_JUPITER_URL", "https://evil.example");
+    vi.stubEnv("OVELO_V1_TEST_JUPITER_URL", "https://evil.example");
     expect(jupiterBase()).toBe("https://api.jup.ag");
   });
 });

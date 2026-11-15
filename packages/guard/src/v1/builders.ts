@@ -1,5 +1,5 @@
 /**
- * Instruction builders for Aroma Guard v1. The server prepares instructions; wallets sign them.
+ * Instruction builders for Ovelo Guard v1. The server prepares instructions; wallets sign them.
  * Amounts are bigint raw units. Every multi-instruction flow returns the instructions of ONE
  * transaction, in order.
  */

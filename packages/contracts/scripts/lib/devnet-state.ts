@@ -2,7 +2,7 @@
 import fs from "node:fs";
 import path from "node:path";
 import { createKeyPairSignerFromBytes, type Address } from "@solana/kit";
-import * as v1 from "@aroma/guard";
+import * as v1 from "@ovelo/guard";
 import { GENESIS } from "./cluster";
 import { assertIgnored, CONTRACTS_ROOT, newExportableKeypair } from "./keys";
 import type { ProvisionDeps, ProvisionState } from "./provision";
@@ -15,17 +15,17 @@ export function loadState(file = STATE_FILE): ProvisionState {
     return {
       network: "devnet",
       genesisHash: GENESIS.devnet,
-      programId: v1.AROMA_GUARD_V1_PROGRAM_ID,
+      programId: v1.OVELO_GUARD_V1_PROGRAM_ID,
       assets: {},
     };
   const state = JSON.parse(fs.readFileSync(file, "utf8")) as ProvisionState;
   if (
     state.network !== "devnet" ||
     state.genesisHash !== GENESIS.devnet ||
-    state.programId !== v1.AROMA_GUARD_V1_PROGRAM_ID
+    state.programId !== v1.OVELO_GUARD_V1_PROGRAM_ID
   )
     throw new Error(
-      `${file} is not devnet state for program ${v1.AROMA_GUARD_V1_PROGRAM_ID}.`,
+      `${file} is not devnet state for program ${v1.OVELO_GUARD_V1_PROGRAM_ID}.`,
     );
   return state;
 }

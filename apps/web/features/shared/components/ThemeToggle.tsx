@@ -2,11 +2,11 @@
 
 import { useEffect, useState } from "react";
 import { Moon, Sun } from "lucide-react";
-import { IconButton } from "@aroma/ui";
+import { IconButton } from "@ovelo/ui";
 
 type Theme = "light" | "dark";
 /** Same key as the prototype ThemeProvider and `themeInitScript`, so a choice carries over. */
-const KEY = "aroma-theme";
+const KEY = "ovelo-theme";
 
 function current(): Theme {
   return document.documentElement.dataset.theme === "light" ? "light" : "dark";

@@ -14,7 +14,7 @@ export const dynamic = "force-dynamic";
 export const metadata: Metadata = v1Metadata({
   title: "Settings",
   description:
-    "Theme, privacy choices, notifications, what is live on Aroma, and your wallet's terms status.",
+    "Theme, privacy choices, notifications, what is live on Ovelo, and your wallet's terms status.",
   path: routes.settings,
   // Per device and per wallet: nothing to index.
   noindex: true,

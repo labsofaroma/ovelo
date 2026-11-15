@@ -4,7 +4,7 @@
  * Do-Not-Track / Global Privacy Control signal is set. Events carry a name and a few fixed,
  * coarse properties: never a wallet address, amount, signature, search or referrer.
  */
-export const CONSENT_KEY = "aroma.privacy.v1";
+export const CONSENT_KEY = "ovelo.privacy.v1";
 const DOMAIN = process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN ?? "";
 
 export function readConsent(): boolean | null {

@@ -1,4 +1,4 @@
-import { Badge, Card } from "@aroma/ui";
+import { Badge, Card } from "@ovelo/ui";
 import Link from "next/link";
 import { routes } from "../../shared/routes";
 import { formatBps, plural } from "../../shared/fixed";

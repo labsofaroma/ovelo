@@ -8,7 +8,7 @@ import {
   getUpdateConfigInstruction,
   type ConfigParamsArgs,
 } from "./generated";
-import { AROMA_GUARD_V1_PROGRAM_ID } from "./constants";
+import { OVELO_GUARD_V1_PROGRAM_ID } from "./constants";
 import { findAssetPda, findConfigPda, findProgramDataAddress } from "./pdas";
 
 export async function buildInitializeConfigInstruction(params: {
@@ -18,7 +18,7 @@ export async function buildInitializeConfigInstruction(params: {
   return getInitializeConfigInstruction({
     authority: params.authority,
     config: await findConfigPda(),
-    program: AROMA_GUARD_V1_PROGRAM_ID,
+    program: OVELO_GUARD_V1_PROGRAM_ID,
     programData: await findProgramDataAddress(),
     params: params.params,
   });

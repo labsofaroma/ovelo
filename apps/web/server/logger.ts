@@ -65,7 +65,7 @@ export function createLogger(
 ): Logger {
   const config: LoggerOptions = {
     level: options.level ?? process.env.LOG_LEVEL ?? "info",
-    base: { service: "aroma-web" },
+    base: { service: "ovelo-web" },
     timestamp: pino.stdTimeFunctions.isoTime,
     redact: {
       paths: SENSITIVE_KEYS.flatMap((key) => [

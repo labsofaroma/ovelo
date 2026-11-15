@@ -30,8 +30,8 @@ export function notifyConfig(
     };
   const s = result.env.server;
   return {
-    enabled: s.AROMA_NOTIFICATIONS === "on",
-    workerSecret: s.AROMA_NOTIFY_WORKER_SECRET ?? null,
+    enabled: s.OVELO_NOTIFICATIONS === "on",
+    workerSecret: s.OVELO_NOTIFY_WORKER_SECRET ?? null,
     push:
       s.VAPID_PUBLIC_KEY && s.VAPID_PRIVATE_KEY && s.VAPID_SUBJECT
         ? {
@@ -51,8 +51,8 @@ export function notifyConfig(
           }
         : null,
     sinkUrl:
-      s.AROMA_V1_TEST_NOTIFY_SINK_URL && testSwitchesAllowed(source)
-        ? s.AROMA_V1_TEST_NOTIFY_SINK_URL
+      s.OVELO_V1_TEST_NOTIFY_SINK_URL && testSwitchesAllowed(source)
+        ? s.OVELO_V1_TEST_NOTIFY_SINK_URL
         : null,
   };
 }

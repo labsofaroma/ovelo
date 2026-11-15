@@ -8,7 +8,7 @@
 
 | Option | MEV / griefing | Liveness and trust | Change |
 |---|---|---|---|
-| a. keeper-only | removes third-party price, timing and route choice | depends on Aroma's keeper (alerts, catch-up window, admin can rotate the key) | none in the IDL |
+| a. keeper-only | removes third-party price, timing and route choice | depends on Ovelo's keeper (alerts, catch-up window, admin can rotate the key) | none in the IDL |
 | b. tighter window only | limits price choice to the window, but anyone still chooses timing and route | permissionless | none in the IDL |
 | c. a + b (**chosen**) | third parties excluded; even a compromised keeper key can only choose among updates from the last 20 s | as (a) | none in the IDL |
 | d. price posted in the same transaction | strongest | infeasible: a post (~580 B) plus a routed execute exceed one transaction (M7 measurement; a routed leg alone needs lookup tables) | — |
@@ -36,7 +36,7 @@
 The binaries differ, so behaviour was checked rather than assumed:
 
 1. **The whole LiteSVM suite (62 cases at the time) passes against mainnet's binary** (`pnpm test:litesvm:subscriptions-mainnet`; the harness verifies `mainnetSha256`). It exercises the typed parsers (exact lengths 106 and 211, discriminators 0 and 3, header version 1), delegation creation, the pull, the catch-up that draws on the next period's allowance, revoke and close.
-2. **Four direct cases on the upstream rules Aroma relies on, run on both binaries with exact upstream error codes** (`tests/litesvm/subscriptions-semantics.test.ts`):
+2. **Four direct cases on the upstream rules Ovelo relies on, run on both binaries with exact upstream error codes** (`tests/litesvm/subscriptions-semantics.test.ts`):
    - at most `amount_per_period` per period (`AmountExceedsPeriodLimit` 400);
    - no carry-over from an unused period;
    - nothing after the expiry (`DelegationExpired` 128);
@@ -49,7 +49,7 @@ The binaries differ, so behaviour was checked rather than assumed:
 
 ## 3. Rust coverage (cargo-llvm-cov, approved by the owner)
 
-Host build, `cargo llvm-cov -p aroma_guard --summary-only`:
+Host build, `cargo llvm-cov -p ovelo_guard --summary-only`:
 
 | Build | Lines | Regions |
 |---|---|---|

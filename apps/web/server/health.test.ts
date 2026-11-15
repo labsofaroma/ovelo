@@ -49,7 +49,7 @@ describe("runHealthChecks", () => {
     const report = await runHealthChecks({
       db: async () => {
         throw new Error(
-          "connect ECONNREFUSED 10.1.2.3:5432 postgres://admin:hunter2@db.internal/aroma",
+          "connect ECONNREFUSED 10.1.2.3:5432 postgres://admin:hunter2@db.internal/ovelo",
         );
       },
     });

@@ -102,18 +102,18 @@ describe("fee settings", () => {
     return result.ok ? [] : result.error.issues.map((i) => i.variable);
   };
   it("a platform fee other than 0 is refused at boot (5b is not approved)", () => {
-    expect(problems({ AROMA_PLATFORM_FEE_BPS: "0" })).toEqual([]);
-    expect(problems({ AROMA_PLATFORM_FEE_BPS: "25" })).toEqual([
-      "AROMA_PLATFORM_FEE_BPS",
+    expect(problems({ OVELO_PLATFORM_FEE_BPS: "0" })).toEqual([]);
+    expect(problems({ OVELO_PLATFORM_FEE_BPS: "25" })).toEqual([
+      "OVELO_PLATFORM_FEE_BPS",
     ]);
   });
   it("the creator share is 0-10000 bps and defaults to 0", () => {
-    expect(problems({ AROMA_CREATOR_FEE_SHARE_BPS: "10001" })).toEqual([
-      "AROMA_CREATOR_FEE_SHARE_BPS",
+    expect(problems({ OVELO_CREATOR_FEE_SHARE_BPS: "10001" })).toEqual([
+      "OVELO_CREATOR_FEE_SHARE_BPS",
     ]);
     expect(feeSettings({})).toEqual({ platformFeeBps: 0, creatorShareBps: 0 });
     expect(
-      feeSettings({ AROMA_CREATOR_FEE_SHARE_BPS: "3000" }).creatorShareBps,
+      feeSettings({ OVELO_CREATOR_FEE_SHARE_BPS: "3000" }).creatorShareBps,
     ).toBe(3000);
   });
 });

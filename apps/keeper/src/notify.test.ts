@@ -1,5 +1,5 @@
 import type { Address } from "@solana/kit";
-import type { Plan } from "@aroma/guard";
+import type { Plan } from "@ovelo/guard";
 import { describe, expect, it } from "vitest";
 import { memoryDb } from "./local-stores";
 import { notifyExecuted, notifyFailed } from "./notify";

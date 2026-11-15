@@ -22,7 +22,7 @@ const data = (baskets: DashboardData["baskets"]): DashboardData => ({
   wallet: WALLET,
   displayName: "Alice",
   asOf: "2026-11-20T12:00:00.000Z",
-  source: "Aroma purchase receipts",
+  source: "Ovelo purchase receipts",
   blinkTrackingSince: "2026-11-15T00:00:00.000Z",
   baskets,
 });
@@ -89,7 +89,7 @@ const state = (over = {}) => ({
 });
 const props = {
   canSign: true,
-  origin: "https://aroma.example",
+  origin: "https://ovelo.example",
   onArchive: vi.fn(),
   archivingId: null,
 };
@@ -151,7 +151,7 @@ describe("DashboardView", () => {
       />,
     );
     const url = encodeURIComponent(
-      "https://aroma.example/basket/8b2e1c4a-6f0d-4c1e-9a3b-2d5f7e9c1a20",
+      "https://ovelo.example/basket/8b2e1c4a-6f0d-4c1e-9a3b-2d5f7e9c1a20",
     );
     expect(
       screen

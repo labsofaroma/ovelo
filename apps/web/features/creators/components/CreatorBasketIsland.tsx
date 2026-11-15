@@ -9,7 +9,7 @@ import {
   DialogFooter,
   DialogTitle,
   DialogTrigger,
-} from "@aroma/ui";
+} from "@ovelo/ui";
 import Link from "next/link";
 import { useState } from "react";
 import { QueryProvider } from "../../shared/components/QueryProvider";
@@ -72,7 +72,7 @@ function OwnerActions({ basket }: { basket: Props["basket"] }) {
           <div className="flex flex-wrap gap-3">
             <Link
               href={creatorRoutes.edit(basket.id)}
-              className="inline-flex min-h-(--aroma-control-height) items-center rounded-control border border-line px-4 text-small font-semibold focus-ring hover:bg-raised"
+              className="inline-flex min-h-(--ovelo-control-height) items-center rounded-control border border-line px-4 text-small font-semibold focus-ring hover:bg-raised"
             >
               Publish a new version
             </Link>

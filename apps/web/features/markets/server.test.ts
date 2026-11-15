@@ -62,7 +62,7 @@ describe("getMarkets", () => {
   });
 
   it("passes API keys from env and uses an offline fetcher when the outage switch is on", async () => {
-    vi.stubEnv("AROMA_V1_SIMULATE_UPSTREAM_OUTAGE", "true");
+    vi.stubEnv("OVELO_V1_SIMULATE_UPSTREAM_OUTAGE", "true");
     sdk.getMainnetMarkets.mockResolvedValue(snapshot());
     await getMarkets();
     const options = sdk.getMainnetMarkets.mock.calls[0]?.[0] as {

@@ -4,13 +4,13 @@ import {
   getUtf8Encoder,
   type Address,
 } from "@solana/kit";
-import { AROMA_GUARD_V1_PROGRAM_ID } from "../constants";
+import { OVELO_GUARD_V1_PROGRAM_ID } from "../constants";
 import { findAssociatedTokenAddress } from "../pdas";
 import { SWAP_AUTHORITY_SEED } from "./constants";
 
 /** Program-wide signer of every Jupiter CPI. */
 export async function findSwapAuthorityPda(
-  program: Address = AROMA_GUARD_V1_PROGRAM_ID,
+  program: Address = OVELO_GUARD_V1_PROGRAM_ID,
 ): Promise<Address> {
   const [found] = await getProgramDerivedAddress({
     programAddress: program,

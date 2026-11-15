@@ -13,14 +13,14 @@ export const metadata: Metadata = {
 
 /**
  * M9 compliance gate: middleware rewrites v1 pages here for a restricted visitor ONLY when the
- * policy sets browse to `block` (AROMA_COMPLIANCE_BROWSE=block; the default is browse-only).
+ * policy sets browse to `block` (OVELO_COMPLIANCE_BROWSE=block; the default is browse-only).
  * Copy is placeholder pending counsel's final text.
  */
 export default function RestrictedPage() {
   return (
     <main id="main-content" className={`${pageContainer} py-12`}>
       <h1 className="text-page font-semibold max-md:text-page-mobile">
-        Aroma is not available in your location
+        Ovelo is not available in your location
       </h1>
       <p className="mt-4 max-w-prose text-body">
         Based on your network location, this service is not offered where you

@@ -191,7 +191,7 @@ export async function subscribe(
     events: body.events,
     now,
   });
-  const bot = deps.config().telegram?.bot ?? "aroma_test_bot";
+  const bot = deps.config().telegram?.bot ?? "ovelo_test_bot";
   return {
     subscription,
     telegramLink: `https://t.me/${bot}?start=${code}`,

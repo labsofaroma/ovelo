@@ -8,7 +8,7 @@ import {
   connectToCluster,
   GENESIS_HASHES,
 } from "./rpc";
-import { DEVNET_GENESIS_HASH, MAINNET_GENESIS_HASH } from "@aroma/guard";
+import { DEVNET_GENESIS_HASH, MAINNET_GENESIS_HASH } from "@ovelo/guard";
 import {
   DEVNET_GENESIS as WALLET_DEVNET_GENESIS,
   MAINNET_GENESIS as WALLET_MAINNET_GENESIS,

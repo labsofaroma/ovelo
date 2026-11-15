@@ -15,7 +15,7 @@ const COMMON = [
   "Tokenized stocks are tokens issued by a third party. They are not the underlying shares and may not carry shareholder rights.",
   "Prices can fall as well as rise, and you can lose the full amount you commit. Liquidity can be thin or unavailable.",
   "Mainnet transactions are generally irreversible. Network fees can apply even when a transaction fails.",
-  "Aroma does not give investment, tax or legal advice.",
+  "Ovelo does not give investment, tax or legal advice.",
 ] as const;
 
 const EXTRA: Record<DisclosureSurface, readonly string[]> = {
@@ -24,10 +24,10 @@ const EXTRA: Record<DisclosureSurface, readonly string[]> = {
     "A basket buys each constituent separately in one or more transactions; weights can drift from the target after purchase.",
   ],
   "creator-basket": [
-    "This basket was published by a creator, not by Aroma. Its selection is not a recommendation by Aroma.",
+    "This basket was published by a creator, not by Ovelo. Its selection is not a recommendation by Ovelo.",
   ],
   action: [
-    "You are buying through a Blink outside Aroma's site; review the transaction in your wallet before you sign.",
+    "You are buying through a Blink outside Ovelo's site; review the transaction in your wallet before you sign.",
   ],
   "recurring-devnet": [
     "This is a devnet test with test tokens of no value. Nothing here buys real assets.",

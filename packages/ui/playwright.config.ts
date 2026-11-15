@@ -4,7 +4,7 @@ const PORT = 61001;
 
 /**
  * Browser suites run against the BUILT workbench (`pnpm build:stories` first):
- *   pnpm --filter @aroma/ui build:stories && pnpm --filter @aroma/ui test:a11y
+ *   pnpm --filter @ovelo/ui build:stories && pnpm --filter @ovelo/ui test:a11y
  */
 export default defineConfig({
   testDir: "./e2e",

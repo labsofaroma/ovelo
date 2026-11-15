@@ -1,7 +1,7 @@
 /**
  * The keeper's fully verified price path against the REAL pinned binaries: Wormhole core bridge
  * (encoded VAA create → init → write → verify_encoded_vaa_v1), Pyth receiver (post_update →
- * PriceUpdateV2 with VerificationLevel::Full) and Aroma Guard v1 (execute_installment consuming
+ * PriceUpdateV2 with VerificationLevel::Full) and Ovelo Guard v1 (execute_installment consuming
  * the freshly posted accounts), then cleanup (close_encoded_vaa, reclaim_rent).
  *
  * The guardian set and receiver config are written by the test and trust ONE secp256k1 test
@@ -20,7 +20,7 @@ import {
   getAddressDecoder,
   type KeyPairSigner,
 } from "@solana/kit";
-import * as v1 from "@aroma/guard";
+import * as v1 from "@ovelo/guard";
 import {
   buildVerifiedPriceUpdates,
   encodedVaaSpace,
@@ -30,7 +30,7 @@ import {
   toHex,
   WORMHOLE_PROGRAM_ID,
   type PriceFeedMessage,
-} from "@aroma/guard/pyth";
+} from "@ovelo/guard/pyth";
 import {
   createTestGuardian,
   localPythAccounts,
@@ -159,7 +159,7 @@ const okAll = (results: { step: string; ok: boolean; logs: string[] }[]) => {
     expect(r.ok, `${r.step}\n${r.logs.join("\n")}`).toBe(true);
 };
 
-describe("fully verified Pyth posting (real Wormhole + receiver + Aroma Guard v1)", () => {
+describe("fully verified Pyth posting (real Wormhole + receiver + Ovelo Guard v1)", () => {
   test.each([1, 3])(
     "%i leg(s): verify the VAA, post Full updates, execute at the posted price, reclaim rent",
     async (legs) => {

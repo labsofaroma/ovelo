@@ -1,6 +1,6 @@
 import type { ReactNode } from "react";
 import { headers } from "next/headers";
-import { themeInitScript } from "@aroma/ui/theme";
+import { themeInitScript } from "@ovelo/ui/theme";
 import { ConsentBanner } from "./ConsentBanner";
 
 /**

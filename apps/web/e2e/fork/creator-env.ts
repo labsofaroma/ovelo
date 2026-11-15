@@ -25,15 +25,15 @@ export function creatorEnabled(): boolean {
  */
 export function localDbEnv(web: string): Record<string, string> {
   const caps = {
-    AROMA_MAX_TRADE_USDC_RAW: "50000000",
-    AROMA_MAX_DAILY_USDC_RAW: "200000000",
+    OVELO_MAX_TRADE_USDC_RAW: "50000000",
+    OVELO_MAX_DAILY_USDC_RAW: "200000000",
   };
   if (!creatorEnabled())
-    return { ...caps, AROMA_BETA_GATE: "off", E2E_BETA_GATE: "off" };
+    return { ...caps, OVELO_BETA_GATE: "off", E2E_BETA_GATE: "off" };
   return {
     ...startLocalDb(web),
     ...caps,
-    AROMA_BETA_GATE: "on",
+    OVELO_BETA_GATE: "on",
     E2E_BETA_GATE: "on",
   };
 }
@@ -49,7 +49,7 @@ export function startLocalDb(web: string): Record<string, string> {
     const match = /^export ([A-Z_]+)='([^']*)'$/.exec(line.trim());
     if (match) env[match[1]!] = match[2]!;
   }
-  if (!env.DATABASE_URL || !env.AROMA_LOCAL_NEON_WS_PROXY)
+  if (!env.DATABASE_URL || !env.OVELO_LOCAL_NEON_WS_PROXY)
     throw new Error("local-db did not report DATABASE_URL and the proxy");
   return env;
 }

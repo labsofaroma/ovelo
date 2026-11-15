@@ -6,7 +6,7 @@ import {
   TOTAL_WEIGHT_BPS,
   type Config,
   type OutputArgs,
-} from "@aroma/guard";
+} from "@ovelo/guard";
 import { AppError } from "@/server/errors";
 import {
   DEVNET_TEST_PERIOD_SECONDS,
@@ -19,7 +19,7 @@ import {
 import type { BasketOption, CatalogAsset } from "./catalog";
 
 /**
- * Server-side mirror of `create_plan`'s checks (aroma-guard-v1.md), so a refusal is explained in
+ * Server-side mirror of `create_plan`'s checks (ovelo-guard-v1.md), so a refusal is explained in
  * words before anything is signed. The program re-checks everything; simulation is the backstop.
  */
 

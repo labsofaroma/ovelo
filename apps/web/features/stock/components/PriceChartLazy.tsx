@@ -1,7 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
-import { Skeleton } from "@aroma/ui";
+import { Skeleton } from "@ovelo/ui";
 import type { PriceChartProps } from "./PriceChart";
 
 /**

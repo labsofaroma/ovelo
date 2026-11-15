@@ -5,7 +5,7 @@ import {
   indexRowFromPlan,
   installmentEvents,
   installmentRecord,
-} from "@aroma/guard";
+} from "@ovelo/guard";
 import { logger } from "@/server/logger";
 import type { PlanRead } from "./chain";
 import type { InvestRpc } from "./cluster";

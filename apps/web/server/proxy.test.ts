@@ -23,12 +23,12 @@ vi.mock("@/features/compliance/terms", async (orig) =>
 const SECRET = "test-origin-secret-0123456789abcdefABCDEF";
 const VERCEL = { VERCEL: "1", VERCEL_ENV: "production" };
 const CLOUDFLARE = {
-  AROMA_PLATFORM: "selfhost",
-  AROMA_DEPLOY_ENV: "production",
-  AROMA_PROXY_MODE: "cloudflare",
-  AROMA_ORIGIN_SECRET: SECRET,
+  OVELO_PLATFORM: "selfhost",
+  OVELO_DEPLOY_ENV: "production",
+  OVELO_PROXY_MODE: "cloudflare",
+  OVELO_ORIGIN_SECRET: SECRET,
 };
-const NONE = { AROMA_PLATFORM: "selfhost", AROMA_DEPLOY_ENV: "development" };
+const NONE = { OVELO_PLATFORM: "selfhost", OVELO_DEPLOY_ENV: "development" };
 
 /** Every client-controllable header an attacker could forge at once. */
 const FORGED = {
@@ -41,12 +41,12 @@ const FORGED = {
 const h = (headers: Record<string, string>) => new Headers(headers);
 const policy = loadPolicy({});
 
-describe("AROMA_PROXY_MODE resolution", () => {
+describe("OVELO_PROXY_MODE resolution", () => {
   it.each([
     ["Vercel, unset → vercel", VERCEL, "vercel", []],
     [
       "Vercel, explicit vercel",
-      { ...VERCEL, AROMA_PROXY_MODE: "vercel" },
+      { ...VERCEL, OVELO_PROXY_MODE: "vercel" },
       "vercel",
       [],
     ],
@@ -54,67 +54,67 @@ describe("AROMA_PROXY_MODE resolution", () => {
     ["self-host cloudflare with a secret", CLOUDFLARE, "cloudflare", []],
     [
       "self-host production without cloudflare (refused)",
-      { ...CLOUDFLARE, AROMA_PROXY_MODE: "none" },
+      { ...CLOUDFLARE, OVELO_PROXY_MODE: "none" },
       "none",
-      ["AROMA_PROXY_MODE"],
+      ["OVELO_PROXY_MODE"],
     ],
     [
       "self-host beta, unset (refused)",
-      { ...NONE, AROMA_DEPLOY_ENV: "beta" },
+      { ...NONE, OVELO_DEPLOY_ENV: "beta" },
       "none",
-      ["AROMA_PROXY_MODE"],
+      ["OVELO_PROXY_MODE"],
     ],
     [
       "vercel mode off Vercel (refused, trusts nothing)",
-      { ...NONE, AROMA_PROXY_MODE: "vercel" },
+      { ...NONE, OVELO_PROXY_MODE: "vercel" },
       "none",
-      ["AROMA_PROXY_MODE"],
+      ["OVELO_PROXY_MODE"],
     ],
     [
       "cloudflare mode on Vercel (refused, trusts nothing)",
       {
         ...VERCEL,
-        AROMA_PROXY_MODE: "cloudflare",
-        AROMA_ORIGIN_SECRET: SECRET,
+        OVELO_PROXY_MODE: "cloudflare",
+        OVELO_ORIGIN_SECRET: SECRET,
       },
       "none",
-      ["AROMA_PROXY_MODE"],
+      ["OVELO_PROXY_MODE"],
     ],
     [
       "cloudflare without a secret (refused)",
-      { ...CLOUDFLARE, AROMA_ORIGIN_SECRET: "" },
+      { ...CLOUDFLARE, OVELO_ORIGIN_SECRET: "" },
       "cloudflare",
-      ["AROMA_ORIGIN_SECRET"],
+      ["OVELO_ORIGIN_SECRET"],
     ],
     [
       "cloudflare with a short secret (refused)",
-      { ...CLOUDFLARE, AROMA_ORIGIN_SECRET: "short" },
+      { ...CLOUDFLARE, OVELO_ORIGIN_SECRET: "short" },
       "cloudflare",
-      ["AROMA_ORIGIN_SECRET"],
+      ["OVELO_ORIGIN_SECRET"],
     ],
     [
       "origin secret equal to the trade secret (refused)",
-      { ...CLOUDFLARE, AROMA_TRADE_SECRET: SECRET },
+      { ...CLOUDFLARE, OVELO_TRADE_SECRET: SECRET },
       "cloudflare",
-      ["AROMA_ORIGIN_SECRET"],
+      ["OVELO_ORIGIN_SECRET"],
     ],
     [
       "unknown mode (refused, trusts nothing)",
-      { ...NONE, AROMA_PROXY_MODE: "nginx" },
+      { ...NONE, OVELO_PROXY_MODE: "nginx" },
       "none",
-      ["AROMA_PROXY_MODE"],
+      ["OVELO_PROXY_MODE"],
     ],
     [
-      "the removed AROMA_TRUST_PROXY=true (refused by name)",
-      { ...VERCEL, AROMA_TRUST_PROXY: "true" },
+      "the removed OVELO_TRUST_PROXY=true (refused by name)",
+      { ...VERCEL, OVELO_TRUST_PROXY: "true" },
       "vercel",
-      ["AROMA_TRUST_PROXY"],
+      ["OVELO_TRUST_PROXY"],
     ],
     [
-      "the removed AROMA_TRUST_PROXY=false (refused by name, never silently kept)",
-      { ...NONE, AROMA_TRUST_PROXY: "false" },
+      "the removed OVELO_TRUST_PROXY=false (refused by name, never silently kept)",
+      { ...NONE, OVELO_TRUST_PROXY: "false" },
       "none",
-      ["AROMA_TRUST_PROXY"],
+      ["OVELO_TRUST_PROXY"],
     ],
   ] as const)("%s", (_name, env, mode, refused) => {
     expect(proxyMode(env)).toBe(mode);
@@ -125,16 +125,16 @@ describe("AROMA_PROXY_MODE resolution", () => {
     const result = parseEnv({
       ...BASE_ENV,
       ...NONE,
-      AROMA_DEPLOY_ENV: "beta",
+      OVELO_DEPLOY_ENV: "beta",
       NODE_ENV: "production",
-      AROMA_TRUST_PROXY: "true",
+      OVELO_TRUST_PROXY: "true",
     });
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.error.issues.map((i) => i.variable)).toEqual(
-        expect.arrayContaining(["AROMA_TRUST_PROXY", "AROMA_PROXY_MODE"]),
+        expect.arrayContaining(["OVELO_TRUST_PROXY", "OVELO_PROXY_MODE"]),
       );
-      expect(result.error.message).toMatch(/replaced by AROMA_PROXY_MODE/);
+      expect(result.error.message).toMatch(/replaced by OVELO_PROXY_MODE/);
     }
     expect(
       parseEnv({ ...BASE_ENV, ...CLOUDFLARE, NODE_ENV: "production" }).ok,
@@ -142,7 +142,7 @@ describe("AROMA_PROXY_MODE resolution", () => {
     const leaked = parseEnv({
       ...BASE_ENV,
       ...CLOUDFLARE,
-      AROMA_ORIGIN_SECRET: "too-short-secret",
+      OVELO_ORIGIN_SECRET: "too-short-secret",
     });
     expect(leaked.ok).toBe(false);
     if (!leaked.ok)
@@ -204,9 +204,9 @@ describe("spoofing: each mode ignores the headers it does not trust", () => {
   });
 
   it("cloudflare: the host is Host, never a forged X-Forwarded-Host; the scheme is Cloudflare's", () => {
-    const headers = h({ ...FORGED, host: "beta.aroma.example" });
+    const headers = h({ ...FORGED, host: "beta.ovelo.example" });
     expect(requestHost(headers, "fallback", CLOUDFLARE)).toBe(
-      "beta.aroma.example",
+      "beta.ovelo.example",
     );
     expect(requestProtocol(headers, "http:", CLOUDFLARE)).toBe("https");
   });
@@ -263,7 +263,7 @@ describe("spoofing: each mode ignores the headers it does not trust", () => {
   });
 
   it("an inconsistent configuration trusts nothing (fail closed)", () => {
-    const bad = { ...NONE, AROMA_PROXY_MODE: "vercel" };
+    const bad = { ...NONE, OVELO_PROXY_MODE: "vercel" };
     expect(clientIp(h({ "x-real-ip": "6.6.6.6" }), bad)).toBe(UNKNOWN_IP);
     expect(
       jurisdictionOf(h({ "x-vercel-ip-country": "DE" }), bad, policy).status,

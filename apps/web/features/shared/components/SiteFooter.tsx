@@ -37,7 +37,7 @@ export function SiteFooter() {
             </li>
             <li>
               <Link className={textLink} href={routes.home}>
-                Aroma home
+                Ovelo home
               </Link>
             </li>
           </ul>

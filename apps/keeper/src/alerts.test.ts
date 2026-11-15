@@ -13,7 +13,7 @@ describe("alerts", () => {
   it("formats for Slack and Discord", () => {
     expect(formatAlert("slack", alert(), "devnet")).toMatchObject({
       text: expect.stringMatching(
-        /^\[aroma-keeper devnet\] ERROR installment_failed: Installment failed/,
+        /^\[ovelo-keeper devnet\] ERROR installment_failed: Installment failed/,
       ),
     });
     expect(formatAlert("discord", alert(), "devnet")).toEqual({

@@ -33,7 +33,7 @@ const keyArray = () =>
 
 let dir = "";
 beforeEach(async () => {
-  dir = await mkdtemp(join(tmpdir(), "aroma-scan-m7-"));
+  dir = await mkdtemp(join(tmpdir(), "ovelo-scan-m7-"));
 });
 afterEach(async () => rm(dir, { recursive: true, force: true }));
 
@@ -41,12 +41,12 @@ describe("client-secret scan, M7 additions", () => {
   it("fails on the localnet marker in a production build and allows it in a localnet test build", async () => {
     await writeFile(
       join(dir, "chunk.js"),
-      'localStorage.getItem("aromaLocalnetCluster")',
+      'localStorage.getItem("oveloLocalnetCluster")',
     );
     const strict = await s.scanClientArtifacts([dir], new Map(), {
       markers: s.LOCALNET_MARKERS,
     });
-    expect(strict.matches[0]?.found).toEqual(["marker:aromaLocalnetCluster"]);
+    expect(strict.matches[0]?.found).toEqual(["marker:oveloLocalnetCluster"]);
     const allowed = await s.scanClientArtifacts([dir], new Map(), {
       markers: [],
     });
@@ -72,15 +72,15 @@ describe("client-secret scan, M7 additions", () => {
     const secrets = await s.configuredServerSecrets({
       envFiles: [],
       environment: {
-        AROMA_V1_FAUCET_KEYPAIR: faucet,
+        OVELO_V1_FAUCET_KEYPAIR: faucet,
         KEEPER_KEYPAIR: keyArray().replace("11", "12"),
         TURNSTILE_SECRET_KEY: "0x4AAAAAAAtest-secret-value",
         NEXT_PUBLIC_TURNSTILE_SITE_KEY: "1x00000000000000000000AA",
       },
     });
     expect([...secrets.values()].flat().sort()).toEqual([
-      "AROMA_V1_FAUCET_KEYPAIR",
       "KEEPER_KEYPAIR",
+      "OVELO_V1_FAUCET_KEYPAIR",
       "TURNSTILE_SECRET_KEY",
     ]);
     await writeFile(
@@ -90,10 +90,10 @@ describe("client-secret scan, M7 additions", () => {
     const result = await s.scanClientArtifacts([dir], secrets, {
       forbiddenNames: s.FORBIDDEN_NAMES,
     });
-    expect(result.matches[0]?.variables).toEqual(["AROMA_V1_FAUCET_KEYPAIR"]);
+    expect(result.matches[0]?.variables).toEqual(["OVELO_V1_FAUCET_KEYPAIR"]);
     expect(result.matches[0]?.found).toContain("name:TURNSTILE_SECRET_KEY");
     for (const name of [
-      "AROMA_V1_FAUCET_KEYPAIR",
+      "OVELO_V1_FAUCET_KEYPAIR",
       "KEEPER_KEYPAIR",
       "TURNSTILE_SECRET_KEY",
     ])

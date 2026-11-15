@@ -32,7 +32,7 @@ function decodeChecked<T extends { version: number }>(
   decode: (bytes: ReadonlyUint8Array) => T,
 ): T {
   if (!startsWith(data, discriminator))
-    throw new Error(`Not an Aroma Guard v1 ${name} account.`);
+    throw new Error(`Not an Ovelo Guard v1 ${name} account.`);
   const value = decode(data);
   if (value.version !== ACCOUNT_VERSION)
     throw new Error(`Unsupported ${name} version ${value.version}.`);

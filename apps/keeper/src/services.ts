@@ -39,7 +39,7 @@ export function keeperRedis(env: KeeperEnv): KeeperRedis {
 export function runDeps(
   env: KeeperEnv,
   log: Logger,
-  db: KeeperDb = connectDb(env.DATABASE_URL, env.AROMA_LOCAL_NEON_WS_PROXY),
+  db: KeeperDb = connectDb(env.DATABASE_URL, env.OVELO_LOCAL_NEON_WS_PROXY),
 ): RunDeps {
   return {
     env,

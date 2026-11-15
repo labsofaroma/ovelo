@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Refuses to build or deploy unless one program ID is used everywhere:
-//   the program keypair (target/deploy/aroma_guard-keypair.json), `declare_id!`,
-//   every `aroma_guard = "…"` in Anchor.toml, the built IDLs, and `--expect` if given.
+//   the program keypair (target/deploy/ovelo_guard-keypair.json), `declare_id!`,
+//   every `ovelo_guard = "…"` in Anchor.toml, the built IDLs, and `--expect` if given.
 // A missing keypair is an error: `anchor build` would silently create a NEW one (new program ID).
 // Only the public key is derived and printed; the secret bytes never leave this process.
 //   node scripts/check-program-id.mjs [--root DIR] [--require-idl] [--expect PUBKEY]
@@ -21,12 +21,12 @@ const root = path.resolve(
 const requireIdl = argv.includes("--require-idl");
 const expect = valueOf("--expect");
 
-const KEYPAIR = "target/deploy/aroma_guard-keypair.json";
-const LIB = "programs/aroma_guard/src/lib.rs";
+const KEYPAIR = "target/deploy/ovelo_guard-keypair.json";
+const LIB = "programs/ovelo_guard/src/lib.rs";
 const IDLS = [
-  "target/idl/aroma_guard.json",
-  "target/build/mainnet/aroma_guard.json",
-  "target/build/devnet-mock/aroma_guard.json",
+  "target/idl/ovelo_guard.json",
+  "target/build/mainnet/ovelo_guard.json",
+  "target/build/devnet-mock/ovelo_guard.json",
 ];
 
 function fail(message) {
@@ -103,14 +103,14 @@ let tomlEntries = 0;
 for (const line of toml.split("\n")) {
   const header = line.match(/^\s*\[([^\]]+)\]/);
   if (header) section = header[1].trim();
-  const entry = line.match(/^\s*aroma_guard\s*=\s*"([^"]+)"/);
+  const entry = line.match(/^\s*ovelo_guard\s*=\s*"([^"]+)"/);
   if (entry && section.startsWith("programs.")) {
     sources.push([`Anchor.toml [${section}]`, entry[1]]);
     tomlEntries += 1;
   }
 }
 if (tomlEntries === 0)
-  fail("Anchor.toml has no [programs.*] aroma_guard entry.");
+  fail("Anchor.toml has no [programs.*] ovelo_guard entry.");
 
 for (const idl of IDLS) {
   const file = path.join(root, idl);

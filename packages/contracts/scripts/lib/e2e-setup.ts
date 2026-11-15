@@ -4,7 +4,7 @@ import {
   type Address,
   type KeyPairSigner,
 } from "@solana/kit";
-import * as v1 from "@aroma/guard";
+import * as v1 from "@ovelo/guard";
 import { DEVNET_ASSETS, TEST_USD, feedBytes } from "./assets";
 import { e2eConfig } from "./e2e-support";
 import type { Connection } from "./send";

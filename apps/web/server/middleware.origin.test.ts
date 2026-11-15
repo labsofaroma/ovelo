@@ -14,10 +14,10 @@ const { middleware } = await import("@/middleware");
 
 const SECRET = "test-origin-secret-0123456789abcdefABCDEF";
 const EDGE = {
-  AROMA_PLATFORM: "selfhost",
-  AROMA_DEPLOY_ENV: "development",
-  AROMA_PROXY_MODE: "cloudflare",
-  AROMA_ORIGIN_SECRET: SECRET,
+  OVELO_PLATFORM: "selfhost",
+  OVELO_DEPLOY_ENV: "development",
+  OVELO_PROXY_MODE: "cloudflare",
+  OVELO_ORIGIN_SECRET: SECRET,
 };
 
 beforeEach(() => {
@@ -124,10 +124,10 @@ describe("origin lock (cloudflare mode)", () => {
   );
 
   it("refuses everything when the secret is not configured (fail closed)", async () => {
-    vi.stubEnv("AROMA_ORIGIN_SECRET", "");
+    vi.stubEnv("OVELO_ORIGIN_SECRET", "");
     const response = await call("GET", "/markets", { [ORIGIN_HEADER]: SECRET });
     expect(response.status).toBe(403);
-    vi.stubEnv("AROMA_ORIGIN_SECRET", "short");
+    vi.stubEnv("OVELO_ORIGIN_SECRET", "short");
     expect(
       (await call("GET", "/markets", { [ORIGIN_HEADER]: "short" })).status,
     ).toBe(403);
@@ -148,7 +148,7 @@ describe("origin lock (cloudflare mode)", () => {
   });
 
   it("does not apply outside cloudflare mode (Vercel and none are unchanged)", async () => {
-    vi.stubEnv("AROMA_PROXY_MODE", "");
+    vi.stubEnv("OVELO_PROXY_MODE", "");
     expect((await call("GET", "/markets")).status).not.toBe(403);
     expect(
       originAccepted(new Headers(), { VERCEL: "1", VERCEL_ENV: "production" }),

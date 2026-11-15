@@ -19,7 +19,7 @@ export function LegalPage({
       <div className="flex max-w-3xl flex-col gap-6">
         <header className="flex flex-col gap-3">
           <p className="text-caption font-semibold uppercase tracking-wide text-muted">
-            Aroma / your information
+            Ovelo / your information
           </p>
           <h1 className="text-page font-semibold max-md:text-page-mobile">
             {document.title}
@@ -56,7 +56,7 @@ export function LegalPage({
               <>
                 Reach the maintainers through{" "}
                 <a className={textLink} href={contact.issuesUrl}>
-                  Aroma’s project support
+                  Ovelo’s project support
                 </a>
                 . Public issues are visible to everyone; do not post personal
                 information, private keys or account credentials.

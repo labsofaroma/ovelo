@@ -1,4 +1,4 @@
-import { createConfig } from "@aroma/config/eslint";
+import { createConfig } from "@ovelo/config/eslint";
 
 // The Codama output is generated (marked GENERATED in every file) and not linted; the pinned
 // Jupiter IDL is protocol metadata read from mainnet (src/jupiter/idl/README.md), not code.

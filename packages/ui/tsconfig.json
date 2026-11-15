@@ -1,5 +1,5 @@
 {
-  "extends": "@aroma/config/tsconfig.base.json",
+  "extends": "@ovelo/config/tsconfig.base.json",
   "compilerOptions": {
     "jsx": "react-jsx",
     "lib": ["dom", "dom.iterable", "esnext"],

@@ -1,4 +1,4 @@
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@aroma/ui";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@ovelo/ui";
 import type { ResearchView } from "../schema";
 import { NewsList } from "./NewsList";
 import {

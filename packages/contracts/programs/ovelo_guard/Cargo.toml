@@ -1,14 +1,14 @@
 [package]
-name = "aroma_guard"
+name = "ovelo_guard"
 version = "1.0.0"
-description = "Aroma Guard v1: oracle-bounded recurring investing on Solana"
+description = "Ovelo Guard v1: oracle-bounded recurring investing on Solana"
 edition = "2021"
 license = "UNLICENSED"
 publish = false
 
 [lib]
 crate-type = ["cdylib", "lib"]
-name = "aroma_guard"
+name = "ovelo_guard"
 
 [features]
 default = []

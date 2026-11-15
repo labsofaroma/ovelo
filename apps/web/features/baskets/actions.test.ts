@@ -29,7 +29,7 @@ import {
 } from "./actions";
 
 /** M5b B4: v1 Solana Actions on M4's quote and build, and the receipt callback. */
-const ORIGIN = "https://aroma.example";
+const ORIGIN = "https://ovelo.example";
 const BASKET = {
   id: "8b2e1c4a-6f0d-4c1e-9a3b-2d5f7e9c1a20",
   name: "Chips",
@@ -138,7 +138,7 @@ describe("actionTransaction", () => {
       href: `${ORIGIN}/api/v1/actions/baskets/${BASKET.id}/confirm?authorization=at1.kid.body.mac`,
     });
   });
-  it("a basket that needs a bundle is refused with a link to buy it on Aroma (no partial order)", () => {
+  it("a basket that needs a bundle is refused with a link to buy it on Ovelo (no partial order)", () => {
     const run = () =>
       actionTransaction(
         prepared({ mode: "bundle", transactions: ["a", "b"] }),

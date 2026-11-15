@@ -1,9 +1,9 @@
 {
-  "name": "@aroma/keeper",
+  "name": "@ovelo/keeper",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Aroma Guard v1 keeper: a stateless POST /run handler, triggered by QStash, that executes due recurring-plan installments on devnet with fresh, fully verified Pyth prices.",
+  "description": "Ovelo Guard v1 keeper: a stateless POST /run handler, triggered by QStash, that executes due recurring-plan installments on devnet with fresh, fully verified Pyth prices.",
   "exports": {
     ".": "./src/index.ts"
   },
@@ -16,7 +16,7 @@
     "cli": "tsx src/cli.ts"
   },
   "devDependencies": {
-    "@aroma/config": "workspace:*",
+    "@ovelo/config": "workspace:*",
     "@electric-sql/pglite": "0.5.16",
     "@types/node": "^20.14.0",
     "@vitest/coverage-v8": "3.2.7",
@@ -27,7 +27,7 @@
     "vitest": "3.2.7"
   },
   "dependencies": {
-    "@aroma/guard": "workspace:*",
+    "@ovelo/guard": "workspace:*",
     "@neondatabase/serverless": "1.2.0",
     "@solana/kit": "7.1.1",
     "@upstash/redis": "1.41.0",

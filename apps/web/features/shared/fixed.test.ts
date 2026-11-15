@@ -40,7 +40,7 @@ describe("fixedFromNumber", () => {
   });
 });
 
-describe("formatting (display only, via @aroma/ui/format)", () => {
+describe("formatting (display only, via @ovelo/ui/format)", () => {
   it("formats USD with grouping and keeps sub-dollar precision", () => {
     expect(formatUsd({ raw: "1234560000", decimals: 6 })).toBe("$1,234.56");
     expect(formatUsd({ raw: "1234", decimals: 6 })).toBe("$0.001234");

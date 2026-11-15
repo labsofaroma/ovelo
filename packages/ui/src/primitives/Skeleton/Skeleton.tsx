@@ -14,7 +14,7 @@ export const Skeleton = forwardRef<
       ref={ref}
       aria-hidden="true"
       className={cn(
-        "h-4 animate-shimmer rounded-control bg-size-[200%_100%] bg-[linear-gradient(90deg,var(--aroma-surface),var(--aroma-raised),var(--aroma-surface))]",
+        "h-4 animate-shimmer rounded-control bg-size-[200%_100%] bg-[linear-gradient(90deg,var(--ovelo-surface),var(--ovelo-raised),var(--ovelo-surface))]",
         className,
       )}
       {...props}

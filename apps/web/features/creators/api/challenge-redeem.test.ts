@@ -72,8 +72,8 @@ describe("POST /api/v1/creators/challenge", () => {
     const body = await json(response);
     expect(body.basketId).toMatch(/^[0-9a-f-]{36}$/);
     expect(body.nonce).toMatch(/^[A-Za-z0-9_-]{32}$/);
-    expect(body.message).toContain("Aroma: sign to publish a creator basket");
-    expect(body.message).toContain("Site: https://aroma.test");
+    expect(body.message).toContain("Ovelo: sign to publish a creator basket");
+    expect(body.message).toContain("Site: https://ovelo.test");
     expect(body.expiresAt).toBe(
       new Date(NOW.getTime() + CHALLENGE_TTL_SECONDS * 1000).toISOString(),
     );
@@ -160,7 +160,7 @@ describe("POST /api/v1/creators/invites/redeem", () => {
     ).toBe(201);
     const used = await (await redeemAs(await makeSigner(), invite.code)).send();
     const unknown = await (
-      await redeemAs(await makeSigner(), "aroma-inv-unknown0000000000000000")
+      await redeemAs(await makeSigner(), "ovelo-inv-unknown0000000000000000")
     ).send();
     expect(used.status).toBe(403);
     expect(unknown.status).toBe(403);

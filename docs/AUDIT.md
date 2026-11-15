@@ -1,4 +1,4 @@
-# Aroma — Codebase Audit
+# Ovelo — Codebase Audit
 
 _Audit date: 13 November 2026. Scope: the whole monorepo (`apps/web` including `lib/sdk`, `packages/anchor`, tooling, CI)._
 
@@ -8,9 +8,9 @@ Severity scale: **Critical** (funds, integrity or an outage) · **High** (securi
 >
 > **M9 (Phase B, branch `phase-b-cutover`):** the prototype is deleted; the M9 lines below close H-4, H-5, H-6, M-5, M-6, M-9 and C-4 with their evidence, record M-12 as partial by decision and L-3 as the owner's license choice.
 >
-> **M11 (Phase D, branch `m11-launch`):** product gaps 2, 3 and 6 are addressed, 4 gains a fee-share ledger (accounting only), and §5 adds the M11 findings with where each is closed. M11 adds no Critical or High finding. Open Critical and High items stay as at M10: H-7 (`main` protection) and H-8 (CI green), both the owner's P6; C-1, C-2 and H-1–H-3 concern the deleted prototype program (REWRITE-PLAN §11). Aroma Guard v1's own external audit is M12.
+> **M11 (Phase D, branch `m11-launch`):** product gaps 2, 3 and 6 are addressed, 4 gains a fee-share ledger (accounting only), and §5 adds the M11 findings with where each is closed. M11 adds no Critical or High finding. Open Critical and High items stay as at M10: H-7 (`main` protection) and H-8 (CI green), both the owner's P6; C-1, C-2 and H-1–H-3 concern the deleted prototype program (REWRITE-PLAN §11). Ovelo Guard v1's own external audit is M12.
 >
-> **Milestones were renumbered in M6** (REWRITE-PLAN §7): recurring investing is now **M7**, the Jupiter mainnet contract path **M8**, cutover **M9**, the Jupiter DCA spike **M10** (it took Path B on 2026-11-15: no mainnet DCA, the devnet beta stays; [launch/DCA-SPIKE.md](./launch/DCA-SPIKE.md)), launch features **M11**, and the external audit with Aroma Guard on mainnet **M12** (when funded). Status lines below use the new numbers.
+> **Milestones were renumbered in M6** (REWRITE-PLAN §7): recurring investing is now **M7**, the Jupiter mainnet contract path **M8**, cutover **M9**, the Jupiter DCA spike **M10** (it took Path B on 2026-11-15: no mainnet DCA, the devnet beta stays; [launch/DCA-SPIKE.md](./launch/DCA-SPIKE.md)), launch features **M11**, and the external audit with Ovelo Guard on mainnet **M12** (when funded). Status lines below use the new numbers.
 
 ---
 
@@ -18,7 +18,7 @@ Severity scale: **Critical** (funds, integrity or an outage) · **High** (securi
 
 | Area | State |
 |---|---|
-| Stack | Next.js 15 App Router + React 18, shared helpers in `apps/web/lib/sdk`, Anchor 1.2 program `aroma_guard` (devnet), Upstash Redis, Privy + wallet-adapter (v1: wallet-adapter only since Phase A; the prototype keeps Privy until M9), Jupiter, Pyth, Jito |
+| Stack | Next.js 15 App Router + React 18, shared helpers in `apps/web/lib/sdk`, Anchor 1.2 program `ovelo_guard` (devnet), Upstash Redis, Privy + wallet-adapter (v1: wallet-adapter only since Phase A; the prototype keeps Privy until M9), Jupiter, Pyth, Jito |
 | Size | ~74k lines of TS/TSX/CSS/Rust across ~500 files |
 | Git | **No commits.** Every file is untracked on `main` |
 | Tests | JS: 447 tests, 439 pass, **8 fail** (missing files, see §3). Rust: 7 unit tests pass |
@@ -28,7 +28,7 @@ Severity scale: **Critical** (funds, integrity or an outage) · **High** (securi
 
 ---
 
-## 1. Smart contract — `packages/anchor/programs/aroma_guard`
+## 1. Smart contract — `packages/anchor/programs/ovelo_guard`
 
 This section is the historical record of the prototype contract in `packages/anchor`, as audited on 13 November 2026. It is kept unchanged.
 
@@ -127,7 +127,7 @@ The SDK still ships Raydium CPMM helpers (`DEVNET_RAYDIUM_CPMM_PROGRAM`, `decode
 `Details.tsx` (1,362 lines), `Account.tsx` (926), `RecurringInvestingPanel.tsx` (864), `BasketBuilder.tsx` (803), `DevnetPlansList.tsx` (757). There is no data-fetching layer (React Query/SWR), and state lives across `localStorage` in seven components. This makes the UI hard to test and to change.
 
 ### M-9 (Medium): state stored on disk on serverless
-`disk-cache.ts` writes to `.aroma-cache` or `/tmp`. On Vercel this is per instance and temporary, so cache hit rates are unpredictable. Use Redis or the Next Data Cache for everything.
+`disk-cache.ts` writes to `.ovelo-cache` or `/tmp`. On Vercel this is per instance and temporary, so cache hit rates are unpredictable. Use Redis or the Next Data Cache for everything.
 
 **Status: Partial (M3).** Every v1 read path (`apps/web/features/*/server.ts`) uses the Next Data Cache (`unstable_cache` with tags `v1:markets` / `v1:research[:mint]`, refreshed by `revalidate` and by `POST /api/v1/revalidate`) and never imports `disk-cache.ts`. An outage is never cached, so the last good snapshot keeps serving with its original timestamp and is labelled stale. The prototype's `lib/server/disk-cache.ts` still serves the prototype routes and is deleted at M9 with them; `server/redis.ts` remains available for M4 caches that need cross-instance locks.
 
@@ -160,7 +160,7 @@ The SDK still ships Raydium CPMM helpers (`DEVNET_RAYDIUM_CPMM_PROGRAM`, `decode
 | `scripts/bot.ts` | `keeper:trigger`, `.github/workflows/*` | yes |
 | `scripts/dev-api-tunnel.mjs`, `create-devnet-xstocks.cjs`, `check-client-secrets.mjs`, `audit-devnet-recurring.mjs` | scripts and tests | yes |
 | `tests/` (root) | `pnpm test` | yes |
-| `docs/actions-and-collector.md`, `docs/aroma-guard-protocol.md`, `PRODUCT.md`, `AGENTS.md` | `.env.example`, anchor README, `.21st/DESIGN.md` | **now created** (the two prototype docs were removed again in M9 with the prototype) |
+| `docs/actions-and-collector.md`, `docs/ovelo-guard-protocol.md`, `PRODUCT.md`, `AGENTS.md` | `.env.example`, anchor README, `.21st/DESIGN.md` | **now created** (the two prototype docs were removed again in M9 with the prototype) |
 
 As a result `pnpm typecheck`, `pnpm test`, `pnpm test:upgrade` and the cron workflow all fail.
 
@@ -173,7 +173,7 @@ As a result `pnpm typecheck`, `pnpm test`, `pnpm test:upgrade` and the cron work
 **Milestone: M7.**
 The GitHub Action runs every 10 minutes, fails at `scripts/bot.ts` and burns Actions minutes. GitHub cron is also best-effort; delays of 10–60 minutes are common. Combined with H-1, users lose installments. Use Vercel Cron or Upstash QStash calling `GET /api/recurring/collect` with the bearer secret, plus alerting.
 
-**Status: Addressed for v1 on devnet in code (M7); real devnet run pending the owner's deploy and accounts.** The broken `recurring-bot.yml` workflow is deleted. `apps/keeper` is a QStash-triggered service (signature verified with the current and next keys) that executes due v1 plans oldest period first, posts fresh, fully verified Pyth prices, and records skipped periods instead of losing them silently; leases, retries with backoff, a dead-letter list with a CLI, and de-duplicated alerts (failed, skipped, low balance, Hermes, RPC, dead-letter growth) to a Slack or Discord webhook. Verified on a local validator (`pnpm --filter @aroma/web e2e:invest`); see [keeper-operations.md](./keeper-operations.md). The prototype collector route still serves the prototype until M9.
+**Status: Addressed for v1 on devnet in code (M7); real devnet run pending the owner's deploy and accounts.** The broken `recurring-bot.yml` workflow is deleted. `apps/keeper` is a QStash-triggered service (signature verified with the current and next keys) that executes due v1 plans oldest period first, posts fresh, fully verified Pyth prices, and records skipped periods instead of losing them silently; leases, retries with backoff, a dead-letter list with a CLI, and de-duplicated alerts (failed, skipped, low balance, Hermes, RPC, dead-letter growth) to a Slack or Discord webhook. Verified on a local validator (`pnpm --filter @ovelo/web e2e:invest`); see [keeper-operations.md](./keeper-operations.md). The prototype collector route still serves the prototype until M9.
 
 **M9 (Phase B): Closed for the prototype collector.** The prototype collector (`/api/recurring/collect`, `lib/server/recurring-*`) is deleted; its paths answer 410. `apps/keeper` is the only executor (devnet today; mainnet keeper at M12).
 
@@ -222,7 +222,7 @@ _Fixed:_ three web tests imported `packages/sdk/node_modules/@solana/kit-v1`. Th
    **Status: Addressed (M11), email off by decision.** Web push and Telegram behind a `NotificationChannel` interface with local fakes, a wallet-signed opt-in per channel, and an outbox with retries, back-off, a lease and dead-lettering (`features/notifications`). Events: trade confirmed, failed or not seen to confirm; creator basket bought; and, labelled devnet, a test-plan round ran, failed or has too little balance (written by the devnet keeper in the same step). No email address is collected.
 3. **No portfolio history or P&L for real holdings.** Basket performance exists, but cost basis per wallet does not.
 
-   **Status: Addressed (M11) for purchases made through Aroma.** Average cost from confirmed receipts and the exact fills of their transactions, in bigint; anything else is "cost basis unknown" with the reason; per holding, per basket and in totals that say what was left out; a CSV for the signed-in wallet (`features/portfolio/pnl`). Realized P&L is not shown: Aroma records no sales.
+   **Status: Addressed (M11) for purchases made through Ovelo.** Average cost from confirmed receipts and the exact fills of their transactions, in bigint; anything else is "cost basis unknown" with the reason; per holding, per basket and in totals that say what was left out; a CSV for the signed-in wallet (`features/portfolio/pnl`). Realized P&L is not shown: Ovelo records no sales.
 4. **The creator economy is invite-only** with multi-use, never-expiring invite codes and no reward mechanism.
 
    **Status: Addressed for v1 invites (M5); rewards still open.** v1 invites are rows in Postgres holding only the SHA-256 of the code, **single-use by default** (`--uses` up to 100) and **always expiring** (1–90 days; an invite without an expiry is refused, fail closed). Redemption is one transaction: a conditional `UPDATE … uses < max_uses AND expires_at > now()` plus the `creators` row, and it must be signed by the wallet being registered. Proven by a 25-way parallel redemption on PGlite and, in M5b, on real Postgres through the Neon driver (25 connections, exactly one succeeds: `features/creators/invites.postgres.test.ts`), and by the creator E2E refusing a used invite. Codes come only from the admin CLI (`scripts/create-invite.ts`, printed once). The prototype's `CREATOR_INVITE_CODES` flow still serves the prototype `/creators` page until M9. Still open: any reward mechanism (no product decision yet), and creator usage is now measured from confirmed receipts (`features/creators/stats.ts`), never self-reported.
@@ -268,8 +268,8 @@ Off Vercel, `VERCEL_ENV` is unset, so a self-hosted production boot would accept
 **Status: Closed in Phase H.** `server/platform.ts` answers the platform and the deploy environment. A production boot with no answer, or a contradictory one, is refused, and the production rules apply to self-host production and beta (`server/platform.test.ts`).
 
 ### PH-2 (High): forwarded headers spoofable behind Cloudflare
-With `AROMA_TRUST_PROXY=true` behind Cloudflare, the client IP (`X-Real-IP`, `X-Forwarded-For`) and the country (`x-vercel-ip-country`) came from headers that Cloudflare passes through, so the geo gate and per-IP limits could be bypassed. Without it, every visitor shared one rate-limit key.
-**Status: Closed in Phase H.** `AROMA_PROXY_MODE` with a `cloudflare` mode (`CF-Connecting-IP` and `CF-IPCountry` only), the origin lock, and one header parser (`server/proxy.ts`, `server/origin-lock.ts`). `AROMA_TRUST_PROXY` now refuses to boot.
+With `OVELO_TRUST_PROXY=true` behind Cloudflare, the client IP (`X-Real-IP`, `X-Forwarded-For`) and the country (`x-vercel-ip-country`) came from headers that Cloudflare passes through, so the geo gate and per-IP limits could be bypassed. Without it, every visitor shared one rate-limit key.
+**Status: Closed in Phase H.** `OVELO_PROXY_MODE` with a `cloudflare` mode (`CF-Connecting-IP` and `CF-IPCountry` only), the origin lock, and one header parser (`server/proxy.ts`, `server/origin-lock.ts`). `OVELO_TRUST_PROXY` now refuses to boot.
 
 ### PH-3 (Medium): the public health report described the deployment
 `/api/v1/health` returned latencies, slots, upstream HTTP statuses and whether API keys were set.

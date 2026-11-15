@@ -3,7 +3,7 @@
  * LOCAL-ONLY chain for the M7 invest E2E (apps/web/e2e/invest/run.ts starts and stops it).
  *
  * A fresh solana-test-validator with the pinned Subscriptions, Pyth receiver and Wormhole
- * binaries, and Aroma Guard v1 (devnet-mock build) loaded at its real program ID with a RUNTIME
+ * binaries, and Ovelo Guard v1 (devnet-mock build) loaded at its real program ID with a RUNTIME
  * upgrade authority (no program keypair is needed or read). Every key is generated in this
  * process and written only to the git-ignored work folder for the runner. Then:
  * - test USD whose mint authority is a runtime FAUCET key (the owner decision for devnet);
@@ -22,8 +22,8 @@ import {
   lamports,
   type KeyPairSigner,
 } from "@solana/kit";
-import * as v1 from "@aroma/guard";
-import { XSTOCKS_PYTH_FEEDS } from "@aroma/guard/pyth";
+import * as v1 from "@ovelo/guard";
+import { XSTOCKS_PYTH_FEEDS } from "@ovelo/guard/pyth";
 import { parseArgs } from "./lib/args";
 import { DEVNET_ASSETS, feedBytes, TEST_USD } from "./lib/assets";
 import { e2eConfig } from "./lib/e2e-support";
@@ -49,7 +49,7 @@ const WORK = path.resolve(
 );
 const PORT = Number(args.values.get("--port") ?? 18_999);
 const HERMES_PORT = Number(args.values.get("--hermes-port") ?? 4_020);
-const SO = path.join(CONTRACTS_ROOT, "target/build/devnet-mock/aroma_guard.so");
+const SO = path.join(CONTRACTS_ROOT, "target/build/devnet-mock/ovelo_guard.so");
 const log = (...parts: unknown[]) => console.error("[invest-chain]", ...parts);
 
 /** Recorded real devnet prices (feed id from the PriceUpdateV2 bytes, price, conf, expo). */

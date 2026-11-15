@@ -1,4 +1,4 @@
-import { formatUnits } from "@aroma/ui/format";
+import { formatUnits } from "@ovelo/ui/format";
 import { formatUsd } from "../../shared/fixed";
 import type { Holding } from "../schema";
 

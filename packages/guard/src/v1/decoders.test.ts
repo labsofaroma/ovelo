@@ -8,7 +8,7 @@ import {
   viewPlan,
 } from "./decoders";
 import { V1_DEPLOYMENTS, V1_PROGRAM_ID } from "./deployments";
-import { AROMA_GUARD_V1_PROGRAM_ID } from "./constants";
+import { OVELO_GUARD_V1_PROGRAM_ID } from "./constants";
 import { k, plan } from "./test/fixtures";
 
 const DAY = 86_400n;
@@ -20,12 +20,12 @@ describe("checked decoders", () => {
     expect(decodePlanAccount(bytes).nonce).toBe(7n);
     const bad = new Uint8Array(bytes);
     bad[0] = bad[0]! ^ 1;
-    expect(() => decodePlanAccount(bad)).toThrow(/Not an Aroma Guard v1 plan/);
+    expect(() => decodePlanAccount(bad)).toThrow(/Not an Ovelo Guard v1 plan/);
     expect(() => decodePlanAccount(encodePlan({ version: 2 }))).toThrow(
       /version 2/,
     );
     expect(() => decodePlanAccount(new Uint8Array(4))).toThrow(
-      /Not an Aroma Guard v1/,
+      /Not an Ovelo Guard v1/,
     );
   });
 
@@ -136,5 +136,5 @@ describe("plan view", () => {
 test("devnet is recorded (M6); mainnet is not deployed until M10", () => {
   expect(V1_DEPLOYMENTS.devnet?.programId).toBe(V1_PROGRAM_ID);
   expect(V1_DEPLOYMENTS.mainnet).toBeNull();
-  expect(V1_PROGRAM_ID).toBe(AROMA_GUARD_V1_PROGRAM_ID);
+  expect(V1_PROGRAM_ID).toBe(OVELO_GUARD_V1_PROGRAM_ID);
 });

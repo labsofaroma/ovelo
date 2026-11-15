@@ -4,7 +4,7 @@ import type { BetaChannel } from "../../schema";
 export type NotifyMessage = {
   title: string;
   body: string;
-  /** An explorer link or an Aroma page (absolute https URL). */
+  /** An explorer link or an Ovelo page (absolute https URL). */
   url: string;
 };
 

@@ -10,17 +10,17 @@
  * Only getGenesisHash / getMultipleAccounts / getAccountInfo / getSlot / getBlockTime and the
  * public Jupiter build API. Never signs, never sends a transaction, never loads a wallet.
  *
- *   pnpm --filter @aroma/contracts fixtures:jupiter
+ *   pnpm --filter @ovelo/contracts fixtures:jupiter
  */
 import crypto from "node:crypto";
 import fs from "node:fs";
 import path from "node:path";
 import { address, getAddressDecoder, type Address } from "@solana/kit";
-import * as v1 from "@aroma/guard";
+import * as v1 from "@ovelo/guard";
 
 const root = path.resolve(import.meta.dirname, "..");
 const RPC =
-  process.env.AROMA_V1_MAINNET_RPC ?? "https://api.mainnet-beta.solana.com";
+  process.env.OVELO_V1_MAINNET_RPC ?? "https://api.mainnet-beta.solana.com";
 const MAINNET_GENESIS = "5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d";
 const USDC = address("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v");
 const LOADER = "BPFLoaderUpgradeab1e11111111111111111111111";
@@ -267,7 +267,7 @@ async function main() {
     JSON.stringify(
       {
         comment:
-          "Read-only mainnet data for the LiteSVM Jupiter suite (scripts/record-jupiter-mainnet.ts): Jupiter Swap API v2 route_v2 builds with the Aroma Guard v1 swap-authority PDA as taker, and every account they touch at the slot below. Route index 7 (destination) is a placeholder the tests replace with their owner's ATA. Public chain data; no key material.",
+          "Read-only mainnet data for the LiteSVM Jupiter suite (scripts/record-jupiter-mainnet.ts): Jupiter Swap API v2 route_v2 builds with the Ovelo Guard v1 swap-authority PDA as taker, and every account they touch at the slot below. Route index 7 (destination) is a placeholder the tests replace with their owner's ATA. Public chain data; no key material.",
         ...header,
         swapAuthority,
         routes,

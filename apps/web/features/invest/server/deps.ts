@@ -53,11 +53,11 @@ async function basketSources(): Promise<BasketSource[]> {
 }
 
 function faucetKey(): Uint8Array {
-  const raw = getEnv().devnet.AROMA_V1_FAUCET_KEYPAIR;
+  const raw = getEnv().devnet.OVELO_V1_FAUCET_KEYPAIR;
   if (!raw)
     throw new AppError("SERVICE_UNAVAILABLE", {
       publicMessage: "The test faucet is not configured right now.",
-      detail: "AROMA_V1_FAUCET_KEYPAIR is not set",
+      detail: "OVELO_V1_FAUCET_KEYPAIR is not set",
     });
   return Uint8Array.from(JSON.parse(raw) as number[]);
 }
@@ -83,7 +83,7 @@ export const productionServices: InvestServices = {
       key: faucetKey(),
       turnstileSecret,
       dailyClaims: Number(
-        env.devnet.AROMA_V1_FAUCET_DAILY_CLAIMS ?? DEFAULT_DAILY_CLAIMS,
+        env.devnet.OVELO_V1_FAUCET_DAILY_CLAIMS ?? DEFAULT_DAILY_CLAIMS,
       ),
     };
   },

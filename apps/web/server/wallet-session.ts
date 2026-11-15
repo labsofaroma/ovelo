@@ -11,9 +11,9 @@ import { AppError } from "./errors";
  * scope, for reads and small changes that should not each need a new signature (notification
  * settings, the creator dashboard). Format: `ws1.<scope>.<kid>.<body>.<mac>`.
  *
- * The key is derived from the trade secret per scope (`HMAC(secret, "aroma:ws1:<scope>")`), so a
+ * The key is derived from the trade secret per scope (`HMAC(secret, "ovelo:ws1:<scope>")`), so a
  * session token can never be confused with a trade authorization or used for another scope, and
- * rotating AROMA_TRADE_SECRET (with _PREVIOUS) rotates these too. No cookie: the client keeps
+ * rotating OVELO_TRADE_SECRET (with _PREVIOUS) rotates these too. No cookie: the client keeps
  * the token in memory and sends it as `Authorization: Bearer`.
  */
 export const SESSION_SCOPES = ["notify", "creator", "portfolio"] as const;
@@ -26,7 +26,7 @@ const bodySchema = z.strictObject({
 });
 
 const derive = (secret: string, scope: SessionScope) =>
-  createHmac("sha256", secret).update(`aroma:ws1:${scope}`).digest();
+  createHmac("sha256", secret).update(`ovelo:ws1:${scope}`).digest();
 const mac = (key: Buffer, signed: string) =>
   createHmac("sha256", key).update(signed).digest();
 

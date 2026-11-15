@@ -1,4 +1,4 @@
-import { formatUnits } from "@aroma/ui/format";
+import { formatUnits } from "@ovelo/ui/format";
 import type { MarketAsset, MarketBasket } from "@/lib/sdk/markets/types";
 import { createPaperAccount, parsePaperAccount } from "@/lib/sdk/paper/account";
 import { executePaperBasket } from "@/lib/sdk/paper/basket";
@@ -12,7 +12,7 @@ import type { PaperQuote } from "./flow";
  * with FRESH observed prices from /api/v1/prices; a leg without a price makes the whole paper
  * order unavailable, exactly like a live basket. The account lives in this browser only.
  */
-export const PAPER_KEY = "aroma.v1.paper";
+export const PAPER_KEY = "ovelo.v1.paper";
 const PAPER_TTL_MS = 60_000;
 
 export type PaperLeg = {

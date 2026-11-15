@@ -30,10 +30,10 @@ export const WALLET_PURPOSES = [
 export type WalletPurpose = (typeof WALLET_PURPOSES)[number];
 
 const TITLE: Record<WalletPurpose, string> = {
-  "notify-manage": "open your Aroma notification settings",
-  "notify-subscribe": "turn on an Aroma notification channel",
-  "creator-dashboard": "open your Aroma creator dashboard",
-  "portfolio-export": "download your Aroma portfolio history",
+  "notify-manage": "open your Ovelo notification settings",
+  "notify-subscribe": "turn on an Ovelo notification channel",
+  "creator-dashboard": "open your Ovelo creator dashboard",
+  "portfolio-export": "download your Ovelo portfolio history",
 };
 
 const nonceSchema = z.string().regex(/^[A-Za-z0-9_-]{32}$/);

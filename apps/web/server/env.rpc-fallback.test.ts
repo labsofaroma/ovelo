@@ -23,7 +23,7 @@ describe("boot schema", () => {
       parseEnv({
         ...BASE_ENV,
         SOLANA_RPC_URL: PRIMARY,
-        SOLANA_RPC_FALLBACK_URL: "https://aroma.mainnet.rpcpool.com/k",
+        SOLANA_RPC_FALLBACK_URL: "https://ovelo.mainnet.rpcpool.com/k",
       }).ok,
     ).toBe(true);
   });
@@ -64,7 +64,7 @@ describe("boot schema", () => {
           ...BASE_ENV,
           SOLANA_RPC_URL: PRIMARY,
           SOLANA_RPC_FALLBACK_URL: "http://127.0.0.1:18902",
-          AROMA_V1_TEST_FORK_GENESIS: FORK,
+          OVELO_V1_TEST_FORK_GENESIS: FORK,
         }),
       ),
     ).toContain("SOLANA_RPC_FALLBACK_URL");
@@ -76,7 +76,7 @@ describe("boot schema", () => {
         ...BASE_ENV,
         SOLANA_RPC_URL: "http://127.0.0.1:18899",
         SOLANA_RPC_FALLBACK_URL: "http://127.0.0.1:18898",
-        AROMA_V1_TEST_FORK_GENESIS: FORK,
+        OVELO_V1_TEST_FORK_GENESIS: FORK,
       }).ok,
     ).toBe(true);
   });
@@ -123,7 +123,7 @@ describe("check:prod-env", () => {
     const findings = await genesisFindings(
       {
         SOLANA_RPC_URL: PRIMARY,
-        SOLANA_RPC_FALLBACK_URL: "https://aroma.mainnet.rpcpool.com/k",
+        SOLANA_RPC_FALLBACK_URL: "https://ovelo.mainnet.rpcpool.com/k",
       },
       fetch,
     );

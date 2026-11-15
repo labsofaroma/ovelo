@@ -8,7 +8,7 @@ import {
   getTransactionDecoder,
   type RpcTransport,
 } from "@solana/kit";
-import { DEVNET_GENESIS_HASH, V1_PROGRAM_ID } from "@aroma/guard";
+import { DEVNET_GENESIS_HASH, V1_PROGRAM_ID } from "@ovelo/guard";
 import type { KeeperRpc } from "../rpc";
 
 export type FakeAccount = {

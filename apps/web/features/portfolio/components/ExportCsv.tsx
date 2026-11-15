@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@aroma/ui";
+import { Button } from "@ovelo/ui";
 import { useSigner } from "../../wallet/context";
 import { pnlCopy } from "../copy";
 import { useCsvExport } from "../useCsvExport";

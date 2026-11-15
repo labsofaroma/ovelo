@@ -1,7 +1,7 @@
 /* eslint-disable no-console -- CLI report: stdout is the output */
 /**
  * M2 baseline: what lib/sdk imports, where `any` leaks into exported types, and how big files are.
- * Run: pnpm --filter @aroma/web exec tsx scripts/sdk-inventory.ts [--json]
+ * Run: pnpm --filter @ovelo/web exec tsx scripts/sdk-inventory.ts [--json]
  */
 import { readdirSync, readFileSync, statSync } from "node:fs";
 import { join, relative } from "node:path";

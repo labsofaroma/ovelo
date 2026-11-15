@@ -1,7 +1,7 @@
 "use client";
 
 import { Star } from "lucide-react";
-import { cn } from "@aroma/ui";
+import { cn } from "@ovelo/ui";
 import { useHydratedWatchlist } from "../useHydratedWatchlist";
 
 export interface WatchToggleProps {
@@ -33,7 +33,7 @@ export function WatchToggle({
       disabled={!hydrated}
       onClick={() => toggle(mint)}
       className={cn(
-        "inline-flex min-h-(--aroma-control-height) min-w-(--aroma-control-height) items-center justify-center gap-2 rounded-control border border-transparent px-2 text-small font-semibold transition-colors motion-base focus-ring",
+        "inline-flex min-h-(--ovelo-control-height) min-w-(--ovelo-control-height) items-center justify-center gap-2 rounded-control border border-transparent px-2 text-small font-semibold transition-colors motion-base focus-ring",
         "hover:bg-raised disabled:cursor-progress disabled:opacity-60",
         showLabel && "border-border-strong px-4",
         watched ? "text-accent" : "text-muted",

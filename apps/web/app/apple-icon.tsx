@@ -4,7 +4,7 @@ import {
   BrandGlyphImage,
 } from "@/features/shared/brand-glyph-image";
 
-/** The iOS home-screen icon: the Aroma gem on the light page colour (iOS rounds the corners). */
+/** The iOS home-screen icon: the Ovelo gem on the light page colour (iOS rounds the corners). */
 export const size = { width: 180, height: 180 };
 export const contentType = "image/png";
 export const dynamic = "force-static";

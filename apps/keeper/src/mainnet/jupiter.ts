@@ -1,6 +1,6 @@
 import type { Address } from "@solana/kit";
-import { routeFromApi, type JupiterRoute } from "@aroma/guard";
-import { validateJupiterExactInInstruction } from "@aroma/guard/jupiter";
+import { routeFromApi, type JupiterRoute } from "@ovelo/guard";
+import { validateJupiterExactInInstruction } from "@ovelo/guard/jupiter";
 
 /**
  * Jupiter Swap API v2 `/build` for one leg (M8 B5), as M4's trade server calls it: taker = the

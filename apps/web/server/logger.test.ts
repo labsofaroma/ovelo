@@ -22,7 +22,7 @@ describe("logger redaction", () => {
     const entry = JSON.parse(lines[0] ?? "{}") as Record<string, unknown>;
     expect(entry).toMatchObject({
       level: "info",
-      service: "aroma-web",
+      service: "ovelo-web",
       route: "/api/v1/health",
       msg: "hello",
     });

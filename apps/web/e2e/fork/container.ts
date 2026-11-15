@@ -6,7 +6,7 @@ import { ORIGIN_SECRET } from "../local-start";
 /**
  * Phase H Step 8: `E2E_TARGET=container` runs the fork E2E against the IMAGE instead of a local
  * `next start`: the production compose file + compose.local.yml, with
- * - the fork-E2E variant of the image (`docker build --target runtime-e2e -t aroma-web:e2e`),
+ * - the fork-E2E variant of the image (`docker build --target runtime-e2e -t ovelo-web:e2e`),
  * - the Cloudflare stand-in on the app port (Playwright talks to it like a browser to the edge:
  *   it never knows the origin secret, it only says where the client "is"),
  * - the loopback bridge, so the app reaches the fork's loopback services at the same URLs.
@@ -40,11 +40,11 @@ export function startContainerApp(
   port: number,
 ): () => void {
   // Playwright (a child process) and this runner now talk to the stand-in (e2e/local-start.ts).
-  process.env.AROMA_E2E_EDGE_PROXY = "1";
+  process.env.OVELO_E2E_EDGE_PROXY = "1";
   const envFile = join(work, "container.env");
   const secretFile = join(work, "origin.secret");
   const lines = Object.entries(appEnv)
-    .filter(([k]) => k !== "AROMA_NEXT_DIST_DIR" && k !== "NODE_ENV")
+    .filter(([k]) => k !== "OVELO_NEXT_DIST_DIR" && k !== "NODE_ENV")
     .map(([k, v]) => {
       if (/[\r\n]/.test(v)) throw new Error(`${k} has a newline`);
       return `${k}=${v}`;
@@ -54,13 +54,13 @@ export function startContainerApp(
   chmodSync(secretFile, 0o644); // the stand-in runs as UID 1000
   const env = {
     ...process.env,
-    AROMA_IMAGE: process.env.E2E_IMAGE ?? "aroma-web:e2e",
-    AROMA_LOCAL_ENV_FILE: envFile,
-    AROMA_LOCAL_SECRET_FILE: secretFile,
-    AROMA_LOCAL_EDGE_PORT: String(port),
+    OVELO_IMAGE: process.env.E2E_IMAGE ?? "ovelo-web:e2e",
+    OVELO_LOCAL_ENV_FILE: envFile,
+    OVELO_LOCAL_SECRET_FILE: secretFile,
+    OVELO_LOCAL_EDGE_PORT: String(port),
     // The browser is at http://127.0.0.1:<port>: keep its Host and scheme (the same-origin check).
-    AROMA_LOCAL_EDGE_HOST: "",
-    AROMA_LOCAL_EDGE_SCHEME: "http",
+    OVELO_LOCAL_EDGE_HOST: "",
+    OVELO_LOCAL_EDGE_SCHEME: "http",
     BRIDGE_PORTS: loopbackPorts(appEnv),
   };
   const compose = (...args: string[]) =>

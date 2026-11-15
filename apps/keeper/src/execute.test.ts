@@ -1,5 +1,5 @@
-import { ASSOCIATED_TOKEN_PROGRAM_ID, V1_PROGRAM_ID } from "@aroma/guard";
-import { PYTH_RECEIVER_ID, WORMHOLE_PROGRAM_ID } from "@aroma/guard/pyth";
+import { ASSOCIATED_TOKEN_PROGRAM_ID, V1_PROGRAM_ID } from "@ovelo/guard";
+import { PYTH_RECEIVER_ID, WORMHOLE_PROGRAM_ID } from "@ovelo/guard/pyth";
 import { describe, expect, it, vi } from "vitest";
 import type { AlertDeps } from "./alerts";
 import { executePlan, type ExecuteDeps } from "./execute";

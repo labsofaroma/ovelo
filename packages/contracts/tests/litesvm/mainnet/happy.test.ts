@@ -4,7 +4,7 @@
  */
 import { describe, expect, test } from "vitest";
 import type { Address } from "@solana/kit";
-import * as v1 from "@aroma/guard";
+import * as v1 from "@ovelo/guard";
 import { errorCode } from "../helpers";
 import { HOUR, MainnetWorld, USDC } from "./world";
 
@@ -61,7 +61,7 @@ describe("execute_installment_routed (default build, Jupiter route_v2)", () => {
       p.inProgressPeriod,
     ]).toEqual([1, 0, 0, v1.NO_PERIOD]);
     expect(
-      r.logs.some((l) => l.includes("aroma-guard: jupiter route_v2 cpi")),
+      r.logs.some((l) => l.includes("ovelo-guard: jupiter route_v2 cpi")),
     ).toBe(true);
   });
 

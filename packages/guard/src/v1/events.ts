@@ -1,11 +1,11 @@
 /**
- * Aroma Guard v1 events from transaction logs. Anchor's `emit!` writes `Program data: <base64>`.
+ * Ovelo Guard v1 events from transaction logs. Anchor's `emit!` writes `Program data: <base64>`.
  * Only lines logged while THIS program is the one executing count: the invoke stack is tracked
  * from the runtime's `Program <id> invoke [n]` / `success` / `failed` lines, so another program
  * in the same transaction cannot forge an event.
  */
 import type { Address } from "@solana/kit";
-import { AROMA_GUARD_V1_PROGRAM_ID } from "./constants";
+import { OVELO_GUARD_V1_PROGRAM_ID } from "./constants";
 import {
   INSTALLMENT_EXECUTED_EVENT_DISCRIMINATOR,
   PLAN_CLOSED_EVENT_DISCRIMINATOR,
@@ -18,7 +18,7 @@ import {
   type PlanCreatedEvent,
 } from "./generated";
 
-export type AromaGuardEvent =
+export type OveloGuardEvent =
   | { name: "InstallmentExecuted"; data: InstallmentExecutedEvent }
   | { name: "PlanCreated"; data: PlanCreatedEvent }
   | { name: "PlanClosed"; data: PlanClosedEvent };
@@ -43,7 +43,7 @@ const startsWith = (data: Uint8Array, prefix: ArrayLike<number>) =>
     (byte: number, i: number) => data[i] === byte,
   );
 
-function decodeOne(data: Uint8Array): AromaGuardEvent | null {
+function decodeOne(data: Uint8Array): OveloGuardEvent | null {
   try {
     if (startsWith(data, INSTALLMENT_EXECUTED_EVENT_DISCRIMINATOR))
       return {
@@ -61,12 +61,12 @@ function decodeOne(data: Uint8Array): AromaGuardEvent | null {
 }
 
 /** Plan events emitted by `programId` (default: v1) in a transaction's log messages, in order. */
-export function decodeAromaGuardEvents(
+export function decodeOveloGuardEvents(
   logs: readonly string[] | null | undefined,
-  programId: Address = AROMA_GUARD_V1_PROGRAM_ID,
-): AromaGuardEvent[] {
+  programId: Address = OVELO_GUARD_V1_PROGRAM_ID,
+): OveloGuardEvent[] {
   const stack: string[] = [];
-  const events: AromaGuardEvent[] = [];
+  const events: OveloGuardEvent[] = [];
   for (const line of logs ?? []) {
     const invoke = INVOKE.exec(line);
     if (invoke) {
@@ -90,7 +90,7 @@ export function installmentEvents(
   logs: readonly string[] | null | undefined,
   programId?: Address,
 ): InstallmentExecutedEvent[] {
-  return decodeAromaGuardEvents(logs, programId).flatMap((e) =>
+  return decodeOveloGuardEvents(logs, programId).flatMap((e) =>
     e.name === "InstallmentExecuted" ? [e.data] : [],
   );
 }

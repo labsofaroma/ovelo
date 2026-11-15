@@ -31,7 +31,7 @@ import { disclosureSentence } from "@/features/compliance/disclosures";
  * Solana Actions for v1 baskets (M5b B4, port of the prototype's basket-buy-actions.ts). There is no
  * separate trade logic: POST quotes through M4's quoteTrade (the same target rules, routes,
  * simulation and HMAC authorization as the trade ticket) and returns the unsigned transaction
- * for the `account` in the body. The wallet signs and sends it; Aroma never holds a key.
+ * for the `account` in the body. The wallet signs and sends it; Ovelo never holds a key.
  *
  * Receipts: the Blink client sends the transaction itself, so /api/v1/trade/submit never sees
  * it. The POST response chains a `links.next` POST callback carrying the authorization; after
@@ -88,7 +88,7 @@ export function actionMetadata(
     icon: `${origin}/og.png`,
     title: `Buy ${basket.name} (${basket.ticker}) · Mainnet spot purchase`,
     description:
-      "Buy the whole basket once with mainnet USDC, in one transaction your wallet signs. Constituent tokens settle to your wallet. Maximum slippage is 1%; SOL is needed for network fees and account rent. If the basket needs more than one transaction, buy it on Aroma instead. No partial basket is ever bought. " +
+      "Buy the whole basket once with mainnet USDC, in one transaction your wallet signs. Constituent tokens settle to your wallet. Maximum slippage is 1%; SOL is needed for network fees and account rent. If the basket needs more than one transaction, buy it on Ovelo instead. No partial basket is ever bought. " +
       // M9 compliance gate: the risk disclosure travels with every Action.
       disclosureSentence(
         ...(creatorBasketId(basket.id)

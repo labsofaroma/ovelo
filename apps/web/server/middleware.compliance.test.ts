@@ -76,7 +76,7 @@ describe("geo gate in middleware", () => {
   });
 
   it("missing-country behaviour is configurable", async () => {
-    vi.stubEnv("AROMA_COMPLIANCE_MISSING_COUNTRY", "allow");
+    vi.stubEnv("OVELO_COMPLIANCE_MISSING_COUNTRY", "allow");
     expect((await post("/api/v1/trade/quote")).status).toBe(200);
     expect((await post("/api/v1/trade/quote", country("US"))).status).toBe(451);
   });
@@ -107,7 +107,7 @@ describe("geo gate in middleware", () => {
     expect((await post("/api/v1/plans/submit", country("US"))).status).toBe(
       200,
     );
-    vi.stubEnv("AROMA_COMPLIANCE_DEVNET", "allow");
+    vi.stubEnv("OVELO_COMPLIANCE_DEVNET", "allow");
     expect(
       (await post("/api/v1/plans/prepare-create", country("US"))).status,
     ).toBe(200);
@@ -120,7 +120,7 @@ describe("geo gate in middleware", () => {
   });
 
   it("an invalid policy fails closed on gated paths", async () => {
-    vi.stubEnv("AROMA_TERMS_VERSION", "unknown-version");
+    vi.stubEnv("OVELO_TERMS_VERSION", "unknown-version");
     expect((await post("/api/v1/trade/quote", country("DE"))).status).toBe(451);
   });
 
@@ -160,7 +160,7 @@ describe("browse rule", () => {
   });
 
   it("browse=block rewrites pages (not the legal pages, APIs or files) to the notice page", async () => {
-    vi.stubEnv("AROMA_COMPLIANCE_BROWSE", "block");
+    vi.stubEnv("OVELO_COMPLIANCE_BROWSE", "block");
     for (const path of ["/", "/markets", "/stock/TSLAx"]) {
       const blocked = await page(path, "US");
       expect(blocked.headers.get("x-middleware-rewrite")).toMatch(

@@ -1,2 +1,2 @@
-import { createConfig } from "@aroma/config/eslint";
+import { createConfig } from "@ovelo/config/eslint";
 export default createConfig({ dir: import.meta.dirname });

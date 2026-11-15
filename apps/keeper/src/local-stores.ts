@@ -1,9 +1,9 @@
 /**
  * In-memory Redis and plans_index stores for LOCAL runs only: unit tests and the mainnet-fork
- * end to end (`pnpm --filter @aroma/contracts e2e:fork`). Production always uses Upstash and
+ * end to end (`pnpm --filter @ovelo/contracts e2e:fork`). Production always uses Upstash and
  * Neon (services.ts); nothing here persists or is shared between processes.
  */
-import type { PlanIndexRow } from "@aroma/guard";
+import type { PlanIndexRow } from "@ovelo/guard";
 import type { InstallmentReceipt, KeeperDb } from "./db";
 import type { KeeperRedis } from "./store";
 

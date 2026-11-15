@@ -1,7 +1,7 @@
 {
   // One configuration for all of apps/web (M9: the strict project is folded in; there is no
   // prototype code left to exempt). Base: strict, noUncheckedIndexedAccess, noImplicitOverride.
-  "extends": "@aroma/config/tsconfig.base.json",
+  "extends": "@ovelo/config/tsconfig.base.json",
   "compilerOptions": {
     "lib": ["dom", "dom.iterable", "esnext"],
     "allowJs": true,

@@ -3,7 +3,7 @@ import { expectNoAxeViolations, THEMES, useTheme } from "./helpers";
 import { OUTAGE_BASE_URL } from "./ports";
 
 /**
- * Server started with AROMA_V1_SIMULATE_UPSTREAM_OUTAGE=true: every provider call fails.
+ * Server started with OVELO_V1_SIMULATE_UPSTREAM_OUTAGE=true: every provider call fails.
  * Only DYNAMIC routes are visited here. Both servers share one .next directory, and an ISR
  * route (stock, baskets list, landing) regenerated during an outage would be written to the
  * shared cache. The stock page's unavailable states are covered by features/stock tests.

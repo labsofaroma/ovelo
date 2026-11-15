@@ -1,13 +1,13 @@
 #!/usr/bin/env vite-node
 /**
  * Devnet only (refuses any other genesis). Run by the owner after init-devnet:
- *   pnpm --filter @aroma/contracts devnet:register [--rpc URL] [--deployer PATH] [--symbols AAPL,MSFT] [--list] [--dry-run]
+ *   pnpm --filter @ovelo/contracts devnet:register [--rpc URL] [--deployer PATH] [--symbols AAPL,MSFT] [--list] [--dry-run]
  * For each devnet asset (lib/assets.ts): creates its Token-2022 mock mint with ScaledUiAmount and
  * mint authority = the asset's ["mock_mint", mint] PDA (no freeze authority), then register_asset
  * with the REAL Pyth feed id of the underlying equity. Idempotent and resumable (.devnet/state.json).
  */
 import type { Address } from "@solana/kit";
-import * as v1 from "@aroma/guard";
+import * as v1 from "@ovelo/guard";
 import { DEFAULT_DEPLOYER, DEFAULT_DEVNET_RPC, parseArgs } from "./lib/args";
 import { feedBytes, selectAssets } from "./lib/assets";
 import { assertDevnet } from "./lib/cluster";

@@ -1,14 +1,14 @@
 import reactHooks from "eslint-plugin-react-hooks";
-import { createConfig } from "@aroma/config/eslint";
+import { createConfig } from "@ovelo/config/eslint";
 
 const boundaryMessage =
-  "@aroma/ui is a pure presentation layer: no app code, server-only code, wallet or Solana packages. " +
+  "@ovelo/ui is a pure presentation layer: no app code, server-only code, wallet or Solana packages. " +
   "Inject behaviour from the app through props instead.";
 
 const forbidden = [
   // Apps and server code.
   {
-    group: ["@aroma/web", "@aroma/web/*", "@aroma/keeper", "@aroma/keeper/*"],
+    group: ["@ovelo/web", "@ovelo/web/*", "@ovelo/keeper", "@ovelo/keeper/*"],
     message: boundaryMessage,
   },
   { group: ["**/apps/*", "**/apps/**"], message: boundaryMessage },

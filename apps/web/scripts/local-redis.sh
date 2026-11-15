@@ -6,7 +6,7 @@ set -euo pipefail
 cd "$(dirname "$0")/.."
 COMPOSE=(docker compose -f scripts/local-redis.compose.yml)
 URL="http://127.0.0.1:8079"
-TOKEN="aroma-local-redis-token"
+TOKEN="ovelo-local-redis-token"
 
 case "${1:-up}" in
   up)

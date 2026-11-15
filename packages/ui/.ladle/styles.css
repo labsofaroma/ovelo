@@ -1,4 +1,4 @@
-/* Storybook-style entry: full Tailwind v4 (with preflight) + the Aroma tokens. */
+/* Storybook-style entry: full Tailwind v4 (with preflight) + the Ovelo tokens. */
 @import "tailwindcss";
 @import "../tokens.css";
 @import "../theme.css";
@@ -6,14 +6,14 @@
 @source "../src";
 
 body {
-  background: var(--aroma-bg);
-  color: var(--aroma-ink);
-  font-family: var(--aroma-font-sans);
-  font-size: var(--aroma-text-body);
-  line-height: var(--aroma-leading-body);
+  background: var(--ovelo-bg);
+  color: var(--ovelo-ink);
+  font-family: var(--ovelo-font-sans);
+  font-size: var(--ovelo-text-body);
+  line-height: var(--ovelo-leading-body);
 }
 
-/* Match the workbench canvas to the Aroma tokens instead of Ladle's own chrome colors. */
+/* Match the workbench canvas to the Ovelo tokens instead of Ladle's own chrome colors. */
 .ladle-background {
-  background: var(--aroma-bg) !important;
+  background: var(--ovelo-bg) !important;
 }

@@ -11,7 +11,7 @@ import {
   JUPITER_V6_PROGRAM_ID,
   TOKEN_2022_PROGRAM_ID,
   TOKEN_PROGRAM_ID,
-} from "@aroma/guard";
+} from "@ovelo/guard";
 
 const RECORDED = "u2T6zDHErxRAS0wAAAAAAF9cFQAAAAAAZAAAAAAAAQAAAC8AABAnAAE=";
 export const QUOTED = 1_399_903n;

@@ -1,4 +1,4 @@
-import type { Config } from "@aroma/guard";
+import type { Config } from "@ovelo/guard";
 import type { KeeperEnv } from "../env";
 import type { ExecuteDeps } from "../execute";
 import { mainnetBatchRunner } from "./batch";

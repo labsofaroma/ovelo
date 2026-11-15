@@ -1,4 +1,4 @@
-# Aroma Guard v1 workspace. Toolchain pins = what is installed on the build machine
+# Ovelo Guard v1 workspace. Toolchain pins = what is installed on the build machine
 # (REWRITE-PLAN M6, A3).
 [toolchain]
 anchor_version = "1.2.1"
@@ -9,17 +9,17 @@ resolution = true
 skip-lint = false
 
 [programs.localnet]
-aroma_guard = "FYrrfhrysaGUwCNyTggqyKmTWqpg3vph8gzmSWt7QtTU"
+ovelo_guard = "FYrrfhrysaGUwCNyTggqyKmTWqpg3vph8gzmSWt7QtTU"
 
 [programs.devnet]
-aroma_guard = "FYrrfhrysaGUwCNyTggqyKmTWqpg3vph8gzmSWt7QtTU"
+ovelo_guard = "FYrrfhrysaGUwCNyTggqyKmTWqpg3vph8gzmSWt7QtTU"
 
 # Default to a local validator. Devnet deploys pass --provider.cluster devnet explicitly
 # (docs/M6-DEVNET-DEPLOY.md). The wallet is the owner's deployer (CONTRACT-V1-SPEC §10),
 # never ~/.config/solana/id.json. Nothing in this repo reads or creates it.
 [provider]
 cluster = "localnet"
-wallet = "~/.config/solana/aroma-deployer.json"
+wallet = "~/.config/solana/ovelo-deployer.json"
 
 [scripts]
 test = "pnpm test:litesvm"

@@ -6,23 +6,23 @@ import { randomBytes } from "node:crypto";
  * the production rules are off, so the opt-in test switches can apply.
  */
 export const LOCAL_START = {
-  AROMA_PLATFORM: "selfhost",
-  AROMA_DEPLOY_ENV: "development",
+  OVELO_PLATFORM: "selfhost",
+  OVELO_DEPLOY_ENV: "development",
 } as const;
 
 /**
  * Phase H Step 2: the fork and invest E2E apps run exactly as production does behind Cloudflare
- * (AROMA_PROXY_MODE=cloudflare with the origin lock), and Playwright plays the edge: it sends
- * CF-IPCountry, CF-Connecting-IP and x-aroma-origin. The secret is random per run; the runner
+ * (OVELO_PROXY_MODE=cloudflare with the origin lock), and Playwright plays the edge: it sends
+ * CF-IPCountry, CF-Connecting-IP and x-ovelo-origin. The secret is random per run; the runner
  * sets it in its own environment, so Playwright (a child process) reads the same value.
  */
-process.env.AROMA_E2E_ORIGIN_SECRET ||= randomBytes(32).toString("base64url");
-export const ORIGIN_SECRET = process.env.AROMA_E2E_ORIGIN_SECRET;
+process.env.OVELO_E2E_ORIGIN_SECRET ||= randomBytes(32).toString("base64url");
+export const ORIGIN_SECRET = process.env.OVELO_E2E_ORIGIN_SECRET;
 
 export const EDGE_START = {
   ...LOCAL_START,
-  AROMA_PROXY_MODE: "cloudflare",
-  AROMA_ORIGIN_SECRET: ORIGIN_SECRET,
+  OVELO_PROXY_MODE: "cloudflare",
+  OVELO_ORIGIN_SECRET: ORIGIN_SECRET,
 } as const;
 
 /**
@@ -30,7 +30,7 @@ export const EDGE_START = {
  * then sends only where it "is" (x-edge-client-*), and the stand-in sets the CF headers and the
  * origin secret, as the real edge does. Otherwise the browser plays the edge itself.
  */
-const behindStandIn = () => process.env.AROMA_E2E_EDGE_PROXY === "1";
+const behindStandIn = () => process.env.OVELO_E2E_EDGE_PROXY === "1";
 
 /** The headers Cloudflare's edge adds: the country, the client IP (optional) and the lock. */
 export function edgeHeaders(
@@ -44,7 +44,7 @@ export function edgeHeaders(
     };
   return {
     "cf-ipcountry": country,
-    "x-aroma-origin": ORIGIN_SECRET,
+    "x-ovelo-origin": ORIGIN_SECRET,
     ...(ip ? { "cf-connecting-ip": ip } : {}),
   };
 }

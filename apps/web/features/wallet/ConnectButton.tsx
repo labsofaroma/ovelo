@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@aroma/ui";
+import { Button } from "@ovelo/ui";
 import { shortAddress, useWallet } from "./context";
 import { WRONG_NETWORK_SHORT } from "./cluster";
 

@@ -31,7 +31,7 @@ const SCANNED = tracked(
 );
 /** Templates: secret NAMES with empty values only. */
 const TEMPLATES = new Set([
-  "deploy/hostinger/aroma.env.example",
+  "deploy/hostinger/ovelo.env.example",
   "deploy/hostinger/migrate.env.example",
 ]);
 const SECRET_NAME =
@@ -55,7 +55,7 @@ describe("secret scan: Dockerfile, deploy/**, workflows", () => {
       "deploy/hostinger/docker-compose.yml",
       "deploy/hostinger/deploy.sh",
       "deploy/hostinger/rollback.sh",
-      "deploy/hostinger/aroma.env.example",
+      "deploy/hostinger/ovelo.env.example",
       ".github/workflows/image.yml",
       ".github/dependabot.yml",
     ])
@@ -106,7 +106,7 @@ describe("docker-compose.yml hardening (SELF-HOST.md)", () => {
   );
 
   it("the app runs a digest set by deploy.sh, never a tag", () => {
-    expect(app).toMatch(/image: \$\{AROMA_IMAGE:\?/);
+    expect(app).toMatch(/image: \$\{OVELO_IMAGE:\?/);
     expect(compose).not.toMatch(/:latest\b/);
     expect(tunnel).toMatch(
       /image: cloudflare\/cloudflared:[\d.]+@sha256:[0-9a-f]{64}/,
@@ -141,7 +141,7 @@ describe("docker-compose.yml hardening (SELF-HOST.md)", () => {
     expect(app).toMatch(/\/tmp:rw,noexec,nosuid,nodev,size=\d+m/);
     expect(app).toMatch(/next-cache:\/app\/apps\/web\/\.next\/cache/);
     expect(app).toMatch(/healthcheck\.mjs/);
-    expect(app).toMatch(/path: \/etc\/aroma\/aroma\.env/);
+    expect(app).toMatch(/path: \/etc\/ovelo\/ovelo\.env/);
     const grace = Number(/stop_grace_period: (\d+)s/.exec(app)?.[1]);
     const drain = Number(
       /drainMs \?\? (\d[\d_]*)/
@@ -155,7 +155,7 @@ describe("docker-compose.yml hardening (SELF-HOST.md)", () => {
   it("cloudflared reads the tunnel token from a file, never from the compose file or env", () => {
     expect(tunnel).toMatch(/--token-file/);
     expect(tunnel).toMatch(
-      /\/etc\/aroma\/tunnel-token:\/run\/secrets\/tunnel-token:ro/,
+      /\/etc\/ovelo\/tunnel-token:\/run\/secrets\/tunnel-token:ro/,
     );
     expect(compose).not.toMatch(/TUNNEL_TOKEN\s*[:=]/);
     expect(tunnel).toMatch(/condition: service_healthy/);
@@ -176,11 +176,11 @@ describe("deploy.sh and rollback.sh refuse anything but our digest", () => {
 
   it.each([
     [[]],
-    [["ghcr.io/aromalabs/aroma-web:latest"]],
-    [["ghcr.io/aromalabs/aroma-web:v1.0.0"]],
-    [[`ghcr.io/someone/aroma-web@sha256:${DIGEST}`]],
-    [[`ghcr.io/aromalabs/aroma-web@sha256:${"A".repeat(64)}`]],
-    [[`ghcr.io/aromalabs/aroma-web@sha256:${DIGEST.slice(1)}`]],
+    [["ghcr.io/labsofovelo/ovelo-web:latest"]],
+    [["ghcr.io/labsofovelo/ovelo-web:v1.0.0"]],
+    [[`ghcr.io/someone/ovelo-web@sha256:${DIGEST}`]],
+    [[`ghcr.io/labsofovelo/ovelo-web@sha256:${"A".repeat(64)}`]],
+    [[`ghcr.io/labsofovelo/ovelo-web@sha256:${DIGEST.slice(1)}`]],
     [[`sha256:${DIGEST}; rm -rf /`]],
     [["a", "b"]],
   ])("deploy.sh %j → exit 2 before touching anything", (args) => {
@@ -197,7 +197,7 @@ describe("deploy.sh and rollback.sh refuse anything but our digest", () => {
 
   it("rollback.sh refuses a tag or another repository", () => {
     expect(
-      run("rollback.sh", "ghcr.io/aromalabs/aroma-web:latest").status,
+      run("rollback.sh", "ghcr.io/labsofovelo/ovelo-web:latest").status,
     ).toBe(2);
     expect(run("rollback.sh", `docker.io/x/y@sha256:${DIGEST}`).status).toBe(2);
   });
@@ -207,7 +207,7 @@ describe("deploy.sh and rollback.sh refuse anything but our digest", () => {
       const text = read(`deploy/hostinger/${script}`);
       expect(text).toMatch(/cosign verify/);
       expect(text).toContain(
-        "aromalabs/aroma/\\.github/workflows/image\\.yml@refs/",
+        "labsofovelo/ovelo/\\.github/workflows/image\\.yml@refs/",
       );
       expect(text).toContain("https://token.actions.githubusercontent.com");
     }
@@ -223,7 +223,7 @@ describe("deploy.sh and rollback.sh refuse anything but our digest", () => {
     expect(identities[0]).toBe(identities[1]);
     const re = new RegExp(identities[0]!);
     const ref = (r: string) =>
-      `https://github.com/aromalabs/aroma/.github/workflows/image.yml@refs/${r}`;
+      `https://github.com/labsofovelo/ovelo/.github/workflows/image.yml@refs/${r}`;
     for (const r of ["heads/main", "tags/v1.0.0", "tags/v1.2.3-beta.1"])
       expect(re.test(ref(r)), r).toBe(true);
     for (const r of ["heads/dev", "tags/v1", "tags/vX", "tags/v1.0.0;x"])
@@ -242,13 +242,13 @@ describe("deploy.sh and rollback.sh refuse anything but our digest", () => {
         join(tmpdir(), `db-${process.pid}`),
       ]).stdout.toString();
     expect(
-      user("DATABASE_URL=postgres://aroma_app:pw@h/db?sslmode=require"),
-    ).toBe("aroma_app");
+      user("DATABASE_URL=postgres://ovelo_app:pw@h/db?sslmode=require"),
+    ).toBe("ovelo_app");
     expect(
-      user('DATABASE_URL="postgresql://aroma_app:pw@h/db?a=1&sslmode=require"'),
-    ).toBe("aroma_app");
-    expect(user("DATABASE_URL='postgres://aroma_migrate:p:w@h/db'")).toBe(
-      "aroma_migrate",
+      user('DATABASE_URL="postgresql://ovelo_app:pw@h/db?a=1&sslmode=require"'),
+    ).toBe("ovelo_app");
+    expect(user("DATABASE_URL='postgres://ovelo_migrate:p:w@h/db'")).toBe(
+      "ovelo_migrate",
     );
     expect(user("DATABASE_URL=postgres://h/db")).toBe("");
   });
@@ -256,7 +256,7 @@ describe("deploy.sh and rollback.sh refuse anything but our digest", () => {
   it("deploy.sh and rollback.sh pin the running digest for plain docker compose commands", () => {
     for (const script of ["deploy.sh", "rollback.sh"]) {
       const text = read(`deploy/hostinger/${script}`);
-      expect(text).toMatch(/pin_image\(\) \{[\s\S]*AROMA_IMAGE=%s/);
+      expect(text).toMatch(/pin_image\(\) \{[\s\S]*OVELO_IMAGE=%s/);
       expect(text).toMatch(/\n\s*pin_image "\$(IMAGE|TARGET)"/);
     }
   });
@@ -367,8 +367,8 @@ describe("deploy/Dockerfile targets (Step 8)", () => {
       dockerfile.indexOf("AS runtime-e2e"),
       dockerfile.lastIndexOf("AS runtime\n"),
     );
-    expect(e2e).toMatch(/NEXT_PUBLIC_AROMA_E2E_WALLET=true/);
-    expect(e2e).toMatch(/org\.aroma\.e2e="true"/);
+    expect(e2e).toMatch(/NEXT_PUBLIC_OVELO_E2E_WALLET=true/);
+    expect(e2e).toMatch(/org\.ovelo\.e2e="true"/);
     expect(read("deploy/build-app.sh")).toMatch(/E2E_BUILD/);
     expect(read("deploy/server.mjs")).toMatch(
       /E2E_BUILD[\s\S]*process\.exit\(1\)/,

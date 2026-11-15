@@ -22,9 +22,9 @@ import type { TradeKeyring } from "./trade";
  * Plan authorizations (M7 B3): M4's `server/auth/trade` token pattern with its own purpose.
  *
  * Format `pa1.<kid>.<payload>.<mac>`. The MAC key is derived from the trade secret for this
- * purpose only (HMAC(secret, "aroma-plan-authorization-v1")), and the version prefix differs,
+ * purpose only (HMAC(secret, "ovelo-plan-authorization-v1")), and the version prefix differs,
  * so a trade token can never pass as a plan token or the reverse. Key ids come from the same
- * keyring, so AROMA_TRADE_SECRET rotation (AROMA_TRADE_SECRET_PREVIOUS) covers both.
+ * keyring, so OVELO_TRADE_SECRET rotation (OVELO_TRADE_SECRET_PREVIOUS) covers both.
  *
  * At submit, the server requires the exact authorized message bytes back, signed by the bound
  * owner with a valid Ed25519 signature, and no other signer (AGENTS.md rules 1 and 2).
@@ -68,7 +68,7 @@ export type PlanPayload = z.infer<typeof planPayloadSchema>;
 
 function purposeKey(secret: string): Buffer {
   return createHmac("sha256", secret)
-    .update("aroma-plan-authorization-v1")
+    .update("ovelo-plan-authorization-v1")
     .digest();
 }
 const mac = (secret: string, signed: string) =>

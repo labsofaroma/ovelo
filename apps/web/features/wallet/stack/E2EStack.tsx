@@ -11,11 +11,11 @@ import {
 import { decode, encode } from "./signing";
 
 /**
- * E2E-ONLY wallet (M4 B11). Compiled into a build only when NEXT_PUBLIC_AROMA_E2E_WALLET=true at
+ * E2E-ONLY wallet (M4 B11). Compiled into a build only when NEXT_PUBLIC_OVELO_E2E_WALLET=true at
  * BUILD time; WalletBoundary's import of this file is dead code otherwise, and the client-secret
  * scan fails a production build that contains the bridge name below.
  *
- * It holds NO key. Playwright exposes `window.aromaE2EWallet` from test code, where a
+ * It holds NO key. Playwright exposes `window.oveloE2EWallet` from test code, where a
  * deterministic test-only keypair signs; the page only passes base64 bytes across.
  *
  * M7 B2: the bridge may declare `chains`, and the boundary's cluster rules apply as for a real
@@ -48,8 +48,8 @@ export default function E2EStack({
     "checking",
   );
   useEffect(() => {
-    const found = (window as unknown as { aromaE2EWallet?: Bridge })
-      .aromaE2EWallet;
+    const found = (window as unknown as { oveloE2EWallet?: Bridge })
+      .oveloE2EWallet;
     if (found) setBridge(found);
   }, []);
   useEffect(() => {

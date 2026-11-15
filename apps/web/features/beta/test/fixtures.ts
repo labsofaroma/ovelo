@@ -1,7 +1,7 @@
 import { randomUUID } from "node:crypto";
 import { keyringFromEnv, sealAuthorization } from "@/server/auth/trade";
 
-/** A sealed trade authorization for `taker` (needs AROMA_TRADE_SECRET in the test env). */
+/** A sealed trade authorization for `taker` (needs OVELO_TRADE_SECRET in the test env). */
 export function authorizationFor(
   taker: string,
   expiresAt = Date.now() + 60_000,

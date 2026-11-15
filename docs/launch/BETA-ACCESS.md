@@ -8,15 +8,15 @@ During Phase A (`beta.<domain>`), mainnet buying is open only to invited wallets
 
 | Variable | Values | Default | Notes |
 |---|---|---|---|
-| `AROMA_BETA_GATE` | `on` / `off` | **on** when `NODE_ENV` or `VERCEL_ENV` is `production` (including a local `next start`); off in `next dev` and tests | `off` must be set explicitly (Phase B). An unreadable value fails closed (on); boot refuses it. |
-| `AROMA_BETA_WALLETS` | comma-separated base58 wallets (≤ 500) | empty | Validated at boot; at runtime a malformed list grants nothing. |
+| `OVELO_BETA_GATE` | `on` / `off` | **on** when `NODE_ENV` or `VERCEL_ENV` is `production` (including a local `next start`); off in `next dev` and tests | `off` must be set explicitly (Phase B). An unreadable value fails closed (on); boot refuses it. |
+| `OVELO_BETA_WALLETS` | comma-separated base58 wallets (≤ 500) | empty | Validated at boot; at runtime a malformed list grants nothing. |
 
 Code: `features/beta/config.ts`, `server/env.beta.ts`.
 
 ## 2. Invites
 
 - Table `beta_invites` (migration `0005_beta_access`): only the SHA-256 of the code, `max_uses` 1–100 (default 1), `expires_at` **NOT NULL** (1–90 days), CHECK `uses <= max_uses`. Table `beta_access`: one row per wallet, with the granting `invite_id`.
-- Issued only by the admin CLI, printed once: `pnpm --filter @aroma/web beta:invite [--days 7] [--uses 1]` (needs `DATABASE_URL`; run from a trusted machine).
+- Issued only by the admin CLI, printed once: `pnpm --filter @ovelo/web beta:invite [--days 7] [--uses 1]` (needs `DATABASE_URL`; run from a trusted machine).
 - Redemption is wallet-signed: `POST /api/v1/beta/challenge { wallet, code }` → the wallet signs the message (bound to the site, the wallet and the code's SHA-256; 5-minute single-use nonce in Redis, challenge purpose `beta`) → `POST /api/v1/beta/redeem`. The nonce is consumed first, then one transaction: a conditional `UPDATE … uses < max_uses AND expires_at > now()` and the `beta_access` insert. The code is checked before the wallet: a used code is refused even for the wallet that used it; a wallet that already has access does not consume a second code. A restricted location is refused before anything is consumed.
 - Proven by 25 parallel redemptions on PGlite and on the local Postgres (`features/beta/server/invites{,.postgres}.test.ts`).
 

@@ -21,7 +21,7 @@ const state = (over: Record<string, unknown> = {}) => ({
     data: {
       enabled: true,
       push: { publicKey: "PUB" },
-      telegram: { bot: "aroma_bot" },
+      telegram: { bot: "ovelo_bot" },
     },
     isPending: false,
     isError: false,
@@ -120,14 +120,14 @@ describe("NotificationsPanel", () => {
     const s = state({
       open: true,
       subscriptions,
-      telegramLink: "https://t.me/aroma_bot?start=abc",
+      telegramLink: "https://t.me/ovelo_bot?start=abc",
     });
     render(<NotificationsPanel wallet={WALLET} canSign state={s} />);
     expect(
       screen
         .getByRole("link", { name: settingsCopy.telegramOpen })
         .getAttribute("href"),
-    ).toBe("https://t.me/aroma_bot?start=abc");
+    ).toBe("https://t.me/ovelo_bot?start=abc");
     fireEvent.click(screen.getByRole("button", { name: settingsCopy.test }));
     expect(s.actions.test).toHaveBeenCalledWith("push");
     fireEvent.click(

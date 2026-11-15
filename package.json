@@ -1,5 +1,5 @@
 {
-  "name": "aroma-monorepo",
+  "name": "ovelo-monorepo",
   "version": "0.1.0",
   "private": true,
   "license": "SEE LICENSE IN LICENSE",
@@ -9,20 +9,20 @@
     "pnpm": ">=10.31.0"
   },
   "scripts": {
-    "dev:web": "pnpm --filter @aroma/web dev",
-    "build:web": "pnpm --filter @aroma/web build",
+    "dev:web": "pnpm --filter @ovelo/web dev",
+    "build:web": "pnpm --filter @ovelo/web build",
     "build": "turbo run build",
     "lint": "turbo run lint",
     "typecheck": "turbo run typecheck",
     "test": "turbo run test",
     "format": "prettier --write .",
     "format:check": "prettier --check .",
-    "db:generate": "pnpm --filter @aroma/web db:generate",
-    "db:migrate": "pnpm --filter @aroma/web db:migrate",
-    "check:prod-env": "pnpm --filter @aroma/web check:prod-env",
-    "check:custody": "pnpm --filter @aroma/web check:custody",
-    "build:contracts": "pnpm --filter @aroma/contracts build",
-    "test:contracts": "pnpm --filter @aroma/contracts test:native && pnpm --filter @aroma/contracts test:clippy && pnpm --filter @aroma/contracts build && pnpm --filter @aroma/contracts idl:check && pnpm --filter @aroma/contracts test && pnpm --filter @aroma/contracts test:fixtures && pnpm --filter @aroma/contracts test:fixtures:mainnet && pnpm --filter @aroma/contracts test:litesvm && pnpm --filter @aroma/contracts test:litesvm:subscriptions-mainnet"
+    "db:generate": "pnpm --filter @ovelo/web db:generate",
+    "db:migrate": "pnpm --filter @ovelo/web db:migrate",
+    "check:prod-env": "pnpm --filter @ovelo/web check:prod-env",
+    "check:custody": "pnpm --filter @ovelo/web check:custody",
+    "build:contracts": "pnpm --filter @ovelo/contracts build",
+    "test:contracts": "pnpm --filter @ovelo/contracts test:native && pnpm --filter @ovelo/contracts test:clippy && pnpm --filter @ovelo/contracts build && pnpm --filter @ovelo/contracts idl:check && pnpm --filter @ovelo/contracts test && pnpm --filter @ovelo/contracts test:fixtures && pnpm --filter @ovelo/contracts test:fixtures:mainnet && pnpm --filter @ovelo/contracts test:litesvm && pnpm --filter @ovelo/contracts test:litesvm:subscriptions-mainnet"
   },
   "devDependencies": {
     "prettier": "^3.6.2",

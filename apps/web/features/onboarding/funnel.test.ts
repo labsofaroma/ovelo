@@ -1,7 +1,7 @@
 // @vitest-environment jsdom
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-const DOMAIN = "aroma.example";
+const DOMAIN = "ovelo.example";
 let fetchMock: ReturnType<typeof vi.fn>;
 async function load(consent: boolean | null, options: { dnt?: boolean } = {}) {
   vi.resetModules();
@@ -9,7 +9,7 @@ async function load(consent: boolean | null, options: { dnt?: boolean } = {}) {
   localStorage.clear();
   if (consent !== null)
     localStorage.setItem(
-      "aroma.privacy.v1",
+      "ovelo.privacy.v1",
       JSON.stringify({ analytics: consent, expiresAt: Date.now() + 1e9 }),
     );
   Object.defineProperty(window, "location", {
@@ -49,7 +49,7 @@ describe("onboarding funnel (consent-gated)", () => {
     funnel.firstQuote("basket");
     funnel.buyConfirmed("basket");
     expect(fetchMock).not.toHaveBeenCalled();
-    expect(localStorage.getItem("aroma.onboarding.v1")).toBeNull();
+    expect(localStorage.getItem("ovelo.onboarding.v1")).toBeNull();
   });
 
   it("with consent: the four events, no wallet address, and the time to first basket buy as a bucket", async () => {
@@ -73,7 +73,7 @@ describe("onboarding funnel (consent-gated)", () => {
     });
     expect(JSON.stringify(events)).not.toMatch(/[1-9A-HJ-NP-Za-km-z]{32,44}/);
     for (const e of events)
-      expect(e.url).toMatch(/^https:\/\/aroma\.example\/[a-z-/]+$/);
+      expect(e.url).toMatch(/^https:\/\/ovelo\.example\/[a-z-/]+$/);
   });
 
   it("a first stock buy, then the first basket buy still reports the basket timing once", async () => {

@@ -14,7 +14,7 @@ import {
   createInitializeScaledUiAmountConfigInstruction,
   getMintLen,
 } from "@solana/spl-token";
-import * as v1 from "@aroma/guard";
+import * as v1 from "@ovelo/guard";
 import {
   Env,
   feed,

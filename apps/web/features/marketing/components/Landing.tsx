@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Badge } from "@aroma/ui";
+import { Badge } from "@ovelo/ui";
 import { routes } from "../../shared/routes";
 import { linkButton, pageContainer, textLink } from "../../shared/styles";
 import type { Loaded } from "../../shared/upstream";
@@ -39,7 +39,7 @@ const STEPS = [
   },
   {
     title: "Choose",
-    body: "Pick a single stock or a themed basket. Basket allocations come from Aroma’s published definitions, not hand-entered figures.",
+    body: "Pick a single stock or a themed basket. Basket allocations come from Ovelo’s published definitions, not hand-entered figures.",
   },
   {
     title: "Keep custody",
@@ -89,7 +89,7 @@ export function Landing({ snapshot }: { snapshot: Loaded<LandingSnapshot> }) {
         className="flex flex-col gap-4"
       >
         <h2 id="modes-heading" className="text-section font-semibold">
-          Three ways to use Aroma, always labelled
+          Three ways to use Ovelo, always labelled
         </h2>
         <ul className="grid gap-4 md:grid-cols-3">
           {MODES.map((mode) => (
@@ -119,7 +119,7 @@ export function Landing({ snapshot }: { snapshot: Loaded<LandingSnapshot> }) {
         className="flex flex-col gap-4"
       >
         <h2 id="how-heading" className="text-section font-semibold">
-          How Aroma works
+          How Ovelo works
         </h2>
         <ol className="grid gap-4 md:grid-cols-3">
           {STEPS.map((step, index) => (

@@ -10,7 +10,7 @@ import { analyticsAllowed, trackEvent } from "../shared/analytics";
  * Time to first basket buy: seconds from the first onboarding view (or first wallet connection)
  * to the first confirmed basket buy in this browser, sent as a coarse bucket.
  */
-const KEY = "aroma.onboarding.v1";
+const KEY = "ovelo.onboarding.v1";
 type Stored = {
   startedAt?: number;
   quoted?: boolean;

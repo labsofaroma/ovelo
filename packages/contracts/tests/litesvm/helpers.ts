@@ -4,7 +4,7 @@ import {
   createAssociatedTokenAccountIdempotentInstruction,
   getAssociatedTokenAddressSync,
 } from "@solana/spl-token";
-import * as v1 from "@aroma/guard";
+import * as v1 from "@ovelo/guard";
 import { kitIx, pk } from "./harness";
 
 export const DEFAULT = "11111111111111111111111111111111" as Address;

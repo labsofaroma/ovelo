@@ -11,7 +11,7 @@ export interface V1MetadataInput {
 
 /**
  * Per-page metadata for v1 routes. The root layout supplies `metadataBase` and the
- * "Aroma | %s" title template. `openGraph` is replaced (not merged) per page, which drops the
+ * "Ovelo | %s" title template. `openGraph` is replaced (not merged) per page, which drops the
  * prototype's missing PNG in favour of the generated /og.png (AUDIT L-2).
  */
 export function v1Metadata({
@@ -27,15 +27,15 @@ export function v1Metadata({
     robots: noindex ? { index: false, follow: false } : undefined,
     openGraph: {
       type: "website",
-      siteName: "Aroma",
-      title: `Aroma | ${title}`,
+      siteName: "Ovelo",
+      title: `Ovelo | ${title}`,
       description,
       url: path,
       images: [OG_IMAGE],
     },
     twitter: {
       card: "summary_large_image",
-      title: `Aroma | ${title}`,
+      title: `Ovelo | ${title}`,
       description,
       images: [OG_IMAGE],
     },

@@ -17,7 +17,7 @@ beforeEach(() => stubBaseEnv());
 /**
  * P4 trade-secret rotation drill (docs/launch/KEY-CUSTODY.md §3, M4-DEPLOY.md §2), through the
  * real env path (`keyringFromEnv`): issue with the old key → rotate (new key, old one in
- * AROMA_TRADE_SECRET_PREVIOUS) → old tokens verify until they expire, new tokens use the new key
+ * OVELO_TRADE_SECRET_PREVIOUS) → old tokens verify until they expire, new tokens use the new key
  * id → remove the previous key → old tokens are refused.
  */
 const OLD = randomBytes(32).toString("base64url");
@@ -51,8 +51,8 @@ const payload = (): TradePayload => ({
 });
 
 function deploy(env: { current: string; previous?: string }) {
-  vi.stubEnv("AROMA_TRADE_SECRET", env.current);
-  vi.stubEnv("AROMA_TRADE_SECRET_PREVIOUS", env.previous ?? "");
+  vi.stubEnv("OVELO_TRADE_SECRET", env.current);
+  vi.stubEnv("OVELO_TRADE_SECRET_PREVIOUS", env.previous ?? "");
   resetEnvCacheForTests();
   return keyringFromEnv();
 }
@@ -63,7 +63,7 @@ afterEach(() => {
   resetEnvCacheForTests();
 });
 
-describe("AROMA_TRADE_SECRET rotation drill", () => {
+describe("OVELO_TRADE_SECRET rotation drill", () => {
   it("issue old → rotate → old verifies until expiry, new uses the new key id → drop previous → old refused", () => {
     // 1. Before the rotation: a quote authorized with the old key.
     const before = deploy({ current: OLD });
@@ -123,13 +123,13 @@ describe("AROMA_TRADE_SECRET rotation drill", () => {
 
   it("boot refuses a previous key equal to the current one, by name only", () => {
     const result = parseEnv({
-      AROMA_TRADE_SECRET: NEW,
-      AROMA_TRADE_SECRET_PREVIOUS: NEW,
+      OVELO_TRADE_SECRET: NEW,
+      OVELO_TRADE_SECRET_PREVIOUS: NEW,
     });
     expect(result.ok).toBe(false);
     if (!result.ok) {
       expect(result.error.issues.map((i) => i.variable)).toContain(
-        "AROMA_TRADE_SECRET_PREVIOUS",
+        "OVELO_TRADE_SECRET_PREVIOUS",
       );
       expect(result.error.message).not.toContain(NEW);
     }

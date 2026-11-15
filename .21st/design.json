@@ -1,7 +1,7 @@
 {
   "version": 1,
   "project": {
-    "name": "aroma-monorepo",
+    "name": "ovelo-monorepo",
     "productType": "Self-custody tokenized securities investing interface",
     "stack": [
       "Next.js App Router",
@@ -67,7 +67,7 @@
       "SocialLinks"
     ],
     "preferredPrimitives": [
-      "Existing Aroma components",
+      "Existing Ovelo components",
       "Semantic details/summary",
       "Lucide geometric icons"
     ],
@@ -100,12 +100,12 @@
     {
       "date": "2026-10-07",
       "scope": "Market and source information architecture",
-      "decision": "Move the market snapshot from the hero into the research chapter's unpinned conclusion, aligned to its content grid. Replace the separate tools and catalog strips with one editorial source section after How Aroma Works and before FAQ. Keep issuers and tools in distinct labeled groups; retain official Jupiter/Pyth marks, issuer eligibility caveats, conditional reference feeds, observation dates and unavailable states. No new dependency or fabricated data."
+      "decision": "Move the market snapshot from the hero into the research chapter's unpinned conclusion, aligned to its content grid. Replace the separate tools and catalog strips with one editorial source section after How Ovelo Works and before FAQ. Keep issuers and tools in distinct labeled groups; retain official Jupiter/Pyth marks, issuer eligibility caveats, conditional reference feeds, observation dates and unavailable states. No new dependency or fabricated data."
     },
     {
       "date": "2026-10-07",
       "scope": "Island CTA spacing",
-      "decision": "The header theme toggle fades and collapses during the island morph, returning at the top. Exclude it from the measured island width and match surface gaps to that geometry so Open Aroma fits. Concealed theme controls are inert; mobile Appearance controls stay in the menu."
+      "decision": "The header theme toggle fades and collapses during the island morph, returning at the top. Exclude it from the measured island width and match surface gaps to that geometry so Open Ovelo fits. Concealed theme controls are inert; mobile Appearance controls stay in the menu."
     },
     {
       "date": "2026-10-07",
@@ -120,7 +120,7 @@
     {
       "date": "2026-10-07",
       "scope": "Landing page",
-      "decision": "Adapt the user's Kimia and Griffin references into an editorial forest/cream landing page with original architectural imagery, serif accents, real product data and an interactive vaultless SIP/DCA explanation. Retain Aroma's existing components; 21st component 29553 informed feature composition but its spotlight styling and extra dependencies were not imported."
+      "decision": "Adapt the user's Kimia and Griffin references into an editorial forest/cream landing page with original architectural imagery, serif accents, real product data and an interactive vaultless SIP/DCA explanation. Retain Ovelo's existing components; 21st component 29553 informed feature composition but its spotlight styling and extra dependencies were not imported."
     },
     {
       "date": "2026-10-07",
@@ -130,7 +130,7 @@
     {
       "date": "2026-10-07",
       "scope": "Scroll story rebuild and user artwork",
-      "decision": "Use the user's DollarAbstract artwork for the hero; retain the Wall Street film poster as a reference only. Replace timed mobile playback and GSAP pin spacers with native sticky stages plus one normalized scroll controller each for research and recurring. Keep panes/captions mounted to prevent phase-dependent layout shifts. The latest contextual 21st search was blocked by workspace data-egress review; continue with Aroma primitives without uploading context or installing component code."
+      "decision": "Use the user's DollarAbstract artwork for the hero; retain the Wall Street film poster as a reference only. Replace timed mobile playback and GSAP pin spacers with native sticky stages plus one normalized scroll controller each for research and recurring. Keep panes/captions mounted to prevent phase-dependent layout shifts. The latest contextual 21st search was blocked by workspace data-egress review; continue with Ovelo primitives without uploading context or installing component code."
     },
     {
       "date": "2026-10-07",

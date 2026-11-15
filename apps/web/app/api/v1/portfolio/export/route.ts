@@ -7,7 +7,7 @@ export const runtime = "nodejs";
 
 /**
  * GET /api/v1/portfolio/export `Authorization: Bearer ws1.portfolio…` → text/csv of THIS wallet's
- * Aroma orders and P&L (the session's wallet; there is no wallet parameter). 5 per 10 minutes.
+ * Ovelo orders and P&L (the session's wallet; there is no wallet parameter). 5 per 10 minutes.
  */
 export async function GET(request: Request): Promise<Response> {
   try {
@@ -20,7 +20,7 @@ export async function GET(request: Request): Promise<Response> {
     return new Response(csv, {
       headers: {
         "Content-Type": "text/csv; charset=utf-8",
-        "Content-Disposition": `attachment; filename="aroma-${wallet.slice(0, 8)}.csv"`,
+        "Content-Disposition": `attachment; filename="ovelo-${wallet.slice(0, 8)}.csv"`,
         "Cache-Control": "no-store",
       },
     });

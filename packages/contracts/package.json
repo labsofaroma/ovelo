@@ -1,20 +1,20 @@
 {
-  "name": "@aroma/contracts",
+  "name": "@ovelo/contracts",
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Aroma Guard v1 (Anchor workspace), its LiteSVM suite, local end-to-end run and devnet scripts.",
+  "description": "Ovelo Guard v1 (Anchor workspace), its LiteSVM suite, local end-to-end run and devnet scripts.",
   "scripts": {
     "build": "bash scripts/build.sh",
     "test": "vitest run --project unit",
-    "test:native": "cargo test -p aroma_guard && cargo test -p aroma_guard --features devnet-mock",
-    "test:clippy": "cargo clippy -p aroma_guard --all-targets -- -D warnings && cargo clippy -p aroma_guard --all-targets --features devnet-mock -- -D warnings",
+    "test:native": "cargo test -p ovelo_guard && cargo test -p ovelo_guard --features devnet-mock",
+    "test:clippy": "cargo clippy -p ovelo_guard --all-targets -- -D warnings && cargo clippy -p ovelo_guard --all-targets --features devnet-mock -- -D warnings",
     "test:fixtures": "node scripts/fetch-runtime-programs.mjs",
     "test:fixtures:mainnet": "node scripts/fetch-mainnet-programs.mjs",
     "fixtures:jupiter": "vite-node scripts/record-jupiter-mainnet.ts",
     "fixtures:pyth": "vite-node scripts/record-pyth-devnet.ts",
     "test:litesvm": "vitest run --project litesvm",
-    "test:litesvm:subscriptions-mainnet": "AROMA_V1_SUBSCRIPTIONS=mainnet vitest run --project litesvm",
+    "test:litesvm:subscriptions-mainnet": "OVELO_V1_SUBSCRIPTIONS=mainnet vitest run --project litesvm",
     "idl:sync": "node scripts/sync-idl.mjs",
     "idl:check": "node scripts/sync-idl.mjs --check",
     "e2e:local": "vite-node scripts/e2e-local.ts",
@@ -26,8 +26,8 @@
     "devnet:audit": "vite-node scripts/audit-devnet.ts --"
   },
   "devDependencies": {
-    "@aroma/config": "workspace:*",
-    "@aroma/keeper": "workspace:*",
+    "@ovelo/config": "workspace:*",
+    "@ovelo/keeper": "workspace:*",
     "@noble/curves": "1.9.7",
     "@noble/hashes": "1.8.0",
     "@solana/kit": "7.1.1",
@@ -42,6 +42,6 @@
     "vitest": "3.2.7"
   },
   "dependencies": {
-    "@aroma/guard": "workspace:*"
+    "@ovelo/guard": "workspace:*"
   }
 }

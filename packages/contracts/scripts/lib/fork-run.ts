@@ -12,14 +12,14 @@ import {
   TOKEN_2022_PROGRAM_ID as T22,
   unpackMint,
 } from "@solana/spl-token";
-import * as v1 from "@aroma/guard";
+import * as v1 from "@ovelo/guard";
 import {
   createLogger,
   memoryDb,
   memoryRedis,
   parseKeeperEnv,
   runOnce,
-} from "@aroma/keeper";
+} from "@ovelo/keeper";
 import type { newExportableKeypair } from "./keys";
 import { CONTRACTS_ROOT } from "./keys";
 import type { connect } from "./send";

@@ -3,7 +3,7 @@ import { createServer, type Server } from "node:http";
 
 /**
  * M11 E2E: a loopback stand-in for every notification channel. The app (test switches only,
- * AROMA_V1_TEST_NOTIFY_SINK_URL) posts each delivery here instead of to a push service or
+ * OVELO_V1_TEST_NOTIFY_SINK_URL) posts each delivery here instead of to a push service or
  * Telegram; the spec reads them back with GET. Nothing leaves 127.0.0.1.
  */
 export const NOTIFY_SINK_PORT = 4040;
@@ -14,10 +14,10 @@ export const NOTIFY_SINK_URL = `http://127.0.0.1:${NOTIFY_SINK_PORT}/sink`;
  * are throwaway: the sink receives every delivery and bot reply, nothing goes to Telegram.
  */
 export const NOTIFY_E2E_ENV = {
-  AROMA_V1_TEST_NOTIFY_SINK_URL: NOTIFY_SINK_URL,
-  AROMA_NOTIFY_WORKER_SECRET: randomBytes(24).toString("base64url"),
+  OVELO_V1_TEST_NOTIFY_SINK_URL: NOTIFY_SINK_URL,
+  OVELO_NOTIFY_WORKER_SECRET: randomBytes(24).toString("base64url"),
   TELEGRAM_BOT_TOKEN: `${randomInt(100_000, 999_999)}:${randomBytes(27).toString("base64url")}`,
-  TELEGRAM_BOT_USERNAME: "aroma_e2e_bot",
+  TELEGRAM_BOT_USERNAME: "ovelo_e2e_bot",
   TELEGRAM_WEBHOOK_SECRET: randomBytes(24).toString("base64url"),
 };
 

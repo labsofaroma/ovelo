@@ -1,5 +1,5 @@
 import type { Address } from "@solana/kit";
-import { findAssociatedTokenAddress, type Plan } from "@aroma/guard";
+import { findAssociatedTokenAddress, type Plan } from "@ovelo/guard";
 import type { KeeperDb } from "./db";
 import type { Logger } from "./log";
 import type { KeeperRpc } from "./rpc";

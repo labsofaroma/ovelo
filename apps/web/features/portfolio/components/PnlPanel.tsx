@@ -1,5 +1,5 @@
-import { Badge } from "@aroma/ui";
-import { formatUnits } from "@aroma/ui/format";
+import { Badge } from "@ovelo/ui";
+import { formatUnits } from "@ovelo/ui/format";
 import { formatUsd, type Fixed } from "../../shared/fixed";
 import { pnlCopy } from "../copy";
 import type { BasketPnl, PnlRow, PnlView } from "../pnl/schema";

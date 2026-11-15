@@ -6,7 +6,7 @@ import {
   type WalletChallengeInput,
 } from "./wallet-challenge";
 
-const ORIGIN = "https://aroma.example";
+const ORIGIN = "https://ovelo.example";
 const NOW = Date.parse("2026-11-15T12:00:00Z");
 
 async function setup(over: Partial<WalletChallengeInput> = {}) {
@@ -29,7 +29,7 @@ describe("M11 wallet challenges", () => {
   it("the message names the site, the purpose and says no funds move", async () => {
     const { issued } = await setup();
     expect(issued.message).toContain(
-      "aroma.example asks you to turn on an Aroma notification channel.",
+      "ovelo.example asks you to turn on an Ovelo notification channel.",
     );
     expect(issued.message).toContain("does not move funds");
   });

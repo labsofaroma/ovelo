@@ -27,7 +27,7 @@ const handWritten = files.filter(
 );
 const rel = (file: string) => relative(ROOT, file);
 
-describe("@aroma/guard rules", () => {
+describe("@ovelo/guard rules", () => {
   test("one @solana/kit version, pinned exactly, and no aliased copy", () => {
     const pkg = JSON.parse(
       readFileSync(join(ROOT, "package.json"), "utf8"),
@@ -62,7 +62,7 @@ describe("@aroma/guard rules", () => {
 
   test("never imports from apps/*, the web app's aliases or server-only code", () => {
     const bad = files.filter((file) =>
-      /from\s+["'](server-only|@\/[^"']*|@aroma\/(web|keeper)[^"']*|(\.\.\/)+apps\/[^"']*|[^"']*\/apps\/[^"']*)["']/.test(
+      /from\s+["'](server-only|@\/[^"']*|@ovelo\/(web|keeper)[^"']*|(\.\.\/)+apps\/[^"']*|[^"']*\/apps\/[^"']*)["']/.test(
         readFileSync(file, "utf8"),
       ),
     );
@@ -71,6 +71,6 @@ describe("@aroma/guard rules", () => {
 
   test("package.json depends on no app", () => {
     const text = readFileSync(join(ROOT, "package.json"), "utf8");
-    expect(text).not.toMatch(/"@aroma\/(web|keeper)"/);
+    expect(text).not.toMatch(/"@ovelo\/(web|keeper)"/);
   });
 });

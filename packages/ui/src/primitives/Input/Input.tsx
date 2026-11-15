@@ -25,7 +25,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
         controlSurface,
         "w-full min-w-0 px-3 py-2.5 leading-snug caret-accent placeholder:text-muted",
         "aria-invalid:border-down data-[invalid]:border-down",
-        size === "sm" && "min-h-(--aroma-control-height-compact) py-2",
+        size === "sm" && "min-h-(--ovelo-control-height-compact) py-2",
         "motion-base transition-colors hover:not-disabled:border-ink",
         focusRing,
         disabledStyles,

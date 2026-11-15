@@ -4,29 +4,29 @@ import { EnvValidationError, parseEnv, validateEnv } from "./env.schema";
 
 const V1: Record<string, string> = {
   SOLANA_RPC_URL: "https://mainnet.example.com/rpc",
-  DATABASE_URL: "postgres://user:pw@db.example.com/aroma",
+  DATABASE_URL: "postgres://user:pw@db.example.com/ovelo",
   UPSTASH_REDIS_REST_URL: "https://redis.example.com",
   UPSTASH_REDIS_REST_TOKEN: "token-value",
-  AROMA_TRADE_SECRET: "x".repeat(32),
+  OVELO_TRADE_SECRET: "x".repeat(32),
 };
 
 describe("validateEnv", () => {
   it("refuses an empty environment (M9: no feature flag; the required variables always apply)", () => {
     expect(() => validateEnv({})).toThrow(EnvValidationError);
     expect(validateEnv(V1).server.NODE_ENV).toBe("development");
-    expect(validateEnv(V1).server.AROMA_TRADING).toBe("on");
+    expect(validateEnv(V1).server.OVELO_TRADING).toBe("on");
   });
 
   it("groups variables as public, server, devnet and keeper", () => {
     const env = validateEnv({
       ...V1,
-      NEXT_PUBLIC_PLAUSIBLE_DOMAIN: "aroma.trade",
-      AROMA_RECURRING_RPC_URL: "https://api.devnet.solana.com",
+      NEXT_PUBLIC_PLAUSIBLE_DOMAIN: "ovelo.trade",
+      OVELO_RECURRING_RPC_URL: "https://api.devnet.solana.com",
       QSTASH_TOKEN: "q",
     });
-    expect(env.public.NEXT_PUBLIC_PLAUSIBLE_DOMAIN).toBe("aroma.trade");
+    expect(env.public.NEXT_PUBLIC_PLAUSIBLE_DOMAIN).toBe("ovelo.trade");
     expect(env.server.DATABASE_URL).toContain("postgres://");
-    expect(env.devnet.AROMA_RECURRING_RPC_URL).toContain("devnet");
+    expect(env.devnet.OVELO_RECURRING_RPC_URL).toContain("devnet");
     expect(env.keeper.QSTASH_TOKEN).toBe("q");
   });
 
@@ -40,7 +40,7 @@ describe("validateEnv", () => {
         "DATABASE_URL",
         "UPSTASH_REDIS_REST_URL",
         "UPSTASH_REDIS_REST_TOKEN",
-        "AROMA_TRADE_SECRET",
+        "OVELO_TRADE_SECRET",
         "SOLANA_RPC_URL",
       ]),
     );
@@ -50,9 +50,9 @@ describe("validateEnv", () => {
   });
 
   it("fails when a single required secret is removed", () => {
-    const { AROMA_TRADE_SECRET: _removed, ...rest } = V1;
+    const { OVELO_TRADE_SECRET: _removed, ...rest } = V1;
     expect(() => validateEnv(rest)).toThrow(EnvValidationError);
-    expect(() => validateEnv(rest)).toThrow(/AROMA_TRADE_SECRET/);
+    expect(() => validateEnv(rest)).toThrow(/OVELO_TRADE_SECRET/);
   });
 
   it("treats blank values as unset", () => {
@@ -64,13 +64,13 @@ describe("validateEnv", () => {
     const secret = "short-secret-value-123";
     const result = parseEnv({
       ...V1,
-      AROMA_TRADE_SECRET: secret,
+      OVELO_TRADE_SECRET: secret,
       DATABASE_URL: "mysql://nope",
     });
     expect(result.ok).toBe(false);
     if (result.ok) return;
     expect(result.error.message).toMatch(
-      /AROMA_TRADE_SECRET \(server\): must be at least 32 characters/,
+      /OVELO_TRADE_SECRET \(server\): must be at least 32 characters/,
     );
     expect(result.error.message).toMatch(/DATABASE_URL/);
     expect(result.error.message).not.toContain(secret);
@@ -86,9 +86,9 @@ describe("validateEnv", () => {
     ).toBe(false);
   });
 
-  it("AROMA_TRADING accepts only on and off (the emergency stop)", () => {
-    expect(parseEnv({ ...V1, AROMA_TRADING: "off" }).ok).toBe(true);
-    expect(parseEnv({ ...V1, AROMA_TRADING: "paused" }).ok).toBe(false);
+  it("OVELO_TRADING accepts only on and off (the emergency stop)", () => {
+    expect(parseEnv({ ...V1, OVELO_TRADING: "off" }).ok).toBe(true);
+    expect(parseEnv({ ...V1, OVELO_TRADING: "paused" }).ok).toBe(false);
   });
 });
 
@@ -119,9 +119,9 @@ describe("assertBootEnv", () => {
   }
 
   it("exits 1 and names the variable when a required secret is missing", () => {
-    const { exit, output } = boot({ ...V1, AROMA_TRADE_SECRET: undefined });
+    const { exit, output } = boot({ ...V1, OVELO_TRADE_SECRET: undefined });
     expect(exit).toHaveBeenCalledWith(1);
-    expect(output).toContain("AROMA_TRADE_SECRET");
+    expect(output).toContain("OVELO_TRADE_SECRET");
   });
 
   it("does not exit when the environment is valid", () => {
@@ -131,7 +131,7 @@ describe("assertBootEnv", () => {
   it("exits even with no variables at all (M9: there is no prototype mode to fall back to)", () => {
     const { exit } = boot({
       DATABASE_URL: undefined,
-      AROMA_TRADE_SECRET: undefined,
+      OVELO_TRADE_SECRET: undefined,
     });
     expect(exit).toHaveBeenCalledWith(1);
   });

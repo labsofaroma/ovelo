@@ -9,7 +9,7 @@ import {
   text,
   timestamp,
 } from "drizzle-orm/pg-core";
-import type { PlanIndexRow } from "@aroma/guard";
+import type { PlanIndexRow } from "@ovelo/guard";
 
 /**
  * The two tables the keeper writes, declared with the same columns as the web app's migrations

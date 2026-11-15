@@ -8,7 +8,7 @@ import {
   getBase58Encoder,
   type RpcTransport,
 } from "@solana/kit";
-import { DEVNET_GENESIS_HASH } from "@aroma/guard";
+import { DEVNET_GENESIS_HASH } from "@ovelo/guard";
 import type { InvestRpc } from "./cluster";
 
 export type FakeAccount = {

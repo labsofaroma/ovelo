@@ -13,7 +13,7 @@ import type { CreatorProfile } from "./schema";
  */
 
 export const INVITE_MAX_DAYS = 90;
-const CODE_PREFIX = "aroma-inv-";
+const CODE_PREFIX = "ovelo-inv-";
 
 export const inviteCodeSchema = z
   .string()

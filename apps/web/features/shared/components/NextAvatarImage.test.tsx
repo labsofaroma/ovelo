@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from "@testing-library/react";
-import { AssetAvatar } from "@aroma/ui";
+import { AssetAvatar } from "@ovelo/ui";
 import { afterEach, describe, expect, it } from "vitest";
 import { NextAvatarImage } from "./NextAvatarImage";
 

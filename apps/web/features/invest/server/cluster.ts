@@ -10,7 +10,7 @@ import {
   MAINNET_GENESIS_HASH,
   V1_DEPLOYMENTS,
   V1_PROGRAM_ID,
-} from "@aroma/guard";
+} from "@ovelo/guard";
 import type { Env } from "@/server/env.schema";
 import { testSwitchesAllowed } from "@/server/env.schema";
 import { AppError } from "@/server/errors";
@@ -47,7 +47,7 @@ export type InvestNetwork = {
   deployment: InvestDeployment;
   /**
    * Devnet test builds only (`testSwitchesAllowed`: never a Vercel production deployment; under
-   * `next start` only with AROMA_V1_ALLOW_TEST_SWITCHES=true): offer and accept the short
+   * `next start` only with OVELO_V1_ALLOW_TEST_SWITCHES=true): offer and accept the short
    * devnet test period. Always false for a real devnet deployment.
    */
   testPeriods?: boolean;
@@ -64,13 +64,13 @@ export type NetworkResolution =
 const LOOPBACK = /^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?\/?$/;
 
 export function resolveInvestNetwork(env: Env): NetworkResolution {
-  if (env.devnet.AROMA_V1_INVEST_CLUSTER === "localnet") {
-    const rpcUrl = env.devnet.AROMA_V1_LOCALNET_RPC_URL;
-    const genesisHash = env.devnet.AROMA_V1_LOCALNET_GENESIS;
-    const fundingMint = env.devnet.AROMA_V1_LOCALNET_FUNDING_MINT;
+  if (env.devnet.OVELO_V1_INVEST_CLUSTER === "localnet") {
+    const rpcUrl = env.devnet.OVELO_V1_LOCALNET_RPC_URL;
+    const genesisHash = env.devnet.OVELO_V1_LOCALNET_GENESIS;
+    const fundingMint = env.devnet.OVELO_V1_LOCALNET_FUNDING_MINT;
     const allowed =
       !productionRules(env.server) &&
-      env.public.NEXT_PUBLIC_AROMA_LOCALNET === "true" &&
+      env.public.NEXT_PUBLIC_OVELO_LOCALNET === "true" &&
       testSwitchesAllowed(env.server);
     if (
       !allowed ||
@@ -109,7 +109,7 @@ export function resolveInvestNetwork(env: Env): NetworkResolution {
     available: true,
     network: {
       cluster: "devnet",
-      rpcUrl: env.devnet.AROMA_RECURRING_RPC_URL ?? DEFAULT_DEVNET_RPC,
+      rpcUrl: env.devnet.OVELO_RECURRING_RPC_URL ?? DEFAULT_DEVNET_RPC,
       browserRpcUrl:
         env.public.NEXT_PUBLIC_SOLANA_DEVNET_RPC_URL ?? DEFAULT_DEVNET_RPC,
       testPeriods: testSwitchesAllowed(env.server),

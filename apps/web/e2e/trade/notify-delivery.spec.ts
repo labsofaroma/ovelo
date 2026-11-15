@@ -18,7 +18,7 @@ test("a fork purchase produces one notification, delivered once", async ({
   const run = () =>
     request.post("/api/v1/notifications/deliver", {
       headers: {
-        authorization: `Bearer ${process.env.AROMA_NOTIFY_WORKER_SECRET}`,
+        authorization: `Bearer ${process.env.OVELO_NOTIFY_WORKER_SECRET}`,
       },
       data: {},
     });

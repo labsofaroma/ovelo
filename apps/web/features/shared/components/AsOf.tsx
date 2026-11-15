@@ -1,4 +1,4 @@
-import { cn } from "@aroma/ui";
+import { cn } from "@ovelo/ui";
 import { classifyFreshness, formatObservedAt } from "../freshness";
 import { StaleBadge } from "./StaleBadge";
 

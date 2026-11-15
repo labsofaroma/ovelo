@@ -1,9 +1,9 @@
 /**
- * M7 E2E on a LOCAL VALIDATOR (`pnpm --filter @aroma/web e2e:invest`). Nothing here touches
+ * M7 E2E on a LOCAL VALIDATOR (`pnpm --filter @ovelo/web e2e:invest`). Nothing here touches
  * devnet or mainnet: every key is generated at runtime, every service is on 127.0.0.1.
  *
  * 1. Docker Postgres + Neon wsproxy (reset, migrated) and Docker Redis behind an Upstash REST proxy.
- * 2. The localnet chain (packages/contracts/scripts/e2e-invest-chain.ts): validator, Aroma Guard
+ * 2. The localnet chain (packages/contracts/scripts/e2e-invest-chain.ts): validator, Ovelo Guard
  *    v1, Subscriptions, Pyth receiver + Wormhole with a test guardian, a fake Hermes.
  * 3. A local alert webhook sink.
  * 4. The app built with the E2E wallet bridge and the localnet cluster into .next-e2e-invest, the
@@ -32,10 +32,10 @@ const SINK_PORT = 4030;
 const DIST = ".next-e2e-invest";
 const REDIS = {
   url: "http://127.0.0.1:8079",
-  token: "aroma-local-redis-token",
+  token: "ovelo-local-redis-token",
 };
 const DB = {
-  url: "postgres://aroma:aroma-local-only@127.0.0.1:54329/aroma",
+  url: "postgres://ovelo:ovelo-local-only@127.0.0.1:54329/ovelo",
   proxy: "127.0.0.1:54330",
 };
 const children: ChildProcess[] = [];
@@ -156,10 +156,10 @@ async function main() {
   );
   const buildEnv = {
     ...placeholders,
-    NEXT_PUBLIC_AROMA_E2E_WALLET: "true",
-    NEXT_PUBLIC_AROMA_LOCALNET: "true",
+    NEXT_PUBLIC_OVELO_E2E_WALLET: "true",
+    NEXT_PUBLIC_OVELO_LOCALNET: "true",
     NEXT_PUBLIC_TURNSTILE_SITE_KEY: "1x00000000000000000000AA",
-    AROMA_NEXT_DIST_DIR: DIST,
+    OVELO_NEXT_DIST_DIR: DIST,
   };
   if (process.env.E2E_SKIP_BUILD !== "1") {
     const tracked = ["tsconfig.json", "next-env.d.ts"].map((f) => ({
@@ -196,16 +196,16 @@ async function main() {
       ...buildEnv,
       NODE_ENV: "production",
       ...EDGE_START, // Phase H: self-host behind Cloudflare (e2e/local-start.ts)
-      AROMA_V1_ALLOW_TEST_SWITCHES: "true",
-      AROMA_V1_INVEST_CLUSTER: "localnet",
-      AROMA_V1_LOCALNET_RPC_URL: s.rpcUrl,
-      AROMA_V1_LOCALNET_GENESIS: s.genesis,
-      AROMA_V1_LOCALNET_FUNDING_MINT: s.testUsd,
-      AROMA_V1_FAUCET_KEYPAIR: JSON.stringify(s.faucet.secret),
+      OVELO_V1_ALLOW_TEST_SWITCHES: "true",
+      OVELO_V1_INVEST_CLUSTER: "localnet",
+      OVELO_V1_LOCALNET_RPC_URL: s.rpcUrl,
+      OVELO_V1_LOCALNET_GENESIS: s.genesis,
+      OVELO_V1_LOCALNET_FUNDING_MINT: s.testUsd,
+      OVELO_V1_FAUCET_KEYPAIR: JSON.stringify(s.faucet.secret),
       TURNSTILE_SECRET_KEY: "1x0000000000000000000000000000000AA",
-      AROMA_TRADE_SECRET: tradeSecret,
+      OVELO_TRADE_SECRET: tradeSecret,
       DATABASE_URL: DB.url,
-      AROMA_LOCAL_NEON_WS_PROXY: DB.proxy,
+      OVELO_LOCAL_NEON_WS_PROXY: DB.proxy,
       UPSTASH_REDIS_REST_URL: REDIS.url,
       UPSTASH_REDIS_REST_TOKEN: REDIS.token,
       LOG_LEVEL: "info",
@@ -243,7 +243,7 @@ async function main() {
       UPSTASH_REDIS_REST_URL: REDIS.url,
       UPSTASH_REDIS_REST_TOKEN: REDIS.token,
       DATABASE_URL: DB.url,
-      AROMA_LOCAL_NEON_WS_PROXY: DB.proxy,
+      OVELO_LOCAL_NEON_WS_PROXY: DB.proxy,
       KEEPER_ALERT_WEBHOOK_URL: `http://127.0.0.1:${SINK_PORT}/alerts`,
       KEEPER_PORT: String(KEEPER_PORT),
       KEEPER_MIN_SOL_LAMPORTS: "1000000000",

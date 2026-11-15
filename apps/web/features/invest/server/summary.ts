@@ -1,5 +1,5 @@
 import "server-only";
-import { delegationTerms } from "@aroma/guard";
+import { delegationTerms } from "@ovelo/guard";
 import { CLUSTER_LABEL } from "@/features/wallet/cluster";
 import type { InvestClusterName, PlanSummary } from "../schema";
 import { formatChainTime, formatPeriod, formatRaw } from "./format";
@@ -11,7 +11,7 @@ import { formatChainTime, formatPeriod, formatRaw } from "./format";
  */
 
 export const RISK_NOTE =
-  "Devnet test: the tokens have no real value. An installment runs only when Aroma's keeper " +
+  "Devnet test: the tokens have no real value. An installment runs only when Ovelo's keeper " +
   "runs and a fresh Pyth price is available, which for stocks means US market hours. A period " +
   "that cannot run within the catch-up window is skipped, and the plan shows it as skipped.";
 

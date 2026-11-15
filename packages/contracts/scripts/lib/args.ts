@@ -22,4 +22,4 @@ export function parseArgs(
 }
 
 export const DEFAULT_DEVNET_RPC = "https://api.devnet.solana.com";
-export const DEFAULT_DEPLOYER = "~/.config/solana/aroma-deployer.json";
+export const DEFAULT_DEPLOYER = "~/.config/solana/ovelo-deployer.json";

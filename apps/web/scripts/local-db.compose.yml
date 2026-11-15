@@ -1,18 +1,18 @@
 # Local Postgres for development and the creator E2E (M5b B6). LOCAL ONLY: test credentials,
 # bound to 127.0.0.1. The Neon serverless driver reaches Postgres through Neon's open-source
 # WebSocket proxy (server/db/local-neon.ts). Started and stopped by scripts/local-db.sh.
-name: aroma-local-db
+name: ovelo-local-db
 services:
   postgres:
     image: postgres:17.6-alpine
     environment:
-      POSTGRES_USER: aroma
-      POSTGRES_PASSWORD: aroma-local-only
-      POSTGRES_DB: aroma
+      POSTGRES_USER: ovelo
+      POSTGRES_PASSWORD: ovelo-local-only
+      POSTGRES_DB: ovelo
     ports:
       - "127.0.0.1:54329:5432"
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U aroma -d aroma"]
+      test: ["CMD-SHELL", "pg_isready -U ovelo -d ovelo"]
       interval: 1s
       timeout: 3s
       retries: 30

@@ -4,7 +4,7 @@ import {
   BASKET_EQUITY_PYTH_FEEDS,
   normalizeSymbol,
   XSTOCKS_PYTH_FEEDS,
-} from "@aroma/guard/pyth";
+} from "@ovelo/guard/pyth";
 import type { RegisteredAsset } from "./chain";
 
 /**

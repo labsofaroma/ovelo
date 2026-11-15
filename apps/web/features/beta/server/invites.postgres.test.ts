@@ -12,7 +12,7 @@ import { createBetaInvite, redeemBetaInvite, type BetaDb } from "./invites";
 /**
  * W2 under TRUE parallelism on real Postgres (PGlite runs transactions one at a time). Runs only
  * against the local Docker Postgres + Neon proxy (scripts/local-db.sh: DATABASE_URL on loopback
- * and AROMA_LOCAL_NEON_WS_PROXY set), through the same Neon driver production uses, on 25
+ * and OVELO_LOCAL_NEON_WS_PROXY set), through the same Neon driver production uses, on 25
  * connections. Skipped otherwise, so `pnpm test` needs no database.
  */
 const url = process.env.DATABASE_URL ?? "";

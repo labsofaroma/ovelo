@@ -17,7 +17,7 @@ const service = await import("./service");
 const SECRET = "wiring-test-trade-secret-at-least-32-characters";
 beforeEach(() => {
   stubBaseEnv();
-  vi.stubEnv("AROMA_TRADE_SECRET", SECRET);
+  vi.stubEnv("OVELO_TRADE_SECRET", SECRET);
   resetEnvCacheForTests();
   resetRedisForTests();
 });
@@ -76,7 +76,7 @@ describe("deps", () => {
   });
   it("a local-fork E2E run uses in-process stores", async () => {
     vi.stubEnv("SOLANA_RPC_URL", "http://127.0.0.1:8899");
-    vi.stubEnv("AROMA_V1_TEST_FORK_GENESIS", GENESIS_HASHES.devnet);
+    vi.stubEnv("OVELO_V1_TEST_FORK_GENESIS", GENESIS_HASHES.devnet);
     const wired = deps.submitDeps();
     expect(await wired.store.get("nothing")).toBeNull();
     expect(wired.jito).toBeNull();
@@ -87,7 +87,7 @@ describe("deps", () => {
     await expect(wired.jitoTip(mint(1))).rejects.toMatchObject({
       code: "BUNDLE_UNAVAILABLE",
     });
-    vi.stubEnv("AROMA_TRADE_SECRET", "");
+    vi.stubEnv("OVELO_TRADE_SECRET", "");
     resetEnvCacheForTests();
     expect(() => deps.quoteDeps()).toThrowError(
       expect.objectContaining({ code: "TRADING_UNAVAILABLE" }),

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Brand } from "@aroma/ui";
+import { Brand } from "@ovelo/ui";
 import { routes } from "../routes";
 import { pageContainer } from "../styles";
 import { NavLinks } from "./NavLinks";
@@ -15,7 +15,7 @@ export function SiteHeader() {
         <Brand
           href={routes.home}
           LinkComponent={Link}
-          aria-label="Aroma home"
+          aria-label="Ovelo home"
         />
         {/* M9: on phones the nav takes its own row and wraps, so the page never scrolls sideways. */}
         <nav

@@ -14,13 +14,13 @@ import {
   TOKEN_PROGRAM_ID,
   V1_PROGRAM_ID,
   type Plan,
-} from "@aroma/guard";
+} from "@ovelo/guard";
 import {
   getAssetEncoder,
   getConfigEncoder,
   getPlanEncoder,
-} from "@aroma/guard/generated";
-import { XSTOCKS_PYTH_FEEDS } from "@aroma/guard/pyth";
+} from "@ovelo/guard/generated";
+import { XSTOCKS_PYTH_FEEDS } from "@ovelo/guard/pyth";
 import type { InvestNetwork } from "./cluster";
 import { fakeChain, type FakeAccount } from "./test-chain";
 

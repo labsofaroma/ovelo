@@ -17,7 +17,7 @@ import {
 
 const RUNS = 200;
 const TTL_MS = CHALLENGE_TTL_SECONDS * 1000;
-const ORIGIN = "https://aroma.test";
+const ORIGIN = "https://ovelo.test";
 const NOW = Date.parse("2026-11-13T12:00:00.000Z");
 const MINTS = [
   "XsbEhLAtcf6HdfpFZ5xEMdqW8nfAvcsP5bdudRLJzJp",

@@ -1,8 +1,8 @@
 #!/usr/bin/env bash
 # Phase H Step 5: roll the app back to the previous digest (docs/launch/HOSTINGER-RUNBOOK.md §12).
 #
-#   sudo /opt/aroma/rollback.sh                 (the digest in /etc/aroma/previous)
-#   sudo /opt/aroma/rollback.sh sha256:<hex>    (an explicit earlier digest)
+#   sudo /opt/ovelo/rollback.sh                 (the digest in /etc/ovelo/previous)
+#   sudo /opt/ovelo/rollback.sh sha256:<hex>    (an explicit earlier digest)
 #
 # Migrations are FORWARD-ONLY: a rollback never touches the database. That is safe only because
 # every migration is additive (new tables, new nullable columns, new indexes), so an older build
@@ -12,18 +12,18 @@
 set -Eeuo pipefail
 umask 077
 
-REPO="${AROMA_IMAGE_REPO:-ghcr.io/aromalabs/aroma-web}"
-ETC="${AROMA_ETC:-/etc/aroma}"
-COMPOSE_FILE="${AROMA_COMPOSE_FILE:-/opt/aroma/docker-compose.yml}"
-SIGNER_IDENTITY='^https://github\.com/aromalabs/aroma/\.github/workflows/image\.yml@refs/(heads/main|tags/v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?)$'
+REPO="${OVELO_IMAGE_REPO:-ghcr.io/labsofovelo/ovelo-web}"
+ETC="${OVELO_ETC:-/etc/ovelo}"
+COMPOSE_FILE="${OVELO_COMPOSE_FILE:-/opt/ovelo/docker-compose.yml}"
+SIGNER_IDENTITY='^https://github\.com/labsofovelo/ovelo/\.github/workflows/image\.yml@refs/(heads/main|tags/v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?)$'
 OIDC_ISSUER="https://token.actions.githubusercontent.com"
 
-# Compose reads .env next to the compose file for ${AROMA_IMAGE}, so plain `docker compose ps`,
+# Compose reads .env next to the compose file for ${OVELO_IMAGE}, so plain `docker compose ps`,
 # `logs`, `exec` and `stop` (host-check.sh, kill-switch.md, the runbook) use the running digest.
 pin_image() {
   local file
   file="$(dirname "$COMPOSE_FILE")/.env"
-  printf 'AROMA_IMAGE=%s\n' "$1" > "${file}.tmp" && chmod 0644 "${file}.tmp" && mv -f "${file}.tmp" "$file"
+  printf 'OVELO_IMAGE=%s\n' "$1" > "${file}.tmp" && chmod 0644 "${file}.tmp" && mv -f "${file}.tmp" "$file"
 }
 
 log() { printf '%s rollback: %s\n' "$(date -u +%FT%TZ)" "$*" >&2; }
@@ -50,7 +50,7 @@ cosign verify "$TARGET" \
 docker pull --quiet "$TARGET" >/dev/null \
   || die "pull failed: is root logged in to ghcr.io (HOSTINGER-RUNBOOK §2.8)?"
 log "switching app to ${TARGET} (database untouched: migrations are forward-only)"
-AROMA_IMAGE="$TARGET" docker compose -f "$COMPOSE_FILE" up -d --wait --wait-timeout 150 app cloudflared \
+OVELO_IMAGE="$TARGET" docker compose -f "$COMPOSE_FILE" up -d --wait --wait-timeout 150 app cloudflared \
   || die "rollback did not become healthy: use kill-switch.md and check 'docker compose -f ${COMPOSE_FILE} logs app'"
 printf '%s\n' "$TARGET" > "${ETC}/current"
 pin_image "$TARGET"

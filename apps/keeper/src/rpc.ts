@@ -3,7 +3,7 @@ import {
   createSolanaRpcFromTransport,
   type RpcTransport,
 } from "@solana/kit";
-import { DEVNET_GENESIS_HASH, MAINNET_GENESIS_HASH } from "@aroma/guard";
+import { DEVNET_GENESIS_HASH, MAINNET_GENESIS_HASH } from "@ovelo/guard";
 import type { KeeperEnv } from "./env";
 
 export type KeeperRpc = ReturnType<

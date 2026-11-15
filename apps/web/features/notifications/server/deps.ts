@@ -59,7 +59,7 @@ const defaults: NotifyDeps = {
     };
   },
   site: () =>
-    (process.env.AROMA_SITE_URL ?? "http://localhost:3000").replace(/\/$/, ""),
+    (process.env.OVELO_SITE_URL ?? "http://localhost:3000").replace(/\/$/, ""),
   now: () => new Date(),
 };
 

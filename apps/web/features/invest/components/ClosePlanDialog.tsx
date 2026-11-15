@@ -9,7 +9,7 @@ import {
   DialogFooter,
   DialogTitle,
   DialogTrigger,
-} from "@aroma/ui";
+} from "@ovelo/ui";
 import { useState } from "react";
 import { useSigner } from "../../wallet/context";
 import { investApi } from "../api";

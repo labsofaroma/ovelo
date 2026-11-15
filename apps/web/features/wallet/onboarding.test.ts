@@ -9,7 +9,7 @@ describe("wallet onboarding helpers", () => {
   });
 
   it("browse links carry only the page and its origin, URL-encoded", () => {
-    const links = walletBrowseLinks("https://beta.aroma.example/get-started");
+    const links = walletBrowseLinks("https://beta.ovelo.example/get-started");
     expect(links.map((l) => l.name)).toEqual([
       "Phantom",
       "Solflare",
@@ -19,7 +19,7 @@ describe("wallet onboarding helpers", () => {
       const url = new URL(link.href);
       expect(url.protocol).toBe("https:");
       expect([...url.searchParams.keys()]).toEqual(["ref"]);
-      expect(url.searchParams.get("ref")).toBe("https://beta.aroma.example");
+      expect(url.searchParams.get("ref")).toBe("https://beta.ovelo.example");
     }
   });
 });

@@ -2,7 +2,7 @@
 
 Status:
 - **Step 1 done** (desk research and read-only chain facts). Step 2 (the fork spike) did not run: Jupiter's maintained DCA has no on-chain order program to fork (§7).
-- **Decision (owner, 2026-11-15): Path B.** No mainnet DCA is built. `/invest` keeps the devnet beta, under a "Mainnet recurring: coming" notice that gives the reason in §7 and no date. Mainnet recurring is M12 (Aroma Guard).
+- **Decision (owner, 2026-11-15): Path B.** No mainnet DCA is built. `/invest` keeps the devnet beta, under a "Mainnet recurring: coming" notice that gives the reason in §7 and no date. Mainnet recurring is M12 (Ovelo Guard).
 - No transaction was sent, signed or simulated; no Jupiter account or API key was used; no P5 USDC was spent.
 
 ## Sources
@@ -119,7 +119,7 @@ Scope: the 37 xStocks used by the curated baskets (`lib/sdk/markets/definitions.
 
 Step 2 assumes an on-chain order program that a fork can clone, a create transaction that our server can decode against an IDL, and a cancel that returns funds from an order account. That describes Recurring V1, which rejects every xStock. The maintained product works differently:
 
-1. **Custody (product and legal).** Between rounds the user's whole budget sits in a **Privy-managed custodial vault** operated for Jupiter, not in a program-owned account. That is a third party holding user funds. It changes PRODUCT.md, the COMPLIANCE disclosure and counsel's review, and it is the opposite of Aroma Guard's non-custodial design.
+1. **Custody (product and legal).** Between rounds the user's whole budget sits in a **Privy-managed custodial vault** operated for Jupiter, not in a program-owned account. That is a third party holding user funds. It changes PRODUCT.md, the COMPLIANCE disclosure and counsel's review, and it is the opposite of Ovelo Guard's non-custodial design.
 2. **Nothing to verify on chain beyond the deposit.** The schedule (amount per round, rounds, interval) lives in Jupiter's database. Step 4's checks ("decode the create instruction … amount per round, rounds, interval match the plan") reduce to the deposit transfer: USDC, amount and destination vault. The schedule can only be read back from Jupiter's API.
 3. **Jupiter lands the deposit.** The signed deposit goes to `POST /orders/dca` and Jupiter broadcasts it (T3). Step 5's "send through our RPC, failover on identical bytes" is not possible. Our server can still byte-check the signed deposit before forwarding it.
 4. **A Jupiter session per user.** Each user must sign a Jupiter challenge message, and someone must hold a 15-minute access token plus a rotating refresh token (T7). That means a second wallet prompt, plus a credential our server or browser has to store. A leaked token can cancel orders but not withdraw (T7).
@@ -129,7 +129,7 @@ Step 2 assumes an on-chain order program that a fork can clone, a create transac
 
 Options I see, for the owner to choose:
 
-- **(a) Path B now.** Keep the devnet beta and add an honest "Mainnet recurring: coming" panel. The reason in plain words: Jupiter's on-chain recurring product doesn't support xStocks, and its current one holds funds in a custodial vault. Mainnet recurring then waits for M12 (Aroma Guard). No P5 money is spent.
+- **(a) Path B now.** Keep the devnet beta and add an honest "Mainnet recurring: coming" panel. The reason in plain words: Jupiter's on-chain recurring product doesn't support xStocks, and its current one holds funds in a custodial vault. Mainnet recurring then waits for M12 (Ovelo Guard). No P5 money is spent.
 - **(b) Owner P5 probe first, then decide.** Ask Jupiter, or test with the owner's key and wallet ($20 USDC, 2 rounds, one liquid xStock such as NVDAx or SPYx), whether an xStock output is accepted. If it is, build Path A on Trigger V2. That requires product and counsel sign-off on third-party custody, and Steps 2–5 would be rescoped as above.
 - **(c) Something outside this prompt.** For example, a server-free "schedule a reminder, user signs each spot buy" flow on the existing trade path. That would be a new product decision.
 

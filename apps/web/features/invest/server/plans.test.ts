@@ -1,5 +1,5 @@
-import { NO_PERIOD } from "@aroma/guard";
-import { getInstallmentExecutedEventEncoder } from "@aroma/guard/generated";
+import { NO_PERIOD } from "@ovelo/guard";
+import { getInstallmentExecutedEventEncoder } from "@ovelo/guard/generated";
 import { describe, expect, it } from "vitest";
 import { listPlans } from "./plans";
 import { memoryInvestStore } from "./store";

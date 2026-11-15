@@ -37,7 +37,7 @@ export const SENSITIVE_KEYS = [
   "databaseurl",
   "database_url",
   // Phase H: the edge-to-origin secret header (server/origin-lock.ts).
-  "x-aroma-origin",
+  "x-ovelo-origin",
   // Phase H Step 4: client IPs (by header or field name) and contact details are never logged.
   "clientip",
   "x-forwarded-for",

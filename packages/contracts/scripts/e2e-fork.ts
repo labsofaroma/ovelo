@@ -1,11 +1,11 @@
 /**
- * M8 B4: Aroma Guard v1 DEFAULT (mainnet) build on a LOCAL MAINNET FORK, driven by the real keeper
+ * M8 B4: Ovelo Guard v1 DEFAULT (mainnet) build on a LOCAL MAINNET FORK, driven by the real keeper
  * in mainnet-fork mode. Nothing here can send a mainnet transaction: mainnet is only read through
  * `readOnly()` (genesis, accounts, slot) and the public Jupiter build API; every transaction goes
  * to solana-test-validator on 127.0.0.1, whose genesis is checked to be neither mainnet's nor
  * devnet's before anything is signed. Every key is generated in memory for this run.
  *
- *   pnpm --filter @aroma/contracts e2e:fork        (E2E_FORK_PERIODS=1 for a quick run)
+ *   pnpm --filter @ovelo/contracts e2e:fork        (E2E_FORK_PERIODS=1 for a quick run)
  *
  * 1. Record Jupiter routes (route_v2, Orca Whirlpool) for AAPLx 50 %, TSLAx 30 %, NVDAx 20 % with
  *    the swap-authority PDA as taker and the test owner's ATAs as destinations.
@@ -23,8 +23,8 @@ import fs from "node:fs";
 import path from "node:path";
 import { spawn } from "node:child_process";
 import { address, getAddressEncoder, type Address } from "@solana/kit";
-import * as v1 from "@aroma/guard";
-import { getEquityFeedId } from "@aroma/guard/pyth";
+import * as v1 from "@ovelo/guard";
+import { getEquityFeedId } from "@ovelo/guard/pyth";
 import { CONTRACTS_ROOT, newExportableKeypair } from "./lib/keys";
 import { runOnFork } from "./lib/fork-run";
 import { connect } from "./lib/send";
@@ -43,7 +43,7 @@ import {
 
 const WORK = path.join(CONTRACTS_ROOT, ".e2e-fork");
 const PORT = 8979;
-const SO = path.join(CONTRACTS_ROOT, "target/build/mainnet/aroma_guard.so");
+const SO = path.join(CONTRACTS_ROOT, "target/build/mainnet/ovelo_guard.so");
 const LEGS = [
   { symbol: "AAPL", xstock: "AAPLx", weight: 5_000, amount: 5_000_000n },
   { symbol: "TSLA", xstock: "TSLAx", weight: 3_000, amount: 3_000_000n },
@@ -56,7 +56,7 @@ const enc = getAddressEncoder();
 
 async function main() {
   if (!fs.existsSync(SO))
-    throw new Error("Run `pnpm --filter @aroma/contracts build` first.");
+    throw new Error("Run `pnpm --filter @ovelo/contracts build` first.");
   fs.rmSync(WORK, { recursive: true, force: true });
   fs.mkdirSync(path.join(WORK, "accounts"), { recursive: true });
   const slot = await assertMainnet();

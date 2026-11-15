@@ -1,6 +1,6 @@
 /**
  * `getProgramAccounts` filters for v1 accounts. Every fixed field of `Plan` precedes `outputs`,
- * so `owner` (offset 9) and `funding_mint` (offset 41) have fixed offsets (aroma-guard-v1.md).
+ * so `owner` (offset 9) and `funding_mint` (offset 41) have fixed offsets (ovelo-guard-v1.md).
  */
 import {
   getBase58Decoder,

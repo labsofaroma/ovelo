@@ -6,7 +6,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@aroma/ui";
+} from "@ovelo/ui";
 import { AsOf } from "../../shared/components/AsOf";
 import {
   formatCompactUsd,

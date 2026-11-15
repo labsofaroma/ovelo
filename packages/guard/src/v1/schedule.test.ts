@@ -12,7 +12,7 @@ import {
   UNIT_MULTIPLIER_FP,
 } from "./schedule";
 
-/** The same vectors as `programs/aroma_guard/src/math_tests.rs`. */
+/** The same vectors as `programs/ovelo_guard/src/math_tests.rs`. */
 describe("schedule mirror", () => {
   test("schedule index", () => {
     expect(scheduleIndex(99n, 100n, 10n)).toBeNull();

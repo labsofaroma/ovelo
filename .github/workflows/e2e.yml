@@ -49,7 +49,7 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @aroma/web exec playwright install --with-deps chromium
+      - run: pnpm --filter @ovelo/web exec playwright install --with-deps chromium
       - name: Build (placeholder env, connects to nothing)
         run: |
           set -a; . apps/web/.env.example; set +a
@@ -57,7 +57,7 @@ jobs:
       - name: Playwright smoke + axe
         run: |
           set -a; . apps/web/.env.example; set +a
-          pnpm --filter @aroma/web test:e2e
+          pnpm --filter @ovelo/web test:e2e
       - if: failure()
         uses: actions/upload-artifact@v4
         with:
@@ -78,7 +78,7 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @aroma/web exec playwright install --with-deps chromium
+      - run: pnpm --filter @ovelo/web exec playwright install --with-deps chromium
       - name: Install the Solana CLI (solana-test-validator)
         run: |
           sh -c "$(curl -sSfL https://release.anza.xyz/stable/install)"
@@ -88,7 +88,7 @@ jobs:
         # reviewed schema does not know, which the server refuses (fail closed; Phase A finding).
         env:
           E2E_STOCK: TSLA
-        run: pnpm --filter @aroma/web e2e:fork
+        run: pnpm --filter @ovelo/web e2e:fork
       # The recorded fixtures (Jupiter routes, cloned-account list) are kept as files for replay
       # and diagnosis. They contain public chain data only.
       - if: always()
@@ -135,13 +135,13 @@ jobs:
           node-version-file: .nvmrc
           cache: pnpm
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter @aroma/web exec playwright install --with-deps chromium
-      - name: Build Aroma Guard v1 (devnet-mock) and fetch the pinned upstream binaries
+      - run: pnpm --filter @ovelo/web exec playwright install --with-deps chromium
+      - name: Build Ovelo Guard v1 (devnet-mock) and fetch the pinned upstream binaries
         run: |
-          pnpm --filter @aroma/contracts build
-          pnpm --filter @aroma/contracts test:fixtures
+          pnpm --filter @ovelo/contracts build
+          pnpm --filter @ovelo/contracts test:fixtures
       - name: Faucet, create, 3 installments + 1 skip, timeline, close + revoke, alerts, negatives, axe
-        run: pnpm --filter @aroma/web e2e:invest
+        run: pnpm --filter @ovelo/web e2e:invest
       - if: always()
         uses: actions/upload-artifact@v4
         with:

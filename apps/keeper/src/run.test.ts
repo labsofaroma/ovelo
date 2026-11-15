@@ -1,4 +1,4 @@
-import { DEVNET_GENESIS_HASH, MAINNET_GENESIS_HASH } from "@aroma/guard";
+import { DEVNET_GENESIS_HASH, MAINNET_GENESIS_HASH } from "@ovelo/guard";
 import { describe, expect, it, vi } from "vitest";
 import { parseKeeperEnv } from "./env";
 import { runOnce, type RunDeps } from "./run";

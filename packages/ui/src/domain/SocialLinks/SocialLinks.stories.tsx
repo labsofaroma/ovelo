@@ -11,6 +11,6 @@ export const Focus = () => (
 );
 export const LightAndDark = () => (
   <Themes>
-    {(theme) => <SocialLinks label={`Aroma community (${theme})`} />}
+    {(theme) => <SocialLinks label={`Ovelo community (${theme})`} />}
   </Themes>
 );

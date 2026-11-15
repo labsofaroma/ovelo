@@ -13,7 +13,7 @@ pub struct InitializeConfig<'info> {
     #[account(init, payer = authority, space = 8 + Config::INIT_SPACE, seeds = [CONFIG_SEED], bump)]
     pub config: Box<Account<'info, Config>>,
     #[account(constraint = program.programdata_address()? == Some(program_data.key()) @ GuardError::NotUpgradeAuthority)]
-    pub program: Program<'info, crate::program::AromaGuard>,
+    pub program: Program<'info, crate::program::OveloGuard>,
     #[account(constraint = program_data.upgrade_authority_address == Some(authority.key()) @ GuardError::NotUpgradeAuthority)]
     pub program_data: Account<'info, ProgramData>,
     pub system_program: Program<'info, System>,

@@ -86,9 +86,9 @@ describe("wallet clusters (M7 B2)", () => {
   });
 
   it("localnet exists only in a test build, on loopback, with a genesis of its own", () => {
-    vi.stubEnv("NEXT_PUBLIC_AROMA_LOCALNET", "false");
+    vi.stubEnv("NEXT_PUBLIC_OVELO_LOCALNET", "false");
     expect(localnetConfig("http://127.0.0.1:8899", LOCAL_GENESIS)).toBeNull();
-    vi.stubEnv("NEXT_PUBLIC_AROMA_LOCALNET", "true");
+    vi.stubEnv("NEXT_PUBLIC_OVELO_LOCALNET", "true");
     expect(localnetConfig("http://127.0.0.1:8899", LOCAL_GENESIS)).toEqual({
       cluster: "localnet",
       rpcUrl: "http://127.0.0.1:8899",
@@ -103,7 +103,7 @@ describe("wallet clusters (M7 B2)", () => {
   });
 
   it("no session state is shared: each cluster has its own storage key and chain id", () => {
-    vi.stubEnv("NEXT_PUBLIC_AROMA_LOCALNET", "true");
+    vi.stubEnv("NEXT_PUBLIC_OVELO_LOCALNET", "true");
     const keys = new Set(
       (["mainnet", "devnet", "localnet"] as const).map(storageKey),
     );

@@ -1,4 +1,4 @@
-/** Program-derived addresses for Aroma Guard v1 and the Subscriptions program. */
+/** Program-derived addresses for Ovelo Guard v1 and the Subscriptions program. */
 import {
   getAddressEncoder,
   getProgramDerivedAddress,
@@ -7,7 +7,7 @@ import {
   type Address,
 } from "@solana/kit";
 import {
-  AROMA_GUARD_V1_PROGRAM_ID,
+  OVELO_GUARD_V1_PROGRAM_ID,
   ASSOCIATED_TOKEN_PROGRAM_ID,
   BPF_LOADER_UPGRADEABLE_ID,
   SUBSCRIPTIONS_PROGRAM_ID,
@@ -28,12 +28,12 @@ async function pda(
   return found;
 }
 
-export const findConfigPda = (program = AROMA_GUARD_V1_PROGRAM_ID) =>
+export const findConfigPda = (program = OVELO_GUARD_V1_PROGRAM_ID) =>
   pda(program, [Uint8Array.from(utf8.encode("config"))]);
 
 export const findAssetPda = (
   mint: Address,
-  program = AROMA_GUARD_V1_PROGRAM_ID,
+  program = OVELO_GUARD_V1_PROGRAM_ID,
 ) =>
   pda(program, [
     Uint8Array.from(utf8.encode("asset")),
@@ -45,7 +45,7 @@ export const findPlanPda = (
   owner: Address,
   fundingMint: Address,
   nonce: bigint,
-  program = AROMA_GUARD_V1_PROGRAM_ID,
+  program = OVELO_GUARD_V1_PROGRAM_ID,
 ) =>
   pda(program, [
     Uint8Array.from(utf8.encode("plan")),
@@ -57,7 +57,7 @@ export const findPlanPda = (
 /** Devnet build: the per-asset mint authority `["mock_mint", mint]`. */
 export const findMockMintAuthorityPda = (
   mint: Address,
-  program = AROMA_GUARD_V1_PROGRAM_ID,
+  program = OVELO_GUARD_V1_PROGRAM_ID,
 ) =>
   pda(program, [
     Uint8Array.from(utf8.encode("mock_mint")),
@@ -65,7 +65,7 @@ export const findMockMintAuthorityPda = (
   ]);
 
 /** The upgradeable loader's ProgramData account for a program (checked by `initialize_config`). */
-export const findProgramDataAddress = (program = AROMA_GUARD_V1_PROGRAM_ID) =>
+export const findProgramDataAddress = (program = OVELO_GUARD_V1_PROGRAM_ID) =>
   pda(BPF_LOADER_UPGRADEABLE_ID, [Uint8Array.from(key.encode(program))]);
 
 export const findAssociatedTokenAddress = (

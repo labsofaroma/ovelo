@@ -104,7 +104,7 @@ export function vapidAuthorization(input: {
 }
 
 /**
- * Push services Aroma will POST to. The endpoint comes from the browser, so anything else is
+ * Push services Ovelo will POST to. The endpoint comes from the browser, so anything else is
  * refused (no request to an arbitrary URL: SSRF).
  */
 const PUSH_HOSTS = [

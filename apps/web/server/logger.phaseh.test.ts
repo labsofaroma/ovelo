@@ -26,9 +26,9 @@ describe("logs never carry secrets, client IPs or contact details", () => {
     logger.warn(
       {
         headers: {
-          "x-aroma-origin": ORIGIN,
+          "x-ovelo-origin": ORIGIN,
           authorization: "Bearer tok-abc",
-          cookie: "aroma_session=xyz",
+          cookie: "ovelo_session=xyz",
           "cf-connecting-ip": "203.0.113.50",
           "x-forwarded-for": "203.0.113.51",
           "x-real-ip": "203.0.113.52",
@@ -43,7 +43,7 @@ describe("logs never carry secrets, client IPs or contact details", () => {
     for (const hidden of [
       ORIGIN,
       "tok-abc",
-      "aroma_session=xyz",
+      "ovelo_session=xyz",
       "203.0.113.5",
     ])
       expect(text).not.toContain(hidden);
@@ -137,11 +137,11 @@ describe("Sentry naming (Phase H Step 4)", () => {
   it("environment from server/platform.ts, release from the image commit", async () => {
     const { buildSentryOptions, releaseOf } =
       await import("@/observability/sentry-options");
-    expect(releaseOf({ AROMA_REVISION: "abc123" })).toEqual({
-      release: "aroma-web@abc123",
+    expect(releaseOf({ OVELO_REVISION: "abc123" })).toEqual({
+      release: "ovelo-web@abc123",
     });
-    expect(releaseOf({ AROMA_REVISION: "unknown" })).toEqual({});
-    expect(releaseOf({ SENTRY_RELEASE: "r1", AROMA_REVISION: "abc" })).toEqual({
+    expect(releaseOf({ OVELO_REVISION: "unknown" })).toEqual({});
+    expect(releaseOf({ SENTRY_RELEASE: "r1", OVELO_REVISION: "abc" })).toEqual({
       release: "r1",
     });
     expect(

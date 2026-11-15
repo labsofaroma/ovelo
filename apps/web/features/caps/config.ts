@@ -37,18 +37,18 @@ function parse(value: string | undefined): bigint | null | "invalid" {
 export function capsConfig(env: Env): CapsConfig {
   const production =
     env.NODE_ENV?.trim() === "production" || productionRules(env);
-  const trade = parse(env.AROMA_MAX_TRADE_USDC_RAW);
-  const daily = parse(env.AROMA_MAX_DAILY_USDC_RAW);
+  const trade = parse(env.OVELO_MAX_TRADE_USDC_RAW);
+  const daily = parse(env.OVELO_MAX_DAILY_USDC_RAW);
   const bad: string[] = [];
   if (trade === "invalid" || (trade === null && production))
-    bad.push("AROMA_MAX_TRADE_USDC_RAW");
+    bad.push("OVELO_MAX_TRADE_USDC_RAW");
   if (daily === "invalid" || (daily === null && production))
-    bad.push("AROMA_MAX_DAILY_USDC_RAW");
+    bad.push("OVELO_MAX_DAILY_USDC_RAW");
   if (bad.length) throw new CapsConfigError(bad);
   const perTrade = (trade as bigint | null) ?? BETA_DEFAULT_TRADE_RAW;
   const perDay = (daily as bigint | null) ?? BETA_DEFAULT_DAILY_RAW;
   if (perDay < perTrade)
-    throw new CapsConfigError(["AROMA_MAX_DAILY_USDC_RAW"]);
+    throw new CapsConfigError(["OVELO_MAX_DAILY_USDC_RAW"]);
   return { perTrade, daily: perDay };
 }
 

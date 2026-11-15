@@ -14,7 +14,7 @@ import {
   type Asset,
   type Config,
   type Plan,
-} from "@aroma/guard";
+} from "@ovelo/guard";
 import { getSubscriptionAuthorityDecoder } from "@solana/subscriptions";
 import { AppError } from "@/server/errors";
 import type { InvestRpc } from "./cluster";

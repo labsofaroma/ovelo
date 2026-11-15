@@ -6,7 +6,7 @@ import { COMPANY_LOGO_BASE_PATH, companyLogos } from "../logos";
 import { getCompanyLogo } from "../src/domain/AssetAvatar/logo-lookup";
 
 describe("generated logos.ts", () => {
-  it("is up to date with apps/web/public/company-logos (run `pnpm --filter @aroma/ui gen:logos`)", () => {
+  it("is up to date with apps/web/public/company-logos (run `pnpm --filter @ovelo/ui gen:logos`)", () => {
     const { manifest, files } = readSources();
     expect(readFileSync(OUTPUT_FILE, "utf8")).toBe(
       buildLogosSource(manifest, files),

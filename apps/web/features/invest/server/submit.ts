@@ -1,10 +1,10 @@
 import "server-only";
 import type { Address, Base64EncodedWireTransaction } from "@solana/kit";
 import {
-  decodeAromaGuardEvents,
+  decodeOveloGuardEvents,
   indexRowFromPlan,
   planAddresses,
-} from "@aroma/guard";
+} from "@ovelo/guard";
 import { verifySignedPlanTransaction } from "@/server/auth/plan";
 import type { TradeKeyring } from "@/server/auth/trade";
 import { AppError } from "@/server/errors";
@@ -87,7 +87,7 @@ function eventFor(
   name: "PlanCreated" | "PlanClosed",
   payload: Payload,
 ) {
-  const event = decodeAromaGuardEvents(confirmed.logs, programId).find(
+  const event = decodeOveloGuardEvents(confirmed.logs, programId).find(
     (e) =>
       e.name === name &&
       e.data.plan === payload.plan &&

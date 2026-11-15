@@ -8,7 +8,7 @@ import { tryGetEnv } from "../env";
  * Trade authorization tokens (REWRITE-PLAN §5.2). Ported from the prototype's
  * trade-authorization.ts, bundle-authorization.ts and composed-transactions.ts (HMAC part), with:
  * - a zod-parsed payload (an unknown or malformed field is rejected, never cast);
- * - a key id, so AROMA_TRADE_SECRET can rotate while AROMA_TRADE_SECRET_PREVIOUS still verifies
+ * - a key id, so OVELO_TRADE_SECRET can rotate while OVELO_TRADE_SECRET_PREVIOUS still verifies
  *   quotes issued before the switch (they expire within a minute anyway);
  * - expiry, wallet binding and a SHA-256 hash of every authorized message, in order.
  *
@@ -90,7 +90,7 @@ export type TradeKeyring = { current: TradeKey; previous: TradeKey | null };
 /** A short public identifier of a secret. It reveals nothing usable about the secret. */
 export function keyId(secret: string): string {
   return createHash("sha256")
-    .update(`aroma-trade-kid:${secret}`)
+    .update(`ovelo-trade-kid:${secret}`)
     .digest("base64url")
     .slice(0, 10);
 }
@@ -101,11 +101,11 @@ export function createKeyring(
 ): TradeKeyring {
   if (current.length < 32)
     throw new AppError("TRADING_UNAVAILABLE", {
-      detail: "AROMA_TRADE_SECRET is shorter than 32 characters",
+      detail: "OVELO_TRADE_SECRET is shorter than 32 characters",
     });
   if (previous && previous.length < 32)
     throw new AppError("TRADING_UNAVAILABLE", {
-      detail: "AROMA_TRADE_SECRET_PREVIOUS is shorter than 32 characters",
+      detail: "OVELO_TRADE_SECRET_PREVIOUS is shorter than 32 characters",
     });
   return {
     current: { kid: keyId(current), secret: current },
@@ -119,12 +119,12 @@ export function createKeyring(
 /** The keyring from the validated environment. Missing secret: trading is unavailable. */
 export function keyringFromEnv(): TradeKeyring {
   const result = tryGetEnv();
-  const secret = result.ok ? result.env.server.AROMA_TRADE_SECRET : undefined;
+  const secret = result.ok ? result.env.server.OVELO_TRADE_SECRET : undefined;
   if (!result.ok || !secret)
     throw new AppError("TRADING_UNAVAILABLE", {
-      detail: "AROMA_TRADE_SECRET is not configured",
+      detail: "OVELO_TRADE_SECRET is not configured",
     });
-  return createKeyring(secret, result.env.server.AROMA_TRADE_SECRET_PREVIOUS);
+  return createKeyring(secret, result.env.server.OVELO_TRADE_SECRET_PREVIOUS);
 }
 
 function mac(secret: string, signed: string): Buffer {

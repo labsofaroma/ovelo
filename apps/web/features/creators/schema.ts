@@ -129,7 +129,7 @@ export type UsageView =
   | { state: "none"; asOf: string; source: string }
   | { state: "unavailable"; reason: string };
 
-/** Only what Aroma actually records (PRODUCT.md: never invent creator metrics). */
+/** Only what Ovelo actually records (PRODUCT.md: never invent creator metrics). */
 export type CreatorStatsView = {
   wallet: string;
   displayName: string;

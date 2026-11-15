@@ -43,8 +43,8 @@ const PURPOSE_TITLE: Record<ChallengePurpose, string> = {
   update: "save a creator basket draft",
   delete: "archive a creator basket",
   redeem: "redeem a creator invite",
-  terms: "accept Aroma's terms of use",
-  beta: "redeem an Aroma private-beta invite",
+  terms: "accept Ovelo's terms of use",
+  beta: "redeem an Ovelo private-beta invite",
 };
 
 /** A base58 address that is on the Ed25519 curve, so it can sign (a PDA cannot). */
@@ -121,7 +121,7 @@ export function challengeMessage(
   summary: readonly string[],
 ): string {
   return [
-    `Aroma: sign to ${PURPOSE_TITLE[payload.purpose]}`,
+    `Ovelo: sign to ${PURPOSE_TITLE[payload.purpose]}`,
     `Site: ${payload.origin}`,
     `Wallet: ${payload.wallet}`,
     ...(payload.basketId ? [`Basket id: ${payload.basketId}`] : []),

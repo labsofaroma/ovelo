@@ -1,9 +1,9 @@
-/** Aroma Guard v1 program and the programs it integrates with. */
+/** Ovelo Guard v1 program and the programs it integrates with. */
 import { address, type Address } from "@solana/kit";
-import { AROMA_GUARD_PROGRAM_ADDRESS } from "./generated";
+import { OVELO_GUARD_PROGRAM_ADDRESS } from "./generated";
 
 /** The v1 program ID (from the IDL; the owner's program keypair defines it). */
-export const AROMA_GUARD_V1_PROGRAM_ID: Address = AROMA_GUARD_PROGRAM_ADDRESS;
+export const OVELO_GUARD_V1_PROGRAM_ID: Address = OVELO_GUARD_PROGRAM_ADDRESS;
 /** Solana Foundation Subscriptions (layout pinned at upstream `program-v0.5.0`). */
 export const SUBSCRIPTIONS_PROGRAM_ID = address(
   "De1egAFMkMWZSN5rYXRj9CAdheBamobVNubTsi9avR44",
@@ -25,7 +25,7 @@ export const BPF_LOADER_UPGRADEABLE_ID = address(
 );
 export const SYSTEM_PROGRAM_ID = address("11111111111111111111111111111111");
 
-/** Must match `packages/contracts/programs/aroma_guard/src/constants.rs`. */
+/** Must match `packages/contracts/programs/ovelo_guard/src/constants.rs`. */
 export const MAX_OUTPUTS = 20;
 export const TOTAL_WEIGHT_BPS = 10_000;
 export const NO_PERIOD = 0xffff;

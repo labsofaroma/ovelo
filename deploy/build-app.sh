@@ -5,19 +5,19 @@
 #               with every marker forbidden (part of the package's build script).
 #   e2e         LOCAL fork-E2E build only (the test wallet bridge compiled in, the scan allowing the
 #               E2E marker). Produced only by the `runtime-e2e` target, which CI never builds; the
-#               image also sets NEXT_PUBLIC_AROMA_E2E_WALLET=true at runtime, so the boot refuses it
+#               image also sets NEXT_PUBLIC_OVELO_E2E_WALLET=true at runtime, so the boot refuses it
 #               under production rules.
 set -Eeuo pipefail
 mode="${1:?usage: build-app.sh production|e2e}"
-export AROMA_SKIP_ENV_CHECK=1 AROMA_BUILD_STANDALONE=1 NEXT_PUBLIC_AROMA_LOCALNET=false
+export OVELO_SKIP_ENV_CHECK=1 OVELO_BUILD_STANDALONE=1 NEXT_PUBLIC_OVELO_LOCALNET=false
 
 case "$mode" in
   production)
-    export NEXT_PUBLIC_AROMA_E2E_WALLET=false
-    pnpm --filter @aroma/web build
+    export NEXT_PUBLIC_OVELO_E2E_WALLET=false
+    pnpm --filter @ovelo/web build
     ;;
   e2e)
-    export NEXT_PUBLIC_AROMA_E2E_WALLET=true
+    export NEXT_PUBLIC_OVELO_E2E_WALLET=true
     (cd apps/web && npx next build)
     node scripts/check-client-secrets.mjs --next apps/web/.next --allow-e2e
     ;;

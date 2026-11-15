@@ -9,7 +9,7 @@ export const runtime = "nodejs";
 type Context = { params: Promise<{ wallet: string }> };
 
 /**
- * GET /api/v1/creators/:wallet/stats → what Aroma records about a creator, with its source and
+ * GET /api/v1/creators/:wallet/stats → what Ovelo records about a creator, with its source and
  * as-of time. Usage and volume are `unavailable` until purchase receipts exist (M5b), never 0.
  */
 export const GET = creatorRoute<Context>(

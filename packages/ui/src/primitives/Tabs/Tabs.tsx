@@ -33,7 +33,7 @@ export const TabsTrigger = forwardRef<
     <BaseTabs.Tab
       ref={ref}
       className={cn(
-        "min-h-(--aroma-control-height) cursor-pointer rounded-t-control px-4 text-small font-semibold text-muted transition-colors motion-base hover:text-ink",
+        "min-h-(--ovelo-control-height) cursor-pointer rounded-t-control px-4 text-small font-semibold text-muted transition-colors motion-base hover:text-ink",
         "data-[active]:text-ink data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50",
         focusRing,
         className,

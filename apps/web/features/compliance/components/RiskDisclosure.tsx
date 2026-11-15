@@ -1,4 +1,4 @@
-import { Badge } from "@aroma/ui";
+import { Badge } from "@ovelo/ui";
 import { useId, type ReactNode } from "react";
 import {
   DISCLOSURE_IS_PLACEHOLDER,

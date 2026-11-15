@@ -13,7 +13,7 @@ import {
   type KeyPairSigner,
   type Signature,
 } from "@solana/kit";
-import { computeBudgetInstructions } from "@aroma/guard/pyth";
+import { computeBudgetInstructions } from "@ovelo/guard/pyth";
 import type { Logger } from "./log";
 import type { KeeperRpc } from "./rpc";
 

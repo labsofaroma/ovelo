@@ -74,7 +74,7 @@ describe("VAPID", () => {
     const header = vapidAuthorization({
       endpoint: "https://fcm.googleapis.com/fcm/send/abc",
       ...keys,
-      subject: "mailto:ops@aroma.example",
+      subject: "mailto:ops@ovelo.example",
       now: 1_800_000_000_000,
     });
     const match = header.match(/^vapid t=([^,]+), k=(.+)$/);
@@ -84,7 +84,7 @@ describe("VAPID", () => {
     expect(claims).toEqual({
       aud: "https://fcm.googleapis.com",
       exp: 1_800_000_000 + 43_200,
-      sub: "mailto:ops@aroma.example",
+      sub: "mailto:ops@ovelo.example",
     });
     const pub = b64u(keys.publicKey);
     const key = createPublicKey({

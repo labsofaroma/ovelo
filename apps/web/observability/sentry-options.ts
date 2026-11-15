@@ -2,10 +2,10 @@ import { deployEnvOf } from "../server/platform";
 import { scrubSentryEvent, type ScrubbableEvent } from "./scrub";
 
 /** The Sentry init options we use in every runtime. Kept SDK-free so it is trivially testable. */
-export type AromaSentryOptions = {
+export type OveloSentryOptions = {
   dsn: string;
   environment: string;
-  /** Phase H: the image's commit (AROMA_REVISION label), or SENTRY_RELEASE when set. */
+  /** Phase H: the image's commit (OVELO_REVISION label), or SENTRY_RELEASE when set. */
   release?: string;
   sendDefaultPii: false;
   tracesSampleRate: number;
@@ -21,7 +21,7 @@ export type AromaSentryOptions = {
 export function buildSentryOptions(
   dsn: string | undefined,
   environment: string | undefined,
-): AromaSentryOptions | null {
+): OveloSentryOptions | null {
   const trimmed = dsn?.trim();
   if (!trimmed) return null;
   return {
@@ -37,14 +37,14 @@ export function buildSentryOptions(
   };
 }
 
-/** SENTRY_RELEASE wins; else the self-host image's commit (deploy/Dockerfile AROMA_REVISION). */
+/** SENTRY_RELEASE wins; else the self-host image's commit (deploy/Dockerfile OVELO_REVISION). */
 export function releaseOf(env: Readonly<Record<string, string | undefined>>): {
   release?: string;
 } {
   const release =
     env.SENTRY_RELEASE?.trim() ||
-    (env.AROMA_REVISION?.trim() && env.AROMA_REVISION.trim() !== "unknown"
-      ? `aroma-web@${env.AROMA_REVISION.trim()}`
+    (env.OVELO_REVISION?.trim() && env.OVELO_REVISION.trim() !== "unknown"
+      ? `ovelo-web@${env.OVELO_REVISION.trim()}`
       : "");
   return release ? { release } : {};
 }

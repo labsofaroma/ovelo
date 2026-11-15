@@ -1,6 +1,6 @@
-# Aroma v1 — Rebuild Plan
+# Ovelo v1 — Rebuild Plan
 
-_Written 13 November 2026. The current codebase is treated as a **prototype**. Aroma v1 is rebuilt from the ground up: a new repo layout, the Aroma Guard v1 contract deployed from your own account, a new SDK surface and a new web app. Proven pieces of the prototype are carried over deliberately, not inherited by default._
+_Written 13 November 2026. The current codebase is treated as a **prototype**. Ovelo v1 is rebuilt from the ground up: a new repo layout, the Ovelo Guard v1 contract deployed from your own account, a new SDK surface and a new web app. Proven pieces of the prototype are carried over deliberately, not inherited by default._
 
 The detailed engineering plan (stack, repo layout, module-by-module mapping, API and data model, milestones) is in [REWRITE-PLAN.md](./REWRITE-PLAN.md).
 
@@ -11,12 +11,12 @@ Why rebuild instead of patching: see [AUDIT.md](./AUDIT.md). The repo references
 ## 1. Target structure
 
 ```
-aroma/
+ovelo/
   apps/
     web/                 Next.js (App Router), UI + thin API routes
     keeper/              standalone collector service (QStash/Vercel Cron target)
   packages/
-    contracts/           Anchor workspace: aroma_guard v1 (see CONTRACT-V1-SPEC.md)
+    contracts/           Anchor workspace: ovelo_guard v1 (see CONTRACT-V1-SPEC.md)
     config/              shared tsconfig, eslint, prettier
     ui/                  design tokens + shared React primitives
   docs/
@@ -40,7 +40,7 @@ There is no separate SDK package for now. The chain, market and basket helpers s
 | `lib/server/disk-cache.ts` | **Drop** | Redis or the Next Data Cache only |
 | Raydium CPMM helpers, `*V2` aliases | **Drop** | dead code |
 | `packages/anchor` | **Drop** | unused code once the prototype UI is removed (M9) |
-| `components/aroma/*` | **Rebuild** | split the 800–1,300-line components; keep the visual design (`.21st/DESIGN.md`, `styles/foundation.css`) |
+| `components/ovelo/*` | **Rebuild** | split the 800–1,300-line components; keep the visual design (`.21st/DESIGN.md`, `styles/foundation.css`) |
 | `apps/web/tests/*` | **Port the relevant ones** | they encode many edge cases; keep the ones that apply to kept modules |
 | `.codex/hooks.json`, broken cron workflow, `tsconfig.tsbuildinfo` | **Drop** | |
 
@@ -95,7 +95,7 @@ _Done in place, with no separate package._
 5. **Onboarding**: for standard Solana wallets (no Privy or email wallets, REWRITE-PLAN §7.3 W1): install or connect a wallet → get a little SOL and USDC (on-ramp links) → first basket in under 2 minutes, with a consent-gated funnel.
 6. **Creators**: single-use or expiring invites, profile pages, Blink share buttons, optional fee share from the protocol fee.
 
-**M11 status (branch `m11-launch`):** 2 built with web push and Telegram (email off: no email address collected); 3 built from Aroma receipts and exact fills (other holdings: "cost basis unknown"; no on-chain history parsing); 5 built without on-ramp links (the wallet's own Buy feature; no provider approved); 6: a creator dashboard, share links and a fee-share ledger (accounting only, fee 0); no public creator profile page yet. 1 is M12 (M10 Path B).
+**M11 status (branch `m11-launch`):** 2 built with web push and Telegram (email off: no email address collected); 3 built from Ovelo receipts and exact fills (other holdings: "cost basis unknown"; no on-chain history parsing); 5 built without on-ramp links (the wallet's own Buy feature; no provider approved); 6: a creator dashboard, share links and a fee-share ledger (accounting only, fee 0); no public creator profile page yet. 1 is M12 (M10 Path B).
 
 ### Phase 6: Scale and trust (after launch)
 - Public status page, transparent protocol stats, bug bounty (Immunefi).
@@ -110,8 +110,8 @@ Measured at M11 (branch `m11-launch`, 2026-11-15) where a session can measure th
 | Metric | Target | Measured (M11) | Who |
 |---|---|---|---|
 | CI green on main | 100% | not measured: the stack is not pushed, CI has never run on GitHub | owner (P6) |
-| Installments executed within 5 minutes of being due | ≥ 99% | not measurable yet: devnet has **0** Aroma Guard plan accounts (read-only `getProgramAccounts`, genesis checked); by design a due plan runs on the first keeper run after it is due (QStash every 1–5 min) | owner, after the devnet keeper runs; mainnet at M12 |
+| Installments executed within 5 minutes of being due | ≥ 99% | not measurable yet: devnet has **0** Ovelo Guard plan accounts (read-only `getProgramAccounts`, genesis checked); by design a due plan runs on the first keeper run after it is due (QStash every 1–5 min) | owner, after the devnet keeper runs; mainnet at M12 |
 | Failed installments that trigger an alert | 100% | every installment failure that reaches execution alerts, each path tested (`apps/keeper`: dead-lettered → `installment_failed`, Hermes → `hermes_unavailable`, skipped → `installment_skipped`); an error *before* execution (for example an RPC read of the plan) is logged and retried next run without an alert (gap recorded) | session (tests); owner on a devnet run |
 | Time to first basket buy (new user) | < 2 min | **2.8 s** of app time on the fork E2E (`/get-started` → confirmed basket buy; the mocked wallet signs at once; terms and invite already done by that wallet) | session (fork); owner from consent-gated analytics after the beta |
 | p95 latency of `/api/markets` | < 300 ms | `/api/markets` became the server-rendered `/markets` page plus `GET /api/v1/prices`. Local `next start`, 100 sequential requests each: **`/markets` p95 47 ms** (all 200, warm Next data cache); `/api/v1/prices` p95 1,861 ms with 46 of 100 answering 502 (it calls keyless Jupiter on every request; a recorded stand-in would need a frozen trade-path change) | session (local); owner in production with the Jupiter key |
-| Critical or High audit findings open at mainnet launch | 0 | 2 open, both the owner's P6: H-7 (`main` protection) and H-8 (CI green). M11 added none; C-1, C-2 and H-1–H-3 concern the deleted prototype program | owner (P6); Aroma Guard's audit at M12 |
+| Critical or High audit findings open at mainnet launch | 0 | 2 open, both the owner's P6: H-7 (`main` protection) and H-8 (CI green). M11 added none; C-1, C-2 and H-1–H-3 concern the deleted prototype program | owner (P6); Ovelo Guard's audit at M12 |

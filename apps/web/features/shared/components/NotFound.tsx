@@ -22,7 +22,7 @@ export function NotFound() {
           Browse markets
         </Link>
         <Link className={textLink} href={routes.home}>
-          Aroma home
+          Ovelo home
         </Link>
       </div>
     </main>

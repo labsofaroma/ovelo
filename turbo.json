@@ -7,7 +7,7 @@
       "dependsOn": ["^build"],
       "env": [
         "NEXT_PUBLIC_*",
-        "AROMA_*",
+        "OVELO_*",
         "SOLANA_RPC_URL",
         "SOLANA_RPC_FALLBACK_URL",
         "DATABASE_URL",

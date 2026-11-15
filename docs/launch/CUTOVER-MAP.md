@@ -12,7 +12,7 @@ git ls-files | grep -cE "$PROTO"                         # 254
 git ls-files | grep -E "$PROTO" | xargs wc -l | tail -1  # 51748 total
 ```
 
-`lib/sdk/guard/[^/]+$` matches only files directly in `guard/` (`aroma_guard.json`, `aroma_guard.ts`, `client.ts`, `devnet.ts`), never `guard/v1/`.
+`lib/sdk/guard/[^/]+$` matches only files directly in `guard/` (`ovelo_guard.json`, `ovelo_guard.ts`, `client.ts`, `devnet.ts`), never `guard/v1/`.
 
 ## 1. Prototype paths to delete
 
@@ -83,44 +83,44 @@ apps/web/app/api/transaction/execute/route.ts
 <details><summary><code>apps/web/components/**</code>: 59 files</summary>
 
 ```
-apps/web/components/aroma/Account.tsx
-apps/web/components/aroma/AromaApp.tsx
-apps/web/components/aroma/AssetAvatar.tsx
-apps/web/components/aroma/BackpackCatalog.module.css
-apps/web/components/aroma/BackpackCatalog.tsx
-apps/web/components/aroma/BasketBuilder.tsx
-apps/web/components/aroma/BasketPerformancePanel.tsx
-apps/web/components/aroma/Brand.tsx
-apps/web/components/aroma/Creator.module.css
-apps/web/components/aroma/CreatorDashboard.tsx
-apps/web/components/aroma/Details.tsx
-apps/web/components/aroma/Discover.tsx
-apps/web/components/aroma/Landing.tsx
-apps/web/components/aroma/LegalPage.tsx
-apps/web/components/aroma/MarketPulse.tsx
-apps/web/components/aroma/MarketUI.tsx
-apps/web/components/aroma/PaperSwap.tsx
-apps/web/components/aroma/Plans.module.css
-apps/web/components/aroma/Portfolio.module.css
-apps/web/components/aroma/PortfolioAllocation.tsx
-apps/web/components/aroma/PrivacyChoices.tsx
-apps/web/components/aroma/RouteHealth.module.css
-apps/web/components/aroma/RouteHealth.tsx
-apps/web/components/aroma/Shell.tsx
-apps/web/components/aroma/SocialLinks.module.css
-apps/web/components/aroma/SocialLinks.tsx
-apps/web/components/aroma/State.tsx
-apps/web/components/aroma/StockResearch.tsx
-apps/web/components/aroma/ThemeMode.tsx
-apps/web/components/aroma/TradingModeSwitch.tsx
-apps/web/components/aroma/api-client.ts
-apps/web/components/aroma/basket-performance-client.ts
-apps/web/components/aroma/creator-client.ts
-apps/web/components/aroma/landing-page.css
-apps/web/components/aroma/research-client.ts
-apps/web/components/aroma/useBaskets.ts
-apps/web/components/aroma/useRouteHealth.ts
-apps/web/components/aroma/useTradingMode.ts
+apps/web/components/ovelo/Account.tsx
+apps/web/components/ovelo/OveloApp.tsx
+apps/web/components/ovelo/AssetAvatar.tsx
+apps/web/components/ovelo/BackpackCatalog.module.css
+apps/web/components/ovelo/BackpackCatalog.tsx
+apps/web/components/ovelo/BasketBuilder.tsx
+apps/web/components/ovelo/BasketPerformancePanel.tsx
+apps/web/components/ovelo/Brand.tsx
+apps/web/components/ovelo/Creator.module.css
+apps/web/components/ovelo/CreatorDashboard.tsx
+apps/web/components/ovelo/Details.tsx
+apps/web/components/ovelo/Discover.tsx
+apps/web/components/ovelo/Landing.tsx
+apps/web/components/ovelo/LegalPage.tsx
+apps/web/components/ovelo/MarketPulse.tsx
+apps/web/components/ovelo/MarketUI.tsx
+apps/web/components/ovelo/PaperSwap.tsx
+apps/web/components/ovelo/Plans.module.css
+apps/web/components/ovelo/Portfolio.module.css
+apps/web/components/ovelo/PortfolioAllocation.tsx
+apps/web/components/ovelo/PrivacyChoices.tsx
+apps/web/components/ovelo/RouteHealth.module.css
+apps/web/components/ovelo/RouteHealth.tsx
+apps/web/components/ovelo/Shell.tsx
+apps/web/components/ovelo/SocialLinks.module.css
+apps/web/components/ovelo/SocialLinks.tsx
+apps/web/components/ovelo/State.tsx
+apps/web/components/ovelo/StockResearch.tsx
+apps/web/components/ovelo/ThemeMode.tsx
+apps/web/components/ovelo/TradingModeSwitch.tsx
+apps/web/components/ovelo/api-client.ts
+apps/web/components/ovelo/basket-performance-client.ts
+apps/web/components/ovelo/creator-client.ts
+apps/web/components/ovelo/landing-page.css
+apps/web/components/ovelo/research-client.ts
+apps/web/components/ovelo/useBaskets.ts
+apps/web/components/ovelo/useRouteHealth.ts
+apps/web/components/ovelo/useTradingMode.ts
 apps/web/components/auth/PrivyAuthProvider.tsx
 apps/web/components/trading/ActualBasketPanel.tsx
 apps/web/components/trading/ActualPortfolio.tsx
@@ -226,10 +226,10 @@ apps/web/lib/site.ts
 <details><summary><code>apps/web/lib/sdk/{client,state,portfolio,subscriptions}/**</code>: 5 files</summary>
 
 ```
-apps/web/lib/sdk/client/aroma-client.ts
+apps/web/lib/sdk/client/ovelo-client.ts
 apps/web/lib/sdk/client/recurring-client.ts
 apps/web/lib/sdk/portfolio/cache.ts
-apps/web/lib/sdk/state/aroma-core.ts
+apps/web/lib/sdk/state/ovelo-core.ts
 apps/web/lib/sdk/subscriptions/mainnet.ts
 ```
 
@@ -249,8 +249,8 @@ apps/web/lib/sdk/wallet-capabilities.ts
 <details><summary><code>apps/web/lib/sdk/guard/* (not guard/v1)</code>: 4 files</summary>
 
 ```
-apps/web/lib/sdk/guard/aroma_guard.json
-apps/web/lib/sdk/guard/aroma_guard.ts
+apps/web/lib/sdk/guard/ovelo_guard.json
+apps/web/lib/sdk/guard/ovelo_guard.ts
 apps/web/lib/sdk/guard/client.ts
 apps/web/lib/sdk/guard/devnet.ts
 ```
@@ -294,8 +294,8 @@ apps/web/tests/request-policy.test.mjs
 apps/web/tests/research-route.test.mjs
 apps/web/tests/route-health-service.test.ts
 apps/web/tests/route-health.test.ts
-apps/web/tests/sdk/aroma-client.test.cjs
-apps/web/tests/sdk/aroma-core.test.cjs
+apps/web/tests/sdk/ovelo-client.test.cjs
+apps/web/tests/sdk/ovelo-core.test.cjs
 apps/web/tests/sdk/devnet-xstocks.test.ts
 apps/web/tests/sdk/fixtures/jupiter-mainnet-build.json
 apps/web/tests/sdk/fixtures/jupiter.cjs
@@ -335,18 +335,18 @@ packages/anchor/Cargo.lock
 packages/anchor/Cargo.toml
 packages/anchor/README.md
 packages/anchor/package.json
-packages/anchor/programs/aroma_guard/Cargo.toml
-packages/anchor/programs/aroma_guard/examples/generate_idl.rs
-packages/anchor/programs/aroma_guard/src/constants.rs
-packages/anchor/programs/aroma_guard/src/error.rs
-packages/anchor/programs/aroma_guard/src/instructions/close_plan.rs
-packages/anchor/programs/aroma_guard/src/instructions/create_plan.rs
-packages/anchor/programs/aroma_guard/src/instructions/execute_swap.rs
-packages/anchor/programs/aroma_guard/src/instructions/mod.rs
-packages/anchor/programs/aroma_guard/src/lib.rs
-packages/anchor/programs/aroma_guard/src/state.rs
-packages/anchor/programs/aroma_guard/src/tests.rs
-packages/anchor/programs/aroma_guard/src/utils.rs
+packages/anchor/programs/ovelo_guard/Cargo.toml
+packages/anchor/programs/ovelo_guard/examples/generate_idl.rs
+packages/anchor/programs/ovelo_guard/src/constants.rs
+packages/anchor/programs/ovelo_guard/src/error.rs
+packages/anchor/programs/ovelo_guard/src/instructions/close_plan.rs
+packages/anchor/programs/ovelo_guard/src/instructions/create_plan.rs
+packages/anchor/programs/ovelo_guard/src/instructions/execute_swap.rs
+packages/anchor/programs/ovelo_guard/src/instructions/mod.rs
+packages/anchor/programs/ovelo_guard/src/lib.rs
+packages/anchor/programs/ovelo_guard/src/state.rs
+packages/anchor/programs/ovelo_guard/src/tests.rs
+packages/anchor/programs/ovelo_guard/src/utils.rs
 packages/anchor/scripts/fetch-runtime-programs.cjs
 packages/anchor/scripts/sync-idl.cjs
 packages/anchor/tests/fixtures/runtime-programs.json
@@ -356,7 +356,7 @@ packages/anchor/tsconfig.json
 
 </details>
 
-`apps/web/lib/sdk/guard/v1/index.ts` stays (not in the list). It only re-exports `@aroma/guard`, and no file imports it today (v1 code imports `@aroma/guard` directly); its removal is not part of this inventory.
+`apps/web/lib/sdk/guard/v1/index.ts` stays (not in the list). It only re-exports `@ovelo/guard`, and no file imports it today (v1 code imports `@ovelo/guard` directly); its removal is not part of this inventory.
 
 ## 2. Kept code that reaches prototype code
 
@@ -364,7 +364,7 @@ Two passes, both over kept files only (`git ls-files apps/web | grep -vE "$PROTO
 
 ```bash
 # (a) import / export / require / import() specifiers that resolve into a prototype path
-IMP='["'"'"'](@/|(\.\.?/)+)(app/\(prototype\)/|\(prototype\)/|components/aroma|components/trading|styles/|lib/server/|lib/(company-logos|metadata|pending-mainnet|recurring-links|site)["'"'"'.]|(lib/sdk/)?((client|state|portfolio|subscriptions)/|recurring-investing|devnet-xstocks|wallet-capabilities|guard/(client|devnet|aroma_guard))|tests/)'
+IMP='["'"'"'](@/|(\.\.?/)+)(app/\(prototype\)/|\(prototype\)/|components/ovelo|components/trading|styles/|lib/server/|lib/(company-logos|metadata|pending-mainnet|recurring-links|site)["'"'"'.]|(lib/sdk/)?((client|state|portfolio|subscriptions)/|recurring-investing|devnet-xstocks|wallet-capabilities|guard/(client|devnet|ovelo_guard))|tests/)'
 git ls-files apps/web | grep -vE "$PROTO" | grep -E '\.(m?[jt]sx?|cjs)$' | xargs grep -nE "$IMP"
 # (b) the lib/sdk barrel, which re-exports prototype modules (see the index.shared.ts rows)
 git ls-files apps/web | grep -vE "$PROTO" | grep -v '^apps/web/lib/sdk/index' | xargs grep -nE "from ['\"](@/lib/sdk|(\.\./)+(lib/sdk/)?index(\.ts)?)['\"]"
@@ -378,28 +378,28 @@ An import-graph pass (every specifier resolved to a tracked file, including type
 |---|---|---|---|---|
 | 1 | `app/actions.json/route.ts` | `lib/server/recurring-actions.ts` | `actionHeaders` (Actions CORS + chain headers) | move into v1 (`features/baskets/actions-headers.ts`) with tests |
 | 2 | `app/global-not-found.tsx` | `app/(prototype)/not-found.tsx`, `app/(prototype)/globals.css` | the 404 for unmatched URLs | a v1 404 (tokens, no global CSS) |
-| 3 | `app/robots.ts` | `lib/site.ts` | `siteUrl` | v1 site URL helper (validated `AROMA_SITE_URL`, Step 4 SEO) |
+| 3 | `app/robots.ts` | `lib/site.ts` | `siteUrl` | v1 site URL helper (validated `OVELO_SITE_URL`, Step 4 SEO) |
 | 4 | `app/sitemap.ts` | `lib/site.ts` | `siteUrl` | same |
 | 5 | `lib/sdk/baskets/mainnet.ts:65` | `lib/sdk/recurring-investing.ts` | type-only `investmentSetup?: import(...).RecurringInvestmentPlan` on the prototype order shape | **frozen path (rule 7)**: drop the prototype-only optional field, or inline the type; needs your OK (see open questions) |
-| 6–13 | `lib/sdk/index.shared.ts` | `devnet-xstocks`, `client/aroma-client`, `client/recurring-client`, `state/aroma-core`, `recurring-investing`, `guard/client`, `portfolio/cache`, `wallet-capabilities` | barrel `export *` | remove those re-exports (the barrel stays for kept modules) |
+| 6–13 | `lib/sdk/index.shared.ts` | `devnet-xstocks`, `client/ovelo-client`, `client/recurring-client`, `state/ovelo-core`, `recurring-investing`, `guard/client`, `portfolio/cache`, `wallet-capabilities` | barrel `export *` | remove those re-exports (the barrel stays for kept modules) |
 | 14–15 | `lib/sdk/index.ts` | `subscriptions/mainnet`, `guard/devnet` | barrel `export *` | same |
-| 16 | `lib/sdk/baskets/bundle-client.test.ts` | `lib/sdk/client/aroma-client.ts` | test drives the prototype HTTP client | delete the prototype-client cases; keep the kept-module cases |
-| 17 | `lib/sdk/baskets/route-health.test.ts` | `lib/sdk/client/aroma-client.ts` | same | same |
-| 18 | `lib/sdk/baskets/custom/custom-core.test.ts` | `lib/sdk/state/aroma-core.ts` (type `StorageAdapter`; `createAromaCore` via the barrel) | prototype core store | same (frozen path: deletion of prototype cases only) |
-| 19 | `lib/sdk/markets/market-cache-definitions.test.ts` | `lib/sdk/state/aroma-core.ts` | `createAromaCore` | same |
+| 16 | `lib/sdk/baskets/bundle-client.test.ts` | `lib/sdk/client/ovelo-client.ts` | test drives the prototype HTTP client | delete the prototype-client cases; keep the kept-module cases |
+| 17 | `lib/sdk/baskets/route-health.test.ts` | `lib/sdk/client/ovelo-client.ts` | same | same |
+| 18 | `lib/sdk/baskets/custom/custom-core.test.ts` | `lib/sdk/state/ovelo-core.ts` (type `StorageAdapter`; `createOveloCore` via the barrel) | prototype core store | same (frozen path: deletion of prototype cases only) |
+| 19 | `lib/sdk/markets/market-cache-definitions.test.ts` | `lib/sdk/state/ovelo-core.ts` | `createOveloCore` | same |
 | 20 | `lib/sdk/jupiter/instruction.test.ts` | `tests/sdk/fixtures/jupiter-mainnet-build.json` | recorded mainnet fixture | move the fixture next to the test (`lib/sdk/jupiter/fixtures/`) |
-| 21 | `server/rpc.test.ts:162–171` | reads `lib/sdk/devnet-xstocks.ts` and `lib/server/mainnet-connection.ts` as text | asserts the genesis constants in `server/rpc.ts` equal the prototype's | **re-point, never drop** (AGENTS.md rule 3): pin both hashes as literals in the test and cross-check against `@aroma/guard`'s / the keeper's constants |
+| 21 | `server/rpc.test.ts:162–171` | reads `lib/sdk/devnet-xstocks.ts` and `lib/server/mainnet-connection.ts` as text | asserts the genesis constants in `server/rpc.ts` equal the prototype's | **re-point, never drop** (AGENTS.md rule 3): pin both hashes as literals in the test and cross-check against `@ovelo/guard`'s / the keeper's constants |
 
 Barrel importers among kept files (pass b; `markets/sources/backpack.test.ts` also matches but imports `markets/index`, not the barrel), checked symbol by symbol:
 
 | Kept file | Barrel symbols it uses | Effect of trimming the barrel |
 |---|---|---|
 | `lib/sdk/baskets/custom/custom.test.ts` | basket, share-code and paper helpers (all kept modules) | none |
-| `lib/sdk/baskets/custom/custom-core.test.ts` | `createAromaCore` (**prototype**, `state/aroma-core.ts`) | its prototype-core cases go with the core (row 18) |
+| `lib/sdk/baskets/custom/custom-core.test.ts` | `createOveloCore` (**prototype**, `state/ovelo-core.ts`) | its prototype-core cases go with the core (row 18) |
 | `lib/sdk/baskets/mainnet.test.ts` | `composeMainnetTransaction`, `inspectWalletTransaction`, `walletTransactionSignature`, `RecurringPayment` (kept, `baskets/mainnet.ts`); `buildRecurringPaymentInstructions`, `buildRevokeRecurringInstruction`, `validateRecurringTerms`, `recurringRemaining`, `MAINNET_SUBSCRIPTIONS_PROGRAM` (**prototype**, `subscriptions/mainnet.ts`) | its 3 recurring cases (lines 171, 214, 229) go with `subscriptions/mainnet.ts`; the 5 V1/v0 composition cases stay. **Frozen path (rule 7)**: only those deletions |
 | `scripts/verify-pricing-oracles.mjs` | `JupiterPriceClient`, `PythHermesClient`, `fetchXStocksOracles` (kept), `XSTOCKS_PYTH_FEEDS`, `listSupportedEquities` (**defined nowhere**) | **already broken today**: `node --import tsx scripts/verify-pricing-oracles.mjs` fails at import (`does not provide an export named 'JupiterPriceClient'`); no script runs it and ESLint ignores it. Open question: delete as dead prototype tooling |
 
-Non-code mentions of prototype paths in kept files (config lists, comments), cleaned in the step that deletes the target: `.github/CODEOWNERS` (`/packages/anchor/`, `/apps/web/lib/server/`), `.github/dependabot.yml` (`/packages/anchor`), `.github/workflows/contracts.yml` (anchor job and paths), `.prettierignore` (`apps/web/tests/`, `packages/anchor/`, `tailwind.config.js`), `packages/config/max-lines-allowlist.json` (25 prototype entries), `packages/ui/eslint.config.mjs` (`@aroma/anchor` restriction), `.21st/design.json` (design context points at `components/aroma/*` and `styles/foundation.css`), `apps/web/package.json` (`test:legacy`, the legacy `tsc` pass in `typecheck`), root `package.json` (`test:anchor`, `build:anchor`, `--filter=!@aroma/anchor`), `apps/web/vitest.config.ts` and `postcss.config.js` (comments). Provenance comments such as "ported from lib/server/…" stay: they describe history, not a dependency.
+Non-code mentions of prototype paths in kept files (config lists, comments), cleaned in the step that deletes the target: `.github/CODEOWNERS` (`/packages/anchor/`, `/apps/web/lib/server/`), `.github/dependabot.yml` (`/packages/anchor`), `.github/workflows/contracts.yml` (anchor job and paths), `.prettierignore` (`apps/web/tests/`, `packages/anchor/`, `tailwind.config.js`), `packages/config/max-lines-allowlist.json` (25 prototype entries), `packages/ui/eslint.config.mjs` (`@ovelo/anchor` restriction), `.21st/design.json` (design context points at `components/ovelo/*` and `styles/foundation.css`), `apps/web/package.json` (`test:legacy`, the legacy `tsc` pass in `typecheck`), root `package.json` (`test:anchor`, `build:anchor`, `--filter=!@ovelo/anchor`), `apps/web/vitest.config.ts` and `postcss.config.js` (comments). Provenance comments such as "ported from lib/server/…" stay: they describe history, not a dependency.
 
 ## 3. Legacy tests that cover code that stays
 
@@ -451,7 +451,7 @@ Generated from the route files (`git ls-files apps/web/app | grep -E '/(page|rou
 | `/orders` | `/portfolio#activity` | 308 (Step 8 gives `ActivityList` `id="activity"`) |
 | `/settings` | `/settings` (new v1 page, Step 8) | 200 |
 | `/v1` and every `/v1/*` page | the same path without `/v1` (`/v1/og.png` → `/og.png`, `/v1/restricted` → `/restricted`, `/v1/basket/new` → `/basket/new`, …) | 308, query string kept |
-| `/ui-preview` | design-system preview, today behind `AROMA_V1_ENABLED` | **open question**: keep (non-production only) or delete |
+| `/ui-preview` | design-system preview, today behind `OVELO_V1_ENABLED` | **open question**: keep (non-production only) or delete |
 
 ### APIs
 
@@ -481,7 +481,7 @@ cd apps/web && git ls-files | grep -vE "${PROTO#^apps/web/}" | xargs grep -lE "f
 | `@gsap/react` | no (`LandingMotion` uses `gsap` directly) | no | remove |
 | `tailwindcss` (v3) | no | `tailwind.config.js`, `postcss/tailwind-router.cjs` | remove |
 | `autoprefixer` | no | `postcss.config.js` (v3 chain) | remove (Tailwind v4 prefixes through Lightning CSS) |
-| `tailwindcss-v4` (alias of `tailwindcss@4`) | `app/aroma-ui.v4.css` (`@import "tailwindcss-v4/…"`) | — | **keep as `tailwindcss`** (v4) when the alias is no longer needed: rename the import, drop the alias |
+| `tailwindcss-v4` (alias of `tailwindcss@4`) | `app/ovelo-ui.v4.css` (`@import "tailwindcss-v4/…"`) | — | **keep as `tailwindcss`** (v4) when the alias is no longer needed: rename the import, drop the alias |
 | `@tailwindcss/postcss` | via `postcss/tailwind-router.cjs` today | — | keep (becomes the only PostCSS plugin) |
 | `postcss` | only `postcss/tailwind-router.cjs` (`require("postcss")`) | — | remove from direct deps only if `pnpm build:web` passes without it (`@tailwindcss/postcss` depends on it itself) |
 | `react-dom` | no direct import in kept code | — | **keep** (Next.js and React need it) |
@@ -507,11 +507,11 @@ Visual baseline: 13 v1 pages × 390 px and 1440 px × light and dark, full page,
 
 ## 7. Open questions (all resolved in Phase B)
 
-Resolved by the owner's approval or the session's decisions; see the M9 / Phase B status in [REWRITE-PLAN.md](../REWRITE-PLAN.md): 1–2 approved (Step 1); 3 deleted; 4 kept for development, never served in production; 5 `AROMA_TRADING=off`; 6 fixed (the nav wraps on phones). The list as written at Step 0:
+Resolved by the owner's approval or the session's decisions; see the M9 / Phase B status in [REWRITE-PLAN.md](../REWRITE-PLAN.md): 1–2 approved (Step 1); 3 deleted; 4 kept for development, never served in production; 5 `OVELO_TRADING=off`; 6 fixed (the nav wraps on phones). The list as written at Step 0:
 
 1. **`lib/sdk/baskets/mainnet.ts:65`** (frozen path, rule 7): its only prototype link is the type-only optional field `investmentSetup?: RecurringInvestmentPlan` on the prototype order shape. Deleting `recurring-investing.ts` needs that field removed (no v1 code sets or reads it: `git grep -n investmentSetup -- apps/web ':!apps/web/components' ':!apps/web/lib/server' ':!apps/web/tests'`). Not an import-path move, so it needs approval.
 2. **Frozen-path test edits** (rule 7): deleting the prototype cases from `lib/sdk/baskets/{mainnet,bundle-client,route-health,custom/custom-core}.test.ts` and moving the Jupiter fixture next to `lib/sdk/jupiter/instruction.test.ts` are removals and a path move, no behaviour change. Confirm they count as "import paths moved by the cutover".
 3. **`scripts/verify-pricing-oracles.mjs`**: broken today, unreferenced. Delete with the prototype?
 4. **`/ui-preview`**: keep (refused in production, like the test switches) or delete with the flag?
-5. **Emergency stop**: BETA-RUNBOOK §6 uses `AROMA_V1_ENABLED=false` as the trading kill switch. Step 5 removes the flag, so that switch disappears. Replace it with an explicit trading switch (for example `AROMA_TRADING=off`, refused unset in production) or document another stop (gate on, caps to the minimum)? This is a product decision.
+5. **Emergency stop**: BETA-RUNBOOK §6 uses `OVELO_V1_ENABLED=false` as the trading kill switch. Step 5 removes the flag, so that switch disappears. Replace it with an explicit trading switch (for example `OVELO_TRADING=off`, refused unset in production) or document another stop (gate on, caps to the minimum)? This is a product decision.
 6. **Phones: the nav overflows on every page (pre-existing).** The baseline measured `scrollWidth − innerWidth` = **172 px** on all 26 shots at 390 px (all 13 pages, both themes); 0 px at 1440 px. The header's link row (Markets … Creators, Invest (devnet), theme toggle) does not wrap or scroll, so the document is 562 px wide while the content column stays 390 px. The tree is identical to `phase-a-beta`, so this predates Phase B (M5 recorded 0 px before the Creators and Invest links joined the nav). Not fixed in Step 0 (no code changes). Proposed: fix it in Step 5's visual pass (a scrollable or collapsed nav, tokens only) and list it as an intended change, or earlier if you prefer.

@@ -10,12 +10,12 @@ Set these in the deployment environment (never in git). `pnpm build:web` and boo
 
 | Variable | Required | What it is | Notes |
 |---|---|---|---|
-| ~~`AROMA_V1_ENABLED`~~ | removed in M9 | — | builds and boots always validate the environment; `AROMA_TRADING=off` is the emergency stop |
+| ~~`OVELO_V1_ENABLED`~~ | removed in M9 | — | builds and boots always validate the environment; `OVELO_TRADING=off` is the emergency stop |
 | `SOLANA_RPC_URL` | yes | server mainnet RPC (HTTPS, no credentials in the URL) | genesis is verified on every trade operation; a devnet URL is refused |
 | `NEXT_PUBLIC_SOLANA_RPC_URL` | recommended | browser RPC for the wallet stack | the wallet refuses an RPC that is not mainnet; it also becomes a `connect-src` entry |
 | `JUPITER_API_KEY` | **yes for production** | Jupiter Swap API v2 `/build` and Price v3 | comma-separated keys rotate. Without a key, production quotes return `TRADING_UNAVAILABLE`, and the keyless catalog is rate-limited (M3 finding 4). `/api/v1/health` reports `jupiter: degraded` when keyless |
-| `AROMA_TRADE_SECRET` | yes | HMAC key for trade authorizations (32+ random characters) | see rotation below |
-| `AROMA_TRADE_SECRET_PREVIOUS` | during a rotation only | the previous trade key | must differ from the current key |
+| `OVELO_TRADE_SECRET` | yes | HMAC key for trade authorizations (32+ random characters) | see rotation below |
+| `OVELO_TRADE_SECRET_PREVIOUS` | during a rotation only | the previous trade key | must differ from the current key |
 | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | yes | rate limits (read 120/min, write 20/min, trade 10/min per client IP) and trade idempotency | without Redis, v1 trading is unavailable and the limiter fails closed (by design) |
 | `DATABASE_URL` | yes | Neon Postgres; `receipts` rows | run `pnpm db:migrate` first (the M0 migrations; M4 adds none) |
 | `JITO_BLOCK_ENGINE_URL` | for multi-transaction baskets | e.g. `https://mainnet.block-engine.jito.wtf/api/v1/bundles` | unset: a basket that needs more than one transaction is refused (`BUNDLE_UNAVAILABLE`, no partial order). Single-transaction orders are unaffected |
@@ -25,19 +25,19 @@ Set these in the deployment environment (never in git). `pnpm build:web` and boo
 | `PRIVY_APP_SECRET` | optional | server-side Privy secret | not used by M4 code; kept for M5 |
 | `SENTRY_DSN`, `NEXT_PUBLIC_SENTRY_DSN`, `SENTRY_ENVIRONMENT` | recommended | errors and trade breadcrumbs | events are scrubbed; trade breadcrumbs carry fingerprints, not wallets or signatures |
 | `SENTRY_AUTH_TOKEN` | CI only | source-map upload | |
-| `AROMA_SITE_URL` | yes in production | canonical HTTPS origin | HTTPS redirects and `metadataBase` use it |
-| `AROMA_TRUST_PROXY` | behind a non-Vercel proxy only | trust `x-forwarded-*` | Vercel is detected automatically |
-| `AROMA_ALLOWED_ORIGINS` | optional | extra browser origins for the API | exact origins, no wildcards |
+| `OVELO_SITE_URL` | yes in production | canonical HTTPS origin | HTTPS redirects and `metadataBase` use it |
+| `OVELO_TRUST_PROXY` | behind a non-Vercel proxy only | trust `x-forwarded-*` | Vercel is detected automatically |
+| `OVELO_ALLOWED_ORIGINS` | optional | extra browser origins for the API | exact origins, no wildcards |
 
-**Must NOT be set in production** (validation rejects them when `VERCEL_ENV=production`): `AROMA_V1_ALLOW_TEST_SWITCHES`, `AROMA_V1_TEST_FORK_GENESIS`, `AROMA_V1_TEST_JUPITER_URL`, `NEXT_PUBLIC_AROMA_E2E_WALLET=true`. On a self-hosted production (not Vercel), the operator must make sure they are unset; test switches also stay off under `NODE_ENV=production` unless `AROMA_V1_ALLOW_TEST_SWITCHES=true`.
+**Must NOT be set in production** (validation rejects them when `VERCEL_ENV=production`): `OVELO_V1_ALLOW_TEST_SWITCHES`, `OVELO_V1_TEST_FORK_GENESIS`, `OVELO_V1_TEST_JUPITER_URL`, `NEXT_PUBLIC_OVELO_E2E_WALLET=true`. On a self-hosted production (not Vercel), the operator must make sure they are unset; test switches also stay off under `NODE_ENV=production` unless `OVELO_V1_ALLOW_TEST_SWITCHES=true`.
 
-## 2. Rotating `AROMA_TRADE_SECRET`
+## 2. Rotating `OVELO_TRADE_SECRET`
 
 Authorizations carry a key id (`at1.<kid>.<payload>.<mac>`), and quotes live 60 seconds.
 
-1. Move the current value to `AROMA_TRADE_SECRET_PREVIOUS`, and put a new 32+ character random value in `AROMA_TRADE_SECRET`. Deploy.
+1. Move the current value to `OVELO_TRADE_SECRET_PREVIOUS`, and put a new 32+ character random value in `OVELO_TRADE_SECRET`. Deploy.
 2. New quotes are signed with the new key, and in-flight quotes signed with the old key still verify.
-3. After a few minutes (one quote lifetime plus the deploy rollout), remove `AROMA_TRADE_SECRET_PREVIOUS` and deploy again. Old quotes then fail with `AUTHORIZATION_INVALID`.
+3. After a few minutes (one quote lifetime plus the deploy rollout), remove `OVELO_TRADE_SECRET_PREVIOUS` and deploy again. Old quotes then fail with `AUTHORIZATION_INVALID`.
 
 If the secret leaks, skip the overlap: set a new key without `_PREVIOUS`. In-flight quotes fail closed, and users request a new quote.
 
@@ -76,11 +76,11 @@ M5 adds **no new required variable**. It uses the M4 ones:
 |---|---|---|
 | `DATABASE_URL` | creators, invites, baskets, `basket_versions`, receipts, creator stats | run `pnpm db:migrate` first: **migration `0002_basket_versions`** is new (insert-only history; triggers refuse UPDATE/DELETE/TRUNCATE) |
 | `UPSTASH_REDIS_REST_URL`, `UPSTASH_REDIS_REST_TOKEN` | single-use creator challenges (5-minute nonces, `GETDEL`), the new `creator` rate-limit bucket | without Redis, challenges cannot be issued (503); nothing falls back to memory outside a local-fork E2E |
-| `AROMA_SITE_URL` | the `Site:` line of every creator challenge, and the links inside Solana Actions | set it to the canonical HTTPS origin, or wallet prompts show the host the request came in on |
-| `AROMA_TRADE_SECRET` | the Action's `links.next` callback is bound by the same HMAC authorization as a trade | rotation (section 2) applies; a callback more than 15 minutes after its quote expired is refused |
+| `OVELO_SITE_URL` | the `Site:` line of every creator challenge, and the links inside Solana Actions | set it to the canonical HTTPS origin, or wallet prompts show the host the request came in on |
+| `OVELO_TRADE_SECRET` | the Action's `links.next` callback is bound by the same HMAC authorization as a trade | rotation (section 2) applies; a callback more than 15 minutes after its quote expired is refused |
 | `NEXT_PUBLIC_PRIVY_APP_ID` | optional; Privy embedded wallets sign creator challenges with `useSignMessage` | build-time |
 
-**Must NOT be set in production:** `AROMA_LOCAL_NEON_WS_PROXY` (local Docker Postgres only; it is ignored unless `DATABASE_URL` is loopback and `VERCEL_ENV` is not `production`, but keep it out of every deployed environment). `CREATOR_AUTH_SECRET` and `CREATOR_INVITE_CODES` are prototype-only; v1 needs neither (remove at M7).
+**Must NOT be set in production:** `OVELO_LOCAL_NEON_WS_PROXY` (local Docker Postgres only; it is ignored unless `DATABASE_URL` is loopback and `VERCEL_ENV` is not `production`, but keep it out of every deployed environment). `CREATOR_AUTH_SECRET` and `CREATOR_INVITE_CODES` are prototype-only; v1 needs neither (remove at M7).
 
 ### 5.2 Rate limits (middleware)
 
@@ -90,7 +90,7 @@ M5 adds **no new required variable**. It uses the M4 ones:
 | `write` | other creator mutations (publish/save, archive) | 20 / min |
 | `trade` | `/api/v1/trade/*` and **every non-GET `/api/v1/actions/*`** (quote, build and simulate; the confirm callback reads mainnet) | 10 / min |
 
-Behind a proxy other than Vercel, `AROMA_TRUST_PROXY=true` is required for per-client buckets; otherwise every client shares one bucket (M4 behaviour, by design: forwarding headers are not trusted).
+Behind a proxy other than Vercel, `OVELO_TRUST_PROXY=true` is required for per-client buckets; otherwise every client shares one bucket (M4 behaviour, by design: forwarding headers are not trusted).
 
 ### 5.3 Creator onboarding (operator)
 
@@ -100,7 +100,7 @@ Behind a proxy other than Vercel, `AROMA_TRUST_PROXY=true` is required for per-c
 
 ### 5.4 Solana Actions
 
-- v1 Actions: `GET/POST /api/v1/actions/baskets/:id` (curated slug or published creator basket UUID) and `POST /api/v1/actions/baskets/:id/confirm` (the `links.next` callback that records the receipt after reading the transaction back from mainnet). All return 404 while `AROMA_V1_ENABLED` is off.
+- v1 Actions: `GET/POST /api/v1/actions/baskets/:id` (curated slug or published creator basket UUID) and `POST /api/v1/actions/baskets/:id/confirm` (the `links.next` callback that records the receipt after reading the transaction back from mainnet). All return 404 while `OVELO_V1_ENABLED` is off.
 - `actions.json` adds `{ "pathPattern": "/v1/basket/*", "apiPath": "/api/v1/actions/baskets/*" }` only while the flag is on; the prototype rules are unchanged.
 - A basket that needs more than one transaction is refused by the Action with a link to buy it on the site (no partial order; Blink clients sign one transaction).
 - Purchases through a Blink client that never calls `links.next` are **not** counted in creator stats (never guessed).
@@ -129,13 +129,13 @@ Nothing below is configured or verified on a real deployment yet (see §7.5). Ev
 ### 6.1 Web app (`apps/web`)
 | Variable | Notes |
 |---|---|
-| `AROMA_V1_INVEST_CLUSTER` | `devnet` (default). `localnet` is for the local E2E only; refused in production. |
-| `AROMA_RECURRING_RPC_URL` | server devnet RPC; genesis-checked per client (devnet's genesis or refused) |
+| `OVELO_V1_INVEST_CLUSTER` | `devnet` (default). `localnet` is for the local E2E only; refused in production. |
+| `OVELO_RECURRING_RPC_URL` | server devnet RPC; genesis-checked per client (devnet's genesis or refused) |
 | `NEXT_PUBLIC_SOLANA_DEVNET_RPC_URL` | browser devnet RPC (the wallet must report devnet's genesis); also added to `connect-src` |
-| `AROMA_V1_FAUCET_KEYPAIR` | the devnet-only faucet key (64-byte JSON array) that holds the **test USD mint authority**; created by `init-devnet` in `packages/contracts/.keys/devnet-faucet.json`. Never the deployer. |
+| `OVELO_V1_FAUCET_KEYPAIR` | the devnet-only faucet key (64-byte JSON array) that holds the **test USD mint authority**; created by `init-devnet` in `packages/contracts/.keys/devnet-faucet.json`. Never the deployer. |
 | `TURNSTILE_SECRET_KEY`, `NEXT_PUBLIC_TURNSTILE_SITE_KEY` | Cloudflare Turnstile (owner creates the widget). Production refuses Cloudflare's test secrets. |
-| `AROMA_V1_FAUCET_DAILY_CLAIMS` | global claims per UTC day (default 200) |
-| `UPSTASH_REDIS_REST_URL/TOKEN`, `DATABASE_URL`, `AROMA_TRADE_SECRET` | as in §1 (idempotency, faucet limits; plans_index and receipts; plan authorizations use a key derived from the trade secret) |
+| `OVELO_V1_FAUCET_DAILY_CLAIMS` | global claims per UTC day (default 200) |
+| `UPSTASH_REDIS_REST_URL/TOKEN`, `DATABASE_URL`, `OVELO_TRADE_SECRET` | as in §1 (idempotency, faucet limits; plans_index and receipts; plan authorizations use a key derived from the trade secret) |
 
 The page and every `/api/v1/plans*` and `/api/v1/faucet` route answer "not available on devnet yet" while `V1_DEPLOYMENTS.devnet` (`packages/guard/src/v1/deployments.ts`) is `null`; fill it from the owner's deploy output (M6-DEVNET-DEPLOY.md).
 
@@ -151,7 +151,7 @@ The page and every `/api/v1/plans*` and `/api/v1/faucet` route answer "not avail
 | `KEEPER_ALERT_WEBHOOK_URL`, `KEEPER_ALERT_FORMAT` | Slack (default) or Discord webhook |
 | `KEEPER_MIN_SOL_LAMPORTS`, `KEEPER_MAX_PLANS_PER_RUN`, `KEEPER_MAX_ATTEMPTS`, `KEEPER_DLQ_ALERT_THRESHOLD`, `KEEPER_PRIORITY_MICROLAMPORTS`, `KEEPER_PORT` | limits with safe defaults |
 
-Start: `pnpm --filter @aroma/keeper start` (validates env and the RPC genesis before listening). Operations: [keeper-operations.md](./keeper-operations.md).
+Start: `pnpm --filter @ovelo/keeper start` (validates env and the RPC genesis before listening). Operations: [keeper-operations.md](./keeper-operations.md).
 
 ### 6.3 QStash schedule (owner)
 Create a schedule that POSTs `{}` to `KEEPER_PUBLIC_URL` every 1–5 minutes; copy its current and next signing keys into the keeper env.
@@ -159,7 +159,7 @@ Create a schedule that POSTs `{}` to `KEEPER_PUBLIC_URL` every 1–5 minutes; co
 ### 6.4 Before switching traffic (additions)
 - Faucet key funded with devnet SOL and holding the test USD mint authority (`devnet:audit` shows `testUsdAuthorityIsFaucet`).
 - Keeper key funded with devnet SOL; `config.keeper_authority` equals it.
-- One manual signed run (`pnpm --filter @aroma/keeper cli run <url>`) returns 200 and a report.
+- One manual signed run (`pnpm --filter @ovelo/keeper cli run <url>`) returns 200 and a report.
 
 ### 6.5 Not verified on real devnet (M7)
 The devnet program deploy (owner), a Hermes API key, a QStash schedule, Turnstile keys, the alert webhook, Upstash and Neon for devnet. Everything was verified on a local validator only (REWRITE-PLAN, M7 status).

@@ -1,4 +1,4 @@
-import { Skeleton } from "@aroma/ui";
+import { Skeleton } from "@ovelo/ui";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { Suspense } from "react";
@@ -136,7 +136,7 @@ function CreatorHeader({
     creator.publishedAt
       ? `, ${formatObservedAt(creator.publishedAt) ?? creator.publishedAt}`
       : ""
-  }. Constituents and weights are exactly what the creator signed with their wallet, matched against the issuer catalogs. Aroma does not endorse creator baskets.`;
+  }. Constituents and weights are exactly what the creator signed with their wallet, matched against the issuer catalogs. Ovelo does not endorse creator baskets.`;
   if (basket)
     return (
       <BasketHeader

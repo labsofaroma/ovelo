@@ -1,7 +1,7 @@
 import { generateKeyPairSigner } from "@solana/kit";
 import { describe, expect, test } from "vitest";
-import { AROMA_GUARD_V1_PROGRAM_ID } from "./constants";
-import { decodeAromaGuardEvents, installmentEvents } from "./events";
+import { OVELO_GUARD_V1_PROGRAM_ID } from "./constants";
+import { decodeOveloGuardEvents, installmentEvents } from "./events";
 import {
   getInstallmentExecutedEventEncoder,
   getPlanClosedEventEncoder,
@@ -10,7 +10,7 @@ import {
 
 const b64 = (bytes: ArrayLike<number>) =>
   btoa(String.fromCharCode(...Array.from(bytes)));
-const ID = AROMA_GUARD_V1_PROGRAM_ID;
+const ID = OVELO_GUARD_V1_PROGRAM_ID;
 const OTHER = "De1egAFMkMWZSN5rYXRj9CAdheBamobVNubTsi9avR44";
 
 async function sample() {
@@ -41,7 +41,7 @@ async function sample() {
   return { plan, mint, installment };
 }
 
-describe("decodeAromaGuardEvents", () => {
+describe("decodeOveloGuardEvents", () => {
   test("decodes events logged by the v1 program, with exact bigint amounts", async () => {
     const { plan, installment } = await sample();
     const created = b64(
@@ -76,7 +76,7 @@ describe("decodeAromaGuardEvents", () => {
       `Program data: ${closed}`,
       `Program ${ID} success`,
     ];
-    const events = decodeAromaGuardEvents(logs);
+    const events = decodeOveloGuardEvents(logs);
     expect(events.map((e) => e.name)).toEqual([
       "InstallmentExecuted",
       "PlanCreated",
@@ -91,14 +91,14 @@ describe("decodeAromaGuardEvents", () => {
   test("ignores data logged by any other program, including one invoked by v1", async () => {
     const { installment } = await sample();
     expect(
-      decodeAromaGuardEvents([
+      decodeOveloGuardEvents([
         `Program ${OTHER} invoke [1]`,
         `Program data: ${installment}`,
         `Program ${OTHER} success`,
       ]),
     ).toEqual([]);
     expect(
-      decodeAromaGuardEvents([
+      decodeOveloGuardEvents([
         `Program ${ID} invoke [1]`,
         `Program ${OTHER} invoke [2]`,
         `Program data: ${installment}`,
@@ -106,7 +106,7 @@ describe("decodeAromaGuardEvents", () => {
       ]),
     ).toEqual([]);
     // Outside any invocation (forged log line order).
-    expect(decodeAromaGuardEvents([`Program data: ${installment}`])).toEqual(
+    expect(decodeOveloGuardEvents([`Program data: ${installment}`])).toEqual(
       [],
     );
   });
@@ -114,7 +114,7 @@ describe("decodeAromaGuardEvents", () => {
   test("tolerates malformed, unknown and truncated data", async () => {
     const { installment } = await sample();
     expect(
-      decodeAromaGuardEvents([
+      decodeOveloGuardEvents([
         `Program ${ID} invoke [1]`,
         "Program data: not base64!",
         `Program data: ${b64([1, 2, 3, 4, 5, 6, 7, 8, 9])}`,
@@ -122,6 +122,6 @@ describe("decodeAromaGuardEvents", () => {
         `Program ${ID} success`,
       ]),
     ).toEqual([]);
-    expect(decodeAromaGuardEvents(null)).toEqual([]);
+    expect(decodeOveloGuardEvents(null)).toEqual([]);
   });
 });

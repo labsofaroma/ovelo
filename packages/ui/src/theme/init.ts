@@ -1,5 +1,5 @@
 /** localStorage key shared with the prototype's ThemeProvider, so preferences carry over. */
-export const THEME_STORAGE_KEY = "aroma-theme";
+export const THEME_STORAGE_KEY = "ovelo-theme";
 
 export type Theme = "light" | "dark";
 

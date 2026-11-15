@@ -13,14 +13,14 @@ import { logger } from "@/server/logger";
  * Auth failures, rate limits and malformed instructions never widen routing.
  *
  * Production needs JUPITER_API_KEY (comma-separated keys rotate). E2E builds may point at a
- * loopback stand-in with recorded routes (AROMA_V1_TEST_JUPITER_URL, test switches only).
+ * loopback stand-in with recorded routes (OVELO_V1_TEST_JUPITER_URL, test switches only).
  */
 
 type KeyState = { key: string; nextRequestAt: number; cooldownUntil: number };
 let pool: KeyState[] | null = null;
 
 export function jupiterBase(): string {
-  const test = process.env.AROMA_V1_TEST_JUPITER_URL?.trim();
+  const test = process.env.OVELO_V1_TEST_JUPITER_URL?.trim();
   if (
     test &&
     /^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?\/?$/.test(test) &&

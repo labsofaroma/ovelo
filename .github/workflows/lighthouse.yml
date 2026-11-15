@@ -45,7 +45,7 @@ jobs:
       - name: Build (placeholder env; a public site URL so robots allows indexing)
         run: |
           set -a; . apps/web/.env.example; set +a
-          export AROMA_SITE_URL=https://www.example.com
+          export OVELO_SITE_URL=https://www.example.com
           pnpm build:web | tee build.log
       - name: First-load JS on /markets must stay at or under 180 kB
         run: |
@@ -57,9 +57,9 @@ jobs:
         working-directory: apps/web
         run: |
           set -a; . ./.env.example; set +a
-          export AROMA_SITE_URL=https://www.example.com
+          export OVELO_SITE_URL=https://www.example.com
           # Phase H: measure the build as a self-host production deployment (server/platform.ts),
           # so robots allows indexing; production rules need the caps (the beta defaults).
-          export AROMA_PLATFORM=selfhost AROMA_DEPLOY_ENV=production
-          export AROMA_MAX_TRADE_USDC_RAW=50000000 AROMA_MAX_DAILY_USDC_RAW=200000000
+          export OVELO_PLATFORM=selfhost OVELO_DEPLOY_ENV=production
+          export OVELO_MAX_TRADE_USDC_RAW=50000000 OVELO_MAX_DAILY_USDC_RAW=200000000
           npx --yes @lhci/cli@0.14.0 autorun --config=lighthouserc.json

@@ -2,8 +2,8 @@ import {
   decodeConfigAccount,
   decodePlanAccount,
   findConfigPda,
-} from "@aroma/guard";
-import { HermesUpdatesClient } from "@aroma/guard/pyth";
+} from "@ovelo/guard";
+import { HermesUpdatesClient } from "@ovelo/guard/pyth";
 import type { Address } from "@solana/kit";
 import { parseKeeperEnv } from "./env";
 import { executePlan } from "./execute";

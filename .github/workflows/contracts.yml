@@ -69,31 +69,31 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: cargo test (default and devnet-mock), including proptests
-        run: pnpm --filter @aroma/contracts test:native
+        run: pnpm --filter @ovelo/contracts test:native
 
       - name: cargo clippy -D warnings (both features)
-        run: pnpm --filter @aroma/contracts test:clippy
+        run: pnpm --filter @ovelo/contracts test:clippy
 
       - name: anchor build, both variants, SBPF v0, no minting code in the default build
-        run: pnpm --filter @aroma/contracts build
+        run: pnpm --filter @ovelo/contracts build
 
       - name: IDL and generated client match the Rust program (AGENTS.md rule 6)
-        run: pnpm --filter @aroma/contracts idl:check
+        run: pnpm --filter @ovelo/contracts idl:check
 
       - name: Codama drift and script unit tests
-        run: pnpm --filter @aroma/contracts test
+        run: pnpm --filter @ovelo/contracts test
 
       - name: Pinned Subscriptions and Pyth receiver binaries (read-only devnet fetch, SHA-256 checked)
-        run: pnpm --filter @aroma/contracts test:fixtures
+        run: pnpm --filter @ovelo/contracts test:fixtures
 
       - name: Pinned mainnet binaries (Jupiter, Whirlpool, Token, Token-2022, Subscriptions; read-only, SHA-256 checked)
-        run: pnpm --filter @aroma/contracts test:fixtures:mainnet
+        run: pnpm --filter @ovelo/contracts test:fixtures:mainnet
 
       - name: LiteSVM suite (devnet-mock and default builds, real Jupiter routes)
-        run: pnpm --filter @aroma/contracts test:litesvm
+        run: pnpm --filter @ovelo/contracts test:litesvm
 
       - name: LiteSVM suite against mainnet's Subscriptions binary (M8 decision 2)
-        run: pnpm --filter @aroma/contracts test:litesvm:subscriptions-mainnet
+        run: pnpm --filter @ovelo/contracts test:litesvm:subscriptions-mainnet
 
   verifiable-build:
     name: packages/contracts - verifiable build of the default (mainnet) binary
@@ -101,7 +101,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 60
     env:
-      AROMA_VERIFY_IMAGE: solanafoundation/solana-verifiable-build:3.1.10
+      OVELO_VERIFY_IMAGE: solanafoundation/solana-verifiable-build:3.1.10
     steps:
       - uses: actions/checkout@v4
 
@@ -111,7 +111,7 @@ jobs:
         run: cargo install solana-verify --version 0.5.2 --locked
 
       - name: Pull the pinned build image
-        run: docker pull "$AROMA_VERIFY_IMAGE"
+        run: docker pull "$OVELO_VERIFY_IMAGE"
 
       - name: solana-verify build (compares with verifiable-build.json "docker" once recorded)
         working-directory: packages/contracts
@@ -119,8 +119,8 @@ jobs:
 
       - uses: actions/upload-artifact@v4
         with:
-          name: aroma-guard-verifiable
-          path: packages/contracts/target/build/verifiable/aroma_guard.so
+          name: ovelo-guard-verifiable
+          path: packages/contracts/target/build/verifiable/ovelo_guard.so
 
   mainnet-fork:
     name: packages/contracts - mainnet-fork end to end (nightly; local fork, no mainnet transaction)
@@ -160,10 +160,10 @@ jobs:
         run: pnpm install --frozen-lockfile
 
       - name: anchor build, both variants, SBPF v0
-        run: pnpm --filter @aroma/contracts build
+        run: pnpm --filter @ovelo/contracts build
 
       - name: e2e:fork (3 one-hour periods, then close + revoke)
-        run: pnpm --filter @aroma/contracts e2e:fork
+        run: pnpm --filter @ovelo/contracts e2e:fork
 
       - uses: actions/upload-artifact@v4
         if: always()

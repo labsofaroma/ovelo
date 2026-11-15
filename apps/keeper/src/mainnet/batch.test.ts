@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from "vitest";
-import { ASSOCIATED_TOKEN_PROGRAM_ID, V1_PROGRAM_ID } from "@aroma/guard";
+import { ASSOCIATED_TOKEN_PROGRAM_ID, V1_PROGRAM_ID } from "@ovelo/guard";
 import type { AlertDeps } from "../alerts";
 import { executePlan, type ExecuteDeps } from "../execute";
 import { DLQ_KEY } from "../store";

@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { cn } from "@aroma/ui";
+import { cn } from "@ovelo/ui";
 import { AsOf } from "../../shared/components/AsOf";
 import { DataNotice } from "../../shared/components/DataNotice";
 import { formatBps, formatPercent, toBigInt } from "../../shared/fixed";
@@ -51,7 +51,7 @@ export function BasketPerformance({
             aria-current={value === range ? "page" : undefined}
             scroll={false}
             className={cn(
-              "inline-flex min-h-(--aroma-control-height) items-center rounded-control px-3 text-small font-semibold focus-ring",
+              "inline-flex min-h-(--ovelo-control-height) items-center rounded-control px-3 text-small font-semibold focus-ring",
               value === range
                 ? "bg-raised text-ink"
                 : "text-muted hover:text-ink",

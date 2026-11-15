@@ -7,7 +7,7 @@ import { clientIp, edgeHeaders } from "../local-start";
 
 /**
  * Phase A private-beta gate (REWRITE-PLAN §7.3 W2) on the LOCAL FORK. e2e/fork/run.ts starts the
- * app with AROMA_BETA_GATE=on and the local Postgres (scripts/local-db.sh). Runs FIRST
+ * app with OVELO_BETA_GATE=on and the local Postgres (scripts/local-db.sh). Runs FIRST
  * (trade.config.ts), while the shared test wallet has no beta access and no terms:
  *   - no access → the API refuses (BETA_ACCESS_REQUIRED), the ticket shows the redeem step,
  *     the Action GET is disabled and the page carries the private-beta banner;

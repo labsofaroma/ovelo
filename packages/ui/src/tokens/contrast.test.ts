@@ -66,8 +66,8 @@ describe.each(["light", "dark"] as const)(
   (theme) => {
     const tokens = theme === "light" ? blocks.light : blocks.darkAttribute;
     const color = (role: string): string => {
-      const value = tokens[`--aroma-${role}`];
-      if (!value) throw new Error(`missing token --aroma-${role}`);
+      const value = tokens[`--ovelo-${role}`];
+      if (!value) throw new Error(`missing token --ovelo-${role}`);
       return value;
     };
 
@@ -79,7 +79,7 @@ describe.each(["light", "dark"] as const)(
       ).toBeGreaterThanOrEqual(min);
     });
 
-    it("keeps --aroma-line decorative: it must not be the only boundary of a control", () => {
+    it("keeps --ovelo-line decorative: it must not be the only boundary of a control", () => {
       // line is far below 3:1 by design; controls use border-strong. This pins that split.
       expect(contrast(color("line"), color("surface"))).toBeLessThan(3);
       expect(

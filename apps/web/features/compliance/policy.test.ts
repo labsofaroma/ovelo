@@ -25,10 +25,10 @@ describe("compliance policy (config, not code)", () => {
 
   it("env overrides replace the list (normalised to upper case) and the rules", () => {
     const policy = loadPolicy({
-      AROMA_COMPLIANCE_RESTRICTED_COUNTRIES: "us, gb ,CA",
-      AROMA_COMPLIANCE_MISSING_COUNTRY: "allow",
-      AROMA_COMPLIANCE_BROWSE: "block",
-      AROMA_COMPLIANCE_DEVNET: "allow",
+      OVELO_COMPLIANCE_RESTRICTED_COUNTRIES: "us, gb ,CA",
+      OVELO_COMPLIANCE_MISSING_COUNTRY: "allow",
+      OVELO_COMPLIANCE_BROWSE: "block",
+      OVELO_COMPLIANCE_DEVNET: "allow",
     });
     expect(policy.restrictedCountries).toEqual(["US", "GB", "CA"]);
     expect(policy.missingCountry).toBe("allow");
@@ -40,17 +40,17 @@ describe("compliance policy (config, not code)", () => {
   });
 
   it("blank values fall back to the defaults", () => {
-    expect(loadPolicy({ AROMA_COMPLIANCE_RESTRICTED_COUNTRIES: "  " })).toEqual(
+    expect(loadPolicy({ OVELO_COMPLIANCE_RESTRICTED_COUNTRIES: "  " })).toEqual(
       DEFAULT_POLICY,
     );
   });
 
   it.each([
-    ["AROMA_COMPLIANCE_RESTRICTED_COUNTRIES", "USA"],
-    ["AROMA_COMPLIANCE_MISSING_COUNTRY", "maybe"],
-    ["AROMA_COMPLIANCE_BROWSE", "yes"],
-    ["AROMA_COMPLIANCE_DEVNET", "1"],
-    ["AROMA_TERMS_VERSION", "not-a-registered-version"],
+    ["OVELO_COMPLIANCE_RESTRICTED_COUNTRIES", "USA"],
+    ["OVELO_COMPLIANCE_MISSING_COUNTRY", "maybe"],
+    ["OVELO_COMPLIANCE_BROWSE", "yes"],
+    ["OVELO_COMPLIANCE_DEVNET", "1"],
+    ["OVELO_TERMS_VERSION", "not-a-registered-version"],
   ])("an invalid %s is refused by name, never by value", (name, value) => {
     let error: unknown;
     try {
@@ -65,7 +65,7 @@ describe("compliance policy (config, not code)", () => {
 
   it("mainnet trading for restricted countries cannot be configured open", () => {
     // There is no variable for it, and the schema only accepts "block".
-    expect(loadPolicy({ AROMA_COMPLIANCE_TRADE: "allow" }).surfaces.trade).toBe(
+    expect(loadPolicy({ OVELO_COMPLIANCE_TRADE: "allow" }).surfaces.trade).toBe(
       "block",
     );
   });

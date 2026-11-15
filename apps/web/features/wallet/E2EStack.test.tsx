@@ -31,7 +31,7 @@ function rpcGenesis(genesis: string) {
 }
 
 function bridge(chains?: string[]) {
-  (window as unknown as { aromaE2EWallet: unknown }).aromaE2EWallet = {
+  (window as unknown as { oveloE2EWallet: unknown }).oveloE2EWallet = {
     address: ADDRESS,
     chains,
     sign: async (unsigned: string[]) => unsigned,
@@ -39,7 +39,7 @@ function bridge(chains?: string[]) {
 }
 
 beforeEach(() => {
-  delete (window as unknown as { aromaE2EWallet?: unknown }).aromaE2EWallet;
+  delete (window as unknown as { oveloE2EWallet?: unknown }).oveloE2EWallet;
 });
 afterEach(() => {
   cleanup();
@@ -101,7 +101,7 @@ describe("E2E wallet honours the boundary's cluster (M7 B2)", () => {
     );
     await waitFor(() =>
       expect(screen.getByTestId("probe").textContent).toMatch(
-        /^mainnet\|wrong-network\|none\|Aroma trades on Solana mainnet only/,
+        /^mainnet\|wrong-network\|none\|Ovelo trades on Solana mainnet only/,
       ),
     );
   });

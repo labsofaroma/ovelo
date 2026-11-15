@@ -6,8 +6,8 @@ _Branch `phase-a-beta`. REWRITE-PLAN §7.3 **W3**. Nothing here is deployed._
 
 | Variable | Unit | Beta value | Rules |
 |---|---|---|---|
-| `AROMA_MAX_TRADE_USDC_RAW` | raw USDC (6 decimals) | `50000000` ($50) | whole number > 0, ≤ u64 |
-| `AROMA_MAX_DAILY_USDC_RAW` | raw USDC, per wallet per UTC day | `200000000` ($200) | whole number > 0, ≥ the per-trade cap |
+| `OVELO_MAX_TRADE_USDC_RAW` | raw USDC (6 decimals) | `50000000` ($50) | whole number > 0, ≤ u64 |
+| `OVELO_MAX_DAILY_USDC_RAW` | raw USDC, per wallet per UTC day | `200000000` ($200) | whole number > 0, ≥ the per-trade cap |
 
 Parsed to `bigint` (`features/caps/config.ts`). Unset outside production: the beta values. **Unset or 0 in production stops boot** (`server/env.beta.ts`, VERCEL_ENV=production with v1 on) and, at runtime, every capped request fails closed (503 `TRADE_CAP_UNAVAILABLE`). `pnpm check:prod-env` lists both as required. The caps apply whether the beta gate is on or off (Phase B raises or keeps them per counsel).
 
@@ -23,7 +23,7 @@ The order's **maximum funding debit**, the amount the trade authorization carrie
 | Submit (`POST /api/v1/trade/submit`) | Per-trade re-check on the verified authorization's receipt, then an **atomic reservation** for the wallet and UTC day, keyed by the authorization's `request_id` (a replay inserts nothing and counts nothing). Released when the trade fails or provably never landed; kept when it confirms. |
 | Status (`GET /api/v1/trade/:id`) | A final status settles the reservation (idempotent). |
 | Stale reservations | Still `reserved` 5 minutes after the quote expired: checked against the chain at the wallet's next quote or submit (read-only): confirmed → kept; error, never claimed, or past the blockhash's last valid height with no status → released; anything undecidable keeps counting (fail closed). |
-| Action POST | Blink clients send the transaction themselves, so Aroma never sees a submit. The Action's notional is reserved at quote time as **pending**, tied to the SHA-256 of the one authorized message (migration `0010`). The `/confirm` callback settles it; otherwise, after the resolve time (quote expiry + 5 min), the wallet's own transactions since the quote are searched for that message (`features/caps/server/action-outcome.ts`): found → kept, all searched and absent → released, undecidable (too many transactions, one unreadable, RPC error) → kept counting. The Action POST names a wallet without its signature, so a stranger's POST can hold that wallet's cap only until the quote can no longer land (minutes). Actions are off by default in production (`AROMA_ACTIONS`). |
+| Action POST | Blink clients send the transaction themselves, so Ovelo never sees a submit. The Action's notional is reserved at quote time as **pending**, tied to the SHA-256 of the one authorized message (migration `0010`). The `/confirm` callback settles it; otherwise, after the resolve time (quote expiry + 5 min), the wallet's own transactions since the quote are searched for that message (`features/caps/server/action-outcome.ts`): found → kept, all searched and absent → released, undecidable (too many transactions, one unreadable, RPC error) → kept counting. The Action POST names a wallet without its signature, so a stranger's POST can hold that wallet's cap only until the quote can no longer land (minutes). Actions are off by default in production (`OVELO_ACTIONS`). |
 
 The cap counts the **wallet**, never the IP.
 

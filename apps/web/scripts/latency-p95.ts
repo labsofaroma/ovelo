@@ -1,6 +1,6 @@
 /**
  * M11 Step 7: p95 latency of the v1 market endpoints against a running app (read-only GETs).
- *   pnpm --filter @aroma/web perf:p95 -- --base http://127.0.0.1:3400 --n 100
+ *   pnpm --filter @ovelo/web perf:p95 -- --base http://127.0.0.1:3400 --n 100
  * `/api/markets` (the prototype's 2 MB JSON) became the server-rendered `/markets` page (catalog
  * from the Next data cache) and `GET /api/v1/prices` (fresh Jupiter prices). Requests run one at a
  * time; the first request of each target is a warm-up and is not counted. Prints JSON.

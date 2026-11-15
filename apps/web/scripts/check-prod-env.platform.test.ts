@@ -11,11 +11,11 @@ import { BETA_GOOD } from "../server/test/beta-env";
 /** Phase H Step 1: `check:prod-env --platform selfhost` validates the self-host variables. */
 const SELF_BETA = {
   ...BETA_GOOD,
-  AROMA_PLATFORM: "selfhost",
-  AROMA_DEPLOY_ENV: "beta",
+  OVELO_PLATFORM: "selfhost",
+  OVELO_DEPLOY_ENV: "beta",
   // Step 2: self-host production and beta run behind Cloudflare with the origin lock.
-  AROMA_PROXY_MODE: "cloudflare",
-  AROMA_ORIGIN_SECRET: "test-origin-secret-0123456789abcdefABCDEF",
+  OVELO_PROXY_MODE: "cloudflare",
+  OVELO_ORIGIN_SECRET: "test-origin-secret-0123456789abcdefABCDEF",
 };
 
 const findings = (
@@ -38,17 +38,17 @@ describe("check:prod-env --platform", () => {
   it("selfhost passes a complete beta file that declares selfhost and beta", () => {
     const all = findings(SELF_BETA, "selfhost");
     expect(failed(all)).toBe(false);
-    expect(status(all, "AROMA_PLATFORM")).toEqual(["ok"]);
-    expect(status(all, "AROMA_DEPLOY_ENV")).toEqual(["ok"]);
+    expect(status(all, "OVELO_PLATFORM")).toEqual(["ok"]);
+    expect(status(all, "OVELO_DEPLOY_ENV")).toEqual(["ok"]);
   });
 
-  it("selfhost refuses a file without AROMA_PLATFORM or AROMA_DEPLOY_ENV", () => {
-    // The Vercel beta file declares AROMA_DEPLOY_ENV=beta; a self-host file must declare both.
-    const { AROMA_DEPLOY_ENV: _declared, ...undeclared } = BETA_GOOD;
+  it("selfhost refuses a file without OVELO_PLATFORM or OVELO_DEPLOY_ENV", () => {
+    // The Vercel beta file declares OVELO_DEPLOY_ENV=beta; a self-host file must declare both.
+    const { OVELO_DEPLOY_ENV: _declared, ...undeclared } = BETA_GOOD;
     const all = findings(undeclared, "selfhost");
     expect(failed(all)).toBe(true);
-    expect(status(all, "AROMA_PLATFORM")).toContain("missing");
-    expect(status(all, "AROMA_DEPLOY_ENV")).toContain("missing");
+    expect(status(all, "OVELO_PLATFORM")).toContain("missing");
+    expect(status(all, "OVELO_DEPLOY_ENV")).toContain("missing");
   });
 
   it("selfhost passes a file without NEXT_PUBLIC_* (build values, baked into the image) with a warning", () => {
@@ -60,7 +60,7 @@ describe("check:prod-env --platform", () => {
     expect(status(all, "NEXT_PUBLIC_SOLANA_RPC_URL")).toContain("warning");
     expect(status(all, "NEXT_PUBLIC_SENTRY_DSN")).toContain("warning");
     // On Vercel they stay required: there the runtime env is the build env.
-    const { AROMA_PLATFORM: _p, ...vercelFile } = fileOnly;
+    const { OVELO_PLATFORM: _p, ...vercelFile } = fileOnly;
     expect(
       status(findings(vercelFile, "vercel"), "NEXT_PUBLIC_SOLANA_RPC_URL"),
     ).toContain("missing");
@@ -68,15 +68,15 @@ describe("check:prod-env --platform", () => {
 
   it("selfhost refuses a deploy env that is not the profile's", () => {
     const all = findings(
-      { ...SELF_BETA, AROMA_DEPLOY_ENV: "development" },
+      { ...SELF_BETA, OVELO_DEPLOY_ENV: "development" },
       "selfhost",
     );
     expect(failed(all)).toBe(true);
-    expect(status(all, "AROMA_DEPLOY_ENV")).toContain("invalid");
+    expect(status(all, "OVELO_DEPLOY_ENV")).toContain("invalid");
     expect(
       failed(
         findings(SELF_BETA, "selfhost", "production").filter(
-          (f) => f.name === "AROMA_DEPLOY_ENV",
+          (f) => f.name === "OVELO_DEPLOY_ENV",
         ),
       ),
     ).toBe(true);
@@ -88,29 +88,29 @@ describe("check:prod-env --platform", () => {
       "selfhost",
     );
     expect(failed(all)).toBe(true);
-    expect(status(all, "AROMA_PLATFORM")).toContain("invalid");
+    expect(status(all, "OVELO_PLATFORM")).toContain("invalid");
   });
 
   it("vercel refuses a file that says selfhost", () => {
     const all = findings(SELF_BETA, "vercel");
     expect(failed(all)).toBe(true);
-    expect(status(all, "AROMA_PLATFORM")).toContain("invalid");
+    expect(status(all, "OVELO_PLATFORM")).toContain("invalid");
   });
 
   it("selfhost still applies every production rule (a test switch is refused)", () => {
     const all = findings(
-      { ...SELF_BETA, AROMA_V1_ALLOW_TEST_SWITCHES: "true" },
+      { ...SELF_BETA, OVELO_V1_ALLOW_TEST_SWITCHES: "true" },
       "selfhost",
     );
     expect(failed(all)).toBe(true);
-    expect(status(all, "AROMA_V1_ALLOW_TEST_SWITCHES")).toEqual(
+    expect(status(all, "OVELO_V1_ALLOW_TEST_SWITCHES")).toEqual(
       expect.arrayContaining(["invalid", "forbidden"]),
     );
   });
 
   it("the CLI takes --platform selfhost (offline), names the platform, and rejects other values", () => {
-    const dir = mkdtempSync(join(tmpdir(), "aroma-selfhost-env-"));
-    const file = join(dir, "aroma.env");
+    const dir = mkdtempSync(join(tmpdir(), "ovelo-selfhost-env-"));
+    const file = join(dir, "ovelo.env");
     const run = (env: Record<string, string>, platform: string) => {
       writeFileSync(
         file,
@@ -154,7 +154,7 @@ describe("check:prod-env --platform", () => {
       expect(ok.out).toMatch(/beta profile, selfhost/);
       const bad = run(BETA_GOOD, "selfhost");
       expect(bad.code).toBe(1);
-      expect(bad.out).not.toContain(BETA_GOOD.AROMA_TRADE_SECRET);
+      expect(bad.out).not.toContain(BETA_GOOD.OVELO_TRADE_SECRET);
       expect(run(SELF_BETA, "hostinger").code).toBe(2);
     } finally {
       rmSync(dir, { recursive: true, force: true });

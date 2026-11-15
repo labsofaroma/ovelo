@@ -1,7 +1,7 @@
 "use client";
 
 import Image from "next/image";
-import type { AvatarImageProps } from "@aroma/ui";
+import type { AvatarImageProps } from "@ovelo/ui";
 import { isAllowedImageUrl } from "../../../image-hosts.mjs";
 
 /**

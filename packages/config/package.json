@@ -1,9 +1,9 @@
 {
-  "name": "@aroma/config",
+  "name": "@ovelo/config",
   "version": "0.1.0",
   "private": true,
   "type": "module",
-  "description": "Shared tsconfig, ESLint 9 flat config, Prettier config and Vitest preset for the Aroma monorepo.",
+  "description": "Shared tsconfig, ESLint 9 flat config, Prettier config and Vitest preset for the Ovelo monorepo.",
   "exports": {
     "./tsconfig.base.json": "./tsconfig.base.json",
     "./eslint": "./eslint/index.js",

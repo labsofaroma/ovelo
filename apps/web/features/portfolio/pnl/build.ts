@@ -14,10 +14,10 @@ import {
 
 /**
  * Receipts + exact fills + chain balances → P&L (M11 Step 2). For each token:
- * 1. replay this wallet's CONFIRMED Aroma purchases as average-cost buys (quantity = exact fill,
+ * 1. replay this wallet's CONFIRMED Ovelo purchases as average-cost buys (quantity = exact fill,
  *    cost = the leg's exact USDC input), oldest first;
- * 2. reconcile with the balance on chain now: holding MORE than Aroma bought → "outside" (cost
- *    basis unknown); holding LESS → the difference left the wallet (a sale or transfer Aroma did
+ * 2. reconcile with the balance on chain now: holding MORE than Ovelo bought → "outside" (cost
+ *    basis unknown); holding LESS → the difference left the wallet (a sale or transfer Ovelo did
  *    not see), removed at average cost (ledger.ts);
  * 3. value what is held at the snapshot price; unrealized = value − remaining cost.
  */
@@ -225,7 +225,7 @@ export function buildPnl(input: {
     },
     realized: null,
     sources: [
-      "Aroma purchase receipts (confirmed)",
+      "Ovelo purchase receipts (confirmed)",
       "Exact fills from the confirmed transactions (Solana mainnet RPC)",
       "Balances from Solana mainnet RPC",
     ],

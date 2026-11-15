@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { MAINNET_GENESIS_HASH, DEVNET_GENESIS_HASH } from "@aroma/guard";
+import { MAINNET_GENESIS_HASH, DEVNET_GENESIS_HASH } from "@ovelo/guard";
 import { parseKeeperEnv, type KeeperEnvError } from "../env";
 import { connectRpc, expectedGenesis } from "../rpc";
 import { keeperSigner } from "../run";
@@ -13,7 +13,7 @@ const shared = {
   QSTASH_NEXT_SIGNING_KEY: "sig_next_yyyyyyyyyyyyyyyyyyy",
   UPSTASH_REDIS_REST_URL: "https://redis.example.com",
   UPSTASH_REDIS_REST_TOKEN: "token",
-  DATABASE_URL: "postgres://u:p@db.example.com/aroma",
+  DATABASE_URL: "postgres://u:p@db.example.com/ovelo",
 };
 const mainnet = {
   ...shared,

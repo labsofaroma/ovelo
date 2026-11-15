@@ -19,7 +19,7 @@ use crate::state::{Asset, Config, Output, Plan};
 use crate::token_policy::{inspect_mint, read_token_account};
 
 /// Marker string present only in this build (the M6 build check greps the binaries for it).
-pub const DEVNET_MOCK_MARKER: &str = "aroma-guard: devnet-mock mint at oracle price";
+pub const DEVNET_MOCK_MARKER: &str = "ovelo-guard: devnet-mock mint at oracle price";
 
 pub fn execute_installment_handler<'info>(ctx: Context<'info, ExecuteInstallment<'info>>, period: u16, leg_mask: u32) -> Result<()> {
     let now = Clock::get()?.unix_timestamp;

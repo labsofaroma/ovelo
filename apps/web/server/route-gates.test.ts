@@ -325,7 +325,7 @@ describe.each(Object.entries(APIS))("%s", (route, api) => {
 });
 
 describe("browse=block (restricted visitor)", () => {
-  const env = { AROMA_COMPLIANCE_BROWSE: "block", VERCEL: "1" };
+  const env = { OVELO_COMPLIANCE_BROWSE: "block", VERCEL: "1" };
   const us = new Headers({ "x-vercel-ip-country": "US" });
   it.each(Object.entries(PAGES))("%s", (_route, page) => {
     expect(browseBlocked(page.sample, us, env)).toBe(page.browseBlockable);
@@ -344,10 +344,10 @@ describe("origin lock (cloudflare mode): every route, every method", () => {
   const SECRET = "test-origin-secret-0123456789abcdefABCDEF";
   const EDGE = {
     NODE_ENV: "development",
-    AROMA_PLATFORM: "selfhost",
-    AROMA_DEPLOY_ENV: "development",
-    AROMA_PROXY_MODE: "cloudflare",
-    AROMA_ORIGIN_SECRET: SECRET,
+    OVELO_PLATFORM: "selfhost",
+    OVELO_DEPLOY_ENV: "development",
+    OVELO_PROXY_MODE: "cloudflare",
+    OVELO_ORIGIN_SECRET: SECRET,
   };
   beforeEach(() => {
     for (const [k, v] of Object.entries(EDGE)) vi.stubEnv(k, v);
@@ -370,7 +370,7 @@ describe("origin lock (cloudflare mode): every route, every method", () => {
         headers: {
           "content-type": "application/json",
           "cf-connecting-ip": `203.0.113.${++n % 250}`,
-          ...(secret ? { "x-aroma-origin": secret } : {}),
+          ...(secret ? { "x-ovelo-origin": secret } : {}),
         },
         ...body,
       }),

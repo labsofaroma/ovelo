@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import type { ReactNode } from "react";
 import { RootDocument } from "@/features/shared/components/RootDocument";
 import { siteUrl } from "@/features/shared/site";
-import "../aroma-ui.css";
+import "../ovelo-ui.css";
 
 /**
  * Root layout of the v1 product shell (M4). `(app)`, `(marketing)` and `(prototype)` are separate
@@ -12,7 +12,7 @@ import "../aroma-ui.css";
  */
 export const metadata: Metadata = {
   metadataBase: siteUrl(),
-  title: { default: "Aroma", template: "Aroma | %s" },
+  title: { default: "Ovelo", template: "Ovelo | %s" },
   description:
     "Research tokenized stocks, buy single names or baskets from your own wallet on Solana.",
 };

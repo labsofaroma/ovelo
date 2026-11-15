@@ -2,7 +2,7 @@
 -- This cannot be a row-level CHECK, so it is a pair of DEFERRED constraint triggers: the sum is
 -- verified at COMMIT, which lets a transaction insert the basket and all its allocations together.
 -- Drafts may hold partial weights; the rule applies once status = 'published'.
-CREATE FUNCTION aroma_check_basket_weights(target uuid) RETURNS void
+CREATE FUNCTION ovelo_check_basket_weights(target uuid) RETURNS void
 LANGUAGE plpgsql AS $$
 DECLARE
   basket_status text;
@@ -20,25 +20,25 @@ BEGIN
 END
 $$;
 --> statement-breakpoint
-CREATE FUNCTION aroma_basket_allocations_weights_trigger() RETURNS trigger
+CREATE FUNCTION ovelo_basket_allocations_weights_trigger() RETURNS trigger
 LANGUAGE plpgsql AS $$
 BEGIN
   IF TG_OP = 'DELETE' THEN
-    PERFORM aroma_check_basket_weights(OLD.basket_id);
+    PERFORM ovelo_check_basket_weights(OLD.basket_id);
   ELSE
-    PERFORM aroma_check_basket_weights(NEW.basket_id);
+    PERFORM ovelo_check_basket_weights(NEW.basket_id);
     IF TG_OP = 'UPDATE' AND OLD.basket_id <> NEW.basket_id THEN
-      PERFORM aroma_check_basket_weights(OLD.basket_id);
+      PERFORM ovelo_check_basket_weights(OLD.basket_id);
     END IF;
   END IF;
   RETURN NULL;
 END
 $$;
 --> statement-breakpoint
-CREATE FUNCTION aroma_baskets_weights_trigger() RETURNS trigger
+CREATE FUNCTION ovelo_baskets_weights_trigger() RETURNS trigger
 LANGUAGE plpgsql AS $$
 BEGIN
-  PERFORM aroma_check_basket_weights(NEW.id);
+  PERFORM ovelo_check_basket_weights(NEW.id);
   RETURN NULL;
 END
 $$;
@@ -46,9 +46,9 @@ $$;
 CREATE CONSTRAINT TRIGGER basket_allocations_weights_sum
   AFTER INSERT OR UPDATE OR DELETE ON basket_allocations
   DEFERRABLE INITIALLY DEFERRED
-  FOR EACH ROW EXECUTE FUNCTION aroma_basket_allocations_weights_trigger();
+  FOR EACH ROW EXECUTE FUNCTION ovelo_basket_allocations_weights_trigger();
 --> statement-breakpoint
 CREATE CONSTRAINT TRIGGER baskets_weights_sum
   AFTER INSERT OR UPDATE OF status ON baskets
   DEFERRABLE INITIALLY DEFERRED
-  FOR EACH ROW EXECUTE FUNCTION aroma_baskets_weights_trigger();
+  FOR EACH ROW EXECUTE FUNCTION ovelo_baskets_weights_trigger();

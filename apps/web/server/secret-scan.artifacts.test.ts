@@ -46,13 +46,13 @@ describe("check-client-secrets: configured server secrets", () => {
 
 describe("check-client-secrets: artifact scan", () => {
   it("catches literal and compressed server secrets and excludes public config", async () => {
-    const dir = await mkdtemp(join(tmpdir(), "aroma-secret-scan-"));
+    const dir = await mkdtemp(join(tmpdir(), "ovelo-secret-scan-"));
     try {
       const server = "test-only-server-credential-42";
       const secrets = await s.configuredServerSecrets({
         envFiles: [],
         environment: {
-          AROMA_TRADE_SECRET: server,
+          OVELO_TRADE_SECRET: server,
           NEXT_PUBLIC_PLAUSIBLE_DOMAIN: "public-id",
           EXPO_PUBLIC_API_URL: "https://public.example",
         },
@@ -72,7 +72,7 @@ describe("check-client-secrets: artifact scan", () => {
       );
       const result = await s.scanClientArtifacts([dir], secrets);
       expect(result.matches).toHaveLength(2);
-      expect(result.matches[0]?.variables).toEqual(["AROMA_TRADE_SECRET"]);
+      expect(result.matches[0]?.variables).toEqual(["OVELO_TRADE_SECRET"]);
       expect(JSON.stringify(result)).not.toContain(server);
     } finally {
       await rm(dir, { recursive: true, force: true });

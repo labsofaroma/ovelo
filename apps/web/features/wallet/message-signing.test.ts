@@ -16,7 +16,7 @@ import {
 
 /** M5b B1: key-free message signing for creator challenges. */
 const message = new TextEncoder().encode(
-  "Aroma: sign to publish a creator basket",
+  "Ovelo: sign to publish a creator basket",
 );
 
 /** A Wallet Standard wallet whose key lives only in this test (a stand-in for an extension). */

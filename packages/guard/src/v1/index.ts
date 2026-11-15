@@ -1,4 +1,4 @@
-/** Aroma Guard v1 client: generated instructions and accounts plus hand-written helpers. */
+/** Ovelo Guard v1 client: generated instructions and accounts plus hand-written helpers. */
 export * from "./constants";
 export * from "./pdas";
 export * from "./schedule";
@@ -14,11 +14,11 @@ export * from "./timeline";
 export * from "./index-row";
 export * from "./receipts";
 export {
-  AROMA_GUARD_PROGRAM_ADDRESS,
-  AromaGuardAccount,
-  AromaGuardInstruction,
-  getAromaGuardErrorMessage,
-  isAromaGuardError,
+  OVELO_GUARD_PROGRAM_ADDRESS,
+  OveloGuardAccount,
+  OveloGuardInstruction,
+  getOveloGuardErrorMessage,
+  isOveloGuardError,
   getAssetDiscriminatorBytes,
   getConfigParamsEncoder,
   getOutputEncoder,

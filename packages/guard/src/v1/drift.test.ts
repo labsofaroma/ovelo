@@ -21,8 +21,8 @@ describe("Codama drift", () => {
       (ix) => ix.name === "execute_installment",
     )!;
     execute.args[0]!.name = "period_index";
-    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "aroma-idl-"));
-    const changed = path.join(tmp, "aroma_guard.json");
+    const tmp = fs.mkdtempSync(path.join(os.tmpdir(), "ovelo-idl-"));
+    const changed = path.join(tmp, "ovelo_guard.json");
     fs.writeFileSync(changed, JSON.stringify(idl));
     try {
       const drift = (await generatedDrift(changed)) as string[];

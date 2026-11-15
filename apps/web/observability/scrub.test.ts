@@ -24,9 +24,9 @@ describe("scrubUrl", () => {
   it("drops the query string and wallet path segments", () => {
     expect(
       scrubUrl(
-        `https://aroma.example/api/v1/portfolio/${WALLET}?wallet=${WALLET}&x=1`,
+        `https://ovelo.example/api/v1/portfolio/${WALLET}?wallet=${WALLET}&x=1`,
       ),
-    ).toBe("https://aroma.example/api/v1/portfolio/[wallet]");
+    ).toBe("https://ovelo.example/api/v1/portfolio/[wallet]");
   });
 });
 
@@ -38,7 +38,7 @@ describe("scrubSentryEvent", () => {
     user: { id: WALLET, ip_address: "203.0.113.9", email: "a@b.co" },
     server_name: "host-1",
     request: {
-      url: `https://aroma.example/api/v1/portfolio/${WALLET}?token=abc`,
+      url: `https://ovelo.example/api/v1/portfolio/${WALLET}?token=abc`,
       method: "GET",
       query_string: `wallet=${WALLET}`,
       cookies: { session: "s" },

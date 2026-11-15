@@ -35,7 +35,7 @@ export default async function CreatorsPage() {
           </h1>
           <p className="text-body text-muted">
             Baskets published by invited creators, each signed by the
-            creator&rsquo;s wallet. Weights are exactly as published. Aroma does
+            creator&rsquo;s wallet. Weights are exactly as published. Ovelo does
             not review or endorse them.
           </p>
         </div>

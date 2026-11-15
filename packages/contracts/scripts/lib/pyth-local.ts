@@ -30,7 +30,7 @@ import {
   toBase64,
   WORMHOLE_PROGRAM_ID,
   type PriceFeedMessage,
-} from "@aroma/guard/pyth";
+} from "@ovelo/guard/pyth";
 
 export type TestGuardian = {
   /** 20-byte Ethereum-style address (keccak256 of the public key, last 20 bytes). */

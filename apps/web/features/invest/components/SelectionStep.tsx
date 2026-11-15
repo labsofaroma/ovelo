@@ -1,6 +1,6 @@
 "use client";
 
-import { Input } from "@aroma/ui";
+import { Input } from "@ovelo/ui";
 import { formatRaw } from "../server/format";
 import type { WizardField, WizardState } from "../wizard";
 import type { InvestPageData } from "./types";

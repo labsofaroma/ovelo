@@ -1,14 +1,14 @@
 #!/usr/bin/env vite-node
 /**
- * READ-ONLY audit of the Aroma Guard v1 devnet deployment (refuses any other genesis; never
+ * READ-ONLY audit of the Ovelo Guard v1 devnet deployment (refuses any other genesis; never
  * signs, never sends): upgrade authority = the owner's deployer, config admin and keeper, the
  * M6 decisions, no foreign funding mint, test USD and every asset's mint authority.
- *   pnpm --filter @aroma/contracts devnet:audit --deployer <DEPLOYER_PUBKEY> [--keeper PUBKEY] [--faucet PUBKEY] [--rpc URL]
+ *   pnpm --filter @ovelo/contracts devnet:audit --deployer <DEPLOYER_PUBKEY> [--keeper PUBKEY] [--faucet PUBKEY] [--rpc URL]
  */
 import fs from "node:fs";
 import path from "node:path";
 import { address } from "@solana/kit";
-import * as v1 from "@aroma/guard";
+import * as v1 from "@ovelo/guard";
 import { DEFAULT_DEVNET_RPC, parseArgs } from "./lib/args";
 import { auditDevnet } from "./lib/audit";
 import { STATE_FILE } from "./lib/devnet-state";
@@ -24,7 +24,7 @@ async function main() {
   const deployer = args.values.get("--deployer");
   if (!deployer)
     throw new Error(
-      "--deployer <pubkey> is required (solana-keygen pubkey ~/.config/solana/aroma-deployer.json).",
+      "--deployer <pubkey> is required (solana-keygen pubkey ~/.config/solana/ovelo-deployer.json).",
     );
   const keeperFile = path.join(CONTRACTS_ROOT, ".keys/devnet-keeper.json");
   const keeper =
@@ -44,7 +44,7 @@ async function main() {
   const report = await auditDevnet(
     httpRpc(args.values.get("--rpc") ?? DEFAULT_DEVNET_RPC),
     {
-      programId: v1.AROMA_GUARD_V1_PROGRAM_ID,
+      programId: v1.OVELO_GUARD_V1_PROGRAM_ID,
       deployer: address(deployer),
       keeper: address(keeper),
       faucet: address(faucet),

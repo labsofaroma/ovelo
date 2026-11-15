@@ -5,14 +5,14 @@ import { productionRules } from "./platform";
 export type InvestEnvView = {
   VERCEL_ENV?: "production" | "preview" | "development";
   VERCEL?: string;
-  AROMA_PLATFORM?: string;
-  AROMA_DEPLOY_ENV?: string;
-  AROMA_V1_ALLOW_TEST_SWITCHES: boolean;
-  NEXT_PUBLIC_AROMA_LOCALNET?: "true" | "false";
-  AROMA_V1_INVEST_CLUSTER: "devnet" | "localnet";
-  AROMA_V1_LOCALNET_RPC_URL?: string;
-  AROMA_V1_LOCALNET_GENESIS?: string;
-  AROMA_V1_LOCALNET_FUNDING_MINT?: string;
+  OVELO_PLATFORM?: string;
+  OVELO_DEPLOY_ENV?: string;
+  OVELO_V1_ALLOW_TEST_SWITCHES: boolean;
+  NEXT_PUBLIC_OVELO_LOCALNET?: "true" | "false";
+  OVELO_V1_INVEST_CLUSTER: "devnet" | "localnet";
+  OVELO_V1_LOCALNET_RPC_URL?: string;
+  OVELO_V1_LOCALNET_GENESIS?: string;
+  OVELO_V1_LOCALNET_FUNDING_MINT?: string;
   TURNSTILE_SECRET_KEY?: string;
   NODE_ENV: "development" | "test" | "production";
   UPSTASH_REDIS_REST_URL?: string;
@@ -27,7 +27,7 @@ export function localnetRules(env: InvestEnvView, ctx: z.RefinementCtx): void {
     );
     const testRun =
       !productionRules(env) &&
-      (env.NODE_ENV !== "production" || env.AROMA_V1_ALLOW_TEST_SWITCHES);
+      (env.NODE_ENV !== "production" || env.OVELO_V1_ALLOW_TEST_SWITCHES);
     if (!loopback || !testRun)
       ctx.addIssue({
         code: "custom",
@@ -39,20 +39,20 @@ export function localnetRules(env: InvestEnvView, ctx: z.RefinementCtx): void {
     ctx.addIssue({ code: "custom", path: [key], message });
   const production = productionRules(env);
   if (production) {
-    if (env.NEXT_PUBLIC_AROMA_LOCALNET === "true")
+    if (env.NEXT_PUBLIC_OVELO_LOCALNET === "true")
       issue(
-        "NEXT_PUBLIC_AROMA_LOCALNET",
+        "NEXT_PUBLIC_OVELO_LOCALNET",
         "must not be set in a production deployment",
       );
-    if (env.AROMA_V1_INVEST_CLUSTER === "localnet")
+    if (env.OVELO_V1_INVEST_CLUSTER === "localnet")
       issue(
-        "AROMA_V1_INVEST_CLUSTER",
+        "OVELO_V1_INVEST_CLUSTER",
         "must not be localnet in a production deployment",
       );
     for (const key of [
-      "AROMA_V1_LOCALNET_RPC_URL",
-      "AROMA_V1_LOCALNET_GENESIS",
-      "AROMA_V1_LOCALNET_FUNDING_MINT",
+      "OVELO_V1_LOCALNET_RPC_URL",
+      "OVELO_V1_LOCALNET_GENESIS",
+      "OVELO_V1_LOCALNET_FUNDING_MINT",
     ] as const)
       if (env[key]) issue(key, "must not be set in a production deployment");
     if (
@@ -64,24 +64,24 @@ export function localnetRules(env: InvestEnvView, ctx: z.RefinementCtx): void {
         "must not be a Cloudflare test secret in production",
       );
   }
-  if (env.AROMA_V1_INVEST_CLUSTER !== "localnet") return;
-  if (!env.AROMA_V1_ALLOW_TEST_SWITCHES)
+  if (env.OVELO_V1_INVEST_CLUSTER !== "localnet") return;
+  if (!env.OVELO_V1_ALLOW_TEST_SWITCHES)
     issue(
-      "AROMA_V1_INVEST_CLUSTER",
-      "localnet needs AROMA_V1_ALLOW_TEST_SWITCHES=true",
+      "OVELO_V1_INVEST_CLUSTER",
+      "localnet needs OVELO_V1_ALLOW_TEST_SWITCHES=true",
     );
-  if (env.NEXT_PUBLIC_AROMA_LOCALNET !== "true")
+  if (env.NEXT_PUBLIC_OVELO_LOCALNET !== "true")
     issue(
-      "AROMA_V1_INVEST_CLUSTER",
-      "localnet needs a NEXT_PUBLIC_AROMA_LOCALNET=true build",
+      "OVELO_V1_INVEST_CLUSTER",
+      "localnet needs a NEXT_PUBLIC_OVELO_LOCALNET=true build",
     );
   for (const key of [
-    "AROMA_V1_LOCALNET_RPC_URL",
-    "AROMA_V1_LOCALNET_GENESIS",
-    "AROMA_V1_LOCALNET_FUNDING_MINT",
+    "OVELO_V1_LOCALNET_RPC_URL",
+    "OVELO_V1_LOCALNET_GENESIS",
+    "OVELO_V1_LOCALNET_FUNDING_MINT",
   ] as const)
     if (!env[key])
-      issue(key, "is required when AROMA_V1_INVEST_CLUSTER=localnet");
+      issue(key, "is required when OVELO_V1_INVEST_CLUSTER=localnet");
 }
 
 /** Cloudflare's published Turnstile test secrets (always pass / always fail / token spent). */

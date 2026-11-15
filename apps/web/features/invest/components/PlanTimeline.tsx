@@ -1,4 +1,4 @@
-import { Badge, type BadgeTone } from "@aroma/ui";
+import { Badge, type BadgeTone } from "@ovelo/ui";
 import { formatChainTime, formatRaw } from "../server/format";
 import { explorerUrl, oraclePriceText } from "../amounts";
 import type { TimelineEntryView } from "../schema";

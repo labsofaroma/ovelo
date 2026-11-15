@@ -16,7 +16,7 @@ const challenge = await import("@/app/api/v1/session/challenge/route");
 const session = await import("@/app/api/v1/session/route");
 const exportRoute = await import("@/app/api/v1/portfolio/export/route");
 
-const SITE = "https://aroma.example";
+const SITE = "https://ovelo.example";
 const post = (path: string, body: unknown) =>
   new Request(`${SITE}${path}`, {
     method: "POST",
@@ -26,7 +26,7 @@ const post = (path: string, body: unknown) =>
 
 beforeEach(() => {
   stubBaseEnv();
-  vi.stubEnv("AROMA_SITE_URL", SITE);
+  vi.stubEnv("OVELO_SITE_URL", SITE);
   resetEnvCacheForTests();
   const store = memoryStore();
   setSessionDepsForTests({ challenges: () => store, now: () => new Date() });
@@ -51,7 +51,7 @@ async function open(scope: "portfolio" | "creator") {
 describe("wallet sessions", () => {
   it("the message is read-only and names the scope's purpose", async () => {
     const { c } = await open("portfolio");
-    expect(c.message).toContain("download your Aroma portfolio history");
+    expect(c.message).toContain("download your Ovelo portfolio history");
     expect(c.message).toContain("Read-only");
   });
 

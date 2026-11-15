@@ -1,4 +1,4 @@
-import { Badge, Button } from "@aroma/ui";
+import { Badge, Button } from "@ovelo/ui";
 import { useId, useState } from "react";
 // --- M9 compliance gate (additive) ---
 import { TradeComplianceGate } from "../../compliance/components/TradeComplianceGate";

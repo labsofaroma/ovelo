@@ -1,1 +1,1 @@
-export const CONFIG_PACKAGE = "@aroma/config" as const;
+export const CONFIG_PACKAGE = "@ovelo/config" as const;

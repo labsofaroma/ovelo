@@ -1,5 +1,5 @@
 {
-  "comment": "Hashes of the DEFAULT (mainnet) Aroma Guard v1 build (M8 B7). `bash scripts/verify-build.sh` rebuilds and compares `local`; `--docker` builds in the pinned solana-verify image and compares `docker` once the owner has pulled the image and recorded it.",
+  "comment": "Hashes of the DEFAULT (mainnet) Ovelo Guard v1 build (M8 B7). `bash scripts/verify-build.sh` rebuilds and compares `local`; `--docker` builds in the pinned solana-verify image and compares `docker` once the owner has pulled the image and recorded it.",
   "programSourceCommit": "85351503f81f87056c0bccab8ed48c7abe7b65dd",
   "toolchain": {
     "agave": "3.1.10",

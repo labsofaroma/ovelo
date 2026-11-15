@@ -1,6 +1,6 @@
 # Keeper: mainnet mode (M8)
 
-_Off everywhere until M12._ No deploy config sets `KEEPER_CLUSTER=mainnet`. This file covers the mainnet mode only; devnet operations are in [keeper-operations.md](./keeper-operations.md). The program side is in [aroma-guard-v1.md](./aroma-guard-v1.md#mainnet-execution-default-build).
+_Off everywhere until M12._ No deploy config sets `KEEPER_CLUSTER=mainnet`. This file covers the mainnet mode only; devnet operations are in [keeper-operations.md](./keeper-operations.md). The program side is in [ovelo-guard-v1.md](./ovelo-guard-v1.md#mainnet-execution-default-build).
 
 ## What changes from devnet
 
@@ -27,7 +27,7 @@ The same leases, retries, dead-letter list, alerts, reconcile step and receipts 
    - `onlyDirectRoutes=true`, `wrapAndUnwrapSol=false`.
 
    Each build is then checked twice:
-   - by M4's reviewed ExactIn validator (now `@aroma/guard/jupiter`): full Borsh walk, no trailing bytes, amounts, fees, settlement accounts;
+   - by M4's reviewed ExactIn validator (now `@ovelo/guard/jupiter`): full Borsh walk, no trailing bytes, amounts, fees, settlement accounts;
    - for direct routes only: every step swaps the funding mint for the output mint.
 
    The routed builder then repeats the program's prefix and forbidden-account checks before anything is signed.
@@ -52,12 +52,12 @@ A route failure (no route, rate limit, invalid build, intermediate-mint route) d
 | `KEEPER_MAINNET_LEGS_PER_TX` | 1 or 2 (default 2) |
 | `KEEPER_PRIORITY_MICROLAMPORTS` | priority fee, as on devnet |
 
-Every URL must be `https://`. The local test mode `KEEPER_CLUSTER=mainnet-fork` needs `KEEPER_ALLOW_FORK=true`, `KEEPER_FORK_GENESIS` and a loopback RPC, and is refused in production. It is used only by `pnpm --filter @aroma/contracts e2e:fork`.
+Every URL must be `https://`. The local test mode `KEEPER_CLUSTER=mainnet-fork` needs `KEEPER_ALLOW_FORK=true`, `KEEPER_FORK_GENESIS` and a loopback RPC, and is refused in production. It is used only by `pnpm --filter @ovelo/contracts e2e:fork`.
 
 ## Before turning it on (M12, owner)
 
 1. The program is deployed to mainnet, and `initialize_config` has `keeper_authority` = the mainnet keeper key, USDC allow-listed, and the xStocks issuer keys on the Token-2022 allow-lists.
 2. Each catalog xStock is registered with its Pyth equity feed. A direct USDC route exists for each (check with the Jupiter build API).
 3. Fund the mainnet keeper key (rent for the swap-authority ATAs, posts and fees). Set the alert webhook and `KEEPER_MIN_SOL_LAMPORTS`.
-4. Run `pnpm --filter @aroma/contracts test:fixtures:mainnet && … test:litesvm:subscriptions-mainnet`. These must pass on the binaries then on mainnet.
+4. Run `pnpm --filter @ovelo/contracts test:fixtures:mainnet && … test:litesvm:subscriptions-mainnet`. These must pass on the binaries then on mainnet.
 5. A capped plan runs real installments, then close + revoke (P5).

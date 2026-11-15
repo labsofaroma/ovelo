@@ -4,7 +4,7 @@ import {
   DialogContent,
   DialogDescription,
   DialogTitle,
-} from "@aroma/ui";
+} from "@ovelo/ui";
 import { useId } from "react";
 import type { WalletState } from "../context";
 import { CLUSTER_LABEL } from "../cluster";
@@ -36,7 +36,7 @@ export function WalletPicker({
         <DialogTitle>Connect a Solana wallet</DialogTitle>
         <DialogDescription>
           {testCluster ? `${testCluster}. ` : "Solana mainnet. "}
-          Aroma prepares each transaction; your wallet signs it. Aroma never
+          Ovelo prepares each transaction; your wallet signs it. Ovelo never
           sees your keys.
         </DialogDescription>
         <ul className="mt-4 grid gap-2" aria-label="Installed wallets">
@@ -61,7 +61,7 @@ export function WalletPicker({
         {installed.length === 0 ? (
           <p className="mt-4 text-small text-muted">
             No Solana wallet was found in this browser. Install one, then reload
-            this page, or open Aroma in your wallet app&apos;s browser.
+            this page, or open Ovelo in your wallet app&apos;s browser.
           </p>
         ) : null}
         <section className="mt-4 grid gap-2" aria-labelledby={guidesId}>

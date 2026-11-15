@@ -1,5 +1,5 @@
 export {
-  AromaGlyph,
+  OveloGlyph,
   Brand,
   OrbitArt,
   type BrandLinkProps,

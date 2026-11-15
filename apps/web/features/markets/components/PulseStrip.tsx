@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Change } from "@aroma/ui";
+import { Change } from "@ovelo/ui";
 import { AsOf } from "../../shared/components/AsOf";
 import { changeProp, formatCompactUsd, plural } from "../../shared/fixed";
 import { STALE_AFTER_MS } from "../../shared/freshness";

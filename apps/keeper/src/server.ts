@@ -7,7 +7,7 @@ import { keeperSigner, runOnce } from "./run";
 import { runDeps } from "./services";
 
 /**
- * `pnpm --filter @aroma/keeper start`. Boot: validate env, check the RPC's genesis (devnet, or the
+ * `pnpm --filter @ovelo/keeper start`. Boot: validate env, check the RPC's genesis (devnet, or the
  * configured local validator) BEFORE listening, then serve POST /run and GET /health. Exits 1 on a
  * wrong cluster or an invalid environment; the keeper key is never printed.
  */

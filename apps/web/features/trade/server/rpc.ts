@@ -23,7 +23,7 @@ import {
  * the rules in rpc-pool.ts (M9).
  *
  * E2E only: with test switches allowed (never on a Vercel production deployment) and a LOOPBACK
- * SOLANA_RPC_URL, AROMA_V1_TEST_FORK_GENESIS names the genesis of a local mainnet fork
+ * SOLANA_RPC_URL, OVELO_V1_TEST_FORK_GENESIS names the genesis of a local mainnet fork
  * (solana-test-validator with cloned mainnet accounts). Any other endpoint keeps mainnet rules.
  */
 
@@ -52,7 +52,7 @@ export function mainnetEndpoint(): {
     if (!forkWarned) {
       forkWarned = true;
       logger.warn(
-        "trade RPC points at a LOCAL FORK (AROMA_V1_TEST_FORK_GENESIS); test switch",
+        "trade RPC points at a LOCAL FORK (OVELO_V1_TEST_FORK_GENESIS); test switch",
       );
     }
     return { url: new URL(raw).toString(), genesis: forkGenesis, fork: true };
@@ -66,7 +66,7 @@ export function mainnetEndpoint(): {
 
 /** The fork genesis when `raw` is loopback AND the E2E fork switch is on; otherwise null. */
 function forkGenesisFor(raw: string): string | null {
-  const forkGenesis = process.env.AROMA_V1_TEST_FORK_GENESIS?.trim();
+  const forkGenesis = process.env.OVELO_V1_TEST_FORK_GENESIS?.trim();
   return forkGenesis && LOOPBACK.test(raw) && testSwitchesAllowed(process.env)
     ? forkGenesis
     : null;
@@ -125,7 +125,7 @@ export async function assertMainnet(
 
 /** Injected RPCs (tests, E2E wiring) may stand for the declared fork; nothing else. */
 function isForkGenesis(genesis: string): boolean {
-  const fork = process.env.AROMA_V1_TEST_FORK_GENESIS?.trim();
+  const fork = process.env.OVELO_V1_TEST_FORK_GENESIS?.trim();
   return Boolean(fork) && genesis === fork && testSwitchesAllowed(process.env);
 }
 

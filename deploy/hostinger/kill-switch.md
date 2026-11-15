@@ -4,16 +4,16 @@ Three levers, fastest first. None of them needs a new image or a deploy. Each on
 
 ## 1. Stop trading (seconds)
 
-`AROMA_TRADING=off` refuses every mainnet trading entry point (quote, submit, the Action POST) with 503 `TRADING_UNAVAILABLE`. Reads, receipts, the Action confirm callback and devnet plan closes stay open, so users can still see and exit.
+`OVELO_TRADING=off` refuses every mainnet trading entry point (quote, submit, the Action POST) with 503 `TRADING_UNAVAILABLE`. Reads, receipts, the Action confirm callback and devnet plan closes stay open, so users can still see and exit.
 
 ```bash
-sudo sed -i 's/^AROMA_TRADING=.*/AROMA_TRADING=off/' /etc/aroma/aroma.env
-sudo docker compose -f /opt/aroma/docker-compose.yml up -d --wait app
+sudo sed -i 's/^OVELO_TRADING=.*/OVELO_TRADING=off/' /etc/ovelo/ovelo.env
+sudo docker compose -f /opt/ovelo/docker-compose.yml up -d --wait app
 # Verify (expects 503 TRADING_UNAVAILABLE):
 curl -s -X POST https://<host>/api/v1/trade/quote -H 'content-type: application/json' -d '{}'
 ```
 
-Recreating the container drains in-flight requests first (up to 65 s), so a submit already sent finishes. To undo, set `AROMA_TRADING=on` and run the same command.
+Recreating the container drains in-flight requests first (up to 65 s), so a submit already sent finishes. To undo, set `OVELO_TRADING=on` and run the same command.
 
 ## 2. Cloudflare "Under Attack" mode (seconds, at the edge)
 
@@ -23,11 +23,11 @@ Side effect: Blink unfurlers and wallets that call `/actions.json` and `/api/v1/
 
 ## 3. Pause notifications (seconds)
 
-`AROMA_NOTIFICATIONS=off` stops scans and deliveries without touching trading.
+`OVELO_NOTIFICATIONS=off` stops scans and deliveries without touching trading.
 
 ```bash
-sudo sed -i 's/^AROMA_NOTIFICATIONS=.*/AROMA_NOTIFICATIONS=off/' /etc/aroma/aroma.env
-sudo docker compose -f /opt/aroma/docker-compose.yml up -d --wait app
+sudo sed -i 's/^OVELO_NOTIFICATIONS=.*/OVELO_NOTIFICATIONS=off/' /etc/ovelo/ovelo.env
+sudo docker compose -f /opt/ovelo/docker-compose.yml up -d --wait app
 ```
 
 You can also pause the schedule in the Upstash console (QStash → Schedules → Pause), which stops the calls at the source.
@@ -35,7 +35,7 @@ You can also pause the schedule in the Upstash console (QStash → Schedules →
 ## 4. Take the site off the internet (last resort)
 
 ```bash
-sudo docker compose -f /opt/aroma/docker-compose.yml stop cloudflared   # the tunnel drops; Cloudflare shows its error page
+sudo docker compose -f /opt/ovelo/docker-compose.yml stop cloudflared   # the tunnel drops; Cloudflare shows its error page
 ```
 
 The app keeps running, unreachable. `start cloudflared` brings it back. To make it permanent, revoke the tunnel in Cloudflare Zero Trust → Networks → Tunnels (HOSTINGER-RUNBOOK §12).

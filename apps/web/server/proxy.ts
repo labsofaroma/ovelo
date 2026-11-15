@@ -5,7 +5,7 @@ import { resolvePlatform, type PlatformProblem } from "./platform";
  * scheme and host it used, and its country. Nothing else in the app reads a forwarding or geo
  * header (a repo test greps for the names).
  *
- * `AROMA_PROXY_MODE` (replaces the boolean AROMA_TRUST_PROXY, which now refuses to boot):
+ * `OVELO_PROXY_MODE` (replaces the boolean OVELO_TRUST_PROXY, which now refuses to boot):
  * - `vercel` (default on Vercel, allowed only there): Vercel overwrites X-Real-IP,
  *   X-Forwarded-For, X-Forwarded-Proto/Host and x-vercel-ip-country. Pre-Phase-H behaviour.
  * - `cloudflare` (self-host behind Cloudflare and its tunnel): the IP comes ONLY from
@@ -30,8 +30,8 @@ const MODES: readonly ProxyMode[] = ["vercel", "cloudflare", "none"];
 /** The shared rate-limit key when the client IP cannot be known (pre-Phase-H value). */
 export const UNKNOWN_IP = "local";
 
-/** The header Cloudflare's Transform Rule sets to AROMA_ORIGIN_SECRET (server/origin-lock.ts). */
-export const ORIGIN_HEADER = "x-aroma-origin";
+/** The header Cloudflare's Transform Rule sets to OVELO_ORIGIN_SECRET (server/origin-lock.ts). */
+export const ORIGIN_HEADER = "x-ovelo-origin";
 
 /** Header names, each read in exactly one place below. */
 const H = {
@@ -52,7 +52,7 @@ export const VERCEL_COUNTRY_HEADER = H.vercelCountry;
 const CF_UNKNOWN = new Set(["XX"]);
 const CF_ANONYMOUS = new Set(["T1"]);
 
-/** AROMA_ORIGIN_SECRET: 32 or more characters of base64, base64url or hex (openssl rand -base64 48). */
+/** OVELO_ORIGIN_SECRET: 32 or more characters of base64, base64url or hex (openssl rand -base64 48). */
 export const ORIGIN_SECRET_PATTERN = /^[A-Za-z0-9+/=_-]{32,}$/;
 
 function text(env: EnvLike, key: string): string | undefined {
@@ -72,61 +72,61 @@ export function resolveProxy(env: EnvLike): ProxyAnswer {
   const platform = resolvePlatform(env);
   const onVercel = platform.platform === "vercel";
 
-  if (text(env, "AROMA_TRUST_PROXY") !== undefined)
+  if (text(env, "OVELO_TRUST_PROXY") !== undefined)
     problem(
-      "AROMA_TRUST_PROXY",
-      "was replaced by AROMA_PROXY_MODE (vercel | cloudflare | none); remove it",
+      "OVELO_TRUST_PROXY",
+      "was replaced by OVELO_PROXY_MODE (vercel | cloudflare | none); remove it",
     );
 
-  const raw = text(env, "AROMA_PROXY_MODE");
+  const raw = text(env, "OVELO_PROXY_MODE");
   let mode: ProxyMode = onVercel ? "vercel" : "none";
   if (raw !== undefined) {
     if (!MODES.includes(raw as ProxyMode)) {
-      problem("AROMA_PROXY_MODE", "must be vercel, cloudflare or none");
+      problem("OVELO_PROXY_MODE", "must be vercel, cloudflare or none");
       mode = "none";
     } else mode = raw as ProxyMode;
   }
   if (mode === "vercel" && !onVercel) {
     problem(
-      "AROMA_PROXY_MODE",
+      "OVELO_PROXY_MODE",
       "vercel is allowed only on the Vercel platform",
     );
     mode = "none"; // fail closed: trust nothing
   }
   if (mode === "cloudflare" && onVercel) {
     problem(
-      "AROMA_PROXY_MODE",
+      "OVELO_PROXY_MODE",
       "cloudflare is for self-host; Vercel uses vercel",
     );
     mode = "none";
   }
   if (mode === "cloudflare") {
-    const secret = text(env, "AROMA_ORIGIN_SECRET");
+    const secret = text(env, "OVELO_ORIGIN_SECRET");
     if (!secret)
       problem(
-        "AROMA_ORIGIN_SECRET",
-        "is required when AROMA_PROXY_MODE=cloudflare",
+        "OVELO_ORIGIN_SECRET",
+        "is required when OVELO_PROXY_MODE=cloudflare",
       );
     else if (!ORIGIN_SECRET_PATTERN.test(secret))
       problem(
-        "AROMA_ORIGIN_SECRET",
+        "OVELO_ORIGIN_SECRET",
         "must be 32 or more base64/hex characters (openssl rand -base64 48)",
       );
   }
-  const origin = text(env, "AROMA_ORIGIN_SECRET");
+  const origin = text(env, "OVELO_ORIGIN_SECRET");
   // The origin secret lives in the Cloudflare dashboard (Transform Rule), so it must never be
   // the value of a secret that protects anything else.
   if (origin)
     for (const other of OTHER_SECRETS)
       if (text(env, other) === origin)
-        problem("AROMA_ORIGIN_SECRET", `must differ from ${other}`);
+        problem("OVELO_ORIGIN_SECRET", `must differ from ${other}`);
   if (
     platform.platform === "selfhost" &&
     platform.productionRules &&
     mode !== "cloudflare"
   )
     problem(
-      "AROMA_PROXY_MODE",
+      "OVELO_PROXY_MODE",
       "must be cloudflare on a self-host production or beta deployment",
     );
   return { mode, problems };
@@ -147,13 +147,13 @@ export function trustsProxy(env: EnvLike): boolean {
 
 /** Secrets the origin secret must never equal (it is visible to Cloudflare account admins). */
 const OTHER_SECRETS = [
-  "AROMA_TRADE_SECRET",
-  "AROMA_TRADE_SECRET_PREVIOUS",
-  "AROMA_REVALIDATE_SECRET",
-  "AROMA_NOTIFY_WORKER_SECRET",
+  "OVELO_TRADE_SECRET",
+  "OVELO_TRADE_SECRET_PREVIOUS",
+  "OVELO_REVALIDATE_SECRET",
+  "OVELO_NOTIFY_WORKER_SECRET",
   "CREATOR_AUTH_SECRET",
-  "AROMA_RECURRING_AUTH_SECRET",
-  "AROMA_RECURRING_EXECUTOR_SECRET",
+  "OVELO_RECURRING_AUTH_SECRET",
+  "OVELO_RECURRING_EXECUTOR_SECRET",
   "TELEGRAM_WEBHOOK_SECRET",
   "UPSTASH_REDIS_REST_TOKEN",
 ] as const;

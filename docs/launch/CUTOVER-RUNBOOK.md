@@ -19,8 +19,8 @@ SOL: none.
 - [ ] Terms of use: a new `final: true` version in `features/compliance/terms.ts` and the terms page (every wallet re-accepts).
 - [ ] The acceptance line the wallet signs (`features/compliance/server/terms.ts`).
 - [ ] Risk disclosures per surface (`features/compliance/disclosures.ts`; bump `DISCLOSURE_VERSION`).
-- [ ] The final restricted-country list (`AROMA_COMPLIANCE_RESTRICTED_COUNTRIES`), and whether sub-national regions must be blocked (not implemented: it needs `x-vercel-ip-country-region`).
-- [ ] Beta and cap wording; the caps for the public launch (`AROMA_MAX_TRADE_USDC_RAW`, `AROMA_MAX_DAILY_USDC_RAW`: keep or raise).
+- [ ] The final restricted-country list (`OVELO_COMPLIANCE_RESTRICTED_COUNTRIES`), and whether sub-national regions must be blocked (not implemented: it needs `x-vercel-ip-country-region`).
+- [ ] Beta and cap wording; the caps for the public launch (`OVELO_MAX_TRADE_USDC_RAW`, `OVELO_MAX_DAILY_USDC_RAW`: keep or raise).
 - [ ] Notice-page and blocked-state wording.
 
 SOL: none.
@@ -42,14 +42,14 @@ Every variable, where to get it and the plan: [PRODUCTION-ENV.md](./PRODUCTION-E
 - [ ] Browser RPC key, origin-locked to the production domain.
 - [ ] Neon (Launch plan), `pnpm db:migrate` from a trusted machine (through `0006_trade_caps`).
 - [ ] Upstash Redis with eviction off; Jupiter API key; Jito URL; Sentry (DSNs, auth token, alert rules); Turnstile for the production domain; operator name and support email.
-- [ ] `AROMA_SITE_URL=https://<production domain>`; `AROMA_TRADING=on` (or unset).
-- [ ] Check: `vercel env pull` into a file **outside** the repo, then `pnpm check:prod-env --env-file <that file>` (production profile: it calls `getGenesisHash` on both server RPCs and the browser RPC, read-only), then delete the file. It must end `check:prod-env: OK`; `AROMA_BETA_GATE` still warns until step 9.
+- [ ] `OVELO_SITE_URL=https://<production domain>`; `OVELO_TRADING=on` (or unset).
+- [ ] Check: `vercel env pull` into a file **outside** the repo, then `pnpm check:prod-env --env-file <that file>` (production profile: it calls `getGenesisHash` on both server RPCs and the browser RPC, read-only), then delete the file. It must end `check:prod-env: OK`; `OVELO_BETA_GATE` still warns until step 9.
 
 SOL: none.
 
-## 5. P4: `AROMA_TRADE_SECRET` rotation drill on production
+## 5. P4: `OVELO_TRADE_SECRET` rotation drill on production
 
-- [ ] Run the rotation once on production before launch ([KEY-CUSTODY.md §3](./KEY-CUSTODY.md#3-aroma_trade_secret-rotation)): new key with the old one as `AROMA_TRADE_SECRET_PREVIOUS`, deploy, wait 20 minutes, remove the previous key, deploy. `check:prod-env` warns while a previous key is set.
+- [ ] Run the rotation once on production before launch ([KEY-CUSTODY.md §3](./KEY-CUSTODY.md#3-ovelo_trade_secret-rotation)): new key with the old one as `OVELO_TRADE_SECRET_PREVIOUS`, deploy, wait 20 minutes, remove the previous key, deploy. `check:prod-env` warns while a previous key is set.
 
 SOL: none.
 
@@ -66,7 +66,7 @@ SOL: none.
 - [ ] **Hostinger** (the same VPS becomes production, or a second VPS from HOSTINGER-RUNBOOK §1–§2 if you want beta kept):
   1. Add the tunnel's public hostname `<domain>` → `app:3000`.
   2. Extend the Transform Rule's condition to the production hostname.
-  3. Set `AROMA_DEPLOY_ENV=production` and `AROMA_SITE_URL=https://<domain>` in `aroma.env`.
+  3. Set `OVELO_DEPLOY_ENV=production` and `OVELO_SITE_URL=https://<domain>` in `ovelo.env`.
   4. Run `check:prod-env --profile production --platform selfhost`, then `deploy.sh` the release digest.
   5. If `beta.<domain>` stays on the same box, remove its hostname from the tunnel (one instance serves one site URL).
 - [ ] Open `https://<domain>/api/v1/health`: RPC (both endpoints: `primary` and `fallback` `ok`, `fallbackInUse: false`), Redis and Postgres `ok`.
@@ -85,10 +85,10 @@ SOL: none.
 
 SOL: **about 0.007 SOL** (one new xStock token account per stock bought for the first time, 0.00156–0.00157 SOL each, refundable rent, plus fees). The USDC is the test amount.
 
-## 9. Open to the public: `AROMA_BETA_GATE=off`
+## 9. Open to the public: `OVELO_BETA_GATE=off`
 
-- [ ] Set `AROMA_BETA_GATE=off` **explicitly** (unset means on in production) and redeploy. The beta banner and the redeem step disappear; the Action GET is enabled.
-- [ ] `pnpm check:prod-env` (production profile) shows `AROMA_BETA_GATE: off (public launch)` and ends OK.
+- [ ] Set `OVELO_BETA_GATE=off` **explicitly** (unset means on in production) and redeploy. The beta banner and the redeem step disappear; the Action GET is enabled.
+- [ ] `pnpm check:prod-env` (production profile) shows `OVELO_BETA_GATE: off (public launch)` and ends OK.
 
 SOL: none.
 
@@ -104,8 +104,8 @@ SOL: none.
 
 ## 11. Rollback
 
-- **A bad deploy:** *Vercel:* Deployments → the previous good deployment → *Instant Rollback*. **Hostinger:** `sudo /opt/aroma/rollback.sh`. Migrations are additive (an AGENTS.md rule); never roll the database back.
-- **Stop trading, keep the site up:** set `AROMA_TRADING=off` and redeploy (Hostinger: [kill-switch.md](../../deploy/hostinger/kill-switch.md), seconds, no new image). Quote, submit and the Action POST answer 503; browsing, receipts and plan closes stay open.
+- **A bad deploy:** *Vercel:* Deployments → the previous good deployment → *Instant Rollback*. **Hostinger:** `sudo /opt/ovelo/rollback.sh`. Migrations are additive (an AGENTS.md rule); never roll the database back.
+- **Stop trading, keep the site up:** set `OVELO_TRADING=off` and redeploy (Hostinger: [kill-switch.md](../../deploy/hostinger/kill-switch.md), seconds, no new image). Quote, submit and the Action POST answer 503; browsing, receipts and plan closes stay open.
 - **Back to the prototype:** point DNS back at the archive deployment from step 6.
 
 SOL: none.
@@ -124,8 +124,8 @@ Do these with steps 4, 8 and 10; they ran first on `beta.<domain>` ([BETA-RUNBOO
 - [ ] **Channels** for the production domain:
   - a production Telegram bot (or the beta one, with the webhook moved to the production URL);
   - VAPID keys generated for the production deployment. New keys mean beta push subscriptions do not carry over: users turn push on again;
-  - `AROMA_NOTIFY_WORKER_SECRET` and the QStash schedule pointed at `https://<domain>/api/v1/notifications/deliver`.
-- [ ] `pnpm check:prod-env` (production profile) shows each channel you turned on as `ok`, and `AROMA_PLATFORM_FEE_BPS` unset or `0`.
+  - `OVELO_NOTIFY_WORKER_SECRET` and the QStash schedule pointed at `https://<domain>/api/v1/notifications/deliver`.
+- [ ] `pnpm check:prod-env` (production profile) shows each channel you turned on as `ok`, and `OVELO_PLATFORM_FEE_BPS` unset or `0`.
 - [ ] **P5 on production** (step 8):
   - the P&L row of the test stock (cost basis = the amount spent, quantity = the exact fill);
   - a notification for the test purchase on each channel you turned on;
@@ -134,11 +134,11 @@ Do these with steps 4, 8 and 10; they ran first on `beta.<domain>` ([BETA-RUNBOO
   - the QStash schedule's failures;
   - the `notify worker run` log lines (`dead` growing means a channel is failing);
   - Sentry errors from `v1/notifications/*`.
-- [ ] **Rollback:** `AROMA_NOTIFICATIONS=off` pauses notifications without touching trading; `AROMA_TRADING=off` stops trading without touching notifications.
+- [ ] **Rollback:** `OVELO_NOTIFICATIONS=off` pauses notifications without touching trading; `OVELO_TRADING=off` stops trading without touching notifications.
 - [ ] **Not in this launch:**
   - a platform fee and creator payouts (5b: needs the owner's and counsel's approval, and its own reviewed trade-path change);
   - email notifications;
   - on-ramp links;
-  - Aroma Guard on mainnet (M12).
+  - Ovelo Guard on mainnet (M12).
 
 SOL: none (5a creates no fee account).

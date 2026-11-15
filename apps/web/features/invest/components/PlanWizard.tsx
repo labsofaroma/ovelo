@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Field, Input } from "@aroma/ui";
+import { Button, Field, Input } from "@ovelo/ui";
 import { useState } from "react";
 import { useSigner } from "../../wallet/context";
 import { investApi } from "../api";
@@ -17,7 +17,7 @@ import type { InvestPageData } from "./types";
 import { SelectionStep } from "./SelectionStep";
 
 const selectClass =
-  "min-h-(--aroma-control-height) rounded-control border border-line bg-surface px-3 text-small focus-ring";
+  "min-h-(--ovelo-control-height) rounded-control border border-line bg-surface px-3 text-small focus-ring";
 
 /** Choose → amount and schedule → review (server summary) → sign → submitted. */
 export function PlanWizard({ data }: { data: InvestPageData }) {

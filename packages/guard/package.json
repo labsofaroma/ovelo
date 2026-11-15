@@ -1,15 +1,15 @@
 {
-  "name": "@aroma/guard",
+  "name": "@ovelo/guard",
   "version": "1.0.0",
   "private": true,
   "type": "module",
-  "description": "Aroma Guard v1 client (Codama-generated code plus hand-written builders, decoders and schedule math) and the Pyth pieces the web app and the keeper share. TypeScript source, no build step.",
+  "description": "Ovelo Guard v1 client (Codama-generated code plus hand-written builders, decoders and schedule math) and the Pyth pieces the web app and the keeper share. TypeScript source, no build step.",
   "sideEffects": false,
   "exports": {
     ".": "./src/index.ts",
     "./generated": "./src/v1/generated/index.ts",
     "./pyth": "./src/pyth/index.ts",
-    "./idl": "./src/v1/idl/aroma_guard.json",
+    "./idl": "./src/v1/idl/ovelo_guard.json",
     "./jupiter": "./src/jupiter/index.ts"
   },
   "scripts": {
@@ -23,7 +23,7 @@
     "@solana/subscriptions": "0.5.0"
   },
   "devDependencies": {
-    "@aroma/config": "workspace:*",
+    "@ovelo/config": "workspace:*",
     "@codama/nodes-from-anchor": "1.5.6",
     "@codama/renderers-js": "2.4.0",
     "@solana/spl-token": "0.4.15",

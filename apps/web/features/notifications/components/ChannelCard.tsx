@@ -1,6 +1,6 @@
 "use client";
 
-import { Badge, Button, Checkbox } from "@aroma/ui";
+import { Badge, Button, Checkbox } from "@ovelo/ui";
 import { useEffect, useState } from "react";
 import { eventLabel, settingsCopy } from "../copy";
 import {

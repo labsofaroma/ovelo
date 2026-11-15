@@ -35,7 +35,7 @@ import type { SubmitDeps } from "./submit";
  * Production wiring for the trade services. Tests build their own deps; nothing here is
  * imported by them. Redis (idempotency) and Postgres (receipts) are required: without them
  * trading is unavailable, never silently non-idempotent. The ONLY exception is an E2E run on a
- * local fork (test switches + AROMA_V1_TEST_FORK_GENESIS), which uses in-process stores.
+ * local fork (test switches + OVELO_V1_TEST_FORK_GENESIS), which uses in-process stores.
  */
 
 const decimalsCache = new Map<string, number>();

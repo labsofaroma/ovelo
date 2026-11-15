@@ -5,7 +5,7 @@ import { messageHash } from "@/server/auth/trade-transactions";
 
 /**
  * What became of a Solana Action quote, for settling its W3 cap reservation. A Blink client
- * signs and sends the transaction itself, so Aroma knows no signature, only the SHA-256 of the
+ * signs and sends the transaction itself, so Ovelo knows no signature, only the SHA-256 of the
  * one message it authorized. Once the reservation's resolve time has passed (the quote expired
  * at least RESOLVE_MARGIN_MS ago, far past any blockhash lifetime), the wallet's own recent
  * transactions are searched for that message:

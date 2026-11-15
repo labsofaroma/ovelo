@@ -3,8 +3,8 @@ import { describe, expect, it } from "vitest";
 import { configureLocalNeon, localNeonProxy } from "./local-neon";
 
 /** M5b B6: the local WebSocket proxy can only ever apply to a loopback database. */
-const LOCAL = "postgres://aroma:pw@127.0.0.1:54329/aroma";
-const PROXY = { AROMA_LOCAL_NEON_WS_PROXY: "127.0.0.1:54330" };
+const LOCAL = "postgres://ovelo:pw@127.0.0.1:54329/ovelo";
+const PROXY = { OVELO_LOCAL_NEON_WS_PROXY: "127.0.0.1:54330" };
 
 describe("localNeonProxy", () => {
   it("applies to a loopback DATABASE_URL with the switch set", () => {
@@ -26,7 +26,7 @@ describe("localNeonProxy", () => {
       localNeonProxy(LOCAL, { ...PROXY, VERCEL_ENV: "production" }),
     ).toBeNull();
     expect(
-      localNeonProxy(LOCAL, { AROMA_LOCAL_NEON_WS_PROXY: "evil.example:80" }),
+      localNeonProxy(LOCAL, { OVELO_LOCAL_NEON_WS_PROXY: "evil.example:80" }),
     ).toBeNull();
     expect(localNeonProxy("not a url", PROXY)).toBeNull();
   });

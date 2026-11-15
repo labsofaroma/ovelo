@@ -122,7 +122,7 @@ export function faucetMessage(
   cluster: InvestClusterName,
 ): string {
   return [
-    "Aroma devnet faucet",
+    "Ovelo devnet faucet",
     `Wallet: ${wallet}`,
     `Cluster: ${cluster}`,
     `Issued at: ${issuedAt}`,

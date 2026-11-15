@@ -14,7 +14,7 @@ const base = {
   suggestion: { id: "sol-core", name: "Solana Core", tokens: 3 },
   capText: "$50 per purchase",
   paused: false,
-  pageUrl: "https://aroma.example/get-started",
+  pageUrl: "https://ovelo.example/get-started",
 };
 const funds = (over = {}) => ({
   step: "funds" as const,
@@ -45,7 +45,7 @@ describe("OnboardingSteps", () => {
         .getByRole("link", { name: "Open in Phantom" })
         .getAttribute("href"),
     ).toBe(
-      "https://phantom.app/ul/browse/https%3A%2F%2Faroma.example%2Fget-started?ref=https%3A%2F%2Faroma.example",
+      "https://phantom.app/ul/browse/https%3A%2F%2Fovelo.example%2Fget-started?ref=https%3A%2F%2Fovelo.example",
     );
     expect(screen.getByRole("link", { name: "Open in Solflare" })).toBeTruthy();
   });

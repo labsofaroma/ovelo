@@ -13,7 +13,7 @@ import {
  * never break the page; the builder then says the draft is not being saved.
  */
 
-export const DRAFT_KEY = "aroma.v1.basketBuilder.draft";
+export const DRAFT_KEY = "ovelo.v1.basketBuilder.draft";
 
 export const builderDraftSchema = z.object({
   v: z.literal(1),

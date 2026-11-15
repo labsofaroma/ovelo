@@ -10,7 +10,7 @@ import {
   swapAuthorityAccountInstructions,
   type Plan,
   type RoutedLegInput,
-} from "@aroma/guard";
+} from "@ovelo/guard";
 import {
   freshUpdates,
   legInfos,

@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { cn } from "@aroma/ui";
+import { cn } from "@ovelo/ui";
 import { routes } from "../routes";
 
 const ITEMS = [
@@ -36,7 +36,7 @@ export function NavLinks() {
               href={item.href}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "inline-flex min-h-(--aroma-control-height) items-center whitespace-nowrap rounded-control px-3 text-small font-semibold transition-colors motion-base focus-ring",
+                "inline-flex min-h-(--ovelo-control-height) items-center whitespace-nowrap rounded-control px-3 text-small font-semibold transition-colors motion-base focus-ring",
                 active ? "bg-raised text-ink" : "text-muted hover:text-ink",
               )}
             >

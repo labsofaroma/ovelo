@@ -95,7 +95,7 @@ describe("invest production wiring", () => {
 
   it("devnet uses the recorded deployment (a null record is covered in cluster.test.ts); the faucet needs its key and the Turnstile secret", async () => {
     const { productionServices } = await import("./deps");
-    const { V1_DEPLOYMENTS } = await import("@aroma/guard");
+    const { V1_DEPLOYMENTS } = await import("@ovelo/guard");
     const devnet = V1_DEPLOYMENTS.devnet!;
     await expect(productionServices.context()).resolves.toMatchObject({
       network: {
@@ -116,7 +116,7 @@ describe("invest production wiring", () => {
       expect.objectContaining({ code: "SERVICE_UNAVAILABLE" }),
     );
     vi.stubEnv(
-      "AROMA_V1_FAUCET_KEYPAIR",
+      "OVELO_V1_FAUCET_KEYPAIR",
       JSON.stringify(Array.from({ length: 64 }, (_, i) => (i * 5) % 256)),
     );
     resetEnvCacheForTests();

@@ -6,7 +6,7 @@
  */
 type Hook = { name: string; close: () => Promise<void> | void };
 
-const KEY = Symbol.for("aroma.shutdown.hooks");
+const KEY = Symbol.for("ovelo.shutdown.hooks");
 type Registry = { [KEY]?: Hook[] };
 
 export function registerShutdown(name: string, close: Hook["close"]): void {

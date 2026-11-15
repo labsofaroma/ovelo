@@ -1,4 +1,4 @@
-import { Badge } from "@aroma/ui";
+import { Badge } from "@ovelo/ui";
 import type { ReactNode } from "react";
 import { formatPeriod, formatRaw } from "../server/format";
 import type { PlanView } from "../schema";

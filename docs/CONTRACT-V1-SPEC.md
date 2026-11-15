@@ -1,8 +1,8 @@
-# Aroma Guard v1 — Contract Specification
+# Ovelo Guard v1 — Contract Specification
 
-_Status: specification, 13 November 2026. M6 implements the core and the devnet build, M8 the mainnet (Jupiter) path ([aroma-guard-v1.md](./aroma-guard-v1.md), audit package [audit/](./audit/README.md)); deviations and decisions are in REWRITE-PLAN, M6 and M8 status._
+_Status: specification, 13 November 2026. M6 implements the core and the devnet build, M8 the mainnet (Jupiter) path ([ovelo-guard-v1.md](./ovelo-guard-v1.md), audit package [audit/](./audit/README.md)); deviations and decisions are in REWRITE-PLAN, M6 and M8 status._
 
-Aroma Guard v1 is a standalone program with its own program ID, account layout and instructions. The implementation lives in `packages/contracts` and is described in [aroma-guard-v1.md](./aroma-guard-v1.md).
+Ovelo Guard v1 is a standalone program with its own program ID, account layout and instructions. The implementation lives in `packages/contracts` and is described in [ovelo-guard-v1.md](./ovelo-guard-v1.md).
 
 ---
 
@@ -27,7 +27,7 @@ Whether minting exists is decided at compile time (`#[cfg(feature = "devnet-mock
 ## 3. Program layout
 
 ```
-packages/contracts/programs/aroma_guard/src/
+packages/contracts/programs/ovelo_guard/src/
   lib.rs                 entrypoints only
   constants.rs           seeds, limits
   errors.rs
@@ -175,17 +175,17 @@ v1 has its own **program ID, generated fresh and owned by your wallet**. The ste
 
 ```bash
 # 1. Your deployer wallet (keep it offline/backed up; it pays for and controls the deploy)
-solana-keygen new -o ~/.config/solana/aroma-deployer.json
-solana config set --keypair ~/.config/solana/aroma-deployer.json --url devnet
+solana-keygen new -o ~/.config/solana/ovelo-deployer.json
+solana config set --keypair ~/.config/solana/ovelo-deployer.json --url devnet
 solana airdrop 5   # devnet; a v1 program needs roughly 3–6 SOL of rent
 
 # 2. A fresh program keypair → this becomes the v1 program ID
-solana-keygen new -o target/deploy/aroma_guard-keypair.json
+solana-keygen new -o target/deploy/ovelo_guard-keypair.json
 anchor keys sync   # writes the new ID into declare_id! and Anchor.toml
 
 # 3. Build and deploy
 anchor build
-anchor deploy --provider.cluster devnet --provider.wallet ~/.config/solana/aroma-deployer.json
+anchor deploy --provider.cluster devnet --provider.wallet ~/.config/solana/ovelo-deployer.json
 
 # 4. Confirm you are the upgrade authority
 solana program show <PROGRAM_ID>
@@ -193,14 +193,14 @@ solana program show <PROGRAM_ID>
 
 After deploying:
 - Run `initialize_config` from the deployer wallet, then `register_asset` for each test stock.
-- Update the program ID in the v1 IDL and generated client (`pnpm --filter @aroma/contracts idl:sync`) and the v1 devnet deployment record (`packages/guard/src/v1/deployments.ts`).
-- **Never commit** `aroma-deployer.json` or `aroma_guard-keypair.json`; `target/` is already git-ignored.
+- Update the program ID in the v1 IDL and generated client (`pnpm --filter @ovelo/contracts idl:sync`) and the v1 devnet deployment record (`packages/guard/src/v1/deployments.ts`).
+- **Never commit** `ovelo-deployer.json` or `ovelo_guard-keypair.json`; `target/` is already git-ignored.
 - Before mainnet, hand the upgrade authority to a Squads multisig: `solana program set-upgrade-authority <PROGRAM_ID> --new-upgrade-authority <SQUADS_VAULT>`. Keep your wallet as one of the signers.
 - For mainnet, use a separate deployer wallet from devnet, funded only for the deploy.
 
 ## 11. Decisions needed (owner: product)
 
-1. **Keeper:** anyone can execute (with a small tip), or only Aroma's keeper?
+1. **Keeper:** anyone can execute (with a small tip), or only Ovelo's keeper?
 2. **Protocol fee:** 0 bps at launch, or a small fee per installment?
 3. **Catch-up window:** how many missed periods can run late? (Proposed: 1.)
 4. **Funding tokens:** USDC only, or also PYUSD and USDT?

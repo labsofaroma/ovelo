@@ -19,9 +19,9 @@ const usdcRaw = z
  */
 export const betaShape = {
   /** `on` | `off`. Unset: on when NODE_ENV is production or the production rules apply (server/platform.ts). */
-  AROMA_BETA_GATE: z.enum(["on", "off"]).optional(),
+  OVELO_BETA_GATE: z.enum(["on", "off"]).optional(),
   /** Optional allowlist: comma-separated base58 wallet addresses with beta access. */
-  AROMA_BETA_WALLETS: z
+  OVELO_BETA_WALLETS: z
     .string()
     .refine(
       (value) => {
@@ -41,9 +41,9 @@ export const betaShape = {
     )
     .optional(),
   /** W3: per-trade cap in raw USDC units (6 decimals). Beta default 50000000 ($50). */
-  AROMA_MAX_TRADE_USDC_RAW: usdcRaw.optional(),
+  OVELO_MAX_TRADE_USDC_RAW: usdcRaw.optional(),
   /** W3: per-wallet, per-UTC-day cap in raw USDC units. Beta default 200000000 ($200). */
-  AROMA_MAX_DAILY_USDC_RAW: usdcRaw.optional(),
+  OVELO_MAX_DAILY_USDC_RAW: usdcRaw.optional(),
 };
 
 type Ctx = {
@@ -55,19 +55,19 @@ export function capRules(
   env: {
     VERCEL_ENV?: string;
     VERCEL?: string;
-    AROMA_PLATFORM?: string;
-    AROMA_DEPLOY_ENV?: string;
+    OVELO_PLATFORM?: string;
+    OVELO_DEPLOY_ENV?: string;
     NODE_ENV?: string;
     NEXT_PHASE?: string;
-    AROMA_MAX_TRADE_USDC_RAW?: string;
-    AROMA_MAX_DAILY_USDC_RAW?: string;
+    OVELO_MAX_TRADE_USDC_RAW?: string;
+    OVELO_MAX_DAILY_USDC_RAW?: string;
   },
   ctx: Ctx,
 ): void {
   if (productionRules(env))
     for (const key of [
-      "AROMA_MAX_TRADE_USDC_RAW",
-      "AROMA_MAX_DAILY_USDC_RAW",
+      "OVELO_MAX_TRADE_USDC_RAW",
+      "OVELO_MAX_DAILY_USDC_RAW",
     ] as const)
       if (!env[key])
         ctx.addIssue({
@@ -76,15 +76,15 @@ export function capRules(
           message: "is required in production (raw USDC units above 0)",
         });
   if (
-    env.AROMA_MAX_TRADE_USDC_RAW &&
-    env.AROMA_MAX_DAILY_USDC_RAW &&
-    /^\d+$/.test(env.AROMA_MAX_TRADE_USDC_RAW) &&
-    /^\d+$/.test(env.AROMA_MAX_DAILY_USDC_RAW) &&
-    BigInt(env.AROMA_MAX_DAILY_USDC_RAW) < BigInt(env.AROMA_MAX_TRADE_USDC_RAW)
+    env.OVELO_MAX_TRADE_USDC_RAW &&
+    env.OVELO_MAX_DAILY_USDC_RAW &&
+    /^\d+$/.test(env.OVELO_MAX_TRADE_USDC_RAW) &&
+    /^\d+$/.test(env.OVELO_MAX_DAILY_USDC_RAW) &&
+    BigInt(env.OVELO_MAX_DAILY_USDC_RAW) < BigInt(env.OVELO_MAX_TRADE_USDC_RAW)
   )
     ctx.addIssue({
       code: "custom",
-      path: ["AROMA_MAX_DAILY_USDC_RAW"],
-      message: "must be at least AROMA_MAX_TRADE_USDC_RAW",
+      path: ["OVELO_MAX_DAILY_USDC_RAW"],
+      message: "must be at least OVELO_MAX_TRADE_USDC_RAW",
     });
 }

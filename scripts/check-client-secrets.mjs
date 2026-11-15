@@ -24,7 +24,7 @@ const PUBLIC_PREFIXES = ["NEXT_PUBLIC_", "EXPO_PUBLIC_"];
 /** Variables whose value is a secret even when the name does not say so. */
 const ALWAYS_SECRET = new Set([
   "DATABASE_URL",
-  "AROMA_V1_FAUCET_KEYPAIR",
+  "OVELO_V1_FAUCET_KEYPAIR",
   "KEEPER_KEYPAIR",
   "KEEPER_MAINNET_KEYPAIR",
 ]);
@@ -36,12 +36,12 @@ const MIN_LENGTH = 8;
 
 /** Names whose mere presence in a client artifact is a leak (server-only, secret-bearing). */
 export const FORBIDDEN_NAMES = [
-  "AROMA_TRADE_SECRET",
-  "AROMA_TRADE_SECRET_PREVIOUS",
-  "AROMA_REVALIDATE_SECRET",
-  "AROMA_RECURRING_AUTH_SECRET",
-  "AROMA_RECURRING_EXECUTOR_SECRET",
-  "AROMA_FAUCET_SECRET_KEY",
+  "OVELO_TRADE_SECRET",
+  "OVELO_TRADE_SECRET_PREVIOUS",
+  "OVELO_REVALIDATE_SECRET",
+  "OVELO_RECURRING_AUTH_SECRET",
+  "OVELO_RECURRING_EXECUTOR_SECRET",
+  "OVELO_FAUCET_SECRET_KEY",
   "CREATOR_AUTH_SECRET",
   "UPSTASH_REDIS_REST_TOKEN",
   "DATABASE_URL",
@@ -50,26 +50,26 @@ export const FORBIDDEN_NAMES = [
   "QSTASH_NEXT_SIGNING_KEY",
   "SENTRY_AUTH_TOKEN",
   "JITO_AUTH_UUID",
-  "AROMA_V1_FAUCET_KEYPAIR",
+  "OVELO_V1_FAUCET_KEYPAIR",
   "TURNSTILE_SECRET_KEY",
   "KEEPER_KEYPAIR",
   "KEEPER_MAINNET_KEYPAIR",
   "PYTH_API_KEY",
   // M11 notifications (the VAPID public key is public and is served by the config route).
-  "AROMA_NOTIFY_WORKER_SECRET",
+  "OVELO_NOTIFY_WORKER_SECRET",
   "VAPID_PRIVATE_KEY",
   "TELEGRAM_BOT_TOKEN",
   "TELEGRAM_WEBHOOK_SECRET",
   // Phase H: the edge-to-origin secret (server/origin-lock.ts).
-  "AROMA_ORIGIN_SECRET",
+  "OVELO_ORIGIN_SECRET",
   // M9: the prototype's variables are gone; their names stay forbidden in any client artifact.
   "BOT_KEYPAIR",
   "CREATOR_INVITE_CODES",
 ];
 /** E2E-only code that must be compiled out of production builds. */
-export const E2E_MARKERS = ["aromaE2EWallet"];
+export const E2E_MARKERS = ["oveloE2EWallet"];
 /** Localnet-only wallet code (features/wallet/cluster.ts) that must be compiled out likewise. */
-export const LOCALNET_MARKERS = ["aromaLocalnetCluster"];
+export const LOCALNET_MARKERS = ["oveloLocalnetCluster"];
 /** A JSON array of exactly 64 integers in 0..255: the shape of a Solana secret key file. */
 const KEY_ARRAY =
   /\[\s*(?:(?:25[0-5]|2[0-4]\d|1?\d?\d)\s*,\s*){63}(?:25[0-5]|2[0-4]\d|1?\d?\d)\s*\]/g;
@@ -208,10 +208,10 @@ async function main() {
   );
   const allowE2E =
     args.includes("--allow-e2e") ||
-    process.env.NEXT_PUBLIC_AROMA_E2E_WALLET === "true";
+    process.env.NEXT_PUBLIC_OVELO_E2E_WALLET === "true";
   const allowLocalnet =
     args.includes("--allow-localnet") ||
-    process.env.NEXT_PUBLIC_AROMA_LOCALNET === "true";
+    process.env.NEXT_PUBLIC_OVELO_LOCALNET === "true";
   if (!existsSync(nextDir)) {
     console.error(
       `check-client-secrets: ${nextDir} does not exist; run next build first.`,

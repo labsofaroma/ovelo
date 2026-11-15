@@ -13,7 +13,7 @@ import { createInvite, redeemInvite } from "./invites";
 /**
  * Single-use invites under TRUE parallelism on real Postgres (M5a deviation 4: PGlite runs
  * transactions one at a time). Runs only against the local Docker Postgres + Neon proxy from
- * scripts/local-db.sh (DATABASE_URL on loopback and AROMA_LOCAL_NEON_WS_PROXY set): it opens 25
+ * scripts/local-db.sh (DATABASE_URL on loopback and OVELO_LOCAL_NEON_WS_PROXY set): it opens 25
  * pooled connections through the same Neon serverless driver production uses. Skipped otherwise,
  * so `pnpm test` needs no database.
  */

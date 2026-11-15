@@ -7,7 +7,7 @@ import { productionRules } from "../platform";
  * open-source wsproxy, and this points the driver at it (plain ws://, no TLS pipelining).
  *
  * It applies only when ALL hold, so it can never redirect a real database connection:
- * - AROMA_LOCAL_NEON_WS_PROXY is set (a host:port, outside the env schema like the other local
+ * - OVELO_LOCAL_NEON_WS_PROXY is set (a host:port, outside the env schema like the other local
  *   test switches),
  * - the DATABASE_URL host is loopback (localhost, 127.0.0.1, ::1),
  * - the production rules do not apply (server/platform.ts: not production or beta, on any
@@ -21,7 +21,7 @@ export function localNeonProxy(
   url: string,
   env: Env = process.env,
 ): string | null {
-  const proxy = env.AROMA_LOCAL_NEON_WS_PROXY?.trim();
+  const proxy = env.OVELO_LOCAL_NEON_WS_PROXY?.trim();
   if (!proxy || productionRules(env)) return null;
   let host: string;
   try {

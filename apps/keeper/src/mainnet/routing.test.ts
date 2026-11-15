@@ -5,7 +5,7 @@ import {
   swapAccountsFor,
   TOKEN_2022_PROGRAM_ID,
   TOKEN_PROGRAM_ID,
-} from "@aroma/guard";
+} from "@ovelo/guard";
 import { fakeKeeperChain } from "../test/chain";
 import { fakeJupiterFetch, QUOTED, type BuildCall } from "../test/jupiter";
 import { JITO_TIP_ACCOUNTS, jitoSubmitter, jitoTipInstruction } from "./jito";

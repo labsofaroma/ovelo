@@ -1,5 +1,5 @@
 import { defineConfig } from "vitest/config";
-import preset from "@aroma/config/vitest";
+import preset from "@ovelo/config/vitest";
 
 // REWRITE-PLAN §8 / M7 B8: hand-written code in this package stays at 85% or better. The
 // Codama output, the IDL and test fixtures are excluded.

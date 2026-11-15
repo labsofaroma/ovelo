@@ -1,4 +1,4 @@
-import { createConfig } from "@aroma/config/eslint";
+import { createConfig } from "@ovelo/config/eslint";
 
 /**
  * One rule set for the whole app (M9: the prototype is gone, so there are no legacy, warn-only

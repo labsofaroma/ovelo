@@ -1,6 +1,6 @@
 # Review is requested from these owners automatically. An owner must be a user or an @org/team
-# (a bare org name is not valid). labsofaroma is the sole admin of the aromalabs org today;
-# switch to @aromalabs/<team> once teams exist.
+# (a bare org name is not valid). labsofaroma is the sole admin of the labsofovelo org today;
+# switch to @labsofovelo/<team> once teams exist.
 *                                   @labsofaroma
 /packages/contracts/                @labsofaroma
 /apps/web/lib/sdk/guard/            @labsofaroma

@@ -43,7 +43,7 @@ test("removed prototype APIs answer 410 { code: GONE, message }", async ({
     expect(await response.json()).toEqual({
       code: "GONE",
       message:
-        "This endpoint was removed. Use the current Aroma app or its /api/v1 API.",
+        "This endpoint was removed. Use the current Ovelo app or its /api/v1 API.",
     });
   }
 });

@@ -29,16 +29,16 @@ describe("siteContact (port of lib/site)", () => {
   it("accepts valid values and ignores invalid ones", () => {
     expect(
       siteContact({
-        AROMA_SUPPORT_EMAIL: "help@example.test",
-        AROMA_ISSUES_URL: "http://insecure",
-        AROMA_OPERATOR_NAME: " Ops ",
+        OVELO_SUPPORT_EMAIL: "help@example.test",
+        OVELO_ISSUES_URL: "http://insecure",
+        OVELO_OPERATOR_NAME: " Ops ",
       }),
     ).toEqual({
       operatorName: "Ops",
       supportEmail: "help@example.test",
       issuesUrl: null,
     });
-    expect(siteContact({}).operatorName).toBe("the Aroma project contributors");
+    expect(siteContact({}).operatorName).toBe("the Ovelo project contributors");
   });
 });
 

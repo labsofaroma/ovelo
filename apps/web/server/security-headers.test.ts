@@ -27,15 +27,15 @@ beforeEach(() => {
   stubBaseEnv();
   vi.stubEnv("NODE_ENV", "production");
   vi.stubEnv("VERCEL_ENV", "production");
-  vi.stubEnv("AROMA_SITE_URL", "https://aroma.example");
+  vi.stubEnv("OVELO_SITE_URL", "https://ovelo.example");
   vi.stubEnv("VERCEL", "1");
-  vi.stubEnv("NEXT_PUBLIC_SOLANA_RPC_URL", "https://rpc.aroma.example/k");
+  vi.stubEnv("NEXT_PUBLIC_SOLANA_RPC_URL", "https://rpc.ovelo.example/k");
 });
 afterEach(() => vi.unstubAllEnvs());
 
 const get = (path: string) =>
   middleware(
-    new NextRequest(`http://aroma.example${path}`, {
+    new NextRequest(`http://ovelo.example${path}`, {
       headers: { "x-forwarded-proto": "https", "x-vercel-ip-country": "DE" },
     }),
   );
@@ -57,7 +57,7 @@ describe.each(Object.entries(SAMPLES))("%s", (_type, path) => {
     expect(connect).toEqual(
       expect.arrayContaining([
         "'self'",
-        "https://rpc.aroma.example",
+        "https://rpc.ovelo.example",
         "https://api.jup.ag",
         "https://hermes.pyth.network",
         "https://challenges.cloudflare.com",

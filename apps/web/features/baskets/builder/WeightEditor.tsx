@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, IconButton, Input } from "@aroma/ui";
+import { Button, IconButton, Input } from "@ovelo/ui";
 import { Scale, Trash2 } from "lucide-react";
 import { type KeyboardEvent, useId, useState } from "react";
 import { formatBps } from "../../shared/fixed";

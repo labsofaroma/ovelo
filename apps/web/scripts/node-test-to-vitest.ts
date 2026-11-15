@@ -1,7 +1,7 @@
 /* eslint-disable no-console -- CLI: reports to stdout/stderr */
 /**
  * Converts a node:test + node:assert file to Vitest (M2 port helper).
- *   pnpm --filter @aroma/web exec tsx scripts/node-test-to-vitest.ts <in> <out>
+ *   pnpm --filter @ovelo/web exec tsx scripts/node-test-to-vitest.ts <in> <out>
  * Mechanical only: assert.* calls become expect(), node:test becomes vitest, CommonJS
  * require() becomes import. Anything it cannot convert safely is left as-is and listed, so the
  * result never silently drops an assertion. Review the output and fix import paths by hand.

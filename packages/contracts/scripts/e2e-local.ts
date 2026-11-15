@@ -19,7 +19,7 @@ import {
   type Address,
   type Instruction,
 } from "@solana/kit";
-import * as v1 from "@aroma/guard";
+import * as v1 from "@ovelo/guard";
 import { assertLocalnet } from "./lib/cluster";
 import { CONTRACTS_ROOT, ensureKeypair } from "./lib/keys";
 import type { Connection } from "./lib/send";
@@ -37,10 +37,10 @@ import { provisionLocal, type Stock } from "./lib/e2e-setup";
 
 const WORK = path.join(CONTRACTS_ROOT, ".e2e-local");
 const PORT = 18_899;
-const SO = path.join(CONTRACTS_ROOT, "target/build/devnet-mock/aroma_guard.so");
+const SO = path.join(CONTRACTS_ROOT, "target/build/devnet-mock/ovelo_guard.so");
 const PROGRAM_KEYPAIR = path.join(
   CONTRACTS_ROOT,
-  "target/deploy/aroma_guard-keypair.json",
+  "target/deploy/ovelo_guard-keypair.json",
 );
 const PERIOD = 15n;
 const AMOUNT = 30_000_000n; // 30 tUSD
@@ -74,7 +74,7 @@ async function main() {
   for (const f of [SO, PROGRAM_KEYPAIR])
     if (!fs.existsSync(f))
       throw new Error(
-        `Missing ${path.relative(CONTRACTS_ROOT, f)}: run \`pnpm --filter @aroma/contracts build\`.`,
+        `Missing ${path.relative(CONTRACTS_ROOT, f)}: run \`pnpm --filter @ovelo/contracts build\`.`,
       );
   fs.rmSync(WORK, { recursive: true, force: true });
   fs.mkdirSync(path.join(WORK, "accounts"), { recursive: true });
@@ -128,7 +128,7 @@ async function main() {
       PROGRAM_KEYPAIR,
       keyFile("local-deployer"),
       deployer.address,
-      v1.AROMA_GUARD_V1_PROGRAM_ID,
+      v1.OVELO_GUARD_V1_PROGRAM_ID,
     );
     log(
       "deployed",

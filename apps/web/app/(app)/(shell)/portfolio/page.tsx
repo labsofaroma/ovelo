@@ -7,7 +7,7 @@ import { pageContainer } from "@/features/shared/styles";
 export const metadata: Metadata = v1Metadata({
   title: "Portfolio",
   description:
-    "Your Solana wallet's tokenized-stock holdings, allocation and the orders you placed through Aroma.",
+    "Your Solana wallet's tokenized-stock holdings, allocation and the orders you placed through Ovelo.",
   path: routes.portfolio,
   // Per wallet and per device: nothing to index.
   noindex: true,

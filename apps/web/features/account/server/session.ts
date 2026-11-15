@@ -26,7 +26,7 @@ export const SCOPES = {
   },
   portfolio: {
     purpose: "portfolio-export",
-    summary: ["Read-only: a CSV of this wallet's Aroma orders and P&L."],
+    summary: ["Read-only: a CSV of this wallet's Ovelo orders and P&L."],
   },
 } as const satisfies Record<
   string,

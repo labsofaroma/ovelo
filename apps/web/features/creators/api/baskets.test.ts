@@ -291,7 +291,7 @@ describe("GET /api/v1/creators/:wallet/stats", () => {
     expect(body).toMatchObject({
       wallet: creator.wallet,
       asOf: NOW.toISOString(),
-      source: "Aroma creator registry (Postgres)",
+      source: "Ovelo creator registry (Postgres)",
       usage: { state: "none" },
     });
     expect((body.baskets as { published: number }).published).toBeGreaterThan(

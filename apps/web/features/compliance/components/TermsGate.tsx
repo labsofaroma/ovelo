@@ -1,4 +1,4 @@
-import { Badge, Button } from "@aroma/ui";
+import { Badge, Button } from "@ovelo/ui";
 import Link from "next/link";
 import { routes } from "../../shared/routes";
 import type { Signer } from "../../wallet/context";

@@ -11,11 +11,11 @@ import {
   indexRowFromPlan,
   planAccountFilters,
   V1_PROGRAM_ID,
-} from "@aroma/guard";
+} from "@ovelo/guard";
 import {
   HermesUpdatesClient,
   type HermesLatestUpdates,
-} from "@aroma/guard/pyth";
+} from "@ovelo/guard/pyth";
 import { sendAlert, type AlertDeps } from "./alerts";
 import type { KeeperDb } from "./db";
 import type { KeeperEnv } from "./env";
@@ -177,7 +177,7 @@ export async function runOnce(deps: RunDeps): Promise<RunReport> {
     })
     .send();
   if (!configAccount)
-    throw new Error("Aroma Guard v1 config is missing on this cluster");
+    throw new Error("Ovelo Guard v1 config is missing on this cluster");
   const config = decodeConfigAccount(
     Uint8Array.from(Buffer.from(configAccount.data[0], "base64")),
   );

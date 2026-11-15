@@ -39,7 +39,7 @@ function harness(overrides: Partial<FlowDeps> = {}) {
   const api = {
     challenge: vi.fn(async (body: { purpose: string }) => ({
       nonce: `nonce-${body.purpose}`,
-      message: `Aroma: sign to ${body.purpose} ✓`,
+      message: `Ovelo: sign to ${body.purpose} ✓`,
       basketId: body.purpose === "redeem" ? null : BASKET_ID,
       expiresAt: "2026-11-14T10:05:00.000Z",
     })),
@@ -70,7 +70,7 @@ describe("publishBasketFlow", () => {
   it("a creator signs the exact challenge text (UTF-8) and publishes", async () => {
     const h = harness();
     expect(await publishBasketFlow(h.deps, { basket })).toEqual(published);
-    expect(h.signed).toEqual(["Aroma: sign to publish ✓"]);
+    expect(h.signed).toEqual(["Ovelo: sign to publish ✓"]);
     expect(h.api.publish).toHaveBeenCalledWith({
       wallet: WALLET,
       nonce: "nonce-publish",
@@ -92,8 +92,8 @@ describe("publishBasketFlow", () => {
     const invite = { code: "abc-def", profile: { displayName: "Ada" } };
     await publishBasketFlow(h.deps, { basket, invite });
     expect(h.signed).toEqual([
-      "Aroma: sign to redeem ✓",
-      "Aroma: sign to publish ✓",
+      "Ovelo: sign to redeem ✓",
+      "Ovelo: sign to publish ✓",
     ]);
     expect(h.api.redeem).toHaveBeenCalledWith({
       wallet: WALLET,

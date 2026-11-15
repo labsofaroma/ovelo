@@ -1,6 +1,6 @@
 import { fileURLToPath } from "node:url";
 import { defineConfig } from "vitest/config";
-import preset from "@aroma/config/vitest";
+import preset from "@ovelo/config/vitest";
 
 const here = (path: string) => fileURLToPath(new URL(path, import.meta.url));
 

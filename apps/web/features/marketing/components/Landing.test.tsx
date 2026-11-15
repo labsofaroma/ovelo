@@ -29,7 +29,7 @@ describe("Landing links and button texts", () => {
   it("gives each mode card a link to where that mode is used", () => {
     render(<Landing snapshot={unavailable} />);
     const modes = screen.getByRole("region", {
-      name: "Three ways to use Aroma, always labelled",
+      name: "Three ways to use Ovelo, always labelled",
     });
     const links = within(modes)
       .getAllByRole("link")

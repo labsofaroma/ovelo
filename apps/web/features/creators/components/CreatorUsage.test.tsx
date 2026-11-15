@@ -11,11 +11,11 @@ describe("CreatorUsage (PRODUCT.md: no invented metrics)", () => {
   it("no purchases is said in words, with the source and as-of, and no zero figures", () => {
     render(
       <CreatorUsage
-        usage={{ state: "none", asOf, source: "Aroma purchase receipts" }}
+        usage={{ state: "none", asOf, source: "Ovelo purchase receipts" }}
       />,
     );
     expect(screen.getByText("No purchases yet.")).toBeTruthy();
-    expect(screen.getByText(/Source: Aroma purchase receipts/)).toBeTruthy();
+    expect(screen.getByText(/Source: Ovelo purchase receipts/)).toBeTruthy();
     expect(screen.queryByRole("table")).toBeNull();
     expect(document.body.textContent).not.toMatch(/\b0(\.0+)?\s*USDC/);
   });
@@ -26,7 +26,7 @@ describe("CreatorUsage (PRODUCT.md: no invented metrics)", () => {
         usage={{
           state: "ok",
           asOf,
-          source: "Aroma purchase receipts",
+          source: "Ovelo purchase receipts",
           windows: [
             { window: "7d", since: asOf, purchases: 0, buyers: 0, volume: [] },
             {

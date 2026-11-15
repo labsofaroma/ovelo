@@ -5,7 +5,7 @@ import {
   buildCreatePlanInstructions,
   findAssociatedTokenAddress,
   planAddresses,
-} from "@aroma/guard";
+} from "@ovelo/guard";
 import { authorizePlanTransaction } from "@/server/auth/plan";
 import type { TradeKeyring } from "@/server/auth/trade";
 import { AppError } from "@/server/errors";

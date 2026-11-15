@@ -36,7 +36,7 @@ importers:
 
   apps/keeper:
     dependencies:
-      '@aroma/guard':
+      '@ovelo/guard':
         specifier: workspace:*
         version: link:../../packages/guard
       '@neondatabase/serverless':
@@ -58,7 +58,7 @@ importers:
         specifier: 4.6.7
         version: 4.6.7
     devDependencies:
-      '@aroma/config':
+      '@ovelo/config':
         specifier: workspace:*
         version: link:../../packages/config
       '@electric-sql/pglite':
@@ -88,10 +88,10 @@ importers:
 
   apps/web:
     dependencies:
-      '@aroma/guard':
+      '@ovelo/guard':
         specifier: workspace:*
         version: link:../../packages/guard
-      '@aroma/ui':
+      '@ovelo/ui':
         specifier: workspace:*
         version: link:../../packages/ui
       '@neondatabase/serverless':
@@ -164,7 +164,7 @@ importers:
         specifier: 5.0.15
         version: 5.0.15(@types/react@19.2.18)(react@19.2.9)(use-sync-external-store@1.7.0(react@19.2.9))
     devDependencies:
-      '@aroma/config':
+      '@ovelo/config':
         specifier: workspace:*
         version: link:../../packages/config
       '@axe-core/playwright':
@@ -267,14 +267,14 @@ importers:
 
   packages/contracts:
     dependencies:
-      '@aroma/guard':
+      '@ovelo/guard':
         specifier: workspace:*
         version: link:../guard
     devDependencies:
-      '@aroma/config':
+      '@ovelo/config':
         specifier: workspace:*
         version: link:../config
-      '@aroma/keeper':
+      '@ovelo/keeper':
         specifier: workspace:*
         version: link:../../apps/keeper
       '@noble/curves':
@@ -323,7 +323,7 @@ importers:
         specifier: 0.5.0
         version: 0.5.0(@solana/kit@7.1.1(bufferutil@4.1.0)(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)(utf-8-validate@5.0.10))(@solana/sysvars@7.1.1(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3))(fastestsmallesttextencoderdecoder@1.0.22)(typescript@5.9.3)
     devDependencies:
-      '@aroma/config':
+      '@ovelo/config':
         specifier: workspace:*
         version: link:../config
       '@codama/nodes-from-anchor':
@@ -369,7 +369,7 @@ importers:
         specifier: ^0.468.0
         version: 0.468.0(react@19.2.9)
     devDependencies:
-      '@aroma/config':
+      '@ovelo/config':
         specifier: workspace:*
         version: link:../config
       '@axe-core/playwright':

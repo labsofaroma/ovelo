@@ -22,7 +22,7 @@ type StackProps = {
   cluster: ClusterConfig;
 };
 
-const E2E = process.env.NEXT_PUBLIC_AROMA_E2E_WALLET === "true";
+const E2E = process.env.NEXT_PUBLIC_OVELO_E2E_WALLET === "true";
 const DEFAULT_CLUSTER = mainnetConfig(process.env.NEXT_PUBLIC_SOLANA_RPC_URL);
 
 async function loadStack(): Promise<{ Stack: ComponentType<StackProps> }> {
@@ -30,7 +30,7 @@ async function loadStack(): Promise<{ Stack: ComponentType<StackProps> }> {
   // NEXT_PUBLIC_* with literals, webpack then evaluates the condition at compile time and does
   // not even parse the dead import, so no E2E chunk is emitted when it is off. The client-secret
   // scan (scripts/check-client-secrets.mjs) fails a production build otherwise.
-  if (process.env.NEXT_PUBLIC_AROMA_E2E_WALLET === "true")
+  if (process.env.NEXT_PUBLIC_OVELO_E2E_WALLET === "true")
     return { Stack: (await import("./stack/E2EStack")).default };
   // Wallet-only login (W1): the same Wallet Standard stack on every cluster.
   const stack = await import("./stack/WalletStack");

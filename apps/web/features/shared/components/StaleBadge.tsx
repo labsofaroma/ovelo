@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { Badge } from "@aroma/ui";
+import { Badge } from "@ovelo/ui";
 import { classifyFreshness, type Freshness } from "../freshness";
 
 export interface StaleBadgeProps {

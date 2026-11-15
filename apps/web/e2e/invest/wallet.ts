@@ -6,7 +6,7 @@ import type { Page } from "@playwright/test";
 /**
  * TEST-ONLY wallet for the invest E2E. The key is generated at runtime by the localnet chain
  * script (.e2e-invest/state.json, git-ignored) and stays in this Node process; the page only gets
- * `window.aromaE2EWallet` with an address and callbacks (the M4 bridge pattern).
+ * `window.oveloE2EWallet` with an address and callbacks (the M4 bridge pattern).
  */
 export type InvestState = {
   rpcUrl: string;
@@ -60,10 +60,10 @@ export async function installWallet(
   who: { address: string; secret: number[] },
   chains?: string[],
 ): Promise<void> {
-  await page.exposeFunction("aromaE2ESign", (unsigned: string[]) =>
+  await page.exposeFunction("oveloE2ESign", (unsigned: string[]) =>
     unsigned.map((u) => signTransaction(who.secret, who.address, u)),
   );
-  await page.exposeFunction("aromaE2ESignMessage", (message: string) =>
+  await page.exposeFunction("oveloE2ESignMessage", (message: string) =>
     sign(null, Buffer.from(message, "base64"), keyOf(who.secret)).toString(
       "base64",
     ),
@@ -71,15 +71,15 @@ export async function installWallet(
   await page.addInitScript(
     ({ address, chains }) => {
       const w = window as unknown as {
-        aromaE2ESign: (u: string[]) => Promise<string[]>;
-        aromaE2ESignMessage: (m: string) => Promise<string>;
-        aromaE2EWallet: unknown;
+        oveloE2ESign: (u: string[]) => Promise<string[]>;
+        oveloE2ESignMessage: (m: string) => Promise<string>;
+        oveloE2EWallet: unknown;
       };
-      w.aromaE2EWallet = {
+      w.oveloE2EWallet = {
         address,
         chains,
-        sign: (u: string[]) => w.aromaE2ESign(u),
-        signMessage: (m: string) => w.aromaE2ESignMessage(m),
+        sign: (u: string[]) => w.oveloE2ESign(u),
+        signMessage: (m: string) => w.oveloE2ESignMessage(m),
       };
     },
     { address: who.address, chains },

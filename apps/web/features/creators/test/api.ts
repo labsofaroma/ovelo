@@ -7,7 +7,7 @@ import type { AssetRegistry } from "../server";
 import { createTestDb } from "./db";
 import { NOW, registry as defaultRegistry } from "./fixtures";
 
-export const SITE = "https://aroma.test";
+export const SITE = "https://ovelo.test";
 
 /** Route-test harness: PGlite, an in-memory nonce store and a settable clock. */
 export async function apiHarness() {

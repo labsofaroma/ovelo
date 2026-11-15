@@ -1,6 +1,6 @@
 "use client";
 
-import { Button } from "@aroma/ui";
+import { Button } from "@ovelo/ui";
 import { settingsCopy } from "../copy";
 import { BETA_CHANNELS, type NotifyConfigView } from "../schema";
 import type { useNotifications } from "../useNotifications";

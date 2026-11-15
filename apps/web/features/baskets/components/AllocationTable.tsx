@@ -8,7 +8,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@aroma/ui";
+} from "@ovelo/ui";
 import { PriceCell } from "../../markets/components/PriceCell";
 import type { BasketSummary, MarketRow } from "../../markets/schema";
 import { changeProp, formatBps } from "../../shared/fixed";

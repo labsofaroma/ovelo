@@ -7,12 +7,12 @@ vi.mock("@/features/compliance/terms", async (orig) =>
 );
 
 const LOCALNET: Record<string, string> = {
-  AROMA_V1_INVEST_CLUSTER: "localnet",
-  AROMA_V1_ALLOW_TEST_SWITCHES: "true",
-  NEXT_PUBLIC_AROMA_LOCALNET: "true",
-  AROMA_V1_LOCALNET_RPC_URL: "http://127.0.0.1:8899",
-  AROMA_V1_LOCALNET_GENESIS: "4uhcVJyU9pJkvQyS88uRDiswHXSCkY3zQawwpjk2NsNY",
-  AROMA_V1_LOCALNET_FUNDING_MINT: "So11111111111111111111111111111111111111112",
+  OVELO_V1_INVEST_CLUSTER: "localnet",
+  OVELO_V1_ALLOW_TEST_SWITCHES: "true",
+  NEXT_PUBLIC_OVELO_LOCALNET: "true",
+  OVELO_V1_LOCALNET_RPC_URL: "http://127.0.0.1:8899",
+  OVELO_V1_LOCALNET_GENESIS: "4uhcVJyU9pJkvQyS88uRDiswHXSCkY3zQawwpjk2NsNY",
+  OVELO_V1_LOCALNET_FUNDING_MINT: "So11111111111111111111111111111111111111112",
 };
 
 function problems(source: Record<string, string>): string[] {
@@ -25,7 +25,7 @@ function problems(source: Record<string, string>): string[] {
 describe("M7 invest environment", () => {
   it("defaults to devnet and accepts a full localnet test configuration", () => {
     const devnet = parseEnv({ ...BASE_ENV });
-    expect(devnet.ok && devnet.env.devnet.AROMA_V1_INVEST_CLUSTER).toBe(
+    expect(devnet.ok && devnet.env.devnet.OVELO_V1_INVEST_CLUSTER).toBe(
       "devnet",
     );
     expect(problems(LOCALNET)).toEqual([]);
@@ -33,18 +33,18 @@ describe("M7 invest environment", () => {
 
   it("localnet needs test switches, the localnet build flag and every localnet variable", () => {
     expect(
-      problems({ ...LOCALNET, AROMA_V1_ALLOW_TEST_SWITCHES: "false" }),
+      problems({ ...LOCALNET, OVELO_V1_ALLOW_TEST_SWITCHES: "false" }),
     ).toContain(
-      "AROMA_V1_INVEST_CLUSTER: localnet needs AROMA_V1_ALLOW_TEST_SWITCHES=true",
+      "OVELO_V1_INVEST_CLUSTER: localnet needs OVELO_V1_ALLOW_TEST_SWITCHES=true",
     );
     expect(
-      problems({ ...LOCALNET, NEXT_PUBLIC_AROMA_LOCALNET: "false" }),
+      problems({ ...LOCALNET, NEXT_PUBLIC_OVELO_LOCALNET: "false" }),
     ).toContain(
-      "AROMA_V1_INVEST_CLUSTER: localnet needs a NEXT_PUBLIC_AROMA_LOCALNET=true build",
+      "OVELO_V1_INVEST_CLUSTER: localnet needs a NEXT_PUBLIC_OVELO_LOCALNET=true build",
     );
-    const { AROMA_V1_LOCALNET_GENESIS: _drop, ...partial } = LOCALNET;
+    const { OVELO_V1_LOCALNET_GENESIS: _drop, ...partial } = LOCALNET;
     expect(problems(partial)).toContain(
-      "AROMA_V1_LOCALNET_GENESIS: is required when AROMA_V1_INVEST_CLUSTER=localnet",
+      "OVELO_V1_LOCALNET_GENESIS: is required when OVELO_V1_INVEST_CLUSTER=localnet",
     );
   });
 
@@ -52,28 +52,28 @@ describe("M7 invest environment", () => {
     expect(
       problems({
         ...LOCALNET,
-        AROMA_V1_LOCALNET_RPC_URL: "https://api.devnet.solana.com",
+        OVELO_V1_LOCALNET_RPC_URL: "https://api.devnet.solana.com",
       }),
-    ).toContain("AROMA_V1_LOCALNET_RPC_URL: must be a loopback http URL");
+    ).toContain("OVELO_V1_LOCALNET_RPC_URL: must be a loopback http URL");
   });
 
   it("production refuses the localnet flag, the localnet cluster and every localnet variable", () => {
     const found = problems({ ...LOCALNET, VERCEL_ENV: "production" });
     for (const key of [
-      "NEXT_PUBLIC_AROMA_LOCALNET",
-      "AROMA_V1_INVEST_CLUSTER",
-      "AROMA_V1_LOCALNET_RPC_URL",
-      "AROMA_V1_LOCALNET_GENESIS",
-      "AROMA_V1_LOCALNET_FUNDING_MINT",
+      "NEXT_PUBLIC_OVELO_LOCALNET",
+      "OVELO_V1_INVEST_CLUSTER",
+      "OVELO_V1_LOCALNET_RPC_URL",
+      "OVELO_V1_LOCALNET_GENESIS",
+      "OVELO_V1_LOCALNET_FUNDING_MINT",
     ])
       expect(found.some((line) => line.startsWith(`${key}:`))).toBe(true);
     expect(
       problems({
-        NEXT_PUBLIC_AROMA_LOCALNET: "true",
+        NEXT_PUBLIC_OVELO_LOCALNET: "true",
         VERCEL_ENV: "production",
       }),
     ).toEqual([
-      "NEXT_PUBLIC_AROMA_LOCALNET: must not be set in a production deployment",
+      "NEXT_PUBLIC_OVELO_LOCALNET: must not be set in a production deployment",
     ]);
   });
 
@@ -94,12 +94,12 @@ describe("M7 invest environment", () => {
     const key = JSON.stringify(
       Array.from({ length: 64 }, (_, i) => (i * 7) % 256),
     );
-    expect(problems({ AROMA_V1_FAUCET_KEYPAIR: key })).toEqual([]);
-    expect(problems({ AROMA_V1_FAUCET_KEYPAIR: "[1,2,3]" })).toEqual([
-      "AROMA_V1_FAUCET_KEYPAIR: must be a 64-byte JSON array",
+    expect(problems({ OVELO_V1_FAUCET_KEYPAIR: key })).toEqual([]);
+    expect(problems({ OVELO_V1_FAUCET_KEYPAIR: "[1,2,3]" })).toEqual([
+      "OVELO_V1_FAUCET_KEYPAIR: must be a 64-byte JSON array",
     ]);
-    expect(problems({ AROMA_V1_FAUCET_DAILY_CLAIMS: "0" })).toHaveLength(1);
-    expect(problems({ AROMA_V1_FAUCET_DAILY_CLAIMS: "200" })).toEqual([]);
+    expect(problems({ OVELO_V1_FAUCET_DAILY_CLAIMS: "0" })).toHaveLength(1);
+    expect(problems({ OVELO_V1_FAUCET_DAILY_CLAIMS: "200" })).toEqual([]);
   });
 });
 
@@ -110,15 +110,15 @@ describe("local Redis proxy URL (M7 E2E)", () => {
     // Phase H: a local `next start` declares itself (server/platform.ts).
     const start = {
       ...local,
-      AROMA_PLATFORM: "selfhost",
-      AROMA_DEPLOY_ENV: "development",
+      OVELO_PLATFORM: "selfhost",
+      OVELO_DEPLOY_ENV: "development",
       NODE_ENV: "production",
     };
     expect(problems(start)).toEqual([
       "UPSTASH_REDIS_REST_URL: must be an https:// URL",
     ]);
     expect(
-      problems({ ...start, AROMA_V1_ALLOW_TEST_SWITCHES: "true" }),
+      problems({ ...start, OVELO_V1_ALLOW_TEST_SWITCHES: "true" }),
     ).toEqual([]);
     expect(problems({ ...local, VERCEL_ENV: "production" })).toContain(
       "UPSTASH_REDIS_REST_URL: must be an https:// URL",

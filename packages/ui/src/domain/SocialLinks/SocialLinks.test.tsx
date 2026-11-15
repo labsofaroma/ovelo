@@ -7,7 +7,7 @@ describe("SocialLinks", () => {
   it("renders a labelled nav of safe external links", async () => {
     const { container } = render(<SocialLinks />);
     expect(
-      screen.getByRole("navigation", { name: "Aroma community" }),
+      screen.getByRole("navigation", { name: "Ovelo community" }),
     ).toBeInTheDocument();
     for (const link of screen.getAllByRole("link")) {
       expect(link).toHaveAttribute("target", "_blank");

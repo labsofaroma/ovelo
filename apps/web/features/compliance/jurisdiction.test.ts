@@ -64,21 +64,21 @@ describe("surfaceAllowed", () => {
   });
 
   it("missingCountry=allow opens unknown, never restricted", () => {
-    const open = loadPolicy({ AROMA_COMPLIANCE_MISSING_COUNTRY: "allow" });
+    const open = loadPolicy({ OVELO_COMPLIANCE_MISSING_COUNTRY: "allow" });
     expect(surfaceAllowed(unknown, "trade", open)).toBe(true);
     expect(surfaceAllowed(restricted, "trade", open)).toBe(false);
   });
 
   it("browse: allowed by default for restricted visitors; blocked when the policy says so", () => {
     expect(surfaceAllowed(restricted, "browse", policy)).toBe(true);
-    const closed = loadPolicy({ AROMA_COMPLIANCE_BROWSE: "block" });
+    const closed = loadPolicy({ OVELO_COMPLIANCE_BROWSE: "block" });
     expect(surfaceAllowed(restricted, "browse", closed)).toBe(false);
     expect(surfaceAllowed(unknown, "browse", closed)).toBe(true);
   });
 
   it("devnet follows its own rule", () => {
     expect(surfaceAllowed(restricted, "devnet", policy)).toBe(false);
-    const open = loadPolicy({ AROMA_COMPLIANCE_DEVNET: "allow" });
+    const open = loadPolicy({ OVELO_COMPLIANCE_DEVNET: "allow" });
     expect(surfaceAllowed(restricted, "devnet", open)).toBe(true);
   });
 });

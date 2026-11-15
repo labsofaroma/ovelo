@@ -93,7 +93,7 @@ export function setCreatorDepsForTests(next: Partial<CreatorDeps>): void {
 }
 
 /**
- * The site origin a challenge is bound to (the "Site:" line the wallet shows): AROMA_SITE_URL
+ * The site origin a challenge is bound to (the "Site:" line the wallet shows): OVELO_SITE_URL
  * when set, else the origin the client used, by the SAME rules as middleware's origin allowlist
  * (`requestProtocol`/`requestHost`: Host, and x-forwarded-* only behind a trusted proxy). Never
  * `request.url` alone: `next start` rewrites it to its bind address (localhost), which M4 found
@@ -102,7 +102,7 @@ export function setCreatorDepsForTests(next: Partial<CreatorDeps>): void {
  */
 export function expectedOrigin(request: Request): string {
   const env = tryGetEnv();
-  const configured = env.ok ? env.env.server.AROMA_SITE_URL : undefined;
+  const configured = env.ok ? env.env.server.OVELO_SITE_URL : undefined;
   if (configured) return new URL(configured).origin;
   const url = new URL(request.url);
   return `${requestProtocol(request.headers, url.protocol, process.env)}://${requestHost(request.headers, url.host, process.env)}`;

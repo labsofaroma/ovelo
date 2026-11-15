@@ -13,8 +13,8 @@ export interface IconButtonProps extends Omit<
 }
 
 const SQUARE = {
-  sm: "size-(--aroma-control-height-compact) max-md:size-(--aroma-control-height)",
-  md: "size-(--aroma-control-height)",
+  sm: "size-(--ovelo-control-height-compact) max-md:size-(--ovelo-control-height)",
+  md: "size-(--ovelo-control-height)",
   lg: "size-12",
 } as const;
 

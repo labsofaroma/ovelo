@@ -6,11 +6,11 @@ import { allocationBps } from "../valuation";
  * excluded, never given a share. The ring is decorative; the legend carries the numbers.
  */
 const COLORS = [
-  "var(--aroma-accent)",
-  "var(--aroma-up)",
-  "var(--aroma-warning)",
-  "var(--aroma-down)",
-  "var(--aroma-muted)",
+  "var(--ovelo-accent)",
+  "var(--ovelo-up)",
+  "var(--ovelo-warning)",
+  "var(--ovelo-down)",
+  "var(--ovelo-muted)",
 ];
 
 export function AllocationDonut({ portfolio }: { portfolio: PortfolioView }) {
@@ -41,7 +41,7 @@ export function AllocationDonut({ portfolio }: { portfolio: PortfolioView }) {
           cy="50"
           r="40"
           fill="none"
-          stroke="var(--aroma-line)"
+          stroke="var(--ovelo-line)"
           strokeWidth="14"
         />
         {shown.map((slice, i) => {

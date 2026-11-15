@@ -7,8 +7,8 @@ import {
 } from "react";
 import { cn } from "../../lib/cn";
 
-/** Aroma mark: a faceted gem. Uses currentColor; the facet lines punch through to the page. */
-export function AromaGlyph({ className, ...props }: SVGProps<SVGSVGElement>) {
+/** Ovelo mark: a faceted gem. Uses currentColor; the facet lines punch through to the page. */
+export function OveloGlyph({ className, ...props }: SVGProps<SVGSVGElement>) {
   return (
     <svg
       className={className}
@@ -20,7 +20,7 @@ export function AromaGlyph({ className, ...props }: SVGProps<SVGSVGElement>) {
       {...props}
     >
       <path d="M15 1L29 13L15 28L1 13L15 1Z" fill="currentColor" />
-      <path d="M15 1V28M1 13H29" stroke="var(--aroma-bg)" strokeWidth="1.5" />
+      <path d="M15 1V28M1 13H29" stroke="var(--ovelo-bg)" strokeWidth="1.5" />
       <path d="M15 28L20 33" stroke="currentColor" strokeWidth="1.5" />
     </svg>
   );
@@ -59,13 +59,13 @@ function Wordmark({ className }: { className?: string }) {
         className,
       )}
     >
-      aroma<span className="text-accent">.</span>
+      ovelo<span className="text-accent">.</span>
     </span>
   );
 }
 
 /**
- * Logo lockup. The accessible name is "Aroma home" when linked. `glyph` and `wordmark` are
+ * Logo lockup. The accessible name is "Ovelo home" when linked. `glyph` and `wordmark` are
  * for tight spaces; colors come from tokens so every lockup adapts to light and dark.
  */
 export const Brand = forwardRef<HTMLAnchorElement, BrandProps>(function Brand(
@@ -81,7 +81,7 @@ export const Brand = forwardRef<HTMLAnchorElement, BrandProps>(function Brand(
 ) {
   const content = (
     <>
-      {variant !== "wordmark" && <AromaGlyph />}
+      {variant !== "wordmark" && <OveloGlyph />}
       {variant !== "glyph" && <Wordmark />}
     </>
   );
@@ -92,7 +92,7 @@ export const Brand = forwardRef<HTMLAnchorElement, BrandProps>(function Brand(
   );
   if (asStatic) {
     return (
-      <span className={layout} role="img" aria-label="Aroma">
+      <span className={layout} role="img" aria-label="Ovelo">
         {content}
       </span>
     );
@@ -102,7 +102,7 @@ export const Brand = forwardRef<HTMLAnchorElement, BrandProps>(function Brand(
     <Link
       ref={ref}
       href={href}
-      aria-label="Aroma home"
+      aria-label="Ovelo home"
       className={cn(layout, "rounded-control focus-ring")}
       {...props}
     >
@@ -129,29 +129,29 @@ export function OrbitArt({ className }: { className?: string }) {
         <circle r="68" />
         <path
           d="M0 -58L51 -9L0 57L-51 -9Z"
-          fill="var(--aroma-accent)"
+          fill="var(--ovelo-accent)"
           stroke="none"
         />
-        <path d="M0 -58V57M-51 -9H51" stroke="var(--aroma-bg)" />
+        <path d="M0 -58V57M-51 -9H51" stroke="var(--ovelo-bg)" />
         <circle
           cx="100"
           cy="-61"
           r="7"
-          fill="var(--aroma-accent)"
+          fill="var(--ovelo-accent)"
           stroke="none"
         />
         <circle
           cx="-73"
           cy="-87"
           r="4"
-          fill="var(--aroma-accent)"
+          fill="var(--ovelo-accent)"
           stroke="none"
         />
         <circle
           cx="8"
           cy="116"
           r="5"
-          fill="var(--aroma-accent)"
+          fill="var(--ovelo-accent)"
           stroke="none"
         />
       </g>

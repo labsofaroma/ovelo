@@ -45,7 +45,7 @@ export function GET(): Response {
             letterSpacing: -3,
           }}
         >
-          aroma<span style={{ color: LIME }}>.</span>
+          ovelo<span style={{ color: LIME }}>.</span>
         </div>
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>

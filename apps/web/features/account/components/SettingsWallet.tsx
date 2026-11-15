@@ -30,7 +30,7 @@ function WalletSection() {
         </p>
       ) : (
         <p className="text-small text-muted">
-          No wallet connected. Aroma never holds your keys or funds; connecting
+          No wallet connected. Ovelo never holds your keys or funds; connecting
           only lets this page read your terms status.
         </p>
       )}

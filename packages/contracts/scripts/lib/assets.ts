@@ -1,11 +1,11 @@
 /**
- * The devnet test instruments for Aroma Guard v1: valueless mock stocks, each registered with the
- * REAL Pyth feed id of its underlying equity (@aroma/guard/pyth). The ScaledUiAmount
+ * The devnet test instruments for Ovelo Guard v1: valueless mock stocks, each registered with the
+ * REAL Pyth feed id of its underlying equity (@ovelo/guard/pyth). The ScaledUiAmount
  * multipliers copy the live mainnet xStocks values read on 2026-11-14 (slot 469,277,079), so the
  * scaled-amount path runs on devnet exactly as it will for real xStocks.
  */
 import { CANONICAL_BASKET_DEFINITIONS } from "../../../../apps/web/lib/sdk/markets/definitions";
-import { XSTOCKS_PYTH_FEEDS } from "@aroma/guard/pyth";
+import { XSTOCKS_PYTH_FEEDS } from "@ovelo/guard/pyth";
 
 export type DevnetAsset = {
   symbol: string;

@@ -51,7 +51,7 @@ export function useCsvExport(signer: Signer | null) {
       const url = URL.createObjectURL(await response.blob());
       const link = document.createElement("a");
       link.href = url;
-      link.download = `aroma-${signer.address.slice(0, 8)}.csv`;
+      link.download = `ovelo-${signer.address.slice(0, 8)}.csv`;
       link.click();
       URL.revokeObjectURL(url);
     } catch (cause) {

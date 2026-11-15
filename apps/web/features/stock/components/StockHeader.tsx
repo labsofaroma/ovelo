@@ -1,4 +1,4 @@
-import { AssetAvatar, Change } from "@aroma/ui";
+import { AssetAvatar, Change } from "@ovelo/ui";
 import { CatalogSourceBadge } from "../../markets/components/CatalogSourceBadge";
 import {
   PRICE_SOURCE_LABEL,

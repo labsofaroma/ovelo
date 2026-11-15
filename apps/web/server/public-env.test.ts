@@ -8,7 +8,7 @@ describe("deploy/public-env.mjs", () => {
     expect(
       publicEnvOf({
         NEXT_PUBLIC_SOLANA_RPC_URL: "https://rpc.example.test",
-        AROMA_TRADE_SECRET: "never",
+        OVELO_TRADE_SECRET: "never",
         DATABASE_URL: "never",
         NEXT_PUBLIC_SENTRY_DSN: "https://k@o1.ingest.sentry.io/2",
         next_public_lower: "no",
@@ -27,11 +27,11 @@ describe("deploy/public-env.mjs", () => {
     const overridden = applyPublicEnv(env, {
       NEXT_PUBLIC_SOLANA_RPC_URL: "https://rpc.example.test",
       NEXT_PUBLIC_SENTRY_DSN: "https://k@o1.ingest.sentry.io/2",
-      AROMA_TRADE_SECRET: "ignored: not public",
+      OVELO_TRADE_SECRET: "ignored: not public",
     });
     expect(overridden).toEqual(["NEXT_PUBLIC_SOLANA_RPC_URL"]);
     expect(env.NEXT_PUBLIC_SOLANA_RPC_URL).toBe("https://rpc.example.test");
-    expect(env.AROMA_TRADE_SECRET).toBeUndefined();
+    expect(env.OVELO_TRADE_SECRET).toBeUndefined();
   });
 
   it("so the CSP connect-src allows the bundle's RPC and Sentry origins", () => {

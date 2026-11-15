@@ -61,7 +61,7 @@ const submit = await import("@/app/api/v1/trade/submit/route");
 const status = await import("@/app/api/v1/trade/[id]/route");
 const action = await import("@/app/api/v1/actions/baskets/[id]/route");
 
-const SITE = "https://aroma.example";
+const SITE = "https://ovelo.example";
 const WALLET = "4Nd1mYQzvgp7uVDYiHn9wrpTkMtZpZyV9pR9ZJ2q5vPz";
 const post = (path: string, body: unknown) =>
   new Request(`${SITE}${path}`, {
@@ -94,9 +94,9 @@ beforeAll(async () => {
 afterAll(async () => client.close());
 beforeEach(() => {
   stubBaseEnv();
-  vi.stubEnv("AROMA_TRADE_SECRET", "s".repeat(40));
+  vi.stubEnv("OVELO_TRADE_SECRET", "s".repeat(40));
   vi.stubEnv("SOLANA_RPC_URL", "https://rpc.example.test");
-  vi.stubEnv("DATABASE_URL", "postgres://u:p@db.example.test/aroma");
+  vi.stubEnv("DATABASE_URL", "postgres://u:p@db.example.test/ovelo");
   vi.stubEnv("UPSTASH_REDIS_REST_URL", "https://redis.example.test");
   vi.stubEnv("UPSTASH_REDIS_REST_TOKEN", "token");
   resetEnvCacheForTests();
@@ -105,8 +105,8 @@ beforeEach(() => {
   actionResult = "open";
   setCapsDepsForTests({
     env: () => ({
-      AROMA_MAX_TRADE_USDC_RAW: "50000000",
-      AROMA_MAX_DAILY_USDC_RAW: "200000000",
+      OVELO_MAX_TRADE_USDC_RAW: "50000000",
+      OVELO_MAX_DAILY_USDC_RAW: "200000000",
     }),
     db: () => {
       if (dbDown) throw new Error("connection refused");
@@ -265,8 +265,8 @@ describe("submit", () => {
   it("at the edge of the day: parallel submits never pass the cap", async () => {
     setCapsDepsForTests({
       env: () => ({
-        AROMA_MAX_TRADE_USDC_RAW: "1000000",
-        AROMA_MAX_DAILY_USDC_RAW: "3000000",
+        OVELO_MAX_TRADE_USDC_RAW: "1000000",
+        OVELO_MAX_DAILY_USDC_RAW: "3000000",
       }),
       db: () => db,
       price: async () => null,

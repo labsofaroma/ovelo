@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { AssetAvatar, Change } from "@aroma/ui";
+import { AssetAvatar, Change } from "@ovelo/ui";
 import { NextAvatarImage } from "../../shared/components/NextAvatarImage";
 import { AsOf } from "../../shared/components/AsOf";
 import { DataNotice } from "../../shared/components/DataNotice";

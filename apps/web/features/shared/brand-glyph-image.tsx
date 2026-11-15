@@ -1,14 +1,14 @@
 /**
- * The Aroma gem (the `AromaGlyph` of `@aroma/ui`'s Brand) for `next/og` ImageResponse, which
+ * The Ovelo gem (the `OveloGlyph` of `@ovelo/ui`'s Brand) for `next/og` ImageResponse, which
  * cannot read CSS custom properties or `currentColor`, so colours are passed in. Used by the
  * social preview (/og.png) and the Apple touch icon, so every rendered logo is the same mark.
  */
 export const BRAND_COLORS = {
-  /** --aroma-accent (light) */
+  /** --ovelo-accent (light) */
   accent: "#426c2f",
-  /** --aroma-bg (light) */
+  /** --ovelo-bg (light) */
   bg: "#f5f6f2",
-  /** --aroma-accent (dark): the lime used on the forest social card */
+  /** --ovelo-accent (dark): the lime used on the forest social card */
   lime: "#d5f478",
   forest: "#193c2b",
   cream: "#f6f5ef",

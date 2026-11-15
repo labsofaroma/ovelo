@@ -10,7 +10,7 @@
  *   remainder; when the last unit leaves (`q = qty`) the removed cost is exactly the remaining cost,
  *   so nothing is ever left behind on an empty position and the cost basis is never negative.
  * - A sell's realized P&L is `proceeds − removed`. A transfer out has no proceeds: its removed
- *   cost leaves the position without a realized figure (Aroma cannot know what it was worth).
+ *   cost leaves the position without a realized figure (Ovelo cannot know what it was worth).
  * - Taking out more than is held is refused (the caller reconciles against the chain first).
  */
 export type LedgerEvent =

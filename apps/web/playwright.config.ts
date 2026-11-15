@@ -4,11 +4,11 @@ import { defineConfig, devices } from "@playwright/test";
  * Smoke + accessibility suite (M3). LOCAL ONLY for now: it needs network access to the live market
  * providers and a production build with a complete environment (placeholders are enough):
  *
- *   set -a; . ./.env.example; set +a; pnpm --filter @aroma/web build
- *   pnpm --filter @aroma/web test:e2e        (same environment exported)
+ *   set -a; . ./.env.example; set +a; pnpm --filter @ovelo/web build
+ *   pnpm --filter @ovelo/web test:e2e        (same environment exported)
  *
  * Two servers from the same build: the normal one, and one with the upstream-outage switch on
- * (AROMA_V1_SIMULATE_UPSTREAM_OUTAGE) to prove the "unavailable" states.
+ * (OVELO_V1_SIMULATE_UPSTREAM_OUTAGE) to prove the "unavailable" states.
  */
 import { LOCAL_START } from "./e2e/local-start";
 import { OUTAGE_PORT, PORT } from "./e2e/ports";
@@ -41,8 +41,8 @@ export default defineConfig({
       env: {
         ...appEnv,
         // `next start` runs with NODE_ENV=production, where test switches are off unless opted in.
-        AROMA_V1_ALLOW_TEST_SWITCHES: "true",
-        AROMA_V1_SIMULATE_UPSTREAM_OUTAGE: "true",
+        OVELO_V1_ALLOW_TEST_SWITCHES: "true",
+        OVELO_V1_SIMULATE_UPSTREAM_OUTAGE: "true",
       },
       reuseExistingServer: true,
       timeout: 120_000,

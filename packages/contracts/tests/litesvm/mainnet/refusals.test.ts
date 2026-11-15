@@ -5,7 +5,7 @@
  */
 import { describe, expect, test } from "vitest";
 import { AccountRole, type Address } from "@solana/kit";
-import * as v1 from "@aroma/guard";
+import * as v1 from "@ovelo/guard";
 import { errorCode } from "../helpers";
 import { MainnetWorld, USDC } from "./world";
 import { patchAccount, patchData, setU16 } from "./tamper";

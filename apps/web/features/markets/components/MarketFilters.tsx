@@ -10,7 +10,7 @@ import {
 } from "../schema";
 
 const control =
-  "min-h-(--aroma-control-height) rounded-control border border-border-strong bg-surface px-3 text-small text-ink focus-ring";
+  "min-h-(--ovelo-control-height) rounded-control border border-border-strong bg-surface px-3 text-small text-ink focus-ring";
 
 /**
  * A plain GET form: filters live in the URL, so every view is shareable, server-rendered and
@@ -66,13 +66,13 @@ export function MarketFilters({ filters }: { filters: Filters }) {
           ))}
         </select>
       </label>
-      <label className="flex min-h-(--aroma-control-height) items-center gap-2 text-small text-ink">
+      <label className="flex min-h-(--ovelo-control-height) items-center gap-2 text-small text-ink">
         <input
           type="checkbox"
           name="priced"
           value="1"
           defaultChecked={filters.priced}
-          className="size-5 accent-(--aroma-accent) focus-ring"
+          className="size-5 accent-(--ovelo-accent) focus-ring"
         />
         Only with a token price
       </label>

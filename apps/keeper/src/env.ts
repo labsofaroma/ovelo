@@ -61,7 +61,7 @@ const schema = z
     DATABASE_URL: z
       .string()
       .regex(/^postgres(ql)?:\/\/\S+$/, "must be a postgres:// URL"),
-    AROMA_LOCAL_NEON_WS_PROXY: z.string().optional(),
+    OVELO_LOCAL_NEON_WS_PROXY: z.string().optional(),
     KEEPER_ALERT_WEBHOOK_URL: httpsOrLoopback.optional(),
     KEEPER_ALERT_FORMAT: z.enum(["slack", "discord"]).default("slack"),
     /** Alert when the keeper holds less than this (lamports). Default 0.5 SOL. */

@@ -25,8 +25,8 @@ const e2eBuild = existsSync(new URL("./E2E_BUILD", import.meta.url));
 const env = process.env;
 const productionLike =
   // This entry point runs only on self-host; a missing platform answer counts as production.
-  ["production", "beta"].includes(env.AROMA_DEPLOY_ENV?.trim() ?? "") ||
-  !env.AROMA_PLATFORM?.trim();
+  ["production", "beta"].includes(env.OVELO_DEPLOY_ENV?.trim() ?? "") ||
+  !env.OVELO_PLATFORM?.trim();
 if (e2eBuild && productionLike) {
   log(
     "startup: refusing to run the fork-E2E image on a production or beta deployment",
@@ -52,7 +52,7 @@ if (overridden.length)
     },
   );
 
-const drainMs = Number(process.env.AROMA_DRAIN_MS ?? 65_000);
+const drainMs = Number(process.env.OVELO_DRAIN_MS ?? 65_000);
 const state = trackServers(http);
 installGracefulShutdown(state, {
   drainMs: Number.isFinite(drainMs) && drainMs > 0 ? drainMs : 65_000,

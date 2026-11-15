@@ -4,10 +4,10 @@
 const port = process.env.PORT || "3000";
 const headers = {};
 if (
-  process.env.AROMA_PROXY_MODE === "cloudflare" &&
-  process.env.AROMA_ORIGIN_SECRET
+  process.env.OVELO_PROXY_MODE === "cloudflare" &&
+  process.env.OVELO_ORIGIN_SECRET
 )
-  headers["x-aroma-origin"] = process.env.AROMA_ORIGIN_SECRET;
+  headers["x-ovelo-origin"] = process.env.OVELO_ORIGIN_SECRET;
 
 try {
   const response = await fetch(`http://127.0.0.1:${port}/api/v1/health/live`, {

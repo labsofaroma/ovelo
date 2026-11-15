@@ -9,16 +9,16 @@ let warned = false;
  * Forces every upstream market/research request to fail, to exercise and screenshot the
  * "unavailable" states against a real build. It can only make data disappear (shown as
  * unavailable), never invent it. It is a local test switch, not configuration: it has no effect in
- * production unless a local `next start` opts in with AROMA_V1_ALLOW_TEST_SWITCHES=true (which the
+ * production unless a local `next start` opts in with OVELO_V1_ALLOW_TEST_SWITCHES=true (which the
  * env schema rejects on a Vercel production deployment), and it logs a warning whenever it is on.
  */
 export function upstreamOutageSimulated(): boolean {
-  if (process.env.AROMA_V1_SIMULATE_UPSTREAM_OUTAGE !== "true") return false;
+  if (process.env.OVELO_V1_SIMULATE_UPSTREAM_OUTAGE !== "true") return false;
   if (!testSwitchesAllowed(process.env)) {
     if (!warned) {
       warned = true;
       logger.warn(
-        "AROMA_V1_SIMULATE_UPSTREAM_OUTAGE is set but ignored: test switches are disabled in production",
+        "OVELO_V1_SIMULATE_UPSTREAM_OUTAGE is set but ignored: test switches are disabled in production",
       );
     }
     return false;
@@ -26,7 +26,7 @@ export function upstreamOutageSimulated(): boolean {
   if (!warned) {
     warned = true;
     logger.warn(
-      "AROMA_V1_SIMULATE_UPSTREAM_OUTAGE is on: every upstream provider call will fail",
+      "OVELO_V1_SIMULATE_UPSTREAM_OUTAGE is on: every upstream provider call will fail",
     );
   }
   return true;

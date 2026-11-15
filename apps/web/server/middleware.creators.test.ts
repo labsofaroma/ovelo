@@ -53,18 +53,18 @@ describe("creator routes: origin (A2)", () => {
   it("a same-site publish under next start is accepted (bind address localhost, public Host via proxy)", async () => {
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("VERCEL", "1");
-    vi.stubEnv("AROMA_SITE_URL", "https://aroma.example");
+    vi.stubEnv("OVELO_SITE_URL", "https://ovelo.example");
     const response = await middleware(
       post("http://localhost:3000/api/v1/creators/baskets", {
         host: "localhost:3000",
-        "x-forwarded-host": "aroma.example",
+        "x-forwarded-host": "ovelo.example",
         "x-forwarded-proto": "https",
-        origin: "https://aroma.example",
+        origin: "https://ovelo.example",
       }),
     );
     expect(response.status).toBe(200);
     expect(response.headers.get("access-control-allow-origin")).toBe(
-      "https://aroma.example",
+      "https://ovelo.example",
     );
   });
 

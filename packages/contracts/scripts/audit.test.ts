@@ -6,8 +6,8 @@ import {
   type Address,
   type ReadonlyUint8Array,
 } from "@solana/kit";
-import * as v1 from "@aroma/guard";
-import { getAssetEncoder, getConfigEncoder } from "@aroma/guard/generated";
+import * as v1 from "@ovelo/guard";
+import { getAssetEncoder, getConfigEncoder } from "@ovelo/guard/generated";
 import { auditDevnet } from "./lib/audit";
 import { GENESIS } from "./lib/cluster";
 import type { JsonRpc } from "./lib/jsonrpc";
@@ -104,14 +104,14 @@ async function world(
     string,
     { owner: string; executable: boolean; data: string[] }
   > = {
-    [v1.AROMA_GUARD_V1_PROGRAM_ID]: {
+    [v1.OVELO_GUARD_V1_PROGRAM_ID]: {
       owner: LOADER,
       executable: true,
       data: b64(prog),
     },
     [programData]: { owner: LOADER, executable: false, data: b64(pd) },
     [await v1.findConfigPda()]: {
-      owner: v1.AROMA_GUARD_V1_PROGRAM_ID,
+      owner: v1.OVELO_GUARD_V1_PROGRAM_ID,
       executable: false,
       data: b64(config),
     },
@@ -142,7 +142,7 @@ async function world(
         {
           pubkey: await v1.findAssetPda(stock),
           account: {
-            owner: v1.AROMA_GUARD_V1_PROGRAM_ID,
+            owner: v1.OVELO_GUARD_V1_PROGRAM_ID,
             executable: false,
             data: b64(asset),
           },
@@ -155,7 +155,7 @@ async function world(
     rpc,
     calls,
     expect: {
-      programId: v1.AROMA_GUARD_V1_PROGRAM_ID,
+      programId: v1.OVELO_GUARD_V1_PROGRAM_ID,
       deployer,
       keeper,
       faucet,

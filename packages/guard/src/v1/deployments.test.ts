@@ -1,6 +1,6 @@
 import { expect, test } from "vitest";
 import { XSTOCKS_PYTH_FEEDS } from "../pyth";
-import { AROMA_GUARD_V1_PROGRAM_ID } from "./constants";
+import { OVELO_GUARD_V1_PROGRAM_ID } from "./constants";
 import { DEVNET_GENESIS_HASH, V1_DEPLOYMENTS } from "./deployments";
 import { findAssetPda, findConfigPda } from "./pdas";
 
@@ -9,7 +9,7 @@ const devnet = V1_DEPLOYMENTS.devnet!;
 test("the devnet record is for devnet and this program", () => {
   expect(devnet.cluster).toBe("devnet");
   expect(devnet.genesisHash).toBe(DEVNET_GENESIS_HASH);
-  expect(devnet.programId).toBe(AROMA_GUARD_V1_PROGRAM_ID);
+  expect(devnet.programId).toBe(OVELO_GUARD_V1_PROGRAM_ID);
   expect(devnet.programId).toBe("FYrrfhrysaGUwCNyTggqyKmTWqpg3vph8gzmSWt7QtTU");
 });
 

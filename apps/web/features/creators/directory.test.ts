@@ -58,7 +58,7 @@ describe("creator directory", () => {
     expect(result.state).toBe("ok");
     if (result.state !== "ok") return;
     expect(result.data.asOf).toBe(NOW.toISOString());
-    expect(result.data.source).toBe("Aroma creator registry (Postgres)");
+    expect(result.data.source).toBe("Ovelo creator registry (Postgres)");
     expect(result.data.baskets.map((b) => b.id)).toEqual([id]);
   });
 });

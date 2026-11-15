@@ -3,14 +3,14 @@ import { sql } from "drizzle-orm";
 import { recordEvent, type NotifyDb } from "./outbox";
 
 /**
- * Mainnet trade events from Aroma's own receipts (M11 Step 1). The trade path stays frozen
+ * Mainnet trade events from Ovelo's own receipts (M11 Step 1). The trade path stays frozen
  * (rule 7), so instead of writing the event inside the confirm step, the worker scans recent
  * receipts and records each fact once (deterministic event ids; re-scans are no-ops):
  *
  * - `trade_confirmed`: every receipt of the order (one request id) is confirmed;
  * - `trade_failed`: any receipt of the order failed;
- * - `trade_unconfirmed`: an order still pending 15 minutes after Aroma recorded it (no claim
- *   that it expired: only that Aroma has not seen it confirm);
+ * - `trade_unconfirmed`: an order still pending 15 minutes after Ovelo recorded it (no claim
+ *   that it expired: only that Ovelo has not seen it confirm);
  * - `creator_basket_bought`: a confirmed creator-basket order, sent to the basket's creator.
  *
  * Only orders by wallets with an active subscription verified before the order are read, within

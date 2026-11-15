@@ -2,20 +2,20 @@ import { z } from "zod";
 import { fixedSchema } from "../../shared/fixed";
 
 /**
- * P&L view (M11 Step 2). Cost basis comes ONLY from Aroma's confirmed receipts and the exact fills
+ * P&L view (M11 Step 2). Cost basis comes ONLY from Ovelo's confirmed receipts and the exact fills
  * of their transactions; anything else is "cost basis unknown" with the reason. Cost is in USDC
  * raw units; P&L counts 1 USDC as 1 USD (stated on screen). Nothing is estimated.
  */
 const raw = z.string().regex(/^\d+$/);
 
 export const BASIS_STATUSES = [
-  /** Every unit held was bought through Aroma with USDC, and every fill was read. */
+  /** Every unit held was bought through Ovelo with USDC, and every fill was read. */
   "known",
-  /** The wallet holds more than Aroma bought: some units came from elsewhere. */
+  /** The wallet holds more than Ovelo bought: some units came from elsewhere. */
   "outside",
-  /** No Aroma purchase of this token. */
+  /** No Ovelo purchase of this token. */
   "none",
-  /** Some Aroma purchase was paid with SOL or USDT (no USD cost without a price at that time). */
+  /** Some Ovelo purchase was paid with SOL or USDT (no USD cost without a price at that time). */
   "other_funding",
   /** A purchase's transaction could not be read yet (the next refresh reads more). */
   "fill_pending",
@@ -66,7 +66,7 @@ export const pnlViewSchema = z.object({
     unrealized: fixedSchema,
     unrealizedBps: z.number().int().nullable(),
   }),
-  /** Aroma records no sales, so realized P&L is not computed. */
+  /** Ovelo records no sales, so realized P&L is not computed. */
   realized: z.null(),
   sources: z.array(z.string()),
 });

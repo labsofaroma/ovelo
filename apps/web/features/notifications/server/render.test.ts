@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { formatRaw, renderEvent } from "./render";
 
-const SITE = "https://aroma.example";
+const SITE = "https://ovelo.example";
 const USDC = "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v";
 
 describe("formatRaw (bigint only)", () => {

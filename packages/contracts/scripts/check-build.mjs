@@ -10,12 +10,12 @@ const root = path.resolve(
   path.dirname(new URL(import.meta.url).pathname),
   "..",
 );
-const MARKER = "aroma-guard: devnet-mock mint at oracle price";
+const MARKER = "ovelo-guard: devnet-mock mint at oracle price";
 const SEED = "mock_mint";
 // M8: the Jupiter route_v2 CPI path exists only in the default build (integrations/jupiter.rs).
-const JUPITER_MARKER = "aroma-guard: jupiter route_v2 cpi";
+const JUPITER_MARKER = "ovelo-guard: jupiter route_v2 cpi";
 const read = (variant) =>
-  fs.readFileSync(path.join(root, "target/build", variant, "aroma_guard.so"));
+  fs.readFileSync(path.join(root, "target/build", variant, "ovelo_guard.so"));
 const has = (bytes, text) => bytes.includes(Buffer.from(text));
 // ELF e_flags (offset 48) is the SBPF version; devnet and mainnet only deploy v0 today.
 const sbpfVersion = (bytes) => bytes.readUInt32LE(48);

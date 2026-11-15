@@ -18,7 +18,7 @@ export const ERROR_CODES = {
   GONE: {
     status: 410,
     message:
-      "This endpoint was removed. Use the current Aroma app or its /api/v1 API.",
+      "This endpoint was removed. Use the current Ovelo app or its /api/v1 API.",
   },
   CONFLICT: {
     status: 409,
@@ -151,7 +151,7 @@ export const ERROR_CODES = {
   BETA_ACCESS_REQUIRED: {
     status: 403,
     message:
-      "Aroma is in private beta. Redeem an invite with this wallet before buying. Nothing was quoted or sent.",
+      "Ovelo is in private beta. Redeem an invite with this wallet before buying. Nothing was quoted or sent.",
   },
   BETA_ACCESS_UNAVAILABLE: {
     status: 503,

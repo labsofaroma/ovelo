@@ -13,7 +13,7 @@ import { pageContainer } from "@/features/shared/styles";
 export const metadata: Metadata = v1Metadata({
   title: "Thematic baskets",
   description:
-    "Themed baskets of tokenized stocks, with constituents and weights from Aroma’s published definitions and their current listing status.",
+    "Themed baskets of tokenized stocks, with constituents and weights from Ovelo’s published definitions and their current listing status.",
   path: routes.baskets,
 });
 

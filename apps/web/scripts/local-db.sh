@@ -11,8 +11,8 @@
 set -euo pipefail
 cd "$(dirname "$0")/.."
 COMPOSE=(docker compose -f scripts/local-db.compose.yml)
-export DATABASE_URL="postgres://aroma:aroma-local-only@127.0.0.1:54329/aroma"
-export AROMA_LOCAL_NEON_WS_PROXY="127.0.0.1:54330"
+export DATABASE_URL="postgres://ovelo:ovelo-local-only@127.0.0.1:54329/ovelo"
+export OVELO_LOCAL_NEON_WS_PROXY="127.0.0.1:54330"
 
 need_docker() {
   if ! docker info >/dev/null 2>&1; then
@@ -23,7 +23,7 @@ need_docker() {
 
 wait_ready() {
   for _ in $(seq 1 60); do
-    if "${COMPOSE[@]}" exec -T postgres pg_isready -U aroma -d aroma >/dev/null 2>&1 &&
+    if "${COMPOSE[@]}" exec -T postgres pg_isready -U ovelo -d ovelo >/dev/null 2>&1 &&
       (exec 3<>/dev/tcp/127.0.0.1/54330) 2>/dev/null; then
       return 0
     fi
@@ -39,7 +39,7 @@ case "${1:-up}" in
     "${COMPOSE[@]}" up -d --wait >/dev/null
     wait_ready
     pnpm exec tsx server/db/migrate.ts
-    echo "local-db: ready. DATABASE_URL=$DATABASE_URL (via ws proxy $AROMA_LOCAL_NEON_WS_PROXY)"
+    echo "local-db: ready. DATABASE_URL=$DATABASE_URL (via ws proxy $OVELO_LOCAL_NEON_WS_PROXY)"
     ;;
   reset)
     need_docker
@@ -52,7 +52,7 @@ case "${1:-up}" in
     ;;
   env)
     echo "export DATABASE_URL='$DATABASE_URL'"
-    echo "export AROMA_LOCAL_NEON_WS_PROXY='$AROMA_LOCAL_NEON_WS_PROXY'"
+    echo "export OVELO_LOCAL_NEON_WS_PROXY='$OVELO_LOCAL_NEON_WS_PROXY'"
     ;;
   *)
     echo "usage: $0 up|reset|down|env" >&2

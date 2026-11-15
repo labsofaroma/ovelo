@@ -5,7 +5,7 @@ import { e2eWallet } from "../fork/accounts";
 
 /**
  * TEST-ONLY mocked wallet. The deterministic keypair lives here, in Node test code; the page gets
- * only `window.aromaE2EWallet = { address, sign }`, whose `sign` calls back into this process
+ * only `window.oveloE2EWallet = { address, sign }`, whose `sign` calls back into this process
  * with base64 bytes. The app's E2E bridge (compiled only into E2E builds) uses it. No key material
  * ever enters the page or any app bundle. Signing is Ed25519 over the raw message bytes, so V0
  * and V1 transactions are both supported, and so are creator challenge messages (M5b B1).
@@ -55,11 +55,11 @@ export async function installTestWallet(
   options: { messageDelayMs?: number } = {},
 ): Promise<string> {
   const address = e2eWallet().publicKey.toBase58();
-  await page.exposeFunction("aromaE2ESign", (unsigned: string[]) =>
+  await page.exposeFunction("oveloE2ESign", (unsigned: string[]) =>
     unsigned.map(signOne),
   );
   // An optional delay keeps the "confirm in your wallet" state on screen (screenshots).
-  await page.exposeFunction("aromaE2ESignMessage", async (message: string) => {
+  await page.exposeFunction("oveloE2ESignMessage", async (message: string) => {
     if (options.messageDelayMs)
       await new Promise((resolve) =>
         setTimeout(resolve, options.messageDelayMs),
@@ -67,20 +67,20 @@ export async function installTestWallet(
     return signMessageBase64(message);
   });
   await page.addInitScript((wallet) => {
-    (window as unknown as { aromaE2EWallet: unknown }).aromaE2EWallet = {
+    (window as unknown as { oveloE2EWallet: unknown }).oveloE2EWallet = {
       address: wallet,
       sign: (unsigned: string[]) =>
         (
           window as unknown as {
-            aromaE2ESign: (u: string[]) => Promise<string[]>;
+            oveloE2ESign: (u: string[]) => Promise<string[]>;
           }
-        ).aromaE2ESign(unsigned),
+        ).oveloE2ESign(unsigned),
       signMessage: (message: string) =>
         (
           window as unknown as {
-            aromaE2ESignMessage: (m: string) => Promise<string>;
+            oveloE2ESignMessage: (m: string) => Promise<string>;
           }
-        ).aromaE2ESignMessage(message),
+        ).oveloE2ESignMessage(message),
     };
   }, address);
   return address;

@@ -52,7 +52,7 @@ export function formatAlert(
   cluster: string,
 ): unknown {
   const lines = Object.entries(alert.details).map(([k, v]) => `• ${k}: ${v}`);
-  const heading = `[aroma-keeper ${cluster}] ${SEVERITY[alert.kind].toUpperCase()} ${alert.kind}: ${alert.title}`;
+  const heading = `[ovelo-keeper ${cluster}] ${SEVERITY[alert.kind].toUpperCase()} ${alert.kind}: ${alert.title}`;
   if (format === "discord")
     return { content: [heading, ...lines].join("\n").slice(0, 1_900) };
   return {

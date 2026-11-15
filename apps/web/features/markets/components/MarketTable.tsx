@@ -9,7 +9,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@aroma/ui";
+} from "@ovelo/ui";
 import { NextAvatarImage } from "../../shared/components/NextAvatarImage";
 import { changeProp, formatCompactUsd } from "../../shared/fixed";
 import { formatObservedAt } from "../../shared/freshness";

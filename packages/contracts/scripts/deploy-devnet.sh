@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
-# Deploys the devnet-mock build of Aroma Guard v1 to DEVNET with the owner's deployer wallet.
+# Deploys the devnet-mock build of Ovelo Guard v1 to DEVNET with the owner's deployer wallet.
 # The OWNER runs this (docs/M6-DEVNET-DEPLOY.md); agents never do. Refuses any cluster but devnet.
-#   AROMA_DEPLOYER=~/.config/solana/aroma-deployer.json bash scripts/deploy-devnet.sh
+#   OVELO_DEPLOYER=~/.config/solana/ovelo-deployer.json bash scripts/deploy-devnet.sh
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
 DEVNET_GENESIS="EtWTRABZaYq6iMfeYKouRu166VU2xqa1wcaWoxPkrZBG"
 EXPECTED_PROGRAM_ID="FYrrfhrysaGUwCNyTggqyKmTWqpg3vph8gzmSWt7QtTU"
-DEPLOYER="${AROMA_DEPLOYER:-$HOME/.config/solana/aroma-deployer.json}"
-PROGRAM_KEYPAIR="target/deploy/aroma_guard-keypair.json"
-URL="${AROMA_DEVNET_RPC:-https://api.devnet.solana.com}"
+DEPLOYER="${OVELO_DEPLOYER:-$HOME/.config/solana/ovelo-deployer.json}"
+PROGRAM_KEYPAIR="target/deploy/ovelo_guard-keypair.json"
+URL="${OVELO_DEVNET_RPC:-https://api.devnet.solana.com}"
 die() { echo "deploy-devnet: $*" >&2; exit 1; }
 
 [ -f "$DEPLOYER" ] || die "deployer keypair not found at $DEPLOYER (CONTRACT-V1-SPEC §10, step 1)."
@@ -28,7 +28,7 @@ solana program deploy \
   --keypair "$DEPLOYER" \
   --upgrade-authority "$DEPLOYER" \
   --program-id "$PROGRAM_KEYPAIR" \
-  target/build/devnet-mock/aroma_guard.so
+  target/build/devnet-mock/ovelo_guard.so
 
 SHOW="$(solana program show "$EXPECTED_PROGRAM_ID" --url "$URL" --output json)"
 echo "$SHOW"

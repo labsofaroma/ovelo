@@ -40,7 +40,7 @@ const HEALTH = "app/api/v1/health/route.ts";
 beforeAll(() => {
   stubBaseEnv();
   vi.stubEnv("NODE_ENV", "production");
-  vi.stubEnv("AROMA_COMPLIANCE_MISSING_COUNTRY", "allow");
+  vi.stubEnv("OVELO_COMPLIANCE_MISSING_COUNTRY", "allow");
   vi.stubGlobal("fetch", async () => {
     throw new TypeError("network disabled in route-contract.test.ts");
   });

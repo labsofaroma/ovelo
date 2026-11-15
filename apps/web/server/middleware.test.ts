@@ -13,7 +13,7 @@ beforeEach(() => {
   vi.stubEnv("NODE_ENV", "development");
   // M9: these tests are not about the geo gate (server/middleware.compliance.test.ts is); with no
   // trusted country header the gate would fail closed, so it is opened for them.
-  vi.stubEnv("AROMA_COMPLIANCE_MISSING_COUNTRY", "allow");
+  vi.stubEnv("OVELO_COMPLIANCE_MISSING_COUNTRY", "allow");
 });
 afterEach(() => vi.unstubAllEnvs());
 
@@ -53,7 +53,7 @@ describe("request guards (ported from the prototype suites; v1 paths since M9)",
 
   it("HTTPS redirects only to the configured canonical host and ignores untrusted proxy headers", async () => {
     vi.stubEnv("NODE_ENV", "production");
-    vi.stubEnv("AROMA_SITE_URL", "https://aroma.example");
+    vi.stubEnv("OVELO_SITE_URL", "https://ovelo.example");
     const response = await middleware(
       req("http://attacker.example/markets?q=a", {
         headers: { "x-forwarded-proto": "https" },
@@ -61,7 +61,7 @@ describe("request guards (ported from the prototype suites; v1 paths since M9)",
     );
     expect(response.status).toBe(308);
     expect(response.headers.get("location")).toBe(
-      "https://aroma.example/markets?q=a",
+      "https://ovelo.example/markets?q=a",
     );
     expect(
       (await middleware(req("http://127.0.0.1:3000/api/v1/health"))).status,
@@ -113,9 +113,9 @@ describe("request guards (ported from the prototype suites; v1 paths since M9)",
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("VERCEL", "1");
     const response = await middleware(
-      req("http://aroma.example/api/v1/health", {
+      req("http://ovelo.example/api/v1/health", {
         headers: {
-          origin: "https://aroma.example",
+          origin: "https://ovelo.example",
           "x-forwarded-proto": "https",
           "x-real-ip": "test",
         },
@@ -123,13 +123,13 @@ describe("request guards (ported from the prototype suites; v1 paths since M9)",
     );
     expect(response.status).toBe(200);
     expect(response.headers.get("access-control-allow-origin")).toBe(
-      "https://aroma.example",
+      "https://ovelo.example",
     );
     const preflight = await middleware(
-      req("http://aroma.example/api/v1/trade/quote", {
+      req("http://ovelo.example/api/v1/trade/quote", {
         method: "OPTIONS",
         headers: {
-          origin: "https://aroma.example",
+          origin: "https://ovelo.example",
           "x-forwarded-proto": "https",
         },
       }),
@@ -142,10 +142,10 @@ describe("request guards (ported from the prototype suites; v1 paths since M9)",
 
   it("invalid canonical URLs fail closed with { code, message }", async () => {
     vi.stubEnv("NODE_ENV", "production");
-    for (const url of ["https://", "https://user:password@aroma.example"]) {
-      vi.stubEnv("AROMA_SITE_URL", url);
+    for (const url of ["https://", "https://user:password@ovelo.example"]) {
+      vi.stubEnv("OVELO_SITE_URL", url);
       const response = await middleware(
-        req("http://aroma.example/api/v1/health"),
+        req("http://ovelo.example/api/v1/health"),
       );
       expect(response.status).toBe(503);
       expect(await response.json()).toEqual({
@@ -217,7 +217,7 @@ describe("M4 additions", () => {
 
   it("the loopback check uses the client's Host, not the server bind address", async () => {
     vi.stubEnv("NODE_ENV", "production");
-    vi.stubEnv("AROMA_SITE_URL", "https://www.example.com");
+    vi.stubEnv("OVELO_SITE_URL", "https://www.example.com");
     vi.stubEnv("VERCEL", "1");
     const viaProxy = await middleware(
       req("http://127.0.0.1:3300/", {
@@ -231,10 +231,10 @@ describe("M4 additions", () => {
 
   it("one HSTS header with includeSubDomains and preload over HTTPS in production, none on loopback HTTP", async () => {
     vi.stubEnv("NODE_ENV", "production");
-    vi.stubEnv("AROMA_SITE_URL", "https://aroma.example");
+    vi.stubEnv("OVELO_SITE_URL", "https://ovelo.example");
     vi.stubEnv("VERCEL", "1");
     const https = await middleware(
-      req("http://aroma.example/v1", {
+      req("http://ovelo.example/v1", {
         headers: { "x-forwarded-proto": "https" },
       }),
     );
@@ -252,14 +252,14 @@ describe("M4 additions", () => {
     vi.stubEnv("VERCEL", "1");
     const https = () =>
       middleware(
-        req("http://aroma-git-x.vercel.app/", {
+        req("http://ovelo-git-x.vercel.app/", {
           headers: { "x-forwarded-proto": "https" },
         }),
       );
     expect((await https()).headers.get("strict-transport-security")).toBeNull();
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("VERCEL_ENV", "preview");
-    vi.stubEnv("AROMA_SITE_URL", "https://aroma-git-x.vercel.app");
+    vi.stubEnv("OVELO_SITE_URL", "https://ovelo-git-x.vercel.app");
     expect((await https()).headers.get("strict-transport-security")).toBeNull();
   });
 

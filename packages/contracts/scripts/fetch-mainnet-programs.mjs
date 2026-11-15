@@ -16,9 +16,9 @@ const read = (f) => JSON.parse(fs.readFileSync(path.join(root, f), "utf8"));
 const mainnet = read("tests/fixtures/mainnet-programs.json");
 const runtime = read("tests/fixtures/runtime-programs.json");
 const DIR =
-  process.env.AROMA_V1_PROGRAM_DIR || path.join(root, "target/test-programs");
+  process.env.OVELO_V1_PROGRAM_DIR || path.join(root, "target/test-programs");
 const RPC =
-  process.env.AROMA_V1_MAINNET_RPC || "https://api.mainnet-beta.solana.com";
+  process.env.OVELO_V1_MAINNET_RPC || "https://api.mainnet-beta.solana.com";
 const LOADER = "BPFLoaderUpgradeab1e11111111111111111111111";
 
 async function rpc(method, params = []) {

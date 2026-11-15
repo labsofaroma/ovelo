@@ -11,37 +11,37 @@ describe("beta gate config (W2)", () => {
   it("is ON by default in production and must be switched off explicitly", () => {
     expect(betaGateOn({ NODE_ENV: "production" })).toBe(true);
     expect(betaGateOn({ VERCEL_ENV: "production" })).toBe(true);
-    expect(betaGateOn({ NODE_ENV: "production", AROMA_BETA_GATE: "off" })).toBe(
+    expect(betaGateOn({ NODE_ENV: "production", OVELO_BETA_GATE: "off" })).toBe(
       false,
     );
     expect(betaGateOn({ NODE_ENV: "development" })).toBe(false);
-    expect(betaGateOn({ NODE_ENV: "test", AROMA_BETA_GATE: "on" })).toBe(true);
+    expect(betaGateOn({ NODE_ENV: "test", OVELO_BETA_GATE: "on" })).toBe(true);
   });
 
   it("an unreadable value fails closed", () => {
     expect(
-      betaGateOn({ NODE_ENV: "development", AROMA_BETA_GATE: "Off" }),
+      betaGateOn({ NODE_ENV: "development", OVELO_BETA_GATE: "Off" }),
     ).toBe(true);
-    expect(betaGateOn({ AROMA_BETA_GATE: "false" })).toBe(true);
-    expect(parseEnv({ ...BASE_ENV, AROMA_BETA_GATE: "false" }).ok).toBe(false);
+    expect(betaGateOn({ OVELO_BETA_GATE: "false" })).toBe(true);
+    expect(parseEnv({ ...BASE_ENV, OVELO_BETA_GATE: "false" }).ok).toBe(false);
   });
 
   it("validates the wallet allowlist at boot and grants nothing when malformed", () => {
     expect(
-      parseEnv({ ...BASE_ENV, AROMA_BETA_WALLETS: `${WALLET}, ${WALLET}` }).ok,
+      parseEnv({ ...BASE_ENV, OVELO_BETA_WALLETS: `${WALLET}, ${WALLET}` }).ok,
     ).toBe(true);
     expect(
-      parseEnv({ ...BASE_ENV, AROMA_BETA_WALLETS: `${WALLET},not-a-wallet` })
+      parseEnv({ ...BASE_ENV, OVELO_BETA_WALLETS: `${WALLET},not-a-wallet` })
         .ok,
     ).toBe(false);
     expect(
-      betaConfig({ AROMA_BETA_GATE: "on", AROMA_BETA_WALLETS: `${WALLET},x` })
+      betaConfig({ OVELO_BETA_GATE: "on", OVELO_BETA_WALLETS: `${WALLET},x` })
         .wallets.size,
     ).toBe(0);
     expect(
       betaConfig({
-        AROMA_BETA_GATE: "on",
-        AROMA_BETA_WALLETS: ` ${WALLET} `,
+        OVELO_BETA_GATE: "on",
+        OVELO_BETA_WALLETS: ` ${WALLET} `,
       }).wallets.has(WALLET),
     ).toBe(true);
   });

@@ -3,14 +3,14 @@
 .highlight {
   position: absolute;
   top: 0;
-  inset-inline: var(--aroma-space-1);
+  inset-inline: var(--ovelo-space-1);
   z-index: -1;
-  border-radius: max(4px, calc(var(--aroma-radius-control) - 4px));
-  background: var(--aroma-raised);
+  border-radius: max(4px, calc(var(--ovelo-radius-control) - 4px));
+  background: var(--ovelo-raised);
   pointer-events: none;
   transition:
-    transform var(--aroma-duration-glide) var(--aroma-ease-ui),
-    height var(--aroma-duration-glide) var(--aroma-ease-ui);
+    transform var(--ovelo-duration-glide) var(--ovelo-ease-ui),
+    height var(--ovelo-duration-glide) var(--ovelo-ease-ui);
 }
 
 .list {

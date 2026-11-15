@@ -23,23 +23,23 @@ export function m11Findings(env: Env): Finding[] {
         "warning",
         `notification channel ${channel} off (optional)`,
       );
-  if (env.AROMA_NOTIFICATIONS?.trim() === "off")
-    add("AROMA_NOTIFICATIONS", "warning", "notifications are paused");
+  if (env.OVELO_NOTIFICATIONS?.trim() === "off")
+    add("OVELO_NOTIFICATIONS", "warning", "notifications are paused");
   // The periodic worker also writes the fee-share ledger, so it is wanted even with no channel.
-  if (!set(env, "AROMA_NOTIFY_WORKER_SECRET"))
+  if (!set(env, "OVELO_NOTIFY_WORKER_SECRET"))
     add(
-      "AROMA_NOTIFY_WORKER_SECRET",
+      "OVELO_NOTIFY_WORKER_SECRET",
       "warning",
       "recommended for M11: the periodic worker (notifications, fee-share ledger) cannot run",
     );
-  else add("AROMA_NOTIFY_WORKER_SECRET", "ok", "periodic worker can run");
+  else add("OVELO_NOTIFY_WORKER_SECRET", "ok", "periodic worker can run");
 
   // Analytics run only after consent, and only when the domain is the site's own host.
   const domain = env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN?.trim();
   if (domain) {
     let host = "";
     try {
-      host = new URL(env.AROMA_SITE_URL ?? "").hostname;
+      host = new URL(env.OVELO_SITE_URL ?? "").hostname;
     } catch {
       // Reported by the shared profile.
     }
@@ -47,20 +47,20 @@ export function m11Findings(env: Env): Finding[] {
       add(
         "NEXT_PUBLIC_PLAUSIBLE_DOMAIN",
         "warning",
-        "differs from the AROMA_SITE_URL host, so no analytics event is ever sent",
+        "differs from the OVELO_SITE_URL host, so no analytics event is ever sent",
       );
     else
       add("NEXT_PUBLIC_PLAUSIBLE_DOMAIN", "ok", "analytics after consent only");
   }
 
   if (
-    set(env, "AROMA_PLATFORM_FEE_BPS") &&
-    env.AROMA_PLATFORM_FEE_BPS?.trim() === "0"
+    set(env, "OVELO_PLATFORM_FEE_BPS") &&
+    env.OVELO_PLATFORM_FEE_BPS?.trim() === "0"
   )
-    add("AROMA_PLATFORM_FEE_BPS", "ok", "0 (no platform fee)");
-  if (set(env, "AROMA_CREATOR_FEE_SHARE_BPS"))
+    add("OVELO_PLATFORM_FEE_BPS", "ok", "0 (no platform fee)");
+  if (set(env, "OVELO_CREATOR_FEE_SHARE_BPS"))
     add(
-      "AROMA_CREATOR_FEE_SHARE_BPS",
+      "OVELO_CREATOR_FEE_SHARE_BPS",
       "ok",
       "recorded in the ledger only (no payout)",
     );

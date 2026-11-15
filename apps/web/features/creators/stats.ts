@@ -14,14 +14,14 @@ import type { CreatorStatsView, UsageView, UsageWindow } from "./schema";
  * - A purchase is one order (one request id), even when a bundle spans several transactions.
  * - Volume is the sum of each receipt's raw input amount (integer text, exact `numeric` sum in
  *   Postgres), per funding mint: never converted, never added across mints.
- * - Windows are by order time: when Aroma recorded the order (`created_at`, the server's own
+ * - Windows are by order time: when Ovelo recorded the order (`created_at`, the server's own
  *   clock, within seconds of confirmation), relative to `asOf`. Not the chain's block time, which
  *   can run ahead of the server clock (and does, by hours, on a warped local fork).
  * - No confirmed purchase at all is `state: "none"` ("no purchases yet"), never zero volume.
  */
-export const STATS_SOURCE = "Aroma creator registry (Postgres)";
+export const STATS_SOURCE = "Ovelo creator registry (Postgres)";
 export const USAGE_SOURCE =
-  "Aroma purchase receipts: confirmed Solana mainnet transactions";
+  "Ovelo purchase receipts: confirmed Solana mainnet transactions";
 export const USAGE_WINDOWS = [
   { window: "7d", days: 7 },
   { window: "30d", days: 30 },

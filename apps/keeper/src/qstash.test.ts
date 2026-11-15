@@ -4,7 +4,7 @@ import { signQStashRequest, verifyQStashSignature } from "./qstash";
 
 const current = "sig_current_" + "c".repeat(24);
 const next = "sig_next_" + "n".repeat(24);
-const url = "https://keeper.aroma.test/run";
+const url = "https://keeper.ovelo.test/run";
 const body = JSON.stringify({ trigger: "schedule" });
 const NOW = 1_763_100_000_000;
 

@@ -9,7 +9,7 @@ import { address, type Address } from "@solana/kit";
 import { httpRpc, readOnly } from "./jsonrpc";
 
 export const MAINNET_RPC =
-  process.env.AROMA_V1_MAINNET_RPC ?? "https://api.mainnet-beta.solana.com";
+  process.env.OVELO_V1_MAINNET_RPC ?? "https://api.mainnet-beta.solana.com";
 export const MAINNET_GENESIS = "5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d";
 export const USDC = address("EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v");
 const LOADER = "BPFLoaderUpgradeab1e11111111111111111111111";

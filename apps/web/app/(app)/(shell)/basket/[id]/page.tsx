@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { Skeleton } from "@aroma/ui";
+import { Skeleton } from "@ovelo/ui";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AllocationTable } from "@/features/baskets/components/AllocationTable";

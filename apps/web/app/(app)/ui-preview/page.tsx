@@ -20,7 +20,7 @@ import {
   TableHead,
   TableHeader,
   TableRow,
-} from "@aroma/ui";
+} from "@ovelo/ui";
 import { NextAvatarImage } from "./NextAvatarImage";
 
 // Read the flag per request, not at build time.
@@ -39,7 +39,7 @@ const DEMO_ROWS = [
 ] as const;
 
 /**
- * M1 wiring proof: a server component rendering @aroma/ui through the Tailwind v4 entry.
+ * M1 wiring proof: a server component rendering @ovelo/ui through the Tailwind v4 entry.
  * A design-system preview: never served on a production deployment (M9).
  */
 export default function UiPreviewPage() {
@@ -52,7 +52,7 @@ export default function UiPreviewPage() {
       </header>
       <Card>
         <CardHeader>
-          <CardTitle>@aroma/ui preview</CardTitle>
+          <CardTitle>@ovelo/ui preview</CardTitle>
           <CardDescription>
             Rendered by a server component through the Tailwind v4 entry.
             Figures are demo values, not market data.

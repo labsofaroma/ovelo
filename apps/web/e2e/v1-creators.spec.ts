@@ -141,7 +141,7 @@ test("builder works when browser storage is blocked, and says the draft is not s
   const response = await page.goto("/basket/new");
   expect(response?.status()).toBe(200);
   await expect(
-    page.getByText(/This browser is not letting Aroma save/),
+    page.getByText(/This browser is not letting Ovelo save/),
   ).toBeVisible();
   await page
     .locator('button[aria-pressed="false"]:not([disabled])')

@@ -1,6 +1,6 @@
 "use client";
 
-import { Badge, Button } from "@aroma/ui";
+import { Badge, Button } from "@ovelo/ui";
 import Link from "next/link";
 import { useState } from "react";
 import { formatObservedAt } from "../../shared/freshness";

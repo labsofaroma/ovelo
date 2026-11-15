@@ -17,9 +17,9 @@ const manifest = JSON.parse(
   ),
 );
 export const PROGRAM_DIR =
-  process.env.AROMA_V1_PROGRAM_DIR || path.join(root, "target/test-programs");
+  process.env.OVELO_V1_PROGRAM_DIR || path.join(root, "target/test-programs");
 const endpoint =
-  process.env.AROMA_V1_FIXTURE_RPC || "https://api.devnet.solana.com";
+  process.env.OVELO_V1_FIXTURE_RPC || "https://api.devnet.solana.com";
 const LOADER = "BPFLoaderUpgradeab1e11111111111111111111111";
 
 async function rpc(method, params = []) {

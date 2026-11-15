@@ -7,7 +7,7 @@ const vapid = generateVapidKeys();
 const PUSH = {
   VAPID_PUBLIC_KEY: vapid.publicKey,
   VAPID_PRIVATE_KEY: vapid.privateKey,
-  VAPID_SUBJECT: "mailto:ops@aroma.test",
+  VAPID_SUBJECT: "mailto:ops@ovelo.test",
 };
 const of = (findings: { name: string; status: string }[], name: string) =>
   findings.filter((f) => f.name === name).map((f) => f.status);
@@ -17,22 +17,22 @@ describe("M11 production checks", () => {
     const findings = m11Findings(PUSH);
     expect(of(findings, "VAPID_PUBLIC_KEY")).toEqual(["ok"]);
     expect(of(findings, "TELEGRAM_BOT_TOKEN")).toEqual(["warning"]);
-    expect(of(findings, "AROMA_NOTIFY_WORKER_SECRET")).toEqual(["warning"]);
+    expect(of(findings, "OVELO_NOTIFY_WORKER_SECRET")).toEqual(["warning"]);
   });
 
   it("the shared profile refuses a half-set channel, a channel without the worker secret, a fee and the sink", () => {
     const findings = staticFindings({
       VAPID_PUBLIC_KEY: vapid.publicKey,
       TELEGRAM_BOT_TOKEN: `123456:${"A".repeat(35)}`,
-      TELEGRAM_BOT_USERNAME: "aroma_bot",
+      TELEGRAM_BOT_USERNAME: "ovelo_bot",
       TELEGRAM_WEBHOOK_SECRET: "s".repeat(40),
-      AROMA_PLATFORM_FEE_BPS: "30",
-      AROMA_V1_TEST_NOTIFY_SINK_URL: "http://127.0.0.1:4040/sink",
+      OVELO_PLATFORM_FEE_BPS: "30",
+      OVELO_V1_TEST_NOTIFY_SINK_URL: "http://127.0.0.1:4040/sink",
     });
     expect(of(findings, "VAPID_PRIVATE_KEY")).toContain("invalid");
-    expect(of(findings, "AROMA_NOTIFY_WORKER_SECRET")).toContain("invalid");
-    expect(of(findings, "AROMA_PLATFORM_FEE_BPS")).toContain("invalid");
-    expect(of(findings, "AROMA_V1_TEST_NOTIFY_SINK_URL")).toContain(
+    expect(of(findings, "OVELO_NOTIFY_WORKER_SECRET")).toContain("invalid");
+    expect(of(findings, "OVELO_PLATFORM_FEE_BPS")).toContain("invalid");
+    expect(of(findings, "OVELO_V1_TEST_NOTIFY_SINK_URL")).toContain(
       "forbidden",
     );
   });
@@ -41,8 +41,8 @@ describe("M11 production checks", () => {
     expect(
       of(
         m11Findings({
-          AROMA_SITE_URL: "https://beta.aroma.app",
-          NEXT_PUBLIC_PLAUSIBLE_DOMAIN: "aroma.app",
+          OVELO_SITE_URL: "https://beta.ovelo.app",
+          NEXT_PUBLIC_PLAUSIBLE_DOMAIN: "ovelo.app",
         }),
         "NEXT_PUBLIC_PLAUSIBLE_DOMAIN",
       ),
@@ -50,8 +50,8 @@ describe("M11 production checks", () => {
     expect(
       of(
         m11Findings({
-          AROMA_SITE_URL: "https://beta.aroma.app",
-          NEXT_PUBLIC_PLAUSIBLE_DOMAIN: "beta.aroma.app",
+          OVELO_SITE_URL: "https://beta.ovelo.app",
+          NEXT_PUBLIC_PLAUSIBLE_DOMAIN: "beta.ovelo.app",
         }),
         "NEXT_PUBLIC_PLAUSIBLE_DOMAIN",
       ),
@@ -60,7 +60,7 @@ describe("M11 production checks", () => {
 
   it("the pause switch warns; a placeholder Telegram value is caught like any app variable", () => {
     expect(
-      of(m11Findings({ AROMA_NOTIFICATIONS: "off" }), "AROMA_NOTIFICATIONS"),
+      of(m11Findings({ OVELO_NOTIFICATIONS: "off" }), "OVELO_NOTIFICATIONS"),
     ).toEqual(["warning"]);
     expect(
       of(

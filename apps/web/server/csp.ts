@@ -59,9 +59,9 @@ export function connectSources(env: Env): string[] {
     origin(env.NEXT_PUBLIC_SOLANA_DEVNET_RPC_URL) ?? DEFAULT_DEVNET_RPC;
   // M7 test builds only: the local validator (loopback), when the localnet cluster is on.
   const localnet =
-    env.NEXT_PUBLIC_AROMA_LOCALNET === "true" &&
-    env.AROMA_V1_INVEST_CLUSTER === "localnet"
-      ? origin(env.AROMA_V1_LOCALNET_RPC_URL)
+    env.NEXT_PUBLIC_OVELO_LOCALNET === "true" &&
+    env.OVELO_V1_INVEST_CLUSTER === "localnet"
+      ? origin(env.OVELO_V1_LOCALNET_RPC_URL)
       : null;
   const ws =
     origin(env.NEXT_PUBLIC_SOLANA_WS_URL) ??

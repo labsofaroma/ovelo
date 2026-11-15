@@ -11,7 +11,7 @@
 // A trade submit cut by the deadline is safe to retry: the request id is claimed in Redis before
 // anything is broadcast, and a replay returns the stored record (features/trade/server/submit.ts).
 
-const HOOKS = Symbol.for("aroma.shutdown.hooks");
+const HOOKS = Symbol.for("ovelo.shutdown.hooks");
 
 /**
  * Track every HTTP server created after this call, and the requests each has in flight.

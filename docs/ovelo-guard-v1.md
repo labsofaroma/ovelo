@@ -1,12 +1,12 @@
-# Aroma Guard v1
+# Ovelo Guard v1
 
-The on-chain program behind Aroma's recurring investing: an owner approves a bounded recurring grant, and each period the program turns exactly one installment of funding into the plan's assets at a price bounded by Pyth, delivered to the owner's own token accounts.
+The on-chain program behind Ovelo's recurring investing: an owner approves a bounded recurring grant, and each period the program turns exactly one installment of funding into the plan's assets at a price bounded by Pyth, delivered to the owner's own token accounts.
 
 | | |
 |---|---|
 | Program ID | `FYrrfhrysaGUwCNyTggqyKmTWqpg3vph8gzmSWt7QtTU` (fixed by the program keypair; not deployed yet) |
-| Source | `packages/contracts/programs/aroma_guard` (Anchor 1.2.1, Agave 3.1.10, SBPF v0) |
-| IDL and client | `packages/guard/src/v1/` (`@aroma/guard`: `idl/`, Codama-generated `generated/`, hand-written builders; the web app re-exports it as `@/lib/sdk/guard/v1`) |
+| Source | `packages/contracts/programs/ovelo_guard` (Anchor 1.2.1, Agave 3.1.10, SBPF v0) |
+| IDL and client | `packages/guard/src/v1/` (`@ovelo/guard`: `idl/`, Codama-generated `generated/`, hand-written builders; the web app re-exports it as `@/lib/sdk/guard/v1`) |
 | Spec | [CONTRACT-V1-SPEC.md](./CONTRACT-V1-SPEC.md) |
 | Devnet runbook | [M6-DEVNET-DEPLOY.md](./M6-DEVNET-DEPLOY.md) |
 | Integrations | Solana Foundation Subscriptions `De1egAF…avR44` (layout pinned at `program-v0.5.0`; mainnet's binary checked in M8), Pyth receiver `rec5EKM…LtFJ` (`pyth-solana-receiver-sdk` 2.0.0), Jupiter v6 `JUP6Lkb…TaV4` (`route_v2`, mainnet build) |
@@ -188,5 +188,5 @@ The sponsored Pyth push accounts for the equity feeds exist on devnet (10 of the
 | LiteSVM | `packages/contracts/tests/litesvm` | 85 cases through the real v1 builders: the devnet build with the pinned Subscriptions, Pyth receiver and Wormhole binaries; the default build with mainnet's Jupiter, Orca Whirlpool, Token and Token-2022 binaries and recorded pools (`mainnet/`); the Subscriptions rules on both the devnet and mainnet binaries |
 | Client | `packages/guard/src/v1/*.test.ts` | PDAs, mirrors, decoders, builders (100% lines) |
 | Drift | `packages/guard/src/v1/drift.test.ts`, `idl:check` | committed IDL = Rust program; generated client = a fresh Codama render |
-| Local end to end | `pnpm --filter @aroma/contracts e2e:local` | a real validator, a real deploy, three periods with a catch-up and a skip, close + revoke |
-| Mainnet fork | `pnpm --filter @aroma/contracts e2e:fork` | the default build on a local mainnet fork (Jupiter, Whirlpool, Subscriptions, Pyth, USDC, three real xStocks), the keeper in `mainnet-fork` mode, three one-hour periods, close + revoke |
+| Local end to end | `pnpm --filter @ovelo/contracts e2e:local` | a real validator, a real deploy, three periods with a catch-up and a skip, close + revoke |
+| Mainnet fork | `pnpm --filter @ovelo/contracts e2e:fork` | the default build on a local mainnet fork (Jupiter, Whirlpool, Subscriptions, Pyth, USDC, three real xStocks), the keeper in `mainnet-fork` mode, three one-hour periods, close + revoke |

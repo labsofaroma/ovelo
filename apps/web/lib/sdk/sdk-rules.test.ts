@@ -14,7 +14,7 @@ const PORTED = [
   "baskets",
   "paper",
   "trade",
-  // M7: the v1 contract client moved to `packages/guard` (`@aroma/guard`), which runs the same
+  // M7: the v1 contract client moved to `packages/guard` (`@ovelo/guard`), which runs the same
   // rules in its own `src/rules.test.ts`. `guard/v1/index.ts` here only re-exports it.
 ];
 

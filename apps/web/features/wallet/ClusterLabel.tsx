@@ -1,4 +1,4 @@
-import { Badge } from "@aroma/ui";
+import { Badge } from "@ovelo/ui";
 import { CLUSTER_LABEL, type WalletCluster } from "./cluster";
 
 /**

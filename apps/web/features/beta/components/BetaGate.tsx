@@ -1,6 +1,6 @@
 "use client";
 
-import { Badge, Button, Field, Input } from "@aroma/ui";
+import { Badge, Button, Field, Input } from "@ovelo/ui";
 import { useState, type FormEvent } from "react";
 import type { Signer } from "../../wallet/context";
 import { useRedeemBeta } from "../queries";
@@ -28,7 +28,7 @@ export function BetaGate({ signer }: { signer: Signer }) {
         <Badge tone="warning">Private beta</Badge>
       </div>
       <p className="mt-1">
-        Aroma is in a private beta with small limits. To buy with this wallet,
+        Ovelo is in a private beta with small limits. To buy with this wallet,
         enter the invite code you were given. Your wallet signs a message to
         link the invite to it; the signature does not move funds. Browsing,
         research and paper practice stay open to everyone.
@@ -41,7 +41,7 @@ export function BetaGate({ signer }: { signer: Signer }) {
               onChange={(event) => setCode(event.target.value)}
               autoComplete="off"
               spellCheck={false}
-              placeholder="aroma-beta-…"
+              placeholder="ovelo-beta-…"
             />
           </Field>
           <Button

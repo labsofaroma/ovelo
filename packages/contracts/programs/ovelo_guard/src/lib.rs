@@ -1,4 +1,4 @@
-//! Aroma Guard v1 (CONTRACT-V1-SPEC). Entrypoints only; logic lives in `instructions/`.
+//! Ovelo Guard v1 (CONTRACT-V1-SPEC). Entrypoints only; logic lives in `instructions/`.
 #![deny(clippy::all)]
 // Anchor's `Result` carries a large error type; the size is upstream's, not ours.
 #![allow(clippy::result_large_err)]
@@ -26,17 +26,17 @@ use state::ConfigParams;
 
 #[cfg(not(feature = "no-entrypoint"))]
 solana_security_txt::security_txt! {
-    name: "Aroma Guard v1",
-    project_url: "https://github.com/aromalabs",
-    contacts: "link:https://github.com/aromalabs/aroma/security/advisories/new",
-    policy: "https://github.com/aromalabs/aroma/blob/main/SECURITY.md",
+    name: "Ovelo Guard v1",
+    project_url: "https://github.com/labsofovelo",
+    contacts: "link:https://github.com/labsofovelo/ovelo/security/advisories/new",
+    policy: "https://github.com/labsofovelo/ovelo/blob/main/SECURITY.md",
     preferred_languages: "en",
-    source_code: "https://github.com/aromalabs/aroma",
+    source_code: "https://github.com/labsofovelo/ovelo",
     auditors: "None yet (external audit is milestone M10)"
 }
 
 #[program]
-pub mod aroma_guard {
+pub mod ovelo_guard {
     use super::*;
 
     /// Once, signed by the program's upgrade authority.

@@ -42,7 +42,7 @@ export async function request(
         format === "json"
           ? "application/json"
           : "application/rss+xml, application/xml",
-      "User-Agent": "Aroma Research",
+      "User-Agent": "Ovelo Research",
     },
     signal: options.signal ?? AbortSignal.timeout(8_000),
   });
