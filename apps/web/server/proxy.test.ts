@@ -207,6 +207,23 @@ describe("spoofing: each mode ignores the headers it does not trust", () => {
     expect(requestProtocol(headers, "http:", CLOUDFLARE)).toBe("https");
   });
 
+  it("cloudflare: CF-Visitor is the scheme fallback (no redirect loop); never in vercel or none mode", () => {
+    const visitor = h({ "cf-visitor": '{"scheme":"https"}' });
+    expect(requestProtocol(visitor, "http:", CLOUDFLARE)).toBe("https");
+    expect(
+      requestProtocol(h({ "cf-visitor": "not json" }), "http:", CLOUDFLARE),
+    ).toBe("http");
+    expect(
+      requestProtocol(
+        h({ "cf-visitor": '{"scheme":"gopher"}' }),
+        "http:",
+        CLOUDFLARE,
+      ),
+    ).toBe("http");
+    expect(requestProtocol(visitor, "http:", VERCEL)).toBe("http");
+    expect(requestProtocol(visitor, "http:", NONE)).toBe("http");
+  });
+
   it("vercel: a forged CF-IPCountry and CF-Connecting-IP are ignored (Vercel's headers win)", () => {
     const headers = h({
       "cf-ipcountry": "DE",

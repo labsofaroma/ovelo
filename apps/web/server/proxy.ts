@@ -42,6 +42,7 @@ const H = {
   forwardedHost: "x-forwarded-host",
   cfIp: "cf-connecting-ip",
   cfCountry: "cf-ipcountry",
+  cfVisitor: "cf-visitor",
 } as const;
 
 /** Vercel's country header name, for Vercel-mode tests and fixtures. */
@@ -175,16 +176,35 @@ export function clientIp(headers: Headers, env: EnvLike): string {
   return UNKNOWN_IP;
 }
 
-/** The scheme the client used (http or https). */
+/**
+ * The scheme the client used (http or https). Vercel and Cloudflare set X-Forwarded-Proto. In
+ * cloudflare mode, Cloudflare's CF-Visitor ({"scheme":"https"}) is the fallback, so a tunnel
+ * request without X-Forwarded-Proto can never trigger an endless HTTPS redirect. Both are
+ * trusted only behind the origin lock (server/origin-lock.ts).
+ */
 export function requestProtocol(
   headers: Headers,
   urlProtocol: string,
   env: EnvLike,
 ): string {
-  const forwarded = trustsProxy(env)
-    ? headers.get(H.forwardedProto)?.split(",")[0]?.trim()
-    : undefined;
+  const mode = proxyMode(env);
+  const forwarded =
+    mode === "none"
+      ? undefined
+      : headers.get(H.forwardedProto)?.split(",")[0]?.trim() ||
+        (mode === "cloudflare" ? visitorScheme(headers) : undefined);
   return (forwarded || urlProtocol.replace(":", "") || "http").toLowerCase();
+}
+
+function visitorScheme(headers: Headers): string | undefined {
+  const raw = headers.get(H.cfVisitor);
+  if (!raw) return undefined;
+  try {
+    const scheme = (JSON.parse(raw) as { scheme?: unknown }).scheme;
+    return scheme === "https" || scheme === "http" ? scheme : undefined;
+  } catch {
+    return undefined;
+  }
 }
 
 /**
