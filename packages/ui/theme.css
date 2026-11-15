@@ -1,6 +1,6 @@
 /*
  * Tailwind v4 CSS-first theme, fed by tokens.css. `inline` makes utilities reference the
- * runtime --ovelo-* variables, so theme switching needs no rebuild.
+ * runtime --ovelo-* variables. Dark only (tokens.css).
  * Import after tokens.css, in an entry that also imports Tailwind (see README.md).
  */
 @theme inline {
@@ -8,6 +8,8 @@
   --color-bg: var(--ovelo-bg);
   --color-surface: var(--ovelo-surface);
   --color-raised: var(--ovelo-raised);
+  --color-raised-2: var(--ovelo-raised-2);
+  --color-pill: var(--ovelo-pill);
   --color-ink: var(--ovelo-ink);
   --color-muted: var(--ovelo-muted);
   --color-line: var(--ovelo-line);
@@ -29,6 +31,7 @@
   --color-current: currentColor;
 
   --font-sans: var(--ovelo-font-sans);
+  --font-display: var(--ovelo-font-display);
   --font-serif: var(--ovelo-font-serif);
 
   --text-micro: var(--ovelo-text-micro);
@@ -39,12 +42,15 @@
   --text-section: var(--ovelo-text-section);
   --text-page-mobile: var(--ovelo-text-page-mobile);
   --text-page: var(--ovelo-text-page);
+  --text-display: var(--ovelo-text-display);
 
   --spacing: var(--ovelo-space-unit);
 
   --radius-badge: var(--ovelo-radius-badge);
+  --radius-tile: var(--ovelo-radius-tile);
   --radius-control: var(--ovelo-radius-control);
   --radius-panel: var(--ovelo-radius-panel);
+  --radius-hero: var(--ovelo-radius-hero);
   --radius-full: var(--ovelo-radius-full);
 
   --shadow-float: var(--ovelo-shadow-float);
@@ -147,4 +153,63 @@
     outline: 2px solid var(--ovelo-focus);
     outline-offset: 2px;
   }
+}
+
+/* ---- Landing-theme surfaces ---- */
+
+/* Silver sweep on display text. Only for 24px and larger (the 3:1 large-text rule); falls back
+   to plain ink where background-clip text is unsupported or forced colors are on. */
+@utility text-silver {
+  color: var(--ovelo-ink);
+  @supports (background-clip: text) or (-webkit-background-clip: text) {
+    background-image: var(--ovelo-gradient-silver);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  @media (forced-colors: active) {
+    background-image: none;
+    color: CanvasText;
+  }
+}
+@utility text-warm {
+  color: var(--ovelo-ink);
+  @supports (background-clip: text) or (-webkit-background-clip: text) {
+    background-image: var(--ovelo-gradient-warm);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+  }
+  @media (forced-colors: active) {
+    background-image: none;
+    color: CanvasText;
+  }
+}
+@utility border-pill {
+  border: 1px solid var(--ovelo-pill-border);
+}
+@utility bg-panel-gradient {
+  background-image: var(--ovelo-gradient-panel);
+}
+/* A 1px light edge along the top of a card, as on the landing's tool cards. */
+@utility edge-highlight {
+  box-shadow: inset 0 1px 0 var(--ovelo-highlight);
+}
+@utility bg-glow-blue {
+  background-image: radial-gradient(
+    60% 80% at 50% 0%,
+    var(--ovelo-glow-blue),
+    transparent 70%
+  );
+}
+@utility bg-glow-warm {
+  background-image: radial-gradient(
+    70% 60% at 50% 100%,
+    var(--ovelo-glow-warm),
+    transparent 70%
+  );
+}
+@utility bg-grain {
+  background-image: var(--ovelo-grain);
+  background-size: 160px 160px;
 }

@@ -1,5 +1,5 @@
 import { AutoFocus, Row, Themes } from "../../stories/helpers";
-import { Brand, OrbitArt } from "./Brand";
+import { Brand } from "./Brand";
 
 export default { title: "Domain/Brand" };
 
@@ -28,8 +28,7 @@ export const Focus = () => (
     </AutoFocus>
   </Row>
 );
-export const Art = () => <OrbitArt />;
-export const LightAndDark = () => (
+export const OnBackground = () => (
   <Themes>
     <Lockups />
   </Themes>

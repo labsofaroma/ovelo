@@ -2,7 +2,8 @@ import { readFileSync } from "node:fs";
 import { resolve } from "node:path";
 import type { Page } from "@playwright/test";
 
-export type Theme = "light" | "dark";
+/** Dark only: tokens.css has a single color block. */
+export type Theme = "dark";
 
 interface Meta {
   stories: Record<string, { filePath: string }>;
@@ -19,7 +20,7 @@ export function storyIds(): string[] {
 export async function openStory(
   page: Page,
   id: string,
-  theme: Theme = "light",
+  theme: Theme = "dark",
 ): Promise<void> {
   await page.goto(`/?story=${id}&mode=preview&theme=${theme}`);
   await page.waitForSelector("[data-storyloaded]", { state: "attached" });

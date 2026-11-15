@@ -3,6 +3,8 @@ export const COLOR_ROLES = [
   "bg",
   "surface",
   "raised",
+  "raised-2",
+  "pill",
   "ink",
   "muted",
   "line",
@@ -29,10 +31,18 @@ export const TEXT_SIZES = [
   ["section", "22px"],
   ["page-mobile", "28px"],
   ["page", "36px"],
+  ["display", "54px"],
 ] as const;
 
 export const SPACES = [1, 2, 3, 4, 5, 6, 8, 12] as const;
-export const RADII = ["badge", "control", "panel", "full"] as const;
+export const RADII = [
+  "badge",
+  "tile",
+  "control",
+  "panel",
+  "hero",
+  "full",
+] as const;
 export const SHADOWS = ["raised", "float"] as const;
 export const DURATIONS = [
   "instant",

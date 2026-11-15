@@ -8,7 +8,7 @@ export interface BadgeProps extends HTMLAttributes<HTMLSpanElement> {
 }
 
 const TONES: Record<BadgeTone, string> = {
-  neutral: "border-line bg-raised text-ink",
+  neutral: "border-line bg-raised-2 text-ink",
   accent: "border-transparent bg-accent-soft text-accent",
   up: "border-transparent bg-up-soft text-up",
   down: "border-transparent bg-down-soft text-down",
@@ -25,7 +25,7 @@ export const Badge = forwardRef<HTMLSpanElement, BadgeProps>(function Badge(
       ref={ref}
       data-tone={tone}
       className={cn(
-        "inline-flex items-center gap-1.5 whitespace-nowrap rounded-badge border px-2 py-1 text-micro font-semibold",
+        "inline-flex min-h-6.5 items-center gap-1.5 whitespace-nowrap rounded-full border px-2.5 py-0.5 text-caption font-medium",
         TONES[tone],
         className,
       )}

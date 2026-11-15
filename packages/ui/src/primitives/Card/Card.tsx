@@ -1,21 +1,39 @@
 import { forwardRef, type HTMLAttributes } from "react";
 import { cn } from "../../lib/cn";
 
-export const Card = forwardRef<HTMLDivElement, HTMLAttributes<HTMLDivElement>>(
-  function Card({ className, ...props }, ref) {
-    return (
-      <div
-        ref={ref}
-        data-slot="card"
-        className={cn(
-          "rounded-panel border border-line bg-surface text-ink",
-          className,
-        )}
-        {...props}
-      />
-    );
-  },
-);
+/**
+ * - `default`: compact surface.
+ * - `wide`: the app's main building block, a full-width card in a vertical stack.
+ * - `hero`: a page-opening card with the landing's glow and 44px corners.
+ * - `inset`: a tile inside another card.
+ */
+export type CardVariant = "default" | "wide" | "hero" | "inset";
+
+export const cardVariants: Record<CardVariant, string> = {
+  default: "rounded-panel border border-line bg-surface",
+  wide: "w-full rounded-panel border border-line bg-surface edge-highlight",
+  hero: "relative isolate w-full overflow-hidden rounded-hero border border-line bg-panel-gradient edge-highlight",
+  inset: "rounded-tile border border-line bg-raised",
+};
+
+export interface CardProps extends HTMLAttributes<HTMLDivElement> {
+  variant?: CardVariant;
+}
+
+export const Card = forwardRef<HTMLDivElement, CardProps>(function Card(
+  { variant = "default", className, ...props },
+  ref,
+) {
+  return (
+    <div
+      ref={ref}
+      data-slot="card"
+      data-variant={variant}
+      className={cn("text-ink", cardVariants[variant], className)}
+      {...props}
+    />
+  );
+});
 
 export const CardHeader = forwardRef<
   HTMLDivElement,
@@ -39,7 +57,10 @@ export const CardTitle = forwardRef<
     <h3
       ref={ref}
       data-slot="card-title"
-      className={cn("text-title font-medium tracking-[-0.03em]", className)}
+      className={cn(
+        "font-display text-title font-normal tracking-[-0.03em]",
+        className,
+      )}
       {...props}
     />
   );

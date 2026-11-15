@@ -1,18 +1,17 @@
 import { useEffect, useRef, type ReactNode } from "react";
 
 /**
- * Renders children twice, side by side, once under `data-theme="light"` and once under
- * `data-theme="dark"`. tokens.css scopes themes to any element, so both are live at once.
- * Used by every "Themes" story so light and dark are always reviewable together.
+ * Renders children on the app background. Ovelo is dark only, so this is a single panel; the
+ * name and render-prop shape are kept so existing "Themes" stories need no change.
  */
 export function Themes({
   children,
 }: {
-  children: ReactNode | ((theme: "light" | "dark") => ReactNode);
+  children: ReactNode | ((theme: "dark") => ReactNode);
 }) {
   return (
-    <div className="grid gap-4 md:grid-cols-2">
-      {(["light", "dark"] as const).map((theme) => (
+    <div className="grid gap-4">
+      {(["dark"] as const).map((theme) => (
         <section
           key={theme}
           data-theme={theme}

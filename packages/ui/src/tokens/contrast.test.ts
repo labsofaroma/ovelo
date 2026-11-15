@@ -23,7 +23,7 @@ export function contrast(a: string, b: string): number {
   return (hi + 0.05) / (lo + 0.05);
 }
 
-const SURFACES = ["bg", "surface", "raised"] as const;
+const SURFACES = ["bg", "surface", "raised", "raised-2", "pill"] as const;
 const SOFT = ["accent-soft", "up-soft", "down-soft", "warning-soft"] as const;
 
 /** [foreground, background, minimum ratio, where components use the pair]. 4.5 text, 3 UI. */
@@ -58,33 +58,40 @@ const PAIRS: ReadonlyArray<readonly [string, string, 3 | 4.5, string]> = [
     "Progress indicator on its track, Switch thumb track",
   ],
   ["ink", "raised", 3, "Switch thumb on the off track"],
+  ["warning", "raised", 4.5, "warning text in a card"],
+  ["accent-ink", "accent-hover", 3, "solid Button hover"],
   ["accent-ink", "accent", 3, "Checkbox mark, Switch thumb on the on track"],
 ];
 
-describe.each(["light", "dark"] as const)(
-  "WCAG AA contrast, %s theme",
-  (theme) => {
-    const tokens = theme === "light" ? blocks.light : blocks.darkAttribute;
-    const color = (role: string): string => {
-      const value = tokens[`--ovelo-${role}`];
-      if (!value) throw new Error(`missing token --ovelo-${role}`);
-      return value;
-    };
+describe.each(["dark"] as const)("WCAG AA contrast, %s theme", () => {
+  const tokens = blocks.colors;
+  const color = (role: string): string => {
+    const value = tokens[`--ovelo-${role}`];
+    if (!value) throw new Error(`missing token --ovelo-${role}`);
+    return value;
+  };
 
-    it.each(PAIRS)("%s on %s is at least %s:1 (%s)", (fg, bg, min) => {
-      const ratio = contrast(color(fg), color(bg));
-      expect(
-        ratio,
-        `${fg} on ${bg} = ${ratio.toFixed(2)}`,
-      ).toBeGreaterThanOrEqual(min);
-    });
+  it.each(PAIRS)("%s on %s is at least %s:1 (%s)", (fg, bg, min) => {
+    const ratio = contrast(color(fg), color(bg));
+    expect(
+      ratio,
+      `${fg} on ${bg} = ${ratio.toFixed(2)}`,
+    ).toBeGreaterThanOrEqual(min);
+  });
 
-    it("keeps --ovelo-line decorative: it must not be the only boundary of a control", () => {
-      // line is far below 3:1 by design; controls use border-strong. This pins that split.
-      expect(contrast(color("line"), color("surface"))).toBeLessThan(3);
-      expect(
-        contrast(color("border-strong"), color("surface")),
-      ).toBeGreaterThanOrEqual(3);
-    });
-  },
-);
+  it("keeps the gradient headline's darkest stop at 3:1 or better (large text only)", () => {
+    const stops =
+      (tokens["--ovelo-gradient-silver"] ?? "").match(/#[0-9a-f]{6}/gi) ?? [];
+    expect(stops.length).toBeGreaterThan(2);
+    for (const stop of stops)
+      expect(contrast(stop, color("bg"))).toBeGreaterThanOrEqual(3);
+  });
+
+  it("keeps --ovelo-line decorative: it must not be the only boundary of a control", () => {
+    // line is far below 3:1 by design; controls use border-strong. This pins that split.
+    expect(contrast(color("line"), color("surface"))).toBeLessThan(3);
+    expect(
+      contrast(color("border-strong"), color("surface")),
+    ).toBeGreaterThanOrEqual(3);
+  });
+});

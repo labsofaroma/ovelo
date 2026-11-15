@@ -3,27 +3,25 @@ import { readCss, readThemeBlocks } from "../test/css";
 import { COLOR_ROLES, DURATIONS } from "../stories/token-lists";
 
 const blocks = readThemeBlocks();
-const colorRoles = Object.keys(blocks.light).filter(
+const colorRoles = Object.keys(blocks.colors).filter(
   (name) =>
     /^--ovelo-(?!shadow|scrim)/.test(name) &&
-    blocks.light[name]?.startsWith("#"),
+    blocks.colors[name]?.startsWith("#"),
 );
 
 describe("tokens.css structure", () => {
-  it("keeps the two dark blocks identical (attribute and prefers-color-scheme)", () => {
-    expect(blocks.darkMedia).toEqual(blocks.darkAttribute);
-  });
-
-  it("defines every light role in dark, and nothing extra", () => {
-    expect(Object.keys(blocks.darkAttribute).sort()).toEqual(
-      Object.keys(blocks.light).sort(),
-    );
+  it("is dark only: one color block, no light or prefers-color-scheme variants", () => {
+    const css = readCss("tokens.css").replace(/\/\*[\s\S]*?\*\//g, "");
+    expect(css).not.toMatch(/data-theme="light"/);
+    expect(css).not.toMatch(/prefers-color-scheme/);
+    expect(css.match(/--ovelo-bg:/g)).toHaveLength(1);
+    expect(blocks.colors["color-scheme"] ?? css).toMatch(/color-scheme: dark/);
   });
 
   it("uses plain hex for every solid color role so contrast can be computed", () => {
-    expect(colorRoles.length).toBeGreaterThanOrEqual(17);
+    expect(colorRoles.length).toBeGreaterThanOrEqual(19);
     for (const name of colorRoles)
-      expect(blocks.light[name]).toMatch(/^#[0-9a-f]{6}$/i);
+      expect(blocks.colors[name]).toMatch(/^#[0-9a-f]{6}$/i);
   });
 
   it("collapses every motion duration under prefers-reduced-motion", () => {
@@ -53,7 +51,8 @@ describe("tokens.css structure", () => {
     // theme.css maps --font-sans to var(--ovelo-font-sans); referring back makes both invalid.
     const tokens = readCss("tokens.css");
     expect(tokens).not.toMatch(/var\(--font-/);
-    expect(blocks.root["--ovelo-font-sans"]).toMatch(/^Manrope,/);
+    expect(blocks.root["--ovelo-font-display"]).toMatch(/^Manrope,/);
+    expect(blocks.root["--ovelo-font-sans"]).toMatch(/^Inter,/);
   });
 
   it("has no raw color values in theme.css (everything references a token)", () => {
@@ -63,8 +62,8 @@ describe("tokens.css structure", () => {
   });
 
   it("keeps the Foundations page in step with tokens.css", () => {
-    const solid = Object.keys(blocks.light)
-      .filter((n) => blocks.light[n]?.startsWith("#"))
+    const solid = Object.keys(blocks.colors)
+      .filter((n) => blocks.colors[n]?.startsWith("#"))
       .map((n) => n.replace("--ovelo-", ""));
     expect([...solid].sort()).toEqual([...COLOR_ROLES].sort());
     const durations = Object.keys(blocks.root)

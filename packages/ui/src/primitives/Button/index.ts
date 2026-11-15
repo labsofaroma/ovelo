@@ -1,5 +1,7 @@
 export {
   Button,
+  buttonBase,
+  buttonClassName,
   buttonSizes,
   buttonVariants,
   type ButtonProps,

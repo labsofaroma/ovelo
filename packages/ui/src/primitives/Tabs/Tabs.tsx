@@ -15,11 +15,14 @@ export const TabsList = forwardRef<
   return (
     <BaseTabs.List
       ref={ref}
-      className={cn("relative flex gap-1 border-b border-line", className)}
+      className={cn(
+        "relative isolate inline-flex max-w-full gap-1 overflow-x-auto rounded-full border border-line bg-raised p-1",
+        className,
+      )}
       {...props}
     >
+      <BaseTabs.Indicator className="absolute top-1 bottom-1 left-(--active-tab-left) -z-10 w-(--active-tab-width) rounded-full bg-raised-2 edge-highlight transition-[left,width] motion-base" />
       {children}
-      <BaseTabs.Indicator className="absolute bottom-0 left-(--active-tab-left) h-0.5 w-(--active-tab-width) bg-accent transition-[left,width] motion-base" />
     </BaseTabs.List>
   );
 });
@@ -33,7 +36,7 @@ export const TabsTrigger = forwardRef<
     <BaseTabs.Tab
       ref={ref}
       className={cn(
-        "min-h-(--ovelo-control-height) cursor-pointer rounded-t-control px-4 text-small font-semibold text-muted transition-colors motion-base hover:text-ink",
+        "min-h-9 shrink-0 cursor-pointer whitespace-nowrap rounded-full px-4 text-small font-medium text-muted transition-colors motion-base hover:text-ink max-md:min-h-(--ovelo-control-height)",
         "data-[active]:text-ink data-[disabled]:cursor-not-allowed data-[disabled]:opacity-50",
         focusRing,
         className,
@@ -50,7 +53,7 @@ export const TabsContent = forwardRef<
   return (
     <BaseTabs.Panel
       ref={ref}
-      className={cn("pt-4 text-body", focusRing, className)}
+      className={cn("pt-5 text-body", focusRing, className)}
       {...props}
     />
   );

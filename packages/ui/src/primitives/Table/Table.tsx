@@ -55,7 +55,7 @@ export const TableRow = forwardRef<
       ref={ref}
       data-slot="table-row"
       className={cn(
-        "border-b border-line transition-colors motion-fast hover:bg-raised",
+        "border-b border-line transition-colors motion-fast last:border-b-0 hover:bg-raised",
         className,
       )}
       {...props}
@@ -72,7 +72,7 @@ export const TableHead = forwardRef<
       ref={ref}
       data-slot="table-head"
       className={cn(
-        "px-3 py-3 text-left text-caption font-semibold text-muted",
+        "px-4 py-3 text-left text-caption font-medium whitespace-nowrap text-muted",
         className,
       )}
       {...props}
@@ -88,7 +88,7 @@ export const TableCell = forwardRef<
     <td
       ref={ref}
       data-slot="table-cell"
-      className={cn("px-3 py-3 align-middle", className)}
+      className={cn("px-4 py-3.5 align-middle", className)}
       {...props}
     />
   );

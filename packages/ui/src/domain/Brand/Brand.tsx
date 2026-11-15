@@ -65,6 +65,8 @@ export interface BrandProps extends Omit<
   variant?: BrandVariant;
   /** Link target. Default "/". */
   href?: string;
+  /** Replaces the Ovelo glyph (decorative, empty alt: the lockup carries the accessible name). */
+  mark?: ReactNode;
   /**
    * Router link component, e.g. next/link. Defaults to a plain <a>. Kept injectable so this
    * package never imports a framework router.
@@ -74,27 +76,21 @@ export interface BrandProps extends Omit<
   asStatic?: boolean;
 }
 
-function Wordmark({ className }: { className?: string }) {
+/** The redesign's wordmark: display face 26/400, tight tracking, no period. */
+function Wordmark() {
   return (
-    <span
-      className={cn(
-        "text-ink text-[2.1875rem] leading-none font-semibold tracking-[-0.075em]",
-        className,
-      )}
-    >
-      ovelo<span className="text-accent">.</span>
+    <span className="font-display text-[1.625rem] leading-none font-normal tracking-[-0.035em] text-ink">
+      ovelo
     </span>
   );
 }
 
-/**
- * Logo lockup. The accessible name is "Ovelo home" when linked. `glyph` and `wordmark` are
- * for tight spaces; colors come from tokens so every lockup adapts to light and dark.
- */
+/** Logo lockup. The accessible name is "Ovelo home" when linked, "Ovelo" when static. */
 export const Brand = forwardRef<HTMLAnchorElement, BrandProps>(function Brand(
   {
     variant = "horizontal",
     href = "/",
+    mark,
     LinkComponent,
     asStatic = false,
     className,
@@ -104,13 +100,17 @@ export const Brand = forwardRef<HTMLAnchorElement, BrandProps>(function Brand(
 ) {
   const content = (
     <>
-      {variant !== "wordmark" && <OveloGlyph />}
+      {variant !== "wordmark" && (
+        <span className="inline-flex shrink-0" data-slot="brand-mark">
+          {mark ?? <OveloGlyph />}
+        </span>
+      )}
       {variant !== "glyph" && <Wordmark />}
     </>
   );
   const layout = cn(
-    "inline-flex items-center gap-2.5 text-accent",
-    variant === "stacked" && "flex-col gap-1.5",
+    "inline-flex items-center gap-3",
+    variant === "stacked" && "flex-col gap-2",
     className,
   );
   if (asStatic) {
@@ -133,51 +133,3 @@ export const Brand = forwardRef<HTMLAnchorElement, BrandProps>(function Brand(
     </Link>
   );
 });
-
-/** Decorative orbit artwork for empty and error states. Purely ornamental (aria-hidden). */
-export function OrbitArt({ className }: { className?: string }) {
-  return (
-    <svg
-      className={cn("h-auto w-full max-w-90 text-muted", className)}
-      viewBox="0 0 360 250"
-      fill="none"
-      stroke="currentColor"
-      strokeWidth="1"
-      aria-hidden="true"
-    >
-      <g transform="translate(180 125)">
-        <ellipse rx="118" ry="47" transform="rotate(-32)" />
-        <ellipse rx="118" ry="47" transform="rotate(32)" />
-        <ellipse rx="118" ry="47" transform="rotate(90)" />
-        <circle r="68" />
-        <path
-          d="M0 -58L51 -9L0 57L-51 -9Z"
-          fill="var(--ovelo-accent)"
-          stroke="none"
-        />
-        <path d="M0 -58V57M-51 -9H51" stroke="var(--ovelo-bg)" />
-        <circle
-          cx="100"
-          cy="-61"
-          r="7"
-          fill="var(--ovelo-accent)"
-          stroke="none"
-        />
-        <circle
-          cx="-73"
-          cy="-87"
-          r="4"
-          fill="var(--ovelo-accent)"
-          stroke="none"
-        />
-        <circle
-          cx="8"
-          cy="116"
-          r="5"
-          fill="var(--ovelo-accent)"
-          stroke="none"
-        />
-      </g>
-    </svg>
-  );
-}

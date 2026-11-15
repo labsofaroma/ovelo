@@ -1,91 +1,66 @@
 /*
  * Ovelo design tokens: the single source of truth for @ovelo/ui.
- * Derived from apps/web/styles/foundation.css, theme-surfaces.css and .21st/DESIGN.md.
- * Plain CSS custom properties, no framework required. Tailwind utilities are generated from
- * these by theme.css. Mapping from the old variable names: README.md.
+ * Dark only, taken from the landing page (components/ovelo/Landing.tsx): near-black surfaces,
+ * silver ink and accent, soft blue and warm glows. Plain CSS custom properties, no framework
+ * required. Tailwind utilities are generated from these by theme.css.
  *
- * Themes: `data-theme="light|dark"` on <html> wins; otherwise `prefers-color-scheme` decides.
- * The attribute also works on any element, to scope a theme to a subtree (stories, footers).
- * Keep the two dark blocks identical (tokens.test.ts enforces it).
+ * One color block. `[data-theme]` is matched too, so a leftover light/dark attribute anywhere
+ * in the tree still resolves to these values.
  * Every foreground/background pair that components use is contrast-tested (contrast.test.ts).
  */
 
 :root,
-[data-theme="light"] {
-  /* ---- Color roles: light (default) ---- */
-  --ovelo-bg: #f5f6f2;
-  --ovelo-surface: #fdfefb;
-  --ovelo-raised: #edf2ea;
-  --ovelo-ink: #202722;
-  --ovelo-muted: #5e675b;
-  --ovelo-line: #d8dfd4; /* decorative dividers only, below 3:1 */
-  --ovelo-border-strong: #7a8576; /* control and component boundaries, 3:1 or better */
-  --ovelo-accent: #426c2f;
-  --ovelo-accent-hover: #365a26;
-  --ovelo-accent-ink: #ffffff;
-  --ovelo-accent-soft: #e4edd9;
-  --ovelo-up: #287448;
-  --ovelo-up-soft: #dcefe2;
-  --ovelo-down: #b43f3c;
-  --ovelo-down-soft: #fbeceb;
-  --ovelo-warning: #8a5300;
-  --ovelo-warning-soft: #f6e8d0;
-  --ovelo-focus: #426c2f;
-  --ovelo-scrim: rgb(28 38 29 / 30%);
-  --ovelo-shadow-float: 0 16px 48px rgb(28 38 29 / 12%);
-  --ovelo-shadow-raised: 0 1px 2px rgb(28 38 29 / 8%);
-  color-scheme: light;
-}
+[data-theme] {
+  /* ---- Color roles ---- */
+  --ovelo-bg: #030303;
+  --ovelo-surface: #0a0a0b;
+  --ovelo-raised: #141416;
+  --ovelo-raised-2: #1b1b1d;
+  --ovelo-pill: #0c0b0b;
+  --ovelo-ink: #f4f4f6;
+  --ovelo-muted: #a1a1a7;
+  --ovelo-line: #2a2a2c; /* decorative dividers only, below 3:1 */
+  --ovelo-border-strong: #76767c; /* control and component boundaries, 3:1 or better */
+  --ovelo-accent: #e8e8ea;
+  --ovelo-accent-hover: #ffffff;
+  --ovelo-accent-ink: #030303;
+  --ovelo-accent-soft: #232327;
+  --ovelo-up: #5fd68a;
+  --ovelo-up-soft: #10261a;
+  --ovelo-down: #ff8f86;
+  --ovelo-down-soft: #2e1513;
+  --ovelo-warning: #f0b45a;
+  --ovelo-warning-soft: #2c2110;
+  --ovelo-focus: #a9c2f0;
+  --ovelo-scrim: rgb(0 0 0 / 72%);
+  /* Elevation is a hairline, never a drop shadow (the landing has none). */
+  --ovelo-shadow-float: 0 0 0 1px #2a2a2c, 0 24px 64px rgb(0 0 0 / 60%);
+  --ovelo-shadow-raised: 0 0 0 1px #2a2a2c;
 
-@media (prefers-color-scheme: dark) {
-  :root:not([data-theme]) {
-    --ovelo-bg: #101311;
-    --ovelo-surface: #181d19;
-    --ovelo-raised: #202720;
-    --ovelo-ink: #f4f6ef;
-    --ovelo-muted: #9aa795;
-    --ovelo-line: #30392f;
-    --ovelo-border-strong: #6f7d69;
-    --ovelo-accent: #d5f478;
-    --ovelo-accent-hover: #bbd66b;
-    --ovelo-accent-ink: #202917;
-    --ovelo-accent-soft: #252e1b;
-    --ovelo-up: #b9de83;
-    --ovelo-up-soft: #1f2d1c;
-    --ovelo-down: #f3a59b;
-    --ovelo-down-soft: #351f1d;
-    --ovelo-warning: #f5a524;
-    --ovelo-warning-soft: #33280f;
-    --ovelo-focus: #d5f478;
-    --ovelo-scrim: rgb(3 6 3 / 66%);
-    --ovelo-shadow-float: 0 16px 48px rgb(3 6 3 / 28%);
-    --ovelo-shadow-raised: 0 1px 2px rgb(3 6 3 / 40%);
-    color-scheme: dark;
-  }
-}
-
-[data-theme="dark"] {
-  --ovelo-bg: #101311;
-  --ovelo-surface: #181d19;
-  --ovelo-raised: #202720;
-  --ovelo-ink: #f4f6ef;
-  --ovelo-muted: #9aa795;
-  --ovelo-line: #30392f;
-  --ovelo-border-strong: #6f7d69;
-  --ovelo-accent: #d5f478;
-  --ovelo-accent-hover: #bbd66b;
-  --ovelo-accent-ink: #202917;
-  --ovelo-accent-soft: #252e1b;
-  --ovelo-up: #b9de83;
-  --ovelo-up-soft: #1f2d1c;
-  --ovelo-down: #f3a59b;
-  --ovelo-down-soft: #351f1d;
-  --ovelo-warning: #f5a524;
-  --ovelo-warning-soft: #33280f;
-  --ovelo-focus: #d5f478;
-  --ovelo-scrim: rgb(3 6 3 / 66%);
-  --ovelo-shadow-float: 0 16px 48px rgb(3 6 3 / 28%);
-  --ovelo-shadow-raised: 0 1px 2px rgb(3 6 3 / 40%);
+  /* ---- Decorative (non-text) ---- */
+  --ovelo-pill-border: rgb(255 255 255 / 34%);
+  --ovelo-gradient-silver: linear-gradient(
+    90deg,
+    #6e6e72 0%,
+    #a9a9ad 25%,
+    #fafafa 50%,
+    #a9a9ad 75%,
+    #6e6e72 100%
+  );
+  --ovelo-gradient-warm: linear-gradient(
+    90deg,
+    #77726e 10%,
+    #a5a19d 28%,
+    #f4f2f0 50%,
+    #a5a19d 72%,
+    #77726e 90%
+  );
+  --ovelo-gradient-panel: linear-gradient(180deg, #0e0e10 0%, #1c1f27 100%);
+  --ovelo-glow-blue: rgb(61 106 144 / 55%);
+  --ovelo-glow-warm: rgb(150 112 90 / 28%);
+  --ovelo-highlight: rgb(255 255 255 / 10%);
+  /* Film grain: fractal noise, shown at low opacity by the Grain component. */
+  --ovelo-grain: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/></filter><rect width='100%' height='100%' filter='url(%23n)' opacity='.55'/></svg>");
   color-scheme: dark;
 }
 
@@ -94,9 +69,10 @@
   /* Self-contained on purpose: it must NOT reference --font-sans, which theme.css maps back to
      this token (a cycle makes both invalid and silently drops the font). The app owns font
      loading (fonts.css or next/font) and may override --ovelo-font-sans itself. */
+  --ovelo-font-display:
+    Manrope, Inter, "Avenir Next", "Segoe UI", Helvetica, Arial, sans-serif;
   --ovelo-font-sans:
-    Manrope, Inter, "Avenir Next", "Avenir", "Segoe UI", Helvetica, Arial,
-    sans-serif;
+    Inter, Manrope, "Avenir Next", "Segoe UI", Helvetica, Arial, sans-serif;
   --ovelo-font-serif: Georgia, "Times New Roman", serif;
   --ovelo-text-micro: 0.6875rem; /* 11px */
   --ovelo-text-caption: 0.75rem; /* 12px */
@@ -106,10 +82,12 @@
   --ovelo-text-section: 1.375rem; /* 22px */
   --ovelo-text-page-mobile: 1.75rem; /* 28px */
   --ovelo-text-page: 2.25rem; /* 36px */
+  --ovelo-text-display: 3.375rem; /* 54px: landing section titles */
   --ovelo-leading-tight: 1.13;
   --ovelo-leading-snug: 1.25;
   --ovelo-leading-body: 1.52;
   --ovelo-tracking-heading: -0.03em;
+  --ovelo-tracking-display: -0.05em;
   --ovelo-tracking-eyebrow: 0.15em;
 
   /* ---- Spacing: 4px base; --ovelo-space-N equals Tailwind's N-step (p-4 = 16px) ---- */
@@ -124,11 +102,12 @@
   --ovelo-space-12: 3rem;
 
   /* ---- Artwork ---- */
-  /* Backing plate for third-party logos: intentionally the same in both themes. */
+  /* Backing plate for third-party logos. */
   --ovelo-plate: #ffffff;
 
   /* ---- Layout ---- */
   --ovelo-content-max: 82.5rem; /* 1320px */
+  --ovelo-sidebar-width: 15.5rem; /* 248px */
   --ovelo-gutter: 3.5rem; /* 56px desktop */
   --ovelo-gutter-mobile: 1.5rem; /* 24px */
   --ovelo-control-height: 2.75rem; /* 44px: also the touch target */
@@ -136,8 +115,10 @@
 
   /* ---- Radius ---- */
   --ovelo-radius-badge: 0.375rem; /* 6px */
-  --ovelo-radius-control: 0.625rem; /* 10px */
-  --ovelo-radius-panel: 1rem; /* 16px */
+  --ovelo-radius-tile: 0.75rem; /* 12px: tiles inside a card */
+  --ovelo-radius-control: 0.875rem; /* 14px */
+  --ovelo-radius-panel: 1.25rem; /* 20px: wide cards */
+  --ovelo-radius-hero: 2.75rem; /* 44px: hero cards */
   --ovelo-radius-full: 9999px;
 
   /* ---- Z-index ---- */

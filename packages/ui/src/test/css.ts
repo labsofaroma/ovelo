@@ -15,14 +15,14 @@ export function parseDeclarations(block: string): Record<string, string> {
 }
 
 export interface ThemeBlocks {
-  light: Record<string, string>;
-  darkAttribute: Record<string, string>;
-  darkMedia: Record<string, string>;
+  /** The single (dark) color block: `:root, [data-theme] { … }`. */
+  colors: Record<string, string>;
   reducedMotion: Record<string, string>;
+  /** Every `:root` declaration, the color block included. */
   root: Record<string, string>;
 }
 
-/** Extracts the blocks of tokens.css that define themes, in the order the cascade sees them. */
+/** Extracts the blocks of tokens.css, in the order the cascade sees them. */
 export function readThemeBlocks(css = readCss("tokens.css")): ThemeBlocks {
   const strip = css.replace(/\/\*[\s\S]*?\*\//g, "");
   const body = (re: RegExp): Record<string, string> => {
@@ -30,18 +30,15 @@ export function readThemeBlocks(css = readCss("tokens.css")): ThemeBlocks {
     if (!match) throw new Error(`block not found: ${re}`);
     return parseDeclarations(match[1] as string);
   };
+  const colors = body(/:root,\s*\[data-theme\]\s*\{([^}]*)\}/);
   const rootBlocks = [...strip.matchAll(/(?:^|\n):root\s*\{([^}]*)\}/g)].map(
     (m) => parseDeclarations(m[1] as string),
   );
   return {
-    light: body(/:root,\s*\[data-theme="light"\]\s*\{([^}]*)\}/),
-    darkAttribute: body(/\n\[data-theme="dark"\]\s*\{([^}]*)\}/),
-    darkMedia: body(
-      /@media \(prefers-color-scheme: dark\)\s*\{\s*:root:not\(\[data-theme\]\)\s*\{([^}]*)\}/,
-    ),
+    colors,
     reducedMotion: body(
       /@media \(prefers-reduced-motion: reduce\)\s*\{\s*:root\s*\{([^}]*)\}/,
     ),
-    root: Object.assign({}, ...rootBlocks),
+    root: Object.assign({}, colors, ...rootBlocks),
   };
 }

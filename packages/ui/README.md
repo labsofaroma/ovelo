@@ -1,6 +1,6 @@
 # @ovelo/ui
 
-Ovelo's design tokens, Base UI primitives and domain components. **Presentation only**: no app code, no server-only code, no wallet or Solana packages (ESLint enforces it, see [Boundary](#boundary)). Status: M1 of [docs/REWRITE-PLAN.md](../../docs/REWRITE-PLAN.md). The prototype keeps its own `apps/web/styles/*` and `components/*` until M7; this package is additive.
+Ovelo's design tokens, Base UI primitives and domain components. **Presentation only**: no app code, no server-only code, no wallet or Solana packages (ESLint enforces it, see [Boundary](#boundary)). See [docs/REWRITE-PLAN.md](../../docs/REWRITE-PLAN.md). The web app's whole UI is built from this package (the prototype's global stylesheets were removed in the redesign).
 
 ```bash
 pnpm --filter @ovelo/ui dev              # Ladle workbench at http://localhost:61000
@@ -40,63 +40,25 @@ utilities             bg-bg  text-ink  p-4  rounded-control  motion-base  focus-
 components            only utilities and tokens, never a raw hex value
 ```
 
-- **Themes.** `data-theme="light|dark"` on `<html>` wins; with no attribute, `prefers-color-scheme` decides. The attribute works on any element, so a subtree can be scoped (the "Light and dark" stories show both at once). Render `themeInitScript` in `<head>` for no flash of the wrong theme:
+- **Theme.** Dark only: one color block in `tokens.css` (also matched by any `[data-theme]` attribute). Render `themeInitScript` in `<head>`; it pins `data-theme="dark"` before first paint:
   ```tsx
   import { themeInitScript } from "@ovelo/ui/theme";
   <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />;
   ```
-  It reads the same `ovelo-theme` localStorage key as the prototype, so a saved choice carries over. Tested for stored choice, system fallback, junk values and blocked storage.
+  It also clears the old light/dark toggle's `ovelo-theme` localStorage key. Tested, including blocked storage.
 - **Reduced motion.** Every `--ovelo-duration-*` collapses to `0.01ms` under `prefers-reduced-motion: reduce`, and `--default-transition-duration` is a token too, so even a bare `transition-colors` follows. Keyframes (`animate-shimmer`, `animate-spin-token`, `animate-indeterminate`) take their duration from tokens. Never hard-code a duration in a component.
 - **Spacing** is 4px based and aligned with Tailwind: `--ovelo-space-N` equals the `N` step (`p-4` is 16px).
 - **Lines vs borders.** `--ovelo-line` is for decorative dividers and is _below_ 3:1 by design. Anything that marks a control boundary uses `--ovelo-border-strong` (3:1 or better).
 
-### Old variable → new token
+### Landing theme (dark only)
 
-Every variable in `apps/web/styles/foundation.css` and `theme-surfaces.css`. A test (`src/tokens/mapping.test.ts`) fails if a legacy variable is missing from this table.
+Ovelo is dark only and takes its look from the landing page: near-black surfaces (`bg`, `surface`, `raised`, `raised-2`, `pill`), silver ink and accent, soft up/down/warning colors, Manrope display (`font-display`) over Inter body (`font-sans`), 20px wide cards (`rounded-panel`) and 44px hero cards (`rounded-hero`), pill buttons. Decorative tokens (`--ovelo-gradient-silver`, `--ovelo-glow-*`, `--ovelo-grain`, `--ovelo-pill-border`) back the `text-silver`, `text-warm`, `bg-glow-*`, `bg-grain`, `border-pill`, `bg-panel-gradient` and `edge-highlight` utilities. `text-silver` is for text of 24px or more only (its darkest stop is tested at 3:1).
 
-| Old (`foundation.css`, `theme-surfaces.css`)                                                     | New token                                | Tailwind utility                         | Note                                                                                                       |
-| ------------------------------------------------------------------------------------------------ | ---------------------------------------- | ---------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| `--bg`                                                                                           | `--ovelo-bg`                             | `bg-bg`                                  |                                                                                                            |
-| `--surface`                                                                                      | `--ovelo-surface`                        | `bg-surface`                             |                                                                                                            |
-| `--raised`                                                                                       | `--ovelo-raised`                         | `bg-raised`                              |                                                                                                            |
-| `--ink`                                                                                          | `--ovelo-ink`                            | `text-ink`                               |                                                                                                            |
-| `--muted`                                                                                        | `--ovelo-muted`                          | `text-muted`                             |                                                                                                            |
-| `--line`                                                                                         | `--ovelo-line`                           | `border-line`                            | decorative only; see `--ovelo-border-strong`                                                               |
-| `--accent`                                                                                       | `--ovelo-accent`                         | `bg-accent`, `text-accent`               |                                                                                                            |
-| `--accent-ink`                                                                                   | `--ovelo-accent-ink`                     | `text-accent-ink`                        |                                                                                                            |
-| `--up`                                                                                           | `--ovelo-up`                             | `text-up`                                |                                                                                                            |
-| `--down`                                                                                         | `--ovelo-down`                           | `text-down`                              |                                                                                                            |
-| `--scrim`                                                                                        | `--ovelo-scrim`                          | `bg-scrim`                               |                                                                                                            |
-| `--shadow-float`                                                                                 | `--ovelo-shadow-float`                   | `shadow-float`                           |                                                                                                            |
-| `--font-sans`                                                                                    | `--ovelo-font-sans`                      | `font-sans`                              | Manrope, Inter, then system. Self-contained: an app using `next/font` overrides `--ovelo-font-sans` itself |
-| `--font-nav`                                                                                     | none                                     | none                                     | **dropped**: it was an alias of `--font-sans`                                                              |
-| `--space-1` `--space-2` `--space-3` `--space-4` `--space-5` `--space-6` `--space-8` `--space-12` | `--ovelo-space-1` ... `--ovelo-space-12` | `p-1` ... `p-12`                         | same px values, now in rem                                                                                 |
-| `--text-micro`                                                                                   | `--ovelo-text-micro`                     | `text-micro`                             | 11px as `0.6875rem`                                                                                        |
-| `--text-caption`                                                                                 | `--ovelo-text-caption`                   | `text-caption`                           | 12px                                                                                                       |
-| `--text-small`                                                                                   | `--ovelo-text-small`                     | `text-small`                             | 13px                                                                                                       |
-| `--text-body`                                                                                    | `--ovelo-text-body`                      | `text-body`                              | 14px                                                                                                       |
-| `--text-title`                                                                                   | `--ovelo-text-title`                     | `text-title`                             | 18px                                                                                                       |
-| `--text-section`                                                                                 | `--ovelo-text-section`                   | `text-section`                           | 22px                                                                                                       |
-| `--text-page`                                                                                    | `--ovelo-text-page`                      | `text-page`                              | 36px                                                                                                       |
-| `--text-page-mobile`                                                                             | `--ovelo-text-page-mobile`               | `text-page-mobile`                       | 28px                                                                                                       |
-| `--radius-badge`                                                                                 | `--ovelo-radius-badge`                   | `rounded-badge`                          | 6px                                                                                                        |
-| `--radius-control`                                                                               | `--ovelo-radius-control`                 | `rounded-control`                        | 10px                                                                                                       |
-| `--radius-panel`                                                                                 | `--ovelo-radius-panel`                   | `rounded-panel`                          | 16px                                                                                                       |
-| `--control-height`                                                                               | `--ovelo-control-height`                 | `min-h-(--ovelo-control-height)`         | 44px, also the touch target                                                                                |
-| `--control-height-compact`                                                                       | `--ovelo-control-height-compact`         | `min-h-(--ovelo-control-height-compact)` | 36px                                                                                                       |
-| `--ease-ui`                                                                                      | `--ovelo-ease-ui`                        | `ease-ui`                                |                                                                                                            |
+Layout building blocks live in `src/layout`: `Section` (full-width card, optional `hero`), `Stack`, `GradientHeading`, `Glow`, `Grain`, `StatTile`, `SourceStamp` (source + time, stale and unavailable states), `NetworkBadge` (mainnet spot, devnet test, paper: fixed copy), `Callout`, `EmptyState`, `Sidebar`/`SidebarGroup`/`SidebarLink`, `MobileTabBar` and `StickyActionBar`.
 
-Not in `foundation.css`, added here: `--ovelo-border-strong`, `--ovelo-accent-hover`, `--ovelo-accent-soft`, `--ovelo-up-soft`, `--ovelo-down-soft`, `--ovelo-warning`, `--ovelo-warning-soft` (the prototype hard-codes `#f59e0b`, which fails AA on light), `--ovelo-focus`, `--ovelo-plate` (logo backing), `--ovelo-radius-full`, `--ovelo-shadow-raised`, z-index (`--ovelo-z-*`), durations (`--ovelo-duration-*`), breakpoints, layout (`--ovelo-content-max`, `--ovelo-gutter*`), leading and tracking.
+## Tailwind
 
-Also dropped, from `apps/web/tailwind.config.js` (v3): the `sm/md/lg` radius overrides (4/8/12px) and the `out` easing; nothing in `foundation.css` used them. **Prototype bug noticed, not fixed:** that file maps `raised` to `var(--bg-raised)`, a variable that does not exist (it is `--raised`), so `bg-raised` is transparent in the prototype.
-
-Deliberately _not_ tokens: the landing page's editorial display sizes, serif accents and diagram labels. They stay local to the landing module (see `.21st/DESIGN.md`).
-
-## Tailwind v3 and v4 side by side
-
-The prototype is on Tailwind v3 and must keep building until M7. v4 is added without touching it:
-
-- **Tailwind v4 only (M9).** `apps/web/app/ovelo-ui.css` is the app's single entry, imported by the root layouts: theme, preflight and utilities in declared cascade layers (`theme, base, components, utilities`), then `fonts.css`, `tokens.css` and `theme.css`. Ladle uses `.ladle/styles.css` (the same layers). The prototype's Tailwind v3 chain, its PostCSS router and `foundation.css` were removed in M9.
+The web app uses Tailwind v4 only. `apps/web/app/globals.css` imports `tailwindcss` (preflight included), then `fonts.css`, `tokens.css` and `theme.css`, and scans `app`, `components`, `features` and this package's `src`.
 
 ## Adding a primitive
 
@@ -128,8 +90,9 @@ Fix violations at the token or component, not by suppressing a rule. An unavoida
 
 ## Boundary
 
-`eslint.config.mjs` forbids, in every file of this package: `@ovelo/web|keeper`, any path under `apps/`, `server-only` and server folders, `@solana/*`, `@solana-program/*`, `@coral-xyz/*`, `@farcaster/*`, `@wallet-standard/*`, `@reown/*`, `@walletconnect/*`, `viem`, `wagmi`, `ethers`, and `next`/`next/*`. Behaviour comes in through props: `Brand` takes a `LinkComponent`, `AssetAvatar` takes an `ImageComponent` (see `apps/web/app/(app)/ui-preview/NextAvatarImage.tsx`).
+`eslint.config.mjs` forbids, in every file of this package: `@ovelo/web|keeper|anchor`, any path under `apps/`, `server-only` and server folders, `@solana/*`, `@solana-program/*`, `@coral-xyz/*`, `@privy-io/*`, `@farcaster/*`, `@wallet-standard/*`, `@reown/*`, `@walletconnect/*`, `viem`, `wagmi`, `ethers`, and `next`/`next/*`. Behaviour comes in through props: `Brand` takes a `LinkComponent`, `AssetAvatar` takes an `ImageComponent` (see `apps/web/app/(app)/ui-preview/NextAvatarImage.tsx`).
 
 ## Deferred
 
-- **`LegalPage`** stays an app feature component (`features/marketing`), since it reads app configuration and links app routes; it composes `Brand` and these primitives.
+- **`LegalPage`** is not ported: it reads the app's `lib/site` (support email, issues URL), links to app routes and hard-codes an update date, so it is not presentational. It moves in M3 as a feature component that composes `Brand` and these primitives.
+- The prototype's other `components/ovelo/*` (Shell, Landing, ThemeMode, ...) move with their pages in M3 to M7.

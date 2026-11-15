@@ -2,7 +2,7 @@ import { render, screen } from "@testing-library/react";
 import { createRef, forwardRef, type AnchorHTMLAttributes } from "react";
 import { describe, expect, it } from "vitest";
 import { axe } from "../../test/axe";
-import { OveloGlyph, Brand, OrbitArt } from "./Brand";
+import { OveloGlyph, Brand } from "./Brand";
 
 describe("Brand", () => {
   it("links home with an accessible name and forwards ref", async () => {
@@ -20,7 +20,7 @@ describe("Brand", () => {
     expect(container).not.toHaveTextContent("ovelo");
     rerender(<Brand variant="wordmark" />);
     expect(container.querySelector("svg")).toBeNull();
-    expect(container).toHaveTextContent("ovelo.");
+    expect(container).toHaveTextContent("ovelo");
     rerender(<Brand variant="stacked" />);
     expect(container.firstElementChild).toHaveClass("flex-col");
   });
@@ -42,13 +42,14 @@ describe("Brand", () => {
     expect(await axe(container)).toHaveNoViolations();
   });
 
-  it("keeps decorative art hidden from assistive tech", () => {
+  it("takes a custom mark and keeps decorative art hidden from assistive tech", () => {
     const { container } = render(
       <div>
         <OveloGlyph />
-        <OrbitArt />
+        <Brand mark={<span data-testid="custom-mark" />} />
       </div>,
     );
+    expect(screen.getByTestId("custom-mark")).toBeInTheDocument();
     for (const svg of container.querySelectorAll("svg"))
       expect(svg).toHaveAttribute("aria-hidden", "true");
   });

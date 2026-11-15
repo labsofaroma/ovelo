@@ -3,7 +3,7 @@ import { expect, test } from "@playwright/test";
 import { openStory, storyIds, type Theme } from "./stories";
 
 /**
- * axe over every story, in light and dark. Reduced motion is emulated so entry transitions
+ * axe over every story (dark only). Reduced motion is emulated so entry transitions
  * have settled and contrast is measured on final colors, not mid-fade.
  *
  * Rules switched off, each with a reason (nothing else is suppressed):
@@ -19,7 +19,7 @@ const PAGE_LEVEL_RULES = [
 
 test.use({ reducedMotion: "reduce" });
 
-for (const theme of ["light", "dark"] as const satisfies readonly Theme[]) {
+for (const theme of ["dark"] as const satisfies readonly Theme[]) {
   for (const id of storyIds()) {
     test(`axe: ${id} (${theme})`, async ({ page }) => {
       await openStory(page, id, theme);
@@ -47,7 +47,7 @@ for (const theme of ["light", "dark"] as const satisfies readonly Theme[]) {
 test("control: the gate really detects a contrast failure", async ({
   page,
 }) => {
-  await openStory(page, "primitives--badge--default", "light");
+  await openStory(page, "primitives--badge--default");
   await page.evaluate(() => {
     const bad = document.createElement("p");
     bad.id = "deliberate-bad-contrast";
