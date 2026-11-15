@@ -44,7 +44,7 @@ Mainnet trading for a restricted country cannot be configured open (the schema a
 
 ## 4. What counsel must supply (needs counsel's final text)
 
-1. **Terms of use** final text. Today the only version is `2026-09-13-placeholder`: the prototype terms page, ported unchanged, marked `final: false`. Add the final text as a new version in `features/compliance/terms.ts` and the terms page; every wallet re-accepts.
+1. **Terms of use** final text. Today the only version is `2026-09-13-placeholder`: the prototype terms page, ported unchanged, marked `final: false`. The boot refuses a production deployment on a `final: false` version (`server/env.terms.ts`); a beta may run on it only with `AROMA_ALLOW_PLACEHOLDER_TERMS=true` and `AROMA_DEPLOY_ENV=beta`. Add the final text as a new version in `features/compliance/terms.ts` and the terms page; every wallet re-accepts.
 2. **Acceptance line** the wallet signs (placeholder: "I have read and accept these terms and the risk disclosures.", `features/compliance/server/terms.ts`).
 3. **Risk disclosure** text per surface (stock, basket, creator basket, Action, devnet recurring): `features/compliance/disclosures.ts`, all placeholder; bump `DISCLOSURE_VERSION`.
 4. **Final restricted-country list**, and whether sub-national regions (for example Crimea, Donetsk, Luhansk) must be blocked; that needs `x-vercel-ip-country-region` and is not implemented.

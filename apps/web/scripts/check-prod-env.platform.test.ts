@@ -43,7 +43,9 @@ describe("check:prod-env --platform", () => {
   });
 
   it("selfhost refuses a file without AROMA_PLATFORM or AROMA_DEPLOY_ENV", () => {
-    const all = findings(BETA_GOOD, "selfhost");
+    // The Vercel beta file declares AROMA_DEPLOY_ENV=beta; a self-host file must declare both.
+    const { AROMA_DEPLOY_ENV: _declared, ...undeclared } = BETA_GOOD;
+    const all = findings(undeclared, "selfhost");
     expect(failed(all)).toBe(true);
     expect(status(all, "AROMA_PLATFORM")).toContain("missing");
     expect(status(all, "AROMA_DEPLOY_ENV")).toContain("missing");

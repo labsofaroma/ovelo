@@ -1,7 +1,7 @@
 import { readFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { join } from "node:path";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import {
   deployEnvOf,
   platformProblems,
@@ -14,6 +14,10 @@ import { parseEnv, testSwitchesAllowed } from "./env.schema";
 import { hstsApplies } from "./csp";
 import { betaGateOn } from "@/features/beta/config";
 import { BASE_ENV as BASE } from "./test/base-env";
+
+vi.mock("@/features/compliance/terms", async (orig) =>
+  (await import("@/server/test/final-terms")).withFinalTerms(await orig()),
+);
 
 type Row = {
   name: string;

@@ -4,6 +4,7 @@ import { complianceShape } from "./env.compliance";
 import { localnetRules } from "./env.rules";
 import { feeShape } from "./env.fees";
 import { notifyRules, notifyShape } from "./env.notify";
+import { termsRules, termsShape } from "./env.terms";
 import { sentryDsn } from "./env.sentry";
 import { platformRules, platformShape } from "./env.platform";
 import { productionRules } from "./platform";
@@ -142,6 +143,7 @@ const serverShape = {
   // --- Phase A private beta (W2, W3) ---
   ...betaShape,
   ...notifyShape, // M11 notifications
+  ...termsShape, // launch gate: counsel's final terms
   ...feeShape, // M11 fee-share ledger (accounting only)
 };
 
@@ -256,6 +258,7 @@ const flatSchema = z.object(flatShape).superRefine((env, ctx) => {
   localnetRules(env, ctx);
   capRules(env, ctx);
   notifyRules(env, ctx);
+  termsRules(env, ctx);
   const isLoopback = (value: string) =>
     /^http:\/\/(127\.0\.0\.1|localhost)(:\d+)?\/?$/.test(value);
   for (const key of ["SOLANA_RPC_URL", "SOLANA_RPC_FALLBACK_URL"] as const) {

@@ -8,6 +8,10 @@ import {
   WEB_PRODUCTION,
 } from "./prod-env";
 
+vi.mock("@/features/compliance/terms", async (orig) =>
+  (await import("@/server/test/final-terms")).withFinalTerms(await orig()),
+);
+
 /** P3: `pnpm check:prod-env` refuses an incomplete, placeholder or test production profile. */
 const secret = (c: string) => c.repeat(40);
 const GOOD = {

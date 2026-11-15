@@ -5,6 +5,10 @@ import { describe, expect, it, vi } from "vitest";
 import { parseEnv, type Env } from "@/server/env.schema";
 import { fakeChain } from "./test-chain";
 
+vi.mock("@/features/compliance/terms", async (orig) =>
+  (await import("@/server/test/final-terms")).withFinalTerms(await orig()),
+);
+
 type GuardModule = typeof GuardExports;
 
 const LOCAL = "4uhcVJyU9pJkvQyS88uRDiswHXSCkY3zQawwpjk2NsNY";

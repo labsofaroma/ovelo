@@ -1,7 +1,11 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { generateVapidKeys } from "@/features/notifications/server/channels/webpush";
 import { parseEnv } from "./env.schema";
 import { BASE_ENV } from "./test/base-env";
+
+vi.mock("@/features/compliance/terms", async (orig) =>
+  (await import("@/server/test/final-terms")).withFinalTerms(await orig()),
+);
 
 const vapid = generateVapidKeys();
 const PUSH = {

@@ -1,6 +1,10 @@
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { BASE_ENV } from "@/server/test/base-env";
 import { parseEnv, TURNSTILE_TEST_SECRETS } from "./env.schema";
+
+vi.mock("@/features/compliance/terms", async (orig) =>
+  (await import("@/server/test/final-terms")).withFinalTerms(await orig()),
+);
 
 const LOCALNET: Record<string, string> = {
   AROMA_V1_INVEST_CLUSTER: "localnet",

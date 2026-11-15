@@ -12,6 +12,9 @@ export const BETA_GOOD = {
   AROMA_MAX_TRADE_USDC_RAW: "50000000",
   AROMA_MAX_DAILY_USDC_RAW: "200000000",
   AROMA_BETA_GATE: "on",
+  // Counsel's final terms are not in yet; a beta may run on the placeholder explicitly.
+  AROMA_ALLOW_PLACEHOLDER_TERMS: "true",
+  AROMA_DEPLOY_ENV: "beta",
   SENTRY_DSN: `https://${"a1".repeat(16)}@o4507.ingest.us.sentry.io/4508`,
   NEXT_PUBLIC_SENTRY_DSN: `https://${"b2".repeat(16)}@o4507.ingest.sentry.io/4509`,
   NEXT_PUBLIC_SENTRY_ENVIRONMENT: "beta",

@@ -1,7 +1,7 @@
 import { execFileSync } from "node:child_process";
 import { readFileSync } from "node:fs";
 import { join } from "node:path";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { jurisdictionOf } from "@/features/compliance/jurisdiction";
 import { loadPolicy } from "@/features/compliance/policy";
 import {
@@ -15,6 +15,10 @@ import {
 } from "./proxy";
 import { parseEnv } from "./env.schema";
 import { BASE_ENV } from "./test/base-env";
+
+vi.mock("@/features/compliance/terms", async (orig) =>
+  (await import("@/server/test/final-terms")).withFinalTerms(await orig()),
+);
 
 const SECRET = "test-origin-secret-0123456789abcdefABCDEF";
 const VERCEL = { VERCEL: "1", VERCEL_ENV: "production" };

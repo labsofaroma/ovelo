@@ -28,6 +28,7 @@ Create only what the beta needs ([PRODUCTION-ENV.md §5](./PRODUCTION-ENV.md#5-p
 - [ ] Set the variables in Vercel:
   - the Phase A set: `AROMA_BETA_GATE=on`, `AROMA_MAX_TRADE_USDC_RAW=50000000`, `AROMA_MAX_DAILY_USDC_RAW=200000000`. **Do not** set `NEXT_PUBLIC_PRIVY_APP_ID` (v1 is wallet-only).
   - M11: `AROMA_NOTIFY_WORKER_SECRET`, and for each channel you turn on, **all** of its variables (`VAPID_PUBLIC_KEY`, `VAPID_PRIVATE_KEY` and `VAPID_SUBJECT`; or `TELEGRAM_BOT_TOKEN`, `TELEGRAM_BOT_USERNAME` and `TELEGRAM_WEBHOOK_SECRET`). A half-set channel stops the boot.
+  - Terms (until counsel's final text is in): `AROMA_DEPLOY_ENV=beta` and `AROMA_ALLOW_PLACEHOLDER_TERMS=true`. Without them the boot refuses the placeholder terms; production never accepts them.
   - Fees: leave `AROMA_PLATFORM_FEE_BPS` unset or `0` (anything else stops the boot: no platform fee is approved). `AROMA_CREATOR_FEE_SHARE_BPS` is optional and is recorded in the ledger only.
   - Analytics (optional): `NEXT_PUBLIC_PLAUSIBLE_DOMAIN=beta.<domain>`. Events are sent only after a visitor opts in.
 - [ ] Check the environment:
