@@ -55,7 +55,7 @@ The gates every route must have are pinned in `server/route-gates.test.ts` (a ne
 
 ## Recurring plans (devnet)
 
-`/invest` creates and closes Aroma Guard v1 plans on **devnet** with test tokens of no value (`features/invest`; prepare → wallet signs → submit). The keeper (`apps/keeper`) executes due installments: QStash calls `POST /run` (signature verified), it takes a lease per plan and period, posts a fresh Pyth price, executes oldest period first, records skipped periods, retries with backoff, keeps a dead-letter list and alerts a webhook. Mainnet recurring waits for M10 (Jupiter DCA, if xStocks are accepted) or M12 (Aroma Guard on mainnet, when funded).
+`/invest` creates and closes Aroma Guard v1 plans on **devnet** with test tokens of no value (`features/invest`; prepare → wallet signs → submit). The keeper (`apps/keeper`) executes due installments: QStash calls `POST /run` (signature verified), it takes a lease per plan and period, posts a fresh Pyth price, executes oldest period first, records skipped periods, retries with backoff, keeps a dead-letter list and alerts a webhook. Mainnet recurring is not offered: `/invest` shows the devnet plans under a "Mainnet recurring: coming" notice. M10 took **Path B** (owner, 2026-11-15): Jupiter's on-chain Recurring API rejects every xStock (Token-2022), and its successor holds deposits in a Jupiter-controlled custodial vault with off-chain orders ([launch/DCA-SPIKE.md](./launch/DCA-SPIKE.md)). **M12** (Aroma Guard on mainnet, when funded) is the mainnet recurring path.
 
 ## Data stores
 

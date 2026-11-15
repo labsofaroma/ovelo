@@ -60,7 +60,7 @@ Funding (devnet airdrops are rate-limited per IP and often fail with "rate limit
 ```bash
 solana balance "$(solana-keygen pubkey ~/.config/solana/aroma-deployer.json)" --url devnet
 ```
-This wallet is devnet-only. Use a **different**, fresh deployer for mainnet (M10).
+This wallet is devnet-only. Use a **different**, fresh deployer for mainnet (M12).
 
 Also back up `packages/contracts/.keys/devnet-keeper.json` and `packages/contracts/.keys/devnet-faucet.json` (both devnet only). The faucet key can be generated ahead of step 5 (`solana-keygen new --no-bip39-passphrase --silent -o packages/contracts/.keys/devnet-faucet.json`, after `git check-ignore` confirms the path) so it can be funded early; `init-devnet` reuses it. The keeper pays fees and Pyth price posts, the faucet pays fees, token accounts and its small SOL top-ups.
 

@@ -8,7 +8,7 @@ Severity scale: **Critical** (funds, integrity or an outage) · **High** (securi
 >
 > **M9 (Phase B, branch `phase-b-cutover`):** the prototype is deleted; the M9 lines below close H-4, H-5, H-6, M-5, M-6, M-9 and C-4 with their evidence, record M-12 as partial by decision and L-3 as the owner's license choice.
 >
-> **Milestones were renumbered in M6** (REWRITE-PLAN §7): recurring investing is now **M7**, the Jupiter mainnet contract path **M8**, cutover **M9**, audit and mainnet beta **M10**, launch features **M11**. Status lines below use the new numbers.
+> **Milestones were renumbered in M6** (REWRITE-PLAN §7): recurring investing is now **M7**, the Jupiter mainnet contract path **M8**, cutover **M9**, the Jupiter DCA spike **M10** (it took Path B on 2026-11-15: no mainnet DCA, the devnet beta stays; [launch/DCA-SPIKE.md](./launch/DCA-SPIKE.md)), launch features **M11**, and the external audit with Aroma Guard on mainnet **M12** (when funded). Status lines below use the new numbers.
 
 ---
 
@@ -97,6 +97,8 @@ The SDK still ships Raydium CPMM helpers (`DEVNET_RAYDIUM_CPMM_PROGRAM`, `decode
 - **Still open, M9:** prototype routes keep the old policy. `next.config.mjs` scopes it to non-v1 paths. To tighten them: render the prototype root through a nonce-aware layout (its inline theme script needs the nonce), list the hosts the prototype calls from the browser (its own `/api`, Privy, WalletConnect, Vercel scripts), and drop `'unsafe-inline'`. That is easiest once the prototype pages are deleted at M9.
 
 **M9 (Phase B): Closed.** The prototype's CSP is deleted from `next.config.mjs`; middleware sends the per-request nonce CSP (`script-src 'self' 'nonce-…' 'strict-dynamic'`, no `'unsafe-inline'`, `frame-ancestors 'none'`, explicit `connect-src`) on every route, including 404 and 410 answers. HSTS with `includeSubDomains; preload` on production deployments only; `X-Content-Type-Options`, `Referrer-Policy`, `Permissions-Policy` and `X-Frame-Options` on every path. Evidence: `server/security-headers.test.ts` (page, dynamic page, API, Action, `actions.json`, 410, 404) and the `next start` header check in the Phase B final gate.
+
+**M10 (Phase C): `img-src` hosts.** Commit `2076865` moved the logo hosts into one list, `apps/web/image-hosts.mjs`, which feeds `images.remotePatterns`, the CSP `img-src` and the next/image avatar adapter. `img-src` is now exactly `'self' data: blob: https://xstocks-metadata.backed.fi https://prestocks.com https://backpack.exchange https://static.datapi.jup.ag`; the last host (Jupiter's token-icon CDN) is the one addition, and the issuer's own logo wins over it. Exact `https` hosts only, no wildcard. A logo on any other host renders unoptimized, the CSP blocks it, and the avatar falls back to the ticker tile. Evidence: `server/security-headers.test.ts` pins the directive exactly on every sampled route type; `server/image-hosts.test.ts` (one list in all three places, no wildcard, exact-host matching); `features/shared/components/NextAvatarImage.test.tsx` (unlisted host, no throw, tile fallback).
 
 ### M-5 (Medium): internal error messages reach clients
 19 API handlers return `error.message` directly (for example `faucet`, `recurring/collect`). RPC errors, keypair-parse failures and Redis errors can leak infrastructure details. Map errors to user-safe codes and log the details on the server.

@@ -1,6 +1,6 @@
 # Keeper operations (Aroma Guard v1, devnet)
 
-The keeper (`apps/keeper`, `@aroma/keeper`) executes due recurring-plan installments. It is a stateless HTTP service: QStash calls `POST /run` every 1–5 minutes, and each run reads everything it needs from the chain, Postgres (`plans_index`, `receipts`) and Redis (leases, dead letters, alert de-duplication). It runs on **devnet only** until the mainnet path (M8) and the audit (M10).
+The keeper (`apps/keeper`, `@aroma/keeper`) executes due recurring-plan installments. It is a stateless HTTP service: QStash calls `POST /run` every 1–5 minutes, and each run reads everything it needs from the chain, Postgres (`plans_index`, `receipts`) and Redis (leases, dead letters, alert de-duplication). It runs on **devnet only** until Aroma Guard reaches mainnet at M12 (audit, multisig and deploy, when funded). M10 took Path B: no mainnet recurring through Jupiter DCA ([launch/DCA-SPIKE.md](./launch/DCA-SPIKE.md)).
 
 ## How a run works
 
