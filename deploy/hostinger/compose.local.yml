@@ -25,7 +25,7 @@ services:
     profiles: ["tunnel"]
 
   edge:
-    image: node:24.12.0-slim@sha256:7326fb2dbdce998edd72140946851be64ef4a643e8715e138ca467e8e9d92c99
+    image: node:26.13.1-slim@sha256:e6bedef217677b276c591795e169840edd9096dbf13f29df8ef8d1856b8820bc
     command: ["node", "/edge/edge-proxy.mjs"]
     environment:
       EDGE_UPSTREAM: http://app:3000
@@ -53,7 +53,7 @@ services:
 
   bridge:
     profiles: ["bridge"]
-    image: node:24.12.0-slim@sha256:7326fb2dbdce998edd72140946851be64ef4a643e8715e138ca467e8e9d92c99
+    image: node:26.13.1-slim@sha256:e6bedef217677b276c591795e169840edd9096dbf13f29df8ef8d1856b8820bc
     command: ["node", "/bridge/loopback-bridge.mjs"]
     network_mode: "service:app"
     environment:
