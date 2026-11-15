@@ -67,6 +67,7 @@ RUN mkdir -p /out/apps/web/.next /out/deploy \
  && cp -a apps/web/.next/static /out/apps/web/.next/static \
  && cp -a apps/web/public /out/apps/web/public \
  && cp deploy/server.mjs deploy/graceful.mjs deploy/healthcheck.mjs /out/deploy/ \
+ && node deploy/build-migrate.mjs /out/deploy \
  && mkdir -p /out/apps/web/.next/cache \
  && find /out -name '.env*' ! -name '.env.example' -print -delete \
  && rm -f /out/apps/web/.env.example

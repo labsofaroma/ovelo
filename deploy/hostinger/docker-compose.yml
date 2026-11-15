@@ -1,0 +1,98 @@
+# Phase H Step 5: Aroma on a Hostinger VPS behind Cloudflare (docs/launch/HOSTINGER-RUNBOOK.md).
+# Run ONLY through deploy.sh / rollback.sh, which set AROMA_IMAGE to an image DIGEST:
+#   sudo AROMA_IMAGE=ghcr.io/aromalabs/aroma-web@sha256:<digest> docker compose \
+#     -f /opt/aroma/docker-compose.yml up -d --wait
+#
+# - Nothing is published on the host: the app is reachable only from cloudflared on the internal
+#   `edge` network, and cloudflared dials OUT to Cloudflare (no inbound 80/443 on the VPS).
+# - No secret is in this file: the app reads /etc/aroma/aroma.env (0600), cloudflared reads the
+#   tunnel token from /etc/aroma/tunnel-token (0400, owned by cloudflared's UID 65532).
+# - One app replica (docs/launch/SELF-HOST.md §6: the caches are local to the instance).
+name: aroma
+
+services:
+  app:
+    image: ${AROMA_IMAGE:?set AROMA_IMAGE to ghcr.io/aromalabs/aroma-web@sha256:<digest> (deploy.sh does)}
+    env_file:
+      - path: /etc/aroma/aroma.env
+        required: true
+    init: true
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,nodev,size=64m
+    volumes:
+      - next-cache:/app/apps/web/.next/cache
+    user: "10001:10001"
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 256
+    mem_limit: 1g
+    memswap_limit: 1g
+    cpus: 1.5
+    ulimits:
+      nofile: { soft: 65536, hard: 65536 }
+    restart: unless-stopped
+    # Above the app's 65 s drain (deploy/graceful.mjs), so Docker never SIGKILLs a submit.
+    stop_grace_period: 75s
+    stop_signal: SIGTERM
+    healthcheck:
+      test: ["CMD", "node", "/app/deploy/healthcheck.mjs"]
+      interval: 15s
+      timeout: 5s
+      start_period: 40s
+      # Probe every 2 s while starting, so a deploy switches as soon as the app is ready.
+      start_interval: 2s
+      retries: 3
+    networks:
+      - edge
+      - egress
+    logging:
+      driver: json-file
+      options: { max-size: "20m", max-file: "5" }
+
+  cloudflared:
+    # Pinned by digest (Dependabot proposes bumps); release 2026.10.4.
+    image: cloudflare/cloudflared:2026.10.4@sha256:c6c7ae1d5dfdcb094ad344ed68ccffc26635c9c6be80965664c33baf064b0515
+    command:
+      - tunnel
+      - --no-autoupdate
+      - --metrics
+      - 127.0.0.1:20241
+      - run
+      - --token-file
+      - /run/secrets/tunnel-token
+    volumes:
+      - /etc/aroma/tunnel-token:/run/secrets/tunnel-token:ro
+    depends_on:
+      app:
+        condition: service_healthy
+    read_only: true
+    user: "65532:65532"
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 64
+    mem_limit: 256m
+    cpus: 0.5
+    restart: unless-stopped
+    networks:
+      - edge
+      - tunnel
+    logging:
+      driver: json-file
+      options: { max-size: "10m", max-file: "3" }
+
+networks:
+  # app <-> cloudflared only; no route to the outside world.
+  edge:
+    internal: true
+  # The app's outbound traffic: Neon, Upstash, RPC, Jupiter, Pyth, Jito, Sentry, push, Telegram.
+  egress: {}
+  # cloudflared's outbound connection to Cloudflare's edge.
+  tunnel: {}
+
+volumes:
+  # Image optimizer and data cache. Safe to delete; rebuilt on demand.
+  next-cache:
+    name: aroma-next-cache
