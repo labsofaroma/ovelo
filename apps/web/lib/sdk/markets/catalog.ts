@@ -116,12 +116,13 @@ export const JUPITER_RATE_LIMITED_WARNING =
   "Jupiter rate-limited some price requests (HTTP 429), so some assets are unpriced. Configure a Jupiter API key or retry later.";
 
 /**
- * Whole-refresh budget. A Jupiter key on the free tier allows 5 requests per 10 s, and a full
- * refresh (about 1,600 issuer mints: 17 Tokens V2 batches plus the Price V3 batches for the mints
- * Jupiter knows) needs roughly a minute of quota after the issuer catalogs. Readers are served the
- * cached snapshot meanwhile (stale-while-revalidate), so only a cold cache waits this long.
+ * Whole-refresh budget. A Jupiter key on the free tier allows 5 requests per 10 s; after the issuer
+ * catalogs (~13 s) the 17 Tokens V2 batches (prices, 24h change, volume) finish in ~30 s, and the
+ * remaining time goes to Price V3 (unpriced mints first, then underlying references). It must stay
+ * well under Cloudflare's 100 s origin timeout, because a cold cache makes the first visitor wait for
+ * it; afterwards readers get the cached snapshot and refreshes run in the background.
  */
-export const MARKET_SNAPSHOT_DEADLINE_MS = 90_000;
+export const MARKET_SNAPSHOT_DEADLINE_MS = 60_000;
 
 /** Prices and metadata are requested only for mints obtained from the issuers themselves. */
 export async function getMainnetMarkets(
