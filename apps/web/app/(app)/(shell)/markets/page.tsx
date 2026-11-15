@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
-import { Section, Stack } from "@ovelo/ui";
+import Link from "next/link";
+import { Badge, Section, Stack } from "@ovelo/ui";
 import { filterRows, filtersToSearch } from "@/features/markets/filter";
 import { MarketFilters } from "@/features/markets/components/MarketFilters";
-import { MarketNotice } from "@/features/markets/components/MarketNotice";
 import { MarketTable } from "@/features/markets/components/MarketTable";
 import { Pagination } from "@/features/markets/components/Pagination";
 import { PulseStrip } from "@/features/markets/components/PulseStrip";
@@ -13,10 +13,11 @@ import {
   type MarketsView,
 } from "@/features/markets/schema";
 import { getMarkets } from "@/features/markets/server";
+import { AsOf } from "@/features/shared/components/AsOf";
+import { STALE_AFTER_MS } from "@/features/shared/freshness";
 import { v1Metadata } from "@/features/shared/metadata";
 import { routes } from "@/features/shared/routes";
-import { pageContainer } from "@/features/shared/styles";
-import { PageHeader } from "@/features/shell/PageHeader";
+import { linkButton, pageContainer } from "@/features/shared/styles";
 
 export const metadata: Metadata = v1Metadata({
   title: "Markets",
@@ -40,24 +41,53 @@ export default async function MarketsPage({ searchParams }: Props) {
   return (
     <main id="main-content" className={`${pageContainer} py-6 md:py-8`}>
       <Stack>
-        <PageHeader
-          eyebrow="Mainnet data · spot purchases and paper practice"
-          title="Markets"
-          description="Tokenized stocks listed by their issuers on Solana. Prices are for the token, observed on Solana markets; they can differ from the underlying share."
-        />
-        {markets.state === "unavailable" ? (
-          <MarketNotice
-            tone="unavailable"
-            title="Market data is unavailable right now"
-            refreshHref={`${routes.markets}${filtersToSearch(filters)}`}
-          >
-            <p>
-              The issuer catalogs and price providers could not be reached, so
-              no prices are shown. {markets.error.message} Try again in a few
-              minutes.
-            </p>
-          </MarketNotice>
-        ) : (
+        <Section
+          variant="hero"
+          headingLevel="h1"
+          eyebrow="Markets"
+          title="Tokenized stocks on Solana"
+          description="Real stocks issued as tokens by xStocks, PreStocks and Backpack. Prices are what the token trades at on Solana, which can differ from the underlying share."
+          actions={
+            <Link href={routes.baskets} className={linkButton.pill}>
+              See baskets
+            </Link>
+          }
+        >
+          {markets.state === "unavailable" ? (
+            <div role="alert" className="flex flex-col items-start gap-3">
+              <p className="text-body text-ink">
+                Market data is unavailable right now
+              </p>
+              <p className="max-w-2xl text-small text-muted">
+                The issuer catalogs and price providers could not be reached, so
+                no prices are shown. {markets.error.message} Try again in a few
+                minutes.
+              </p>
+              <Link
+                href={`${routes.markets}${filtersToSearch(filters)}`}
+                className={linkButton.secondary}
+              >
+                Refresh
+              </Link>
+            </div>
+          ) : (
+            <div className="flex flex-wrap items-center gap-3">
+              <Badge className="tabular-nums">
+                {markets.data.rows.length} listings
+              </Badge>
+              <Badge className="tabular-nums">
+                {markets.data.pulse.pricedAssets} priced now
+              </Badge>
+              <AsOf
+                observedAt={markets.data.asOf}
+                source={markets.data.sources.join(", ") || null}
+                staleAfterMs={STALE_AFTER_MS.snapshot}
+                label="Prices as of"
+              />
+            </div>
+          )}
+        </Section>
+        {markets.state === "unavailable" ? null : (
           <MarketsBody view={markets.data} filters={filters} />
         )}
       </Stack>
@@ -75,13 +105,6 @@ function MarketsBody({
   const result = filterRows(view.rows, filters);
   return (
     <>
-      {view.status === "partial" ? (
-        <MarketNotice
-          title="Some market data is missing"
-          items={view.warnings}
-          refreshHref={`${routes.markets}${filtersToSearch(filters)}`}
-        />
-      ) : null}
       <PulseStrip view={view} />
       <Section
         id="all-listings"

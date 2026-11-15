@@ -1,3 +1,8 @@
+/*
+ * HIDDEN: `_invest` is a private folder, so Next does not serve /invest. Recurring investing
+ * (devnet test) is off the frontend until mainnet recurring ships (M12). To restore: rename the
+ * folder back to `invest` and uncomment the links marked "Invest hidden" (grep for it).
+ */
 import type { Metadata } from "next";
 import { NetworkBadge } from "@ovelo/ui";
 import { DevnetSection } from "@/features/invest/components/DevnetSection";

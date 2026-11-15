@@ -148,7 +148,7 @@ export function LandingHero() {
       ></div>
       <article
         className="lp-side-card lp-side-r lp-from-right lp-s55"
-        aria-label="Recurring investing example"
+        aria-label="Self-custody"
       >
         <span className="lp-s49">
           <svg
@@ -161,15 +161,17 @@ export function LandingHero() {
             strokeLinecap="round"
             aria-hidden="true"
           >
-            <path d="M20 12a8 8 0 1 1-2.3-5.7"></path>
-            <path d="M20 4v4.5h-4.5"></path>
-            <path d="M12 8v4l3 2"></path>
+            <path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"></path>
+            <path d="M9 12l2 2 4-4"></path>
           </svg>
         </span>
-        <span className="lp-s50">Recurring plan</span>
-        <span className="lp-s51">Devnet test-token demo</span>
-        <span className="lp-s52">Weekly</span>
-        <span className="lp-s53">Daily, weekly or every 30 days</span>
+        <span className="lp-s50">Your wallet</span>
+        <span className="lp-s51">Mainnet spot purchase</span>
+        <span className="lp-s52">You sign</span>
+        <span className="lp-s53">Outputs settle to your wallet</span>
+        {/* Invest hidden: recurring is off the frontend until mainnet recurring ships (see _invest). The card used to read:
+            Recurring plan · Devnet test-token demo · Weekly · Daily, weekly or every 30 days
+            (icon: circular arrow with clock hands). */}
       </article>
       <article
         className="lp-main-card lp-rise lp-s56"

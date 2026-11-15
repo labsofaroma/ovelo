@@ -42,11 +42,12 @@ export default function SettingsPage() {
       title: "Mainnet spot purchase",
       body: `Real tokenized stocks bought on Solana mainnet from your own wallet. ${mainnet}`,
     },
-    {
-      kind: "devnet-test",
-      title: "Devnet recurring test",
-      body: "Recurring plans on Solana devnet with test tokens of no value. Not mainnet investing.",
-    },
+    // Invest hidden: recurring is off the frontend until mainnet recurring ships (see _invest).
+    // {
+    //   kind: "devnet-test",
+    //   title: "Devnet recurring test",
+    //   body: "Recurring plans on Solana devnet with test tokens of no value. Not mainnet investing.",
+    // },
     {
       kind: "paper",
       title: "Paper practice",

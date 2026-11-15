@@ -147,11 +147,11 @@ export function LandingSections() {
               >
                 <path d="M11 0 L1 13 H8 L6 23 L17 9 H10 Z" fill="#fff"></path>
               </svg>
-              Baskets and recurring
+              Baskets
             </h3>
             <p className="lp-s96">
-              Build a basket of 2 to 12 assets. Recurring investing is a devnet
-              test-token demo; mainnet recurring is not available.
+              Build a basket of 2 to 12 assets and review every leg before you
+              sign in your own wallet.
             </p>
           </article>
         </div>
@@ -230,10 +230,10 @@ export function LandingSections() {
               <circle cx="31" cy="7" r="5"></circle>
               <path d="M10 19h9M10 27h16"></path>
             </svg>
-            <h3 className="lp-s137">Paper and devnet practice</h3>
+            <h3 className="lp-s137">Paper practice</h3>
             <p className="lp-s138">
-              Practise with simulated paper fills, or try the devnet recurring
-              demo with test tokens. Neither is a forecast of real execution.
+              Practise with simulated paper fills on any stock&rsquo;s buy
+              ticket. Paper fills are not a forecast of real execution.
             </p>
           </article>
         </div>

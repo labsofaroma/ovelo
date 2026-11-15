@@ -14,9 +14,10 @@ export function LandingHeader() {
         <Link className="lp-nav-link lp-s14" href="/baskets">
           Baskets
         </Link>
+        {/* Invest hidden: recurring is off the frontend until mainnet recurring ships (see _invest).
         <Link className="lp-nav-link lp-s14" href="/invest">
           Recurring
-        </Link>
+        </Link> */}
         <Link className="lp-nav-link lp-s14" href="/portfolio">
           Portfolio
         </Link>
@@ -48,9 +49,10 @@ export function LandingHeader() {
           <Link className="lp-s19" href="/baskets">
             Baskets
           </Link>
+          {/* Invest hidden: recurring is off the frontend until mainnet recurring ships (see _invest).
           <Link className="lp-s19" href="/invest">
             Recurring
-          </Link>
+          </Link> */}
           <Link className="lp-s19" href="/portfolio">
             Portfolio
           </Link>

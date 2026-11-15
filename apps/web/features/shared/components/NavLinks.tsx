@@ -20,7 +20,8 @@ const ITEMS = [
   { href: routes.portfolio, label: "Portfolio", match: ["/portfolio"] },
   { href: routes.creators, label: "Creators", match: ["/creators"] },
   // M7: devnet test only; the label says so.
-  { href: routes.invest, label: "Invest (devnet)", match: ["/invest"] },
+  // Invest hidden: Invest (recurring) is hidden from the frontend until mainnet recurring ships; see app/(app)/(shell)/_invest.
+  // { href: routes.invest, label: "Invest (devnet)", match: ["/invest"] },
 ] as const;
 
 /** Primary nav. Client only for `aria-current`; links work without JavaScript. */

@@ -19,13 +19,14 @@ const MODES = [
     href: routes.markets,
     cta: "Buy on mainnet",
   },
-  {
-    badge: "Devnet test",
-    title: "Recurring investing test",
-    body: "A vaultless recurring plan that runs on Solana devnet with test tokens only. It is not available on mainnet.",
-    href: routes.invest,
-    cta: "Try the devnet test",
-  },
+  // Invest hidden: recurring is off the frontend until mainnet recurring ships (see _invest).
+  // {
+  //   badge: "Devnet test",
+  //   title: "Recurring investing test",
+  //   body: "A vaultless recurring plan that runs on Solana devnet with test tokens only. It is not available on mainnet.",
+  //   href: routes.invest,
+  //   cta: "Try the devnet test",
+  // },
   {
     badge: "Paper",
     title: "Paper practice",
@@ -73,9 +74,9 @@ export function Landing({ snapshot }: { snapshot: Loaded<LandingSnapshot> }) {
             className="flex flex-col gap-4"
           >
             <h2 id="modes-heading" className="text-section font-semibold">
-              Three ways to use Ovelo, always labelled
+              Two ways to use Ovelo, always labelled
             </h2>
-            <ul className="grid gap-4 md:grid-cols-3">
+            <ul className="grid gap-4 md:grid-cols-2">
               {MODES.map((mode) => (
                 <li
                   key={mode.title}

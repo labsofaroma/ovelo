@@ -35,11 +35,33 @@ export async function fetchMarketsView(
 }
 
 /**
+ * One refresh at a time per process. Every page (markets, baskets, stock, builder) reads the same
+ * snapshot; when the cache misses or expires, concurrent callers share the in-flight refresh
+ * instead of each starting one. Parallel refreshes split the Jupiter quota (5 requests per 10 s
+ * on the free tier) and all came back mostly unpriced. Kept on globalThis so separate route
+ * bundles in one process share it too.
+ */
+const INFLIGHT_KEY = "__oveloMarketsRefresh";
+function sharedRefresh(): Promise<MarketsView> {
+  const slot = globalThis as unknown as Record<
+    string,
+    Promise<MarketsView> | undefined
+  >;
+  const running = slot[INFLIGHT_KEY];
+  if (running) return running;
+  const next = fetchMarketsView().finally(() => {
+    slot[INFLIGHT_KEY] = undefined;
+  });
+  slot[INFLIGHT_KEY] = next;
+  return next;
+}
+
+/**
  * Next data cache (AUDIT M-9: no disk-cache module). A thrown load is never cached, so an outage
  * keeps serving the last good snapshot with its ORIGINAL `asOf`; the UI then labels it stale.
  */
 const cachedMarketsView = unstable_cache(
-  () => fetchMarketsView(),
+  () => sharedRefresh(),
   ["v1-markets-view", "1"],
   { tags: [MARKETS_TAG], revalidate: MARKETS_REVALIDATE_SECONDS },
 );

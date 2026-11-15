@@ -237,7 +237,8 @@ const PAGES: Record<string, { sample: string; browseBlockable: boolean }> = {
     sample: "/creators/dashboard",
     browseBlockable: true,
   },
-  "/invest": { sample: "/invest", browseBlockable: true },
+  // Invest hidden (app/(app)/(shell)/_invest): restore with the route.
+  // "/invest": { sample: "/invest", browseBlockable: true },
   "/settings": { sample: "/settings", browseBlockable: true },
   "/get-started": { sample: "/get-started", browseBlockable: true },
   "/ui-preview": { sample: "/ui-preview", browseBlockable: true },
@@ -261,7 +262,9 @@ function discovered(): { apis: string[]; pages: string[] } {
     },
   )
     .split("\n")
-    .filter((f) => /\/(page|route)\.tsx?$|^app\/(robots|sitemap)\.ts$/.test(f));
+    .filter((f) => /\/(page|route)\.tsx?$|^app\/(robots|sitemap)\.ts$/.test(f))
+    // Next does not route private folders (`_name`), e.g. the hidden `_invest`.
+    .filter((f) => !/\/_[^/]+\//.test(f));
   const urls = files.map((f) => {
     const special = f.match(/^app\/(robots|sitemap)\.ts$/);
     if (special)

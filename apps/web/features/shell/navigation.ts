@@ -3,7 +3,7 @@ import {
   Compass,
   Layers3,
   ListOrdered,
-  Repeat2,
+  // Repeat2, // Invest hidden
   Settings2,
   Sparkles,
   Wallet2,
@@ -14,7 +14,8 @@ import { shell } from "./copy";
 export const primaryNav = [
   { href: routes.markets, label: shell.nav.markets, icon: Compass },
   { href: routes.baskets, label: shell.nav.baskets, icon: Layers3 },
-  { href: routes.invest, label: shell.nav.invest, icon: Repeat2 },
+  // Invest hidden: Invest (recurring) is hidden from the frontend until mainnet recurring ships; see app/(app)/(shell)/_invest.
+  // { href: routes.invest, label: shell.nav.invest, icon: Repeat2 },
   { href: routes.portfolio, label: shell.nav.portfolio, icon: Wallet2 },
 ] as const;
 

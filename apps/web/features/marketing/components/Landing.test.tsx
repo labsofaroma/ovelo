@@ -31,14 +31,14 @@ describe("Landing links and button texts", () => {
   it("gives each mode card a link to where that mode is used", () => {
     render(<Landing snapshot={unavailable} />);
     const modes = screen.getByRole("region", {
-      name: "Three ways to use Ovelo, always labelled",
+      name: "Two ways to use Ovelo, always labelled",
     });
     const links = within(modes)
       .getAllByRole("link")
       .map((a) => [a.textContent, a.getAttribute("href")]);
     expect(links).toEqual([
       ["Buy on mainnet", routes.markets],
-      ["Try the devnet test", routes.invest],
+      // Invest hidden: ["Try the devnet test", routes.invest] returns with the route.
       ["Pick a stock to practise", routes.markets],
     ]);
   });

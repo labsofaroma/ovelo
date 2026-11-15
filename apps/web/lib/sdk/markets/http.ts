@@ -25,6 +25,36 @@ async function waitForRateLimit(
   });
 }
 
+/**
+ * Process-wide Jupiter quota gate. Jupiter reports its window on every response
+ * (`x-ratelimit-remaining`, `x-ratelimit-reset` in epoch seconds). When the window is spent,
+ * every caller in the process (markets refresh, stock pages, quotes) waits for the reset instead
+ * of spending requests on 429s. Kept on globalThis so separate route bundles share it.
+ */
+type JupiterGate = { until: number };
+const GATE_KEY = "__oveloJupiterGate";
+function jupiterGate(): JupiterGate {
+  const slot = globalThis as unknown as Record<string, JupiterGate | undefined>;
+  return (slot[GATE_KEY] ??= { until: 0 });
+}
+const isJupiter = (url: string): boolean =>
+  /^https:\/\/(api|lite-api)\.jup\.ag\//.test(url);
+
+async function waitForJupiterWindow(signal?: AbortSignal): Promise<void> {
+  const delay = jupiterGate().until - Date.now();
+  if (delay > 0) await waitForRateLimit(Math.min(delay, 15_000), signal);
+}
+
+function noteJupiterWindow(response: Response): void {
+  const remaining = Number(response.headers.get("x-ratelimit-remaining"));
+  const reset = Number(response.headers.get("x-ratelimit-reset"));
+  const spent = response.status === 429 || remaining === 0;
+  if (spent && Number.isFinite(reset) && reset > 0) {
+    const gate = jupiterGate();
+    gate.until = Math.max(gate.until, reset * 1000 + 100);
+  }
+}
+
 /** A non-2xx provider response. `status` lets callers tell rate limiting (429) from an outage. */
 export class MarketHttpError extends Error {
   readonly status: number;
@@ -58,11 +88,14 @@ export async function request(
   const jupiterApiKey = resolveJupiterApiKey(options.jupiterApiKey);
   if (url.startsWith("https://api.jup.ag/") && jupiterApiKey)
     headers["x-api-key"] = jupiterApiKey;
+  const jupiter = isJupiter(url);
+  if (jupiter) await waitForJupiterWindow(options.signal);
   let response = await (options.fetcher ?? fetch)(url, {
     headers,
     signal: requestSignal(options),
     cache: "no-store",
   });
+  if (jupiter) noteJupiterWindow(response);
   // Jupiter shares its short rate-limit window across Tokens and Price requests.
   // Respect the actual reset; retrying a full catalog after one second loses whole batches.
   // Concurrent batches can land in the same exhausted window more than once, so keep waiting for
@@ -86,11 +119,13 @@ export async function request(
           : 1_000;
     const delayMs = Math.min(Math.max(requestedDelay, 100), 15_000);
     await waitForRateLimit(delayMs, options.signal);
+    if (jupiter) await waitForJupiterWindow(options.signal);
     response = await (options.fetcher ?? fetch)(url, {
       headers,
       signal: requestSignal(options),
       cache: "no-store",
     });
+    if (jupiter) noteJupiterWindow(response);
   }
   if (!response.ok) throw new MarketHttpError(response.status);
   return response.json() as Promise<unknown>;
