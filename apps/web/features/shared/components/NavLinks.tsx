@@ -36,8 +36,10 @@ export function NavLinks() {
               href={item.href}
               aria-current={active ? "page" : undefined}
               className={cn(
-                "inline-flex min-h-(--ovelo-control-height) items-center whitespace-nowrap rounded-control px-3 text-small font-semibold transition-colors motion-base focus-ring",
-                active ? "bg-raised text-ink" : "text-muted hover:text-ink",
+                "inline-flex min-h-(--ovelo-control-height-compact) items-center whitespace-nowrap rounded-full border px-4 text-small font-medium transition-colors motion-base focus-ring max-md:min-h-(--ovelo-control-height)",
+                active
+                  ? "border-line bg-raised-2 text-ink"
+                  : "border-transparent text-muted hover:bg-raised-2 hover:text-ink",
               )}
             >
               {item.label}

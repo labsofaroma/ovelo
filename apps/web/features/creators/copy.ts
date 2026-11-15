@@ -12,6 +12,7 @@ export const dashboardCopy = {
   notCreator:
     "This wallet is not a creator yet. Redeem a creator invite in the basket builder.",
   noBaskets: "No baskets yet.",
+  openBuilder: "Open the basket builder",
   noBuys: "No buys yet.",
   source: (source: string, asOf: string) =>
     `Source: ${source}. Updated ${asOf}. Pending and failed orders are not counted.`,

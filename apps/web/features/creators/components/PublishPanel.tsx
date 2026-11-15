@@ -3,6 +3,7 @@
 import { Button, Field, Input } from "@ovelo/ui";
 import Link from "next/link";
 import { useState } from "react";
+import { linkButtonSmall } from "../../shared/styles";
 import { ConnectButton } from "../../wallet/ConnectButton";
 import { useWallet } from "../../wallet/context";
 import { flowErrorMessage, UNSUPPORTED_WALLET } from "../publish-flow";
@@ -73,14 +74,17 @@ export function PublishPanel({
           Published {publish.data.name} ({publish.data.ticker}), version{" "}
           {publish.data.version}.
         </p>
-        <div className="flex flex-wrap gap-3 text-small">
+        <div className="flex flex-wrap gap-2">
           <Link
-            className="underline"
+            className={linkButtonSmall.primary}
             href={creatorRoutes.basket(publish.data.id)}
           >
             View the basket
           </Link>
-          <Link className="underline" href={creatorRoutes.directory}>
+          <Link
+            className={linkButtonSmall.secondary}
+            href={creatorRoutes.directory}
+          >
             Creator directory
           </Link>
         </div>
@@ -144,7 +148,7 @@ export function PublishPanel({
             <ConnectButton />
           </div>
           {needsInvite ? (
-            <fieldset className="flex flex-col gap-3 rounded-panel border border-line p-3">
+            <fieldset className="flex flex-col gap-3 rounded-tile border border-line bg-raised p-4">
               <legend className="px-1 text-small font-semibold">
                 Redeem your creator invite
               </legend>
@@ -188,6 +192,7 @@ export function PublishPanel({
           <div>
             <Button
               type="button"
+              variant="solid"
               loading={busy}
               disabled={
                 busy || problems.length > 0 || (needsInvite && !inviteReady)

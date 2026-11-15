@@ -1,6 +1,7 @@
 "use client";
 
-import { Badge } from "@ovelo/ui";
+import { ExternalLink } from "lucide-react";
+import { Badge, Callout, Section, buttonClassName } from "@ovelo/ui";
 import { formatUnits } from "@ovelo/ui/format";
 import Link from "next/link";
 import { routes } from "../../shared/routes";
@@ -19,8 +20,9 @@ const sol = (lamports: bigint) =>
 const usdc = (raw: bigint) => formatUnits(raw, 6, { fractionDigits: 2 }).text;
 const short = (a: string) => `${a.slice(0, 4)}…${a.slice(-4)}`;
 
-const card =
-  "flex flex-col gap-3 rounded-panel border border-line bg-surface p-4";
+const muted = "text-small leading-body text-muted";
+const body = "text-small leading-body text-ink";
+const done = <Badge tone="up">Done</Badge>;
 
 /** The three onboarding steps. Pure props, so it is tested without a wallet or network. */
 export function OnboardingSteps({
@@ -41,123 +43,146 @@ export function OnboardingSteps({
   paused: boolean;
   pageUrl: string;
 }) {
-  const done = (step: "wallet" | "funds") =>
-    step === "wallet" ? Boolean(address) : funds.step === "first_buy";
   return (
-    <ol className="flex flex-col gap-4">
-      <li className={card} aria-labelledby="step-wallet">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 id="step-wallet" className="text-section font-semibold">
-            {copy.step1}
-          </h2>
-          {done("wallet") ? <Badge tone="up">Done</Badge> : null}
-        </div>
-        {address ? (
-          <p className="text-small">{copy.connected(short(address))}</p>
-        ) : (
-          <>
-            <p className="text-small">{copy.noWallet}</p>
-            <ul className="flex flex-wrap gap-x-4 gap-y-1 text-small">
-              {WALLET_INSTALL_GUIDES.map((g) => (
-                <li key={g.name}>
-                  <a
-                    href={g.href}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="underline"
+    <ol className="flex flex-col gap-4 md:gap-5">
+      <li>
+        <Section
+          eyebrow={copy.eyebrow(1)}
+          title={copy.step1}
+          actions={address ? done : null}
+        >
+          <div className="flex flex-col gap-4">
+            {address ? (
+              <p className={body}>{copy.connected(short(address))}</p>
+            ) : (
+              <>
+                <p className={body}>{copy.noWallet}</p>
+                <ul className="flex flex-wrap gap-2">
+                  {WALLET_INSTALL_GUIDES.map((g) => (
+                    <li key={g.name}>
+                      <a
+                        href={g.href}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className={buttonClassName({
+                          variant: "secondary",
+                          size: "sm",
+                        })}
+                      >
+                        Install {g.name}
+                        <ExternalLink className="size-3.5" aria-hidden />
+                      </a>
+                    </li>
+                  ))}
+                </ul>
+                <div className="flex flex-col gap-2 rounded-tile border border-line bg-raised p-4">
+                  <p className={body}>{copy.phone}</p>
+                  <ul className="flex flex-wrap gap-2">
+                    {walletBrowseLinks(pageUrl).map((g) => (
+                      <li key={g.name}>
+                        <a
+                          href={g.href}
+                          className={buttonClassName({
+                            variant: "secondary",
+                            size: "sm",
+                          })}
+                        >
+                          Open in {g.name}
+                        </a>
+                      </li>
+                    ))}
+                  </ul>
+                  <p className="text-caption text-muted">{copy.phoneHint}</p>
+                </div>
+              </>
+            )}
+            <div>
+              <ConnectButton />
+            </div>
+          </div>
+        </Section>
+      </li>
+
+      <li>
+        <Section
+          eyebrow={copy.eyebrow(2)}
+          title={copy.step2}
+          actions={funds.step === "first_buy" ? done : null}
+        >
+          <div className="flex flex-col gap-4">
+            {!address ? null : funds.loading ? (
+              <p role="status" className={muted}>
+                {copy.balancesLoading}
+              </p>
+            ) : funds.error || funds.sol === null || funds.usdc === null ? (
+              <Callout tone="warning">{copy.balancesUnavailable}</Callout>
+            ) : (
+              <div className="flex flex-col gap-2 rounded-tile border border-line bg-raised p-4">
+                <p className="text-small font-medium leading-body text-ink tabular-nums">
+                  {copy.balances(sol(funds.sol), usdc(funds.usdc))}
+                </p>
+                <p className={muted}>
+                  {copy.solNeeded(suggestion?.tokens ?? 1, sol(funds.needed))}
+                </p>
+                <p
+                  className={`text-small leading-body ${funds.sol >= funds.needed ? "text-up" : "text-warning"}`}
+                >
+                  {funds.sol >= funds.needed
+                    ? copy.solOk
+                    : copy.solShort(sol(funds.needed - funds.sol))}
+                </p>
+                {funds.usdc === 0n ? (
+                  <p className="text-small leading-body text-warning">
+                    {copy.usdcNone}
+                  </p>
+                ) : null}
+              </div>
+            )}
+            <p className={muted}>{copy.fund}</p>
+            <p className={muted}>{copy.usdcLimit(capText)}</p>
+          </div>
+        </Section>
+      </li>
+
+      <li>
+        <Section eyebrow={copy.eyebrow(3)} title={copy.step3}>
+          <div className="flex flex-col gap-4">
+            {paused ? <Callout tone="warning">{copy.paused}</Callout> : null}
+            {suggestion ? (
+              <div className="flex flex-col gap-3 rounded-tile border border-line bg-raised p-4">
+                <p className="font-display text-title text-ink">
+                  {copy.suggestion(suggestion.name, suggestion.tokens)}
+                </p>
+                <p className={muted}>{copy.suggestionWhy}</p>
+                <p className={muted}>{copy.gates}</p>
+                <div className="flex flex-wrap items-center gap-3 pt-1">
+                  <Link
+                    href={routes.basket(suggestion.id)}
+                    className={buttonClassName({ variant: "solid" })}
                   >
-                    Install {g.name}
-                  </a>
-                </li>
-              ))}
-            </ul>
-            <div className="text-small">
-              <p>{copy.phone}</p>
-              <ul className="mt-1 flex flex-wrap gap-x-4 gap-y-1">
-                {walletBrowseLinks(pageUrl).map((g) => (
-                  <li key={g.name}>
-                    <a href={g.href} className="underline">
-                      Open in {g.name}
-                    </a>
-                  </li>
-                ))}
-              </ul>
-              <p className="mt-1 text-muted">{copy.phoneHint}</p>
-            </div>
-          </>
-        )}
-        <div>
-          <ConnectButton />
-        </div>
-      </li>
-
-      <li className={card} aria-labelledby="step-funds">
-        <div className="flex flex-wrap items-center justify-between gap-2">
-          <h2 id="step-funds" className="text-section font-semibold">
-            {copy.step2}
-          </h2>
-          {done("funds") ? <Badge tone="up">Done</Badge> : null}
-        </div>
-        {!address ? null : funds.loading ? (
-          <p role="status" className="text-small text-muted">
-            {copy.balancesLoading}
-          </p>
-        ) : funds.error || funds.sol === null || funds.usdc === null ? (
-          <p className="text-small text-muted">{copy.balancesUnavailable}</p>
-        ) : (
-          <>
-            <p className="text-small">
-              {copy.balances(sol(funds.sol), usdc(funds.usdc))}
-            </p>
-            <p className="text-small">
-              {copy.solNeeded(suggestion?.tokens ?? 1, sol(funds.needed))}
-            </p>
-            <p className="text-small">
-              {funds.sol >= funds.needed
-                ? copy.solOk
-                : copy.solShort(sol(funds.needed - funds.sol))}
-            </p>
-            {funds.usdc === 0n ? (
-              <p className="text-small">{copy.usdcNone}</p>
-            ) : null}
-          </>
-        )}
-        <p className="text-small text-muted">{copy.fund}</p>
-        <p className="text-small text-muted">{copy.usdcLimit(capText)}</p>
-      </li>
-
-      <li className={card} aria-labelledby="step-buy">
-        <h2 id="step-buy" className="text-section font-semibold">
-          {copy.step3}
-        </h2>
-        {paused ? <p className="text-small">{copy.paused}</p> : null}
-        {suggestion ? (
-          <>
-            <p className="text-body font-semibold">
-              {copy.suggestion(suggestion.name, suggestion.tokens)}
-            </p>
-            <p className="text-small text-muted">{copy.suggestionWhy}</p>
-            <p className="text-small text-muted">{copy.gates}</p>
-            <div className="flex flex-wrap items-center gap-4 text-small">
-              <Link
-                href={routes.basket(suggestion.id)}
-                className="rounded-control bg-accent px-3 py-2 font-semibold text-accent-ink"
-              >
-                {copy.open}
-              </Link>
-              <Link href={routes.markets} className="underline">
-                {copy.orStock}
-              </Link>
-            </div>
-          </>
-        ) : (
-          <p className="text-small">
-            {copy.suggestionNone}{" "}
-            <Link href={routes.markets} className="underline">
-              {copy.orStock}
-            </Link>
-          </p>
-        )}
+                    {copy.open}
+                  </Link>
+                  <Link
+                    href={routes.markets}
+                    className={buttonClassName({ variant: "ghost" })}
+                  >
+                    {copy.orStock}
+                  </Link>
+                </div>
+              </div>
+            ) : (
+              <p className={body}>
+                {copy.suggestionNone}{" "}
+                <Link
+                  href={routes.markets}
+                  className="rounded-badge underline underline-offset-2 focus-ring"
+                >
+                  {copy.orStock}
+                </Link>
+              </p>
+            )}
+          </div>
+        </Section>
       </li>
     </ol>
   );

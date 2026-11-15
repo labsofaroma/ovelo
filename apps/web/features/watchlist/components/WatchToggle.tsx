@@ -1,13 +1,13 @@
 "use client";
 
-import { Star } from "lucide-react";
+import { Bookmark } from "lucide-react";
 import { cn } from "@ovelo/ui";
 import { useHydratedWatchlist } from "../useHydratedWatchlist";
 
 export interface WatchToggleProps {
   mint: string;
   symbol: string;
-  /** Show the text label next to the star (detail pages). Rows show the star only. */
+  /** Show the text label next to the bookmark (detail pages). Rows show the icon only. */
   showLabel?: boolean;
 }
 
@@ -33,13 +33,16 @@ export function WatchToggle({
       disabled={!hydrated}
       onClick={() => toggle(mint)}
       className={cn(
-        "inline-flex min-h-(--ovelo-control-height) min-w-(--ovelo-control-height) items-center justify-center gap-2 rounded-control border border-transparent px-2 text-small font-semibold transition-colors motion-base focus-ring",
-        "hover:bg-raised disabled:cursor-progress disabled:opacity-60",
+        "inline-flex min-h-(--ovelo-control-height) min-w-(--ovelo-control-height) cursor-pointer items-center justify-center gap-2 rounded-full border px-2 text-small font-semibold transition-colors motion-fast focus-ring",
+        "hover:bg-raised-2 hover:text-ink disabled:cursor-progress disabled:opacity-60",
         showLabel && "border-border-strong px-4",
-        watched ? "text-accent" : "text-muted",
+        watched
+          ? "border-border-strong bg-raised-2 text-ink"
+          : "border-transparent text-muted",
+        showLabel && !watched && "border-border-strong",
       )}
     >
-      <Star
+      <Bookmark
         aria-hidden="true"
         className={cn("size-4", watched && "fill-current")}
       />

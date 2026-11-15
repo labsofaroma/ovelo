@@ -14,20 +14,10 @@ export const metadata: Metadata = v1Metadata({
 });
 
 export default function PortfolioPage() {
+  // The h1 sits in the island's first card (redesign layout); it is server-rendered with the
+  // idle (not connected) wallet state.
   return (
-    <main
-      id="main-content"
-      className={`${pageContainer} flex flex-col gap-6 py-8`}
-    >
-      <div className="flex flex-col gap-1">
-        <h1 className="text-page font-semibold max-md:text-page-mobile">
-          Portfolio
-        </h1>
-        <p className="text-small text-muted">
-          Mainnet holdings of your connected wallet. Values use observed token
-          prices only; unpriced holdings are listed without a value.
-        </p>
-      </div>
+    <main id="main-content" className={`${pageContainer} py-8`}>
       <PortfolioIsland />
     </main>
   );

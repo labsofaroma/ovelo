@@ -1,13 +1,16 @@
 "use client";
 
-import { Button } from "@ovelo/ui";
+import Link from "next/link";
+import { Button, EmptyState } from "@ovelo/ui";
 import { formatObservedAt } from "../../shared/freshness";
 import { QueryProvider } from "../../shared/components/QueryProvider";
+import { linkButtonSmall } from "../../shared/styles";
 import { ConnectButton } from "../../wallet/ConnectButton";
 import { useSigner } from "../../wallet/context";
 import { WalletBoundary } from "../../wallet/WalletBoundary";
 import { dashboardCopy as copy } from "../copy";
 import { useArchiveMutation } from "../queries";
+import { creatorRoutes } from "../routes";
 import { useDashboard } from "../useDashboard";
 import type { DashboardData } from "../dashboard-schema";
 import { BasketDashboardCard } from "./BasketDashboardCard";
@@ -67,20 +70,26 @@ export function DashboardView({
   archivingId: string | null;
 }) {
   if (!wallet)
-    return (
-      <div className="flex flex-col items-start gap-3 text-small">
-        <p>{copy.connect}</p>
-        <ConnectButton />
-      </div>
-    );
-  if (!canSign)
-    return <p className="text-small text-muted">{copy.cannotSign}</p>;
+    return <EmptyState title={copy.connect} action={<ConnectButton />} />;
+  if (!canSign) return <EmptyState title={copy.cannotSign} />;
   if (state.error?.code === "FORBIDDEN")
-    return <p className="text-small">{copy.notCreator}</p>;
+    return (
+      <EmptyState
+        title={copy.notCreator}
+        action={
+          <Link
+            className={linkButtonSmall.secondary}
+            href={creatorRoutes.builder}
+          >
+            {copy.openBuilder}
+          </Link>
+        }
+      />
+    );
   if (!state.data)
     return (
-      <div className="flex flex-col items-start gap-2 text-small">
-        <Button onClick={state.open} loading={state.busy}>
+      <div className="flex flex-col items-start gap-3 rounded-tile border border-line bg-raised p-5 text-small">
+        <Button variant="solid" onClick={state.open} loading={state.busy}>
           {copy.open}
         </Button>
         <p className="text-muted">{copy.openHint}</p>
@@ -94,14 +103,31 @@ export function DashboardView({
   const data = state.data;
   return (
     <div className="flex flex-col gap-4">
-      <p className="text-caption text-muted">
-        {copy.source(data.source, formatObservedAt(data.asOf) ?? data.asOf)}{" "}
-        {copy.blinkNote(
-          formatObservedAt(data.blinkTrackingSince) ?? data.blinkTrackingSince,
-        )}
+      <p className="flex flex-wrap items-start gap-2 text-caption text-muted">
+        <span
+          aria-hidden="true"
+          className="mt-1.5 size-1.5 shrink-0 rounded-full bg-up"
+        />
+        <span>
+          {copy.source(data.source, formatObservedAt(data.asOf) ?? data.asOf)}{" "}
+          {copy.blinkNote(
+            formatObservedAt(data.blinkTrackingSince) ??
+              data.blinkTrackingSince,
+          )}
+        </span>
       </p>
       {data.baskets.length === 0 ? (
-        <p className="text-small">{copy.noBaskets}</p>
+        <EmptyState
+          title={copy.noBaskets}
+          action={
+            <Link
+              className={linkButtonSmall.secondary}
+              href={creatorRoutes.builder}
+            >
+              {copy.openBuilder}
+            </Link>
+          }
+        />
       ) : null}
       {data.baskets.map((basket) => (
         <BasketDashboardCard

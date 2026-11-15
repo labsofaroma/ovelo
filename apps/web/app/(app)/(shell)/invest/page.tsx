@@ -1,12 +1,15 @@
 import type { Metadata } from "next";
+import { NetworkBadge } from "@ovelo/ui";
+import { DevnetSection } from "@/features/invest/components/DevnetSection";
 import { InvestIsland } from "@/features/invest/components/InvestIsland";
 import { InvestUnavailable } from "@/features/invest/components/InvestUnavailable";
 import { MainnetRecurringComing } from "@/features/invest/components/MainnetRecurringComing";
-import { investCopy } from "@/features/invest/copy";
 import { loadInvestPage } from "@/features/invest/page-data";
 import { v1Metadata } from "@/features/shared/metadata";
 import { routes } from "@/features/shared/routes";
 import { pageContainer } from "@/features/shared/styles";
+import { PageHeader } from "@/features/shell/PageHeader";
+import { ClusterLabel } from "@/features/wallet/ClusterLabel";
 
 export const dynamic = "force-dynamic";
 
@@ -20,39 +23,34 @@ export const metadata: Metadata = v1Metadata({
 
 export default async function InvestPage() {
   const page = await loadInvestPage();
+  const cluster = page.state === "ok" ? page.data.cluster : page.cluster;
   return (
     <main
       id="main-content"
-      className={`${pageContainer} flex flex-col gap-6 py-8`}
+      className={`${pageContainer} flex flex-col gap-4 md:gap-5`}
     >
-      <div className="flex flex-col gap-1">
-        <h1 className="text-page font-semibold max-md:text-page-mobile">
-          Recurring investing
-        </h1>
-        <p className="text-small text-muted">
-          A devnet test of automatic investing: each period one installment of
-          test USD buys your chosen assets at the Pyth oracle price. Test tokens
-          only; nothing here has real value.
-        </p>
-      </div>
+      <PageHeader
+        eyebrow="Invest"
+        title="Recurring investing"
+        description="A devnet test of automatic investing: each period one installment of test USD buys your chosen assets at the Pyth oracle price. Test tokens only; nothing here has real value."
+        actions={
+          cluster === "devnet" ? (
+            <NetworkBadge kind="devnet-test" />
+          ) : (
+            <ClusterLabel cluster={cluster} />
+          )
+        }
+      />
       <MainnetRecurringComing />
-      <section
-        aria-labelledby="devnet-plans-heading"
-        data-testid="devnet-plans"
-        className="flex flex-col gap-3"
-      >
-        <div className="flex flex-col gap-1">
-          <h2 id="devnet-plans-heading" className="text-section font-semibold">
-            {investCopy.devnetHeading}
-          </h2>
-          <p className="text-caption text-muted">{investCopy.devnetLabel}</p>
-        </div>
+      <div data-testid="devnet-plans" className="flex flex-col gap-4 md:gap-5">
         {page.state === "ok" ? (
           <InvestIsland data={page.data} />
         ) : (
-          <InvestUnavailable cluster={page.cluster} message={page.message} />
+          <DevnetSection>
+            <InvestUnavailable cluster={page.cluster} message={page.message} />
+          </DevnetSection>
         )}
-      </section>
+      </div>
     </main>
   );
 }

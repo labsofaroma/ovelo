@@ -4,6 +4,7 @@ import { getMarkets } from "@/features/markets/server";
 import { onboardingCopy } from "@/features/onboarding/copy";
 import { OnboardingIsland } from "@/features/onboarding/components/OnboardingIsland";
 import type { Suggestion } from "@/features/onboarding/components/OnboardingSteps";
+import { PageHeader } from "@/features/shell/PageHeader";
 import { v1Metadata } from "@/features/shared/metadata";
 import { routes } from "@/features/shared/routes";
 import { pageContainer } from "@/features/shared/styles";
@@ -53,14 +54,13 @@ export default async function GetStartedPage() {
   return (
     <main
       id="main-content"
-      className={`${pageContainer} flex max-w-3xl flex-col gap-6 py-8`}
+      className={`${pageContainer} flex flex-col gap-4 py-8 md:gap-5`}
     >
-      <div className="flex flex-col gap-1">
-        <h1 className="text-page font-semibold max-md:text-page-mobile">
-          {onboardingCopy.title}
-        </h1>
-        <p className="text-small text-muted">{onboardingCopy.intro}</p>
-      </div>
+      <PageHeader
+        eyebrow={onboardingCopy.headerEyebrow}
+        title={onboardingCopy.title}
+        description={onboardingCopy.intro}
+      />
       <OnboardingIsland
         suggestion={await suggestion()}
         capText={capText()}

@@ -1,16 +1,22 @@
 "use client";
 
 import { SlidersHorizontal } from "lucide-react";
+import { cn } from "@ovelo/ui";
+import { textLink } from "../styles";
 
 /** Opens the consent banner (features/shared/components/ConsentBanner listens for this event). */
 export const OPEN_PRIVACY_EVENT = "ovelo:privacy-open";
 
-export function PrivacyChoicesButton() {
+/** Default look: an inline text link. Pass `className` (e.g. `linkButton.secondary`) to restyle. */
+export function PrivacyChoicesButton({ className }: { className?: string }) {
   return (
     <button
       type="button"
       onClick={() => window.dispatchEvent(new Event(OPEN_PRIVACY_EVENT))}
-      className="inline-flex items-center gap-1 rounded-badge text-ink underline underline-offset-2 hover:text-accent focus-ring"
+      className={cn(
+        "inline-flex cursor-pointer items-center gap-1.5",
+        className ?? textLink,
+      )}
     >
       <SlidersHorizontal aria-hidden="true" className="size-3.5" />
       Privacy choices

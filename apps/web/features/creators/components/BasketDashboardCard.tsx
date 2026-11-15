@@ -4,6 +4,7 @@ import { Badge, Button } from "@ovelo/ui";
 import Link from "next/link";
 import { useState } from "react";
 import { formatObservedAt } from "../../shared/freshness";
+import { linkButtonSmall } from "../../shared/styles";
 import { dashboardCopy as copy } from "../copy";
 import type { DashboardBasket } from "../dashboard-schema";
 import { creatorRoutes } from "../routes";
@@ -32,15 +33,18 @@ export function BasketDashboardCard({
   return (
     <section
       aria-labelledby={headingId}
-      className="flex flex-col gap-3 rounded-panel border border-line bg-surface p-4"
+      className="flex flex-col gap-5 rounded-tile border border-line bg-raised p-5"
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 id={headingId} className="text-section font-semibold">
+        <h3
+          id={headingId}
+          className="font-display text-title font-medium tracking-[-0.02em] text-ink"
+        >
           {basket.name}{" "}
-          <span className="text-small font-normal text-muted">
+          <span className="font-sans text-small font-normal tracking-normal text-muted">
             {basket.ticker}
           </span>
-        </h2>
+        </h3>
         <Badge tone={basket.status === "published" ? "up" : "neutral"}>
           {copy.status[basket.status]}
         </Badge>
@@ -49,26 +53,26 @@ export function BasketDashboardCard({
       {basket.usage.state === "unavailable" ? (
         <p className="text-small text-muted">{basket.usage.reason}</p>
       ) : basket.usage.state === "none" ? (
-        <p className="text-small">{copy.noBuys}</p>
+        <p className="text-small text-muted">{copy.noBuys}</p>
       ) : (
         <div className="overflow-x-auto">
           <table className="w-full min-w-[34rem] text-small">
             <caption className="sr-only">{`${basket.name}: confirmed buys by period`}</caption>
             <thead>
               <tr className="text-left text-caption text-muted">
-                <th scope="col" className="py-1.5 font-normal">
+                <th scope="col" className="py-2 font-normal">
                   {copy.columns.period}
                 </th>
-                <th scope="col" className="py-1.5 text-right font-normal">
+                <th scope="col" className="py-2 text-right font-normal">
                   {copy.columns.buys}
                 </th>
-                <th scope="col" className="py-1.5 text-right font-normal">
+                <th scope="col" className="py-2 text-right font-normal">
                   {copy.columns.buyers}
                 </th>
-                <th scope="col" className="py-1.5 text-right font-normal">
+                <th scope="col" className="py-2 text-right font-normal">
                   {copy.columns.volume}
                 </th>
-                <th scope="col" className="py-1.5 text-right font-normal">
+                <th scope="col" className="py-2 text-right font-normal">
                   {copy.columns.blink}
                 </th>
               </tr>
@@ -78,19 +82,17 @@ export function BasketDashboardCard({
                 const blink = basket.blink.find((b) => b.window === w.window);
                 return (
                   <tr key={w.window} className="border-t border-line">
-                    <th scope="row" className="py-1.5 text-left font-normal">
+                    <th scope="row" className="py-2 text-left font-normal">
                       {copy.windows[w.window]}
                     </th>
-                    <td className="py-1.5 text-right tabular-nums">
+                    <td className="py-2 text-right tabular-nums">
                       {w.purchases}
                     </td>
-                    <td className="py-1.5 text-right tabular-nums">
-                      {w.buyers}
-                    </td>
-                    <td className="py-1.5 text-right tabular-nums">
+                    <td className="py-2 text-right tabular-nums">{w.buyers}</td>
+                    <td className="py-2 text-right tabular-nums">
                       {volumeText(w.volume)}
                     </td>
-                    <td className="py-1.5 text-right tabular-nums">
+                    <td className="py-2 text-right tabular-nums">
                       {blink
                         ? copy.blink(
                             blink.viaAction,
@@ -107,12 +109,12 @@ export function BasketDashboardCard({
         </div>
       )}
 
-      <div className="text-small">
-        <h3 className="font-semibold">{copy.versions}</h3>
+      <div className="flex flex-col gap-2 border-t border-line pt-4 text-small">
+        <h4 className="font-semibold text-ink">{copy.versions}</h4>
         {basket.versions.length === 0 ? (
           <p className="text-muted">{copy.noVersions}</p>
         ) : (
-          <ul className="mt-1 grid gap-1">
+          <ul className="grid gap-1.5">
             {basket.versions.map((v) => (
               <li key={v.version}>
                 {copy.version(
@@ -131,18 +133,18 @@ export function BasketDashboardCard({
         )}
       </div>
 
-      <p className="text-small text-muted">
+      <p className="text-caption leading-body text-muted">
         {copy.feeShare}. {copy.feeShareNote(basket.feeShare.entries)}
       </p>
 
-      <div className="flex flex-wrap items-center gap-3 text-small">
+      <div className="flex flex-wrap items-center gap-2 border-t border-line pt-4">
         {basket.status === "published" ? (
           <>
             <Button variant="secondary" size="sm" onClick={copyLink}>
               {copied ? copy.copied : copy.copyLink}
             </Button>
             <a
-              className="underline"
+              className={linkButtonSmall.ghost}
               target="_blank"
               rel="noopener noreferrer"
               href={`https://twitter.com/intent/tweet?url=${share}`}
@@ -150,7 +152,7 @@ export function BasketDashboardCard({
               {copy.shareX}
             </a>
             <a
-              className="underline"
+              className={linkButtonSmall.ghost}
               target="_blank"
               rel="noopener noreferrer"
               href={`https://t.me/share/url?url=${share}`}
@@ -160,7 +162,10 @@ export function BasketDashboardCard({
           </>
         ) : null}
         {basket.status !== "archived" ? (
-          <Link className="underline" href={creatorRoutes.edit(basket.id)}>
+          <Link
+            className={linkButtonSmall.secondary}
+            href={creatorRoutes.edit(basket.id)}
+          >
             {basket.status === "draft" ? copy.publishDraft : copy.edit}
           </Link>
         ) : null}

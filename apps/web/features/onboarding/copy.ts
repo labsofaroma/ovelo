@@ -3,6 +3,8 @@ import { NEW_STOCK_ACCOUNT_SOL } from "../wallet/onboarding";
 /** /get-started wording (M11 Step 3). Facts and steps only: no recommendation, no performance. */
 export const onboardingCopy = {
   title: "Get started",
+  eyebrow: (n: number) => `Step ${n} of 3`,
+  headerEyebrow: "Three steps",
   pickerLink: "New to Solana wallets? Get started step by step",
   intro:
     "Three steps to a first purchase from your own wallet: a Solana wallet, a little SOL and USDC, then a first buy. Ovelo never holds your keys or funds.",

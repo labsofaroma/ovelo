@@ -3,9 +3,20 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { ShieldCheck } from "lucide-react";
+import { cn } from "@ovelo/ui";
 import { CONSENT_KEY, readConsent } from "../analytics";
 import { OPEN_PRIVACY_EVENT } from "./PrivacyChoicesButton";
 import { routes } from "../routes";
+import { linkButtonSmall, textLink } from "../styles";
+
+/** Pages drawn outside the app frame, so no phone tab bar to clear. */
+const OUTSIDE_SHELL = new Set<string>([
+  routes.home,
+  routes.privacy,
+  routes.terms,
+  "/restricted",
+]);
 
 /**
  * v1 consent (replaced the prototype's global PrivacyChoices). Same storage key and open
@@ -74,28 +85,40 @@ export function ConsentBanner() {
   };
 
   if (!open) return null;
+  const inShell = !OUTSIDE_SHELL.has(pathname);
   return (
     <section
       aria-labelledby="consent-title"
-      className="fixed inset-x-4 bottom-4 z-40 mx-auto max-w-xl rounded-panel border border-line bg-surface p-4 text-small shadow-float sm:inset-x-auto sm:right-4"
+      className={cn(
+        "fixed inset-x-4 z-toast mx-auto flex max-w-xl flex-col gap-4 rounded-panel border border-line bg-raised-2 p-5 text-ink shadow-float edge-highlight md:inset-x-auto md:right-6 md:bottom-6 md:mx-0 md:w-[30rem]",
+        inShell
+          ? "bottom-[calc(5.5rem+env(safe-area-inset-bottom))] lg:bottom-6"
+          : "bottom-4",
+      )}
     >
-      <h2 id="consent-title" className="font-semibold text-ink">
-        Your data, your choice
-      </h2>
-      <p className="mt-1 text-muted">
-        Essential storage keeps preferences working.{" "}
-        {DOMAIN
-          ? "Usage analytics stay off unless you opt in."
-          : "This deployment uses essential storage only."}{" "}
-        <Link className="underline focus-ring" href={routes.privacy}>
-          Privacy policy
-        </Link>
-      </p>
-      <div className="mt-3 flex flex-wrap gap-2">
+      <div className="flex flex-col gap-2">
+        <h2
+          id="consent-title"
+          className="flex items-center gap-2 font-display text-title text-ink"
+        >
+          <ShieldCheck aria-hidden="true" className="size-4.5 text-muted" />
+          Your data, your choice
+        </h2>
+        <p className="text-small leading-body text-muted">
+          Essential storage keeps preferences working.{" "}
+          {DOMAIN
+            ? "Usage analytics stay off unless you opt in."
+            : "This deployment uses essential storage only."}{" "}
+          <Link className={textLink} href={routes.privacy}>
+            Privacy policy
+          </Link>
+        </p>
+      </div>
+      <div className="flex flex-wrap gap-2">
         <button
           type="button"
           onClick={() => save(false)}
-          className="rounded-control border border-border-strong px-3 py-1.5 font-semibold focus-ring"
+          className={linkButtonSmall.secondary}
         >
           {/* With no analytics configured there is nothing to choose: just acknowledge. */}
           {DOMAIN ? "Essential only" : "Got it"}
@@ -104,7 +127,7 @@ export function ConsentBanner() {
           <button
             type="button"
             onClick={() => save(true)}
-            className="rounded-control bg-accent px-3 py-1.5 font-semibold text-accent-ink focus-ring"
+            className={linkButtonSmall.primary}
           >
             Allow analytics
           </button>

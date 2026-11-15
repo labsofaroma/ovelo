@@ -1,4 +1,4 @@
-import { Badge, Card } from "@ovelo/ui";
+import { Badge } from "@ovelo/ui";
 import Link from "next/link";
 import { routes } from "../../shared/routes";
 import { formatBps, plural } from "../../shared/fixed";
@@ -13,18 +13,26 @@ export function CreatorBasketCard({ basket }: { basket: CreatorBasketView }) {
   const published = basket.publishedAt ? formatDay(basket.publishedAt) : null;
   const headingId = `creator-basket-${basket.id}`;
   return (
-    <li>
-      <Card className="flex h-full flex-col gap-3 p-4">
+    <li className="flex">
+      <article
+        aria-labelledby={headingId}
+        className="relative flex w-full flex-col gap-4 rounded-tile border border-line bg-raised p-5 transition-colors motion-base focus-within:border-border-strong hover:border-border-strong"
+      >
         <div className="flex items-start justify-between gap-3">
-          <h2 id={headingId} className="text-title font-semibold">
+          <h3
+            id={headingId}
+            className="min-w-0 font-display text-title font-medium tracking-[-0.02em] text-ink"
+          >
             <Link
               href={routes.basket(basket.id)}
-              className="underline-offset-4 hover:underline focus-ring"
+              className="rounded-badge underline-offset-4 hover:underline focus-ring"
             >
               {basket.name}
             </Link>
-          </h2>
-          <Badge tone="neutral">{basket.ticker}</Badge>
+          </h3>
+          <Badge tone="neutral" className="shrink-0">
+            {basket.ticker}
+          </Badge>
         </div>
         <p className="text-caption text-muted">
           By {basket.creatorName ?? "an unnamed creator"} (
@@ -35,9 +43,11 @@ export function CreatorBasketCard({ basket }: { basket: CreatorBasketView }) {
           {published ? ` · published ${published}` : ""}
         </p>
         {basket.description ? (
-          <p className="text-small">{basket.description}</p>
+          <p className="text-small leading-body text-muted">
+            {basket.description}
+          </p>
         ) : null}
-        <table className="w-full text-small">
+        <table className="mt-auto w-full text-small">
           <caption className="sr-only">
             Allocation of {basket.name},{" "}
             {plural(basket.allocations.length, "asset")}
@@ -51,17 +61,17 @@ export function CreatorBasketCard({ basket }: { basket: CreatorBasketView }) {
           <tbody>
             {basket.allocations.map((allocation) => (
               <tr key={allocation.mint} className="border-t border-line">
-                <th scope="row" className="py-1.5 text-left font-semibold">
+                <th scope="row" className="py-2 text-left font-medium text-ink">
                   {allocation.symbol}
                 </th>
-                <td className="py-1.5 text-right tabular-nums">
+                <td className="py-2 text-right text-muted tabular-nums">
                   {formatBps(allocation.weightBps)}
                 </td>
               </tr>
             ))}
           </tbody>
         </table>
-      </Card>
+      </article>
     </li>
   );
 }

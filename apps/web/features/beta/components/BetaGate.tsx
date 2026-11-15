@@ -21,20 +21,20 @@ export function BetaGate({ signer }: { signer: Signer }) {
     <div
       role="region"
       aria-label="Private beta access"
-      className="mt-4 rounded-control border border-line p-3 text-small"
+      className="mt-4 rounded-tile border border-line bg-raised p-4 text-small"
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="font-semibold">Mainnet buying is invite-only</p>
+        <p className="font-semibold text-ink">Mainnet buying is invite-only</p>
         <Badge tone="warning">Private beta</Badge>
       </div>
-      <p className="mt-1">
+      <p className="mt-1.5 leading-body text-muted">
         Ovelo is in a private beta with small limits. To buy with this wallet,
         enter the invite code you were given. Your wallet signs a message to
         link the invite to it; the signature does not move funds. Browsing,
         research and paper practice stay open to everyone.
       </p>
       {signer.signMessage ? (
-        <form className="mt-3 grid gap-2" onSubmit={submit}>
+        <form className="mt-4 grid gap-3" onSubmit={submit}>
           <Field label="Invite code">
             <Input
               value={code}
@@ -46,6 +46,7 @@ export function BetaGate({ signer }: { signer: Signer }) {
           </Field>
           <Button
             type="submit"
+            variant="solid"
             loading={redeem.isPending}
             disabled={!code.trim()}
           >

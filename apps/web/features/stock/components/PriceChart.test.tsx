@@ -30,7 +30,7 @@ describe("PriceChart island", () => {
     );
     expect(screen.getByText(/\$100\.00 on 2 Jan 2026/)).toBeTruthy();
     await userEvent.click(screen.getByRole("button", { name: "1M" }));
-    expect(screen.getByText(/\+10\.00%/)).toBeTruthy();
+    expect(screen.getByText(/underlying close .*\(\+10\.00%\)/)).toBeTruthy();
   });
   it("says so when a range has too few closes", () => {
     render(<PriceChart closes={closes.slice(-1)} symbol="TEST" />);

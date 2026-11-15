@@ -1,7 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { routes } from "@/features/shared/routes";
-import { pageContainer, textLink } from "@/features/shared/styles";
+import { GradientHeading } from "@ovelo/ui";
+import {
+  eyebrowPill,
+  linkButtonSmall,
+  pageContainer,
+} from "@/features/shared/styles";
 
 // Rendered per request (nonce CSP), like every v1 page.
 export const dynamic = "force-dynamic";
@@ -18,24 +23,29 @@ export const metadata: Metadata = {
  */
 export default function RestrictedPage() {
   return (
-    <main id="main-content" className={`${pageContainer} py-12`}>
-      <h1 className="text-page font-semibold max-md:text-page-mobile">
-        Ovelo is not available in your location
-      </h1>
-      <p className="mt-4 max-w-prose text-body">
-        Based on your network location, this service is not offered where you
-        are. This check uses your network location only; it is not identity
-        verification.
-      </p>
-      <p className="mt-4 text-small">
-        <Link className={textLink} href={routes.terms}>
-          Terms
-        </Link>{" "}
-        ·{" "}
-        <Link className={textLink} href={routes.privacy}>
-          Privacy
-        </Link>
-      </p>
+    <main
+      id="main-content"
+      className={`${pageContainer} flex justify-center pt-4 pb-6 md:pt-10`}
+    >
+      <section className="flex w-full max-w-3xl flex-col items-center gap-5 rounded-[1.75rem] border border-line bg-surface px-6 py-12 text-center edge-highlight md:rounded-hero md:px-14 md:py-16">
+        <p className={eyebrowPill}>Location check</p>
+        <GradientHeading as="h1" size="page">
+          Ovelo is not available in your location
+        </GradientHeading>
+        <p className="max-w-[56ch] text-body leading-body text-muted">
+          Based on your network location, this service is not offered where you
+          are. This check uses your network location only; it is not identity
+          verification.
+        </p>
+        <div className="mt-2 flex flex-wrap justify-center gap-2">
+          <Link className={linkButtonSmall.secondary} href={routes.terms}>
+            Terms
+          </Link>
+          <Link className={linkButtonSmall.secondary} href={routes.privacy}>
+            Privacy
+          </Link>
+        </div>
+      </section>
     </main>
   );
 }

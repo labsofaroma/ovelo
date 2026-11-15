@@ -1,6 +1,8 @@
 import type { Metadata } from "next";
-import { filterRows } from "@/features/markets/filter";
+import { Section, Stack } from "@ovelo/ui";
+import { filterRows, filtersToSearch } from "@/features/markets/filter";
 import { MarketFilters } from "@/features/markets/components/MarketFilters";
+import { MarketNotice } from "@/features/markets/components/MarketNotice";
 import { MarketTable } from "@/features/markets/components/MarketTable";
 import { Pagination } from "@/features/markets/components/Pagination";
 import { PulseStrip } from "@/features/markets/components/PulseStrip";
@@ -11,10 +13,10 @@ import {
   type MarketsView,
 } from "@/features/markets/schema";
 import { getMarkets } from "@/features/markets/server";
-import { DataNotice } from "@/features/shared/components/DataNotice";
 import { v1Metadata } from "@/features/shared/metadata";
 import { routes } from "@/features/shared/routes";
 import { pageContainer } from "@/features/shared/styles";
+import { PageHeader } from "@/features/shell/PageHeader";
 
 export const metadata: Metadata = v1Metadata({
   title: "Markets",
@@ -36,38 +38,29 @@ export default async function MarketsPage({ searchParams }: Props) {
   const markets = await getMarkets();
 
   return (
-    <main
-      id="main-content"
-      className={`${pageContainer} flex flex-col gap-8 py-8`}
-    >
-      <header className="flex flex-col gap-2">
-        <p className="text-caption font-semibold uppercase tracking-wide text-muted">
-          Mainnet data · spot purchases and paper practice
-        </p>
-        <h1 className="text-page font-semibold max-md:text-page-mobile">
-          Markets
-        </h1>
-        <p className="max-w-2xl text-body text-muted">
-          Tokenized stocks listed by their issuers on Solana. Prices are for the
-          token, observed on Solana markets; they can differ from the underlying
-          share.
-        </p>
-      </header>
-
-      {markets.state === "unavailable" ? (
-        <DataNotice
-          tone="unavailable"
-          title="Market data is unavailable right now"
-        >
-          <p>
-            The issuer catalogs and price providers could not be reached, so no
-            prices are shown. {markets.error.message} Try again in a few
-            minutes.
-          </p>
-        </DataNotice>
-      ) : (
-        <MarketsBody view={markets.data} filters={filters} />
-      )}
+    <main id="main-content" className={`${pageContainer} py-6 md:py-8`}>
+      <Stack>
+        <PageHeader
+          eyebrow="Mainnet data · spot purchases and paper practice"
+          title="Markets"
+          description="Tokenized stocks listed by their issuers on Solana. Prices are for the token, observed on Solana markets; they can differ from the underlying share."
+        />
+        {markets.state === "unavailable" ? (
+          <MarketNotice
+            tone="unavailable"
+            title="Market data is unavailable right now"
+            refreshHref={`${routes.markets}${filtersToSearch(filters)}`}
+          >
+            <p>
+              The issuer catalogs and price providers could not be reached, so
+              no prices are shown. {markets.error.message} Try again in a few
+              minutes.
+            </p>
+          </MarketNotice>
+        ) : (
+          <MarketsBody view={markets.data} filters={filters} />
+        )}
+      </Stack>
     </main>
   );
 }
@@ -83,38 +76,48 @@ function MarketsBody({
   return (
     <>
       {view.status === "partial" ? (
-        <DataNotice title="Some market data is missing" items={view.warnings} />
+        <MarketNotice
+          title="Some market data is missing"
+          items={view.warnings}
+          refreshHref={`${routes.markets}${filtersToSearch(filters)}`}
+        />
       ) : null}
       <PulseStrip view={view} />
-      <section
-        aria-labelledby="catalog-heading"
-        className="flex flex-col gap-4"
+      <Section
+        id="all-listings"
+        eyebrow="Catalog"
+        title="All listings"
+        description="Every tokenized stock from the xStocks, PreStocks and Backpack catalogs, with its observed token price and source."
+        actions={
+          <span className="inline-flex min-h-7 items-center rounded-full border border-line bg-raised px-3 text-caption font-medium tabular-nums text-ink">
+            {view.rows.length}
+          </span>
+        }
       >
-        <h2 id="catalog-heading" className="text-section font-semibold">
-          All listings
-        </h2>
-        <MarketFilters filters={filters} />
-        <p role="status" className="text-small text-muted">
-          {result.total}{" "}
-          {result.total === 1 ? "listing matches" : "listings match"}.
-        </p>
-        {result.rows.length ? (
-          <MarketTable
-            rows={result.rows}
-            asOf={view.asOf}
-            caption={`Listings ${(result.page - 1) * PAGE_SIZE + 1}–${(result.page - 1) * PAGE_SIZE + result.rows.length} of ${result.total}.`}
-          />
-        ) : (
-          <p className="rounded-panel border border-line p-6 text-body text-muted">
-            No listing matches these filters.
+        <div className="flex flex-col gap-4">
+          <MarketFilters filters={filters} />
+          <p role="status" className="text-small text-muted">
+            {result.total}{" "}
+            {result.total === 1 ? "listing matches" : "listings match"}.
           </p>
-        )}
-        <Pagination
-          filters={filters}
-          page={result.page}
-          pageCount={result.pageCount}
-        />
-      </section>
+          {result.rows.length ? (
+            <MarketTable
+              rows={result.rows}
+              asOf={view.asOf}
+              caption={`Listings ${(result.page - 1) * PAGE_SIZE + 1}–${(result.page - 1) * PAGE_SIZE + result.rows.length} of ${result.total}.`}
+            />
+          ) : (
+            <p className="rounded-tile border border-dashed border-line px-6 py-10 text-center text-body text-muted">
+              No listing matches these filters.
+            </p>
+          )}
+          <Pagination
+            filters={filters}
+            page={result.page}
+            pageCount={result.pageCount}
+          />
+        </div>
+      </Section>
     </>
   );
 }

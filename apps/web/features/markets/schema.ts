@@ -104,6 +104,8 @@ export const pulseSchema = z.object({
   coveredAssets: z.number().int(),
   volume24h: fixedSchema.nullable(),
   volumeCoveredAssets: z.number().int(),
+  /** Highest 24h token volume. Defaulted so a snapshot cached before this field still parses. */
+  topVolume: z.array(moverSchema).default([]),
   gainers: z.array(moverSchema),
   losers: z.array(moverSchema),
 });

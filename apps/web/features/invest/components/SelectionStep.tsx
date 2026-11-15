@@ -20,37 +20,44 @@ export function SelectionStep({
   errors: Partial<Record<WizardField, string>>;
 }) {
   return (
-    <fieldset className="flex flex-col gap-3">
-      <legend className="text-body font-semibold">What to buy</legend>
+    <fieldset className="flex min-w-0 flex-col gap-4">
+      <legend className="sr-only">What to buy</legend>
       <div
         role="radiogroup"
         aria-label="Plan type"
-        className="flex gap-4 text-small"
+        className="inline-flex w-fit flex-wrap gap-1 rounded-full border border-line bg-raised p-1 text-small"
       >
         {(["basket", "assets"] as const).map((mode) => (
-          <label key={mode} className="flex items-center gap-2">
+          <label
+            key={mode}
+            className="flex min-h-9 cursor-pointer items-center gap-2 rounded-full px-4 text-muted transition-colors motion-base hover:text-ink has-[:checked]:bg-raised-2 has-[:checked]:text-ink has-[:focus-visible]:outline-2 has-[:focus-visible]:outline-offset-2 has-[:focus-visible]:outline-(--ovelo-focus)"
+          >
             <input
               type="radio"
               name="plan-mode"
               data-testid={`wizard-mode-${mode}`}
               checked={state.mode === mode}
               onChange={() => onChange({ ...state, mode })}
+              className="sr-only"
             />
             {mode === "basket" ? "A basket" : "Single or custom assets"}
           </label>
         ))}
       </div>
       {state.mode === "basket" ? (
-        <ul className="flex flex-col gap-2" data-testid="wizard-baskets">
+        <ul
+          className="grid grid-cols-1 gap-3 md:grid-cols-2"
+          data-testid="wizard-baskets"
+        >
           {data.baskets.length === 0 ? (
-            <li className="text-small text-muted">
+            <li className="text-small text-muted md:col-span-2">
               No baskets are available right now.
             </li>
           ) : null}
           {data.baskets.map((basket) => (
             <li key={basket.id}>
               <label
-                className={`flex items-start gap-2 rounded-control border border-line p-3 text-small ${basket.available ? "" : "opacity-60"}`}
+                className={`flex h-full items-start gap-3 rounded-tile border border-line bg-raised p-4 text-small transition-colors motion-base has-[:checked]:border-border-strong has-[:checked]:bg-raised-2 ${basket.available ? "cursor-pointer hover:border-border-strong" : "opacity-60"}`}
               >
                 <input
                   type="radio"
@@ -59,9 +66,10 @@ export function SelectionStep({
                   disabled={!basket.available}
                   checked={state.basketId === basket.id}
                   onChange={() => onChange({ ...state, basketId: basket.id })}
+                  className="mt-0.5 accent-(--ovelo-accent)"
                 />
-                <span className="flex flex-col gap-0.5">
-                  <span className="font-semibold">
+                <span className="flex min-w-0 flex-col gap-1">
+                  <span className="font-semibold text-ink">
                     {basket.name}{" "}
                     <span className="text-caption text-muted">
                       ({basket.kind === "curated" ? "curated" : "creator"})
@@ -84,7 +92,7 @@ export function SelectionStep({
           ))}
         </ul>
       ) : (
-        <div className="flex flex-col gap-2" data-testid="wizard-assets">
+        <div className="flex flex-col gap-3" data-testid="wizard-assets">
           <p className="text-caption text-muted">
             Give each asset you want a percentage; the weights must add up to
             100%.
@@ -92,10 +100,10 @@ export function SelectionStep({
           {data.assets.map((asset) => (
             <label
               key={asset.mint}
-              className="grid grid-cols-[1fr_8rem] items-center gap-3 text-small"
+              className="grid grid-cols-[1fr_8rem] items-center gap-3 rounded-tile border border-line bg-raised px-4 py-2.5 text-small"
             >
               <span>
-                <span className="font-semibold">{asset.symbol}</span>{" "}
+                <span className="font-semibold text-ink">{asset.symbol}</span>{" "}
                 <span className="text-muted">{asset.name}</span>
                 {asset.enabled ? null : (
                   <span className="text-down"> (paused)</span>

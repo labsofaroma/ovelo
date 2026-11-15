@@ -28,22 +28,22 @@ export function RiskDisclosure({
       aria-labelledby={heading}
       data-disclosure-version={DISCLOSURE_VERSION}
       data-disclosure-surface={surface}
-      className="mt-4 rounded-control border border-line bg-raised p-3 text-small"
+      className="mt-4 rounded-tile border border-line bg-raised p-4 text-small"
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h4 id={heading} className="font-semibold">
+        <h4 id={heading} className="font-semibold text-ink">
           Risk disclosure
         </h4>
         {DISCLOSURE_IS_PLACEHOLDER ? (
           <Badge tone="neutral">Placeholder text: pending counsel</Badge>
         ) : null}
       </div>
-      <ul className="mt-2 list-disc space-y-1 pl-5 text-muted">
+      <ul className="mt-2 list-disc space-y-1.5 pl-5 leading-body text-muted">
         {disclosureLines(surface).map((line) => (
           <li key={line}>{line}</li>
         ))}
       </ul>
-      <div className="mt-3">{children}</div>
+      <div className="mt-4">{children}</div>
     </section>
   );
 }

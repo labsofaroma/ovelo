@@ -1,4 +1,5 @@
-import { Badge, Button } from "@ovelo/ui";
+import { Badge, Button, NetworkBadge, Section } from "@ovelo/ui";
+import { ShieldCheck } from "lucide-react";
 import { useId, useState } from "react";
 // --- M9 compliance gate (additive) ---
 import { TradeComplianceGate } from "../../compliance/components/TradeComplianceGate";
@@ -9,7 +10,19 @@ import { useWallet } from "../../wallet/context";
 import { FUNDING_TOKENS } from "../schema";
 import { useTradeFlow, type TradeTarget } from "../useTradeFlow";
 import { ReviewPanel } from "./ReviewPanel";
+import {
+  FinePrint,
+  PillRadioGroup,
+  TicketSide,
+  amountInputClass,
+  selectClass,
+} from "./TicketParts";
 import { TradeStatus } from "./TradeStatus";
+
+const CHANNELS = [
+  ["live", "Mainnet spot purchase"],
+  ["paper", "Paper practice"],
+] as const;
 
 /**
  * Buy ticket for one stock or one basket (replaces M3's "Trade (coming soon)"). Two clearly
@@ -31,10 +44,10 @@ export function TradeTicket({
   const [funding, setFunding] = useState<string>(FUNDING_TOKENS[0].mint);
   const { state } = flow;
   const editing = state.step === "idle" || state.step === "error";
-  const symbol =
-    channel === "paper"
-      ? "USD"
-      : (FUNDING_TOKENS.find((t) => t.mint === funding)?.symbol ?? "");
+  const live = channel === "live";
+  const symbol = live
+    ? (FUNDING_TOKENS.find((t) => t.mint === funding)?.symbol ?? "")
+    : "USD";
 
   // M9 compliance gate (additive): a gate refusal re-reads the status so the ticket shows why.
   useComplianceRefresh(state.step === "error" ? state.error.code : null);
@@ -43,123 +56,138 @@ export function TradeTicket({
     void flow.quote({ channel, amount: amount.trim(), inputMint: funding });
 
   return (
-    <section
-      aria-labelledby={ids.heading}
-      className="rounded-panel border border-line bg-surface p-4"
+    <Section
+      id="trade"
+      eyebrow="Trade"
+      title={title}
+      description={
+        live
+          ? "Buy from your own wallet on Solana mainnet. You review and sign every transaction."
+          : "Practice at observed prices. No transaction is created and no real funds move."
+      }
+      actions={
+        <>
+          <NetworkBadge kind={live ? "mainnet-spot" : "paper"} />
+          {live ? <ConnectButton /> : null}
+        </>
+      }
     >
-      <div className="flex flex-wrap items-center justify-between gap-2">
-        <h2 id={ids.heading} className="text-section font-semibold">
-          {title}
-        </h2>
-        {channel === "live" ? <ConnectButton /> : null}
-      </div>
-      <fieldset className="mt-3" disabled={!editing}>
-        <legend className="sr-only">Order type</legend>
-        <div className="flex gap-2" role="radiogroup" aria-label="Order type">
-          {(
-            [
-              ["live", "Mainnet spot purchase"],
-              ["paper", "Paper practice"],
-            ] as const
-          ).map(([value, label]) => (
-            <label
-              key={value}
-              className="flex cursor-pointer items-center gap-2 rounded-control border border-border-strong px-3 py-2 text-small has-[:checked]:bg-accent-soft"
-            >
-              <input
-                type="radio"
-                name={`${ids.heading}-channel`}
-                value={value}
-                checked={channel === value}
-                onChange={() => setChannel(value)}
-              />
-              {label}
-            </label>
-          ))}
-        </div>
-        <div className="mt-3 grid gap-3 sm:grid-cols-[1fr_auto]">
-          <div>
-            <label htmlFor={ids.amount} className="text-small font-semibold">
-              Amount ({symbol})
-            </label>
-            <input
-              id={ids.amount}
-              inputMode="decimal"
-              autoComplete="off"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              className="mt-1 w-full rounded-control border border-border-strong bg-bg px-3 py-2 tabular-nums focus-ring"
-              placeholder="0.00"
-            />
-          </div>
-          {channel === "live" ? (
-            <div>
-              <label htmlFor={ids.funding} className="text-small font-semibold">
-                Pay with
-              </label>
-              <select
-                id={ids.funding}
-                value={funding}
-                onChange={(e) => setFunding(e.target.value)}
-                className="mt-1 w-full rounded-control border border-border-strong bg-bg px-3 py-2 focus-ring"
-              >
-                {FUNDING_TOKENS.map((token) => (
-                  <option key={token.mint} value={token.mint}>
-                    {token.symbol}
-                  </option>
-                ))}
-              </select>
+      <div className="mx-auto flex w-full max-w-2xl flex-col gap-5">
+        <fieldset className="flex flex-col gap-4" disabled={!editing}>
+          <legend className="sr-only">Order type</legend>
+          <PillRadioGroup
+            name={`${ids.heading}-channel`}
+            label="Order type"
+            value={channel}
+            options={CHANNELS}
+            onChange={setChannel}
+          />
+          <TicketSide>
+            <div className="grid gap-3 sm:grid-cols-[1fr_9rem] sm:items-end">
+              <div className="flex min-w-0 flex-col gap-2">
+                <label
+                  htmlFor={ids.amount}
+                  className="text-caption font-medium text-muted"
+                >
+                  Amount ({symbol})
+                </label>
+                <input
+                  id={ids.amount}
+                  data-ticket-amount=""
+                  inputMode="decimal"
+                  autoComplete="off"
+                  value={amount}
+                  onChange={(e) => setAmount(e.target.value)}
+                  className={amountInputClass}
+                  placeholder="0.00"
+                />
+              </div>
+              {live ? (
+                <div className="flex flex-col gap-2">
+                  <label
+                    htmlFor={ids.funding}
+                    className="text-caption font-medium text-muted"
+                  >
+                    Pay with
+                  </label>
+                  <select
+                    id={ids.funding}
+                    value={funding}
+                    onChange={(e) => setFunding(e.target.value)}
+                    className={selectClass}
+                  >
+                    {FUNDING_TOKENS.map((token) => (
+                      <option key={token.mint} value={token.mint}>
+                        {token.symbol}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+              ) : null}
             </div>
-          ) : null}
-        </div>
-      </fieldset>
-      {editing ? (
-        // M9 compliance gate (additive): location, then terms, before a mainnet quote.
-        <TradeComplianceGate live={channel === "live"} signer={wallet.signer}>
-          <div className="mt-4 flex flex-wrap items-center gap-2">
-            <Button
-              onClick={requestQuote}
-              disabled={
-                !amount.trim() ||
-                (channel === "live" && wallet.status !== "connected")
-              }
-            >
-              Get quote
-            </Button>
-            {channel === "live" && wallet.status !== "connected" ? (
-              <span className="text-small text-muted">
-                Connect a mainnet wallet to get a signable quote.
-              </span>
-            ) : null}
-            {channel === "paper" ? (
-              <Badge tone="neutral">Practice: no transaction is created</Badge>
-            ) : null}
-          </div>
-        </TradeComplianceGate>
-      ) : null}
-      {state.step === "quoting" ? (
-        <p role="status" className="mt-4 text-small">
-          {channel === "live"
-            ? "Finding a route and simulating it on mainnet…"
-            : "Reading current prices…"}
+          </TicketSide>
+        </fieldset>
+        {editing ? (
+          // M9 compliance gate (additive): location, then terms, before a mainnet quote.
+          <TradeComplianceGate live={live} signer={wallet.signer}>
+            <div className="flex flex-col gap-3">
+              <Button
+                variant="solid"
+                size="lg"
+                fullWidth
+                onClick={requestQuote}
+                disabled={
+                  !amount.trim() || (live && wallet.status !== "connected")
+                }
+              >
+                Get quote
+              </Button>
+              {live && wallet.status !== "connected" ? (
+                <FinePrint>
+                  Connect a mainnet wallet to get a signable quote.
+                </FinePrint>
+              ) : null}
+              {!live ? (
+                <Badge tone="neutral" className="w-fit">
+                  Practice: no transaction is created
+                </Badge>
+              ) : null}
+            </div>
+          </TradeComplianceGate>
+        ) : null}
+        {state.step === "quoting" ? (
+          <p role="status" className="text-small text-muted">
+            {live
+              ? "Finding a route and simulating it on mainnet…"
+              : "Reading current prices…"}
+          </p>
+        ) : null}
+        {state.step === "review" || state.step === "expired" ? (
+          <ReviewPanel
+            quote={state.quote}
+            expired={state.step === "expired"}
+            onConfirm={() => void flow.sign()}
+            onRequote={requestQuote}
+            onCancel={flow.cancel}
+            busy={false}
+          />
+        ) : null}
+        <TradeStatus state={state} onReset={flow.cancel} />
+        {wallet.error && live ? (
+          <p
+            role="alert"
+            className="rounded-tile bg-down-soft px-4 py-3 text-small text-down"
+          >
+            {wallet.error}
+          </p>
+        ) : null}
+        <p className="inline-flex items-center gap-2 border-t border-line pt-5 text-caption text-muted">
+          <ShieldCheck aria-hidden="true" className="size-4 shrink-0" />
+          {live
+            ? "You sign in your own wallet. Ovelo never holds your keys or funds."
+            : "Paper practice uses virtual funds only."}
         </p>
-      ) : null}
-      {state.step === "review" || state.step === "expired" ? (
-        <ReviewPanel
-          quote={state.quote}
-          expired={state.step === "expired"}
-          onConfirm={() => void flow.sign()}
-          onRequote={requestQuote}
-          onCancel={flow.cancel}
-          busy={false}
-        />
-      ) : null}
-      <TradeStatus state={state} onReset={flow.cancel} />
-      {wallet.error && channel === "live" ? (
-        <p role="alert" className="mt-3 text-small text-down">
-          {wallet.error}
-        </p>
-      ) : null}
-    </section>
+      </div>
+    </Section>
   );
 }

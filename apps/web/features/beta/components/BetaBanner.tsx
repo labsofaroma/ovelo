@@ -1,3 +1,4 @@
+import { pageContainer } from "../../shared/styles";
 import { betaConfig } from "../config";
 
 /**
@@ -16,11 +17,19 @@ export function BetaBanner({
     <aside
       aria-label="Private beta"
       data-beta-banner
-      className="border-b border-line bg-warning-soft px-4 py-2 text-center text-small"
+      className={`${pageContainer} pt-4 md:pt-5`}
     >
-      <strong className="font-semibold">Private beta.</strong> Mainnet buying is
-      open to invited wallets only, with small per-trade and daily limits.
-      Everything else is open to browse. Expect changes.
+      <p className="flex items-start gap-3 rounded-tile border border-transparent bg-warning-soft px-4 py-2.5 text-small text-ink md:items-center">
+        <span
+          aria-hidden="true"
+          className="mt-1.5 size-1.5 shrink-0 rounded-full bg-warning md:mt-0"
+        />
+        <span>
+          <strong className="font-semibold">Private beta.</strong> Mainnet
+          buying is open to invited wallets only, with small per-trade and daily
+          limits. Everything else is open to browse. Expect changes.
+        </span>
+      </p>
     </aside>
   );
 }

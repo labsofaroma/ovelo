@@ -1,6 +1,8 @@
 "use client";
 
+import { EmptyState, Section } from "@ovelo/ui";
 import { AllocationTable } from "../components/AllocationTable";
+import { WeightBar } from "../components/WeightBar";
 import type { BasketSummary, MarketRow } from "../../markets/schema";
 import type { WeightRow } from "./WeightEditor";
 
@@ -43,28 +45,33 @@ export function BuilderPreview({
       .map(({ mint, symbol, weightBps }) => ({ mint, symbol, weightBps })),
   };
   return (
-    <section
-      aria-labelledby="builder-preview-title"
-      className="flex flex-col gap-3"
+    <Section
+      eyebrow="Step 4"
+      title="Preview"
+      description="This is how the allocation will appear to buyers. Publishing asks your wallet to sign exactly this allocation."
     >
-      <div className="flex flex-col gap-1">
-        <h2 id="builder-preview-title" className="text-title font-semibold">
-          Preview
-        </h2>
-        <p className="text-small text-muted">
-          {basket.name}
-          {basket.ticker ? ` (${basket.ticker})` : ""}. This is how the
-          allocation will appear to buyers. Publishing asks your wallet to sign
-          exactly this allocation.
-        </p>
+      <div className="flex flex-col gap-4">
+        <div className="flex flex-col gap-3 rounded-tile border border-line bg-raised p-5">
+          <p className="font-display text-title font-normal tracking-[-0.03em] text-ink">
+            {basket.name}
+            {basket.ticker ? ` (${basket.ticker})` : ""}
+          </p>
+          {description.trim() ? (
+            <p className="text-small leading-body text-muted">{description}</p>
+          ) : null}
+          <WeightBar
+            weights={rows.map((r) => ({ key: r.mint, weightBps: r.weightBps }))}
+          />
+        </div>
+        {rows.length ? (
+          <AllocationTable basket={basket} rows={market} asOf={asOf} />
+        ) : (
+          <EmptyState
+            title="No assets yet"
+            description="Choose at least two to see the allocation."
+          />
+        )}
       </div>
-      {rows.length ? (
-        <AllocationTable basket={basket} rows={market} asOf={asOf} />
-      ) : (
-        <p className="rounded-panel border border-dashed border-line p-4 text-small text-muted">
-          No assets yet. Choose at least two to see the allocation.
-        </p>
-      )}
-    </section>
+    </Section>
   );
 }

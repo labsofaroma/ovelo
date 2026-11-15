@@ -1,4 +1,14 @@
-import { Badge } from "@ovelo/ui";
+import {
+  Badge,
+  EmptyState,
+  Table,
+  TableBody,
+  TableCaption,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@ovelo/ui";
 import { formatUnits } from "@ovelo/ui/format";
 import { formatUsd, type Fixed } from "../../shared/fixed";
 import { pnlCopy } from "../copy";
@@ -26,47 +36,46 @@ const tone = (value: Fixed | null) =>
 
 /** Per-holding cost basis and unrealized P&L, and per-basket groups (M11 Step 2). */
 export function PnlPanel({ pnl }: { pnl: PnlView | null }) {
-  if (!pnl)
-    return <p className="text-small text-muted">{pnlCopy.unavailable}</p>;
+  if (!pnl) return <EmptyState title={pnlCopy.unavailable} />;
   const rows = pnl.rows.filter((r) => r.status !== "funding");
   return (
-    <div className="flex flex-col gap-4">
-      <p className="text-small text-muted">{pnlCopy.method}</p>
-      <div className="overflow-x-auto">
-        <table className="w-full min-w-[40rem] text-small">
-          <caption className="sr-only">{pnlCopy.heading}</caption>
-          <thead>
-            <tr className="border-b border-line text-left text-caption text-muted">
-              <th scope="col" className="py-2 pr-3 font-normal">
-                {pnlCopy.columns.asset}
-              </th>
-              <th scope="col" className="py-2 pr-3 text-right font-normal">
-                {pnlCopy.columns.quantity}
-              </th>
-              <th scope="col" className="py-2 pr-3 text-right font-normal">
-                {pnlCopy.columns.cost}
-              </th>
-              <th scope="col" className="py-2 pr-3 text-right font-normal">
-                {pnlCopy.columns.value}
-              </th>
-              <th scope="col" className="py-2 text-right font-normal">
-                {pnlCopy.columns.pnl}
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            {rows.map((row) => (
-              <Row key={row.mint} row={row} />
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <p className="text-small">{pnlCopy.realized}</p>
+    <div className="flex flex-col gap-5">
+      <Table className="min-w-[40rem]">
+        <TableCaption className="sr-only">{pnlCopy.heading}</TableCaption>
+        <TableHeader>
+          <TableRow>
+            <TableHead scope="col">{pnlCopy.columns.asset}</TableHead>
+            <TableHead scope="col" className="text-right">
+              {pnlCopy.columns.quantity}
+            </TableHead>
+            <TableHead scope="col" className="text-right">
+              {pnlCopy.columns.cost}
+            </TableHead>
+            <TableHead scope="col" className="text-right">
+              {pnlCopy.columns.value}
+            </TableHead>
+            <TableHead scope="col" className="text-right">
+              {pnlCopy.columns.pnl}
+            </TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          {rows.map((row) => (
+            <Row key={row.mint} row={row} />
+          ))}
+        </TableBody>
+      </Table>
+      <p className="rounded-tile border border-line bg-raised px-4 py-3 text-small text-muted">
+        {pnlCopy.realized}
+      </p>
       <section
         aria-labelledby="basket-pnl-heading"
-        className="flex flex-col gap-2"
+        className="flex flex-col gap-3"
       >
-        <h3 id="basket-pnl-heading" className="text-body font-semibold">
+        <h3
+          id="basket-pnl-heading"
+          className="font-display text-title text-ink"
+        >
           {pnlCopy.basketsHeading}
         </h3>
         {pnl.baskets.length === 0 ? (
@@ -89,8 +98,11 @@ function Row({ row }: { row: PnlRow }) {
   }).text;
   const known = row.status === "known";
   return (
-    <tr className="border-b border-line align-top">
-      <th scope="row" className="py-2 pr-3 text-left font-semibold">
+    <TableRow className="align-top">
+      <th
+        scope="row"
+        className="px-4 py-3.5 text-left align-top font-medium text-ink"
+      >
         {row.symbol}
         {known ? null : (
           <span className="mt-1 block">
@@ -98,11 +110,11 @@ function Row({ row }: { row: PnlRow }) {
           </span>
         )}
       </th>
-      <td className="py-2 pr-3 text-right tabular-nums">{quantity}</td>
-      <td className="py-2 pr-3 text-right tabular-nums">
+      <TableCell className="text-right align-top">{quantity}</TableCell>
+      <TableCell className="text-right align-top">
         {row.costUsdc ? usdc(row.costUsdc) : "—"}
-      </td>
-      <td className="py-2 pr-3 text-right tabular-nums">
+      </TableCell>
+      <TableCell className="text-right align-top">
         {row.value ? formatUsd(row.value) : pnlCopy.status.unpriced}
         {row.priceSource && row.priceObservedAt ? (
           <span className="block text-caption text-muted">
@@ -112,8 +124,8 @@ function Row({ row }: { row: PnlRow }) {
             )}
           </span>
         ) : null}
-      </td>
-      <td className={`py-2 text-right tabular-nums ${tone(row.unrealized)}`}>
+      </TableCell>
+      <TableCell className={`text-right align-top ${tone(row.unrealized)}`}>
         {row.unrealized ? (
           <>
             {signedUsd(row.unrealized)}
@@ -124,14 +136,14 @@ function Row({ row }: { row: PnlRow }) {
         ) : (
           "—"
         )}
-      </td>
-    </tr>
+      </TableCell>
+    </TableRow>
   );
 }
 
 function BasketItem({ basket }: { basket: BasketPnl }) {
   return (
-    <li className="flex flex-wrap items-baseline justify-between gap-2 rounded-control border border-line p-3 text-small">
+    <li className="flex flex-wrap items-baseline justify-between gap-2 rounded-tile border border-line bg-raised px-4 py-3 text-small">
       <span>
         <span className="font-semibold">{basket.name}</span>{" "}
         <span className="text-muted">{pnlCopy.orders(basket.orders)}</span>

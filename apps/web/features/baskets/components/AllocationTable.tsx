@@ -14,7 +14,6 @@ import type { BasketSummary, MarketRow } from "../../markets/schema";
 import { changeProp, formatBps } from "../../shared/fixed";
 import { formatObservedAt } from "../../shared/freshness";
 import { routes } from "../../shared/routes";
-import { textLink } from "../../shared/styles";
 
 /**
  * Weights are integer basis points from lib/sdk. When the issuer does not list a constituent, it
@@ -32,76 +31,95 @@ export function AllocationTable({
   const byMint = new Map(rows.map((row) => [row.mint, row]));
   const listedBps = basket.members.reduce((sum, m) => sum + m.weightBps, 0);
   return (
-    <div className="flex flex-col gap-3">
-      <Table>
-        <TableCaption className="text-left">
-          Allocation by weight. Token prices observed{" "}
-          {formatObservedAt(asOf) ?? "at an unknown time"}.
-        </TableCaption>
-        <TableHeader>
-          <TableRow>
-            <TableHead scope="col">Constituent</TableHead>
-            <TableHead scope="col" className="text-right">
-              Weight
-            </TableHead>
-            <TableHead scope="col" className="text-right">
-              Token price
-            </TableHead>
-            <TableHead scope="col" className="text-right">
-              24h change
-            </TableHead>
-          </TableRow>
-        </TableHeader>
-        <TableBody>
-          {basket.members.map((member) => {
-            const row = byMint.get(member.mint);
-            return (
-              <TableRow key={member.mint}>
-                <TableCell>
-                  {row ? (
-                    <span className="flex flex-col">
+    <div className="flex flex-col gap-4">
+      <div className="overflow-hidden rounded-tile border border-line">
+        <Table>
+          <TableCaption className="px-4 pb-3 text-left">
+            Allocation by weight. Token prices observed{" "}
+            {formatObservedAt(asOf) ?? "at an unknown time"}.
+          </TableCaption>
+          <TableHeader>
+            <TableRow>
+              <TableHead scope="col">Constituent</TableHead>
+              <TableHead scope="col" className="text-right md:w-64">
+                Weight
+              </TableHead>
+              <TableHead scope="col" className="text-right">
+                Token price
+              </TableHead>
+              <TableHead scope="col" className="text-right">
+                24h change
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {basket.members.map((member) => {
+              const row = byMint.get(member.mint);
+              return (
+                <TableRow key={member.mint}>
+                  <TableCell>
+                    {row ? (
                       <Link
-                        className={textLink}
+                        className="group flex min-w-0 flex-col rounded-control focus-ring"
                         href={routes.stock(row.symbol)}
                       >
-                        {row.symbol}
+                        <span className="font-medium text-ink underline-offset-4 group-hover:underline">
+                          {row.symbol}
+                        </span>
+                        <span className="truncate text-caption text-muted">
+                          {row.name}
+                        </span>
                       </Link>
-                      <span className="text-caption text-muted">
-                        {row.name}
+                    ) : (
+                      <span className="font-medium text-ink">
+                        {member.symbol}
+                      </span>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <span className="flex items-center justify-end gap-3">
+                      <span
+                        aria-hidden="true"
+                        className="relative h-1.5 w-24 overflow-hidden rounded-full bg-raised-2 max-md:hidden"
+                      >
+                        <span
+                          className="absolute inset-y-0 left-0 rounded-full bg-accent"
+                          style={{
+                            width: `${Math.min(100, member.weightBps / 100)}%`,
+                          }}
+                        />
+                      </span>
+                      <span className="font-semibold tabular-nums text-ink">
+                        {formatBps(member.weightBps)}
                       </span>
                     </span>
-                  ) : (
-                    member.symbol
-                  )}
-                </TableCell>
-                <TableCell className="text-right font-semibold">
-                  {formatBps(member.weightBps)}
-                </TableCell>
-                <TableCell className="text-right">
-                  {row ? (
-                    <PriceCell row={row} />
-                  ) : (
-                    <span className="text-muted">Not observed</span>
-                  )}
-                </TableCell>
-                <TableCell className="text-right">
-                  <Change percent={changeProp(row?.change24h ?? null)} />
+                  </TableCell>
+                  <TableCell className="text-right">
+                    {row ? (
+                      <PriceCell row={row} />
+                    ) : (
+                      <span className="text-muted">Not observed</span>
+                    )}
+                  </TableCell>
+                  <TableCell className="text-right">
+                    <Change percent={changeProp(row?.change24h ?? null)} />
+                  </TableCell>
+                </TableRow>
+              );
+            })}
+            {basket.missingSymbols.map((symbol) => (
+              <TableRow key={`missing-${symbol}`}>
+                <TableCell className="font-medium text-ink">{symbol}</TableCell>
+                <TableCell className="text-right text-muted" colSpan={3}>
+                  Not listed by the issuer catalog right now
                 </TableCell>
               </TableRow>
-            );
-          })}
-          {basket.missingSymbols.map((symbol) => (
-            <TableRow key={`missing-${symbol}`}>
-              <TableCell>{symbol}</TableCell>
-              <TableCell className="text-right text-muted" colSpan={3}>
-                Not listed by the issuer catalog right now
-              </TableCell>
-            </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+            ))}
+          </TableBody>
+        </Table>
+      </div>
       {listedBps !== 10_000 ? (
-        <p className="text-caption text-muted">
+        <p className="text-caption leading-body text-muted">
           Listed constituents add up to {formatBps(listedBps)} of the
           definition. The rest belongs to constituents that are not listed.
         </p>

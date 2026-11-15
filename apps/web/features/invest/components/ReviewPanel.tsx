@@ -31,28 +31,32 @@ export function ReviewPanel({
   return (
     <section
       aria-labelledby="review-title"
-      className="flex flex-col gap-3 rounded-panel border border-line bg-surface p-4"
+      className="flex flex-col gap-4 rounded-tile border border-border-strong bg-raised-2 p-4 md:p-5"
     >
-      <div className="flex flex-wrap items-center gap-2">
-        <h3 id="review-title" className="text-body font-semibold">
+      <div className="flex flex-wrap items-center justify-between gap-2">
+        <h4 id="review-title" className="font-display text-title text-ink">
           {summary.title}
-        </h3>
+        </h4>
         <Badge tone="warning">{summary.label}</Badge>
       </div>
-      <ul className="flex list-disc flex-col gap-1 pl-5 text-small">
+      <ul className="flex list-disc flex-col gap-1.5 pl-5 text-small text-ink tabular-nums marker:text-muted">
         {summary.lines.map((line) => (
           <li key={line}>{line}</li>
         ))}
       </ul>
       <div
         data-testid="review-approval"
-        className="rounded-control border border-line bg-raised p-3 text-small"
+        className="flex flex-col gap-1 rounded-tile border border-line bg-raised p-4 text-small"
       >
-        <p className="font-semibold">What your wallet approves</p>
-        <p>{summary.approval.text}</p>
+        <p className="text-caption text-muted">What your wallet approves</p>
+        <p className="text-ink">{summary.approval.text}</p>
       </div>
       <p className="text-caption text-muted">{summary.risk}</p>
-      <p role="status" aria-live="polite" className="text-small text-muted">
+      <p
+        role="status"
+        aria-live="polite"
+        className="text-small text-muted empty:hidden"
+      >
         {state.step === "signing"
           ? "Confirm the transaction in your wallet."
           : state.step === "submitting"
@@ -64,7 +68,12 @@ export function ReviewPanel({
           <Button variant="ghost" onClick={onBack} disabled={busy}>
             Back
           </Button>
-          <Button data-testid={testId} loading={busy} onClick={onConfirm}>
+          <Button
+            variant="solid"
+            data-testid={testId}
+            loading={busy}
+            onClick={onConfirm}
+          >
             {confirmLabel}
           </Button>
         </div>

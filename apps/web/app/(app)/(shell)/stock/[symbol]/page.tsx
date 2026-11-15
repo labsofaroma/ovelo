@@ -1,14 +1,17 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
-import { AsOf } from "@/features/shared/components/AsOf";
-import { DataNotice } from "@/features/shared/components/DataNotice";
-import { STALE_AFTER_MS } from "@/features/shared/freshness";
+import { ArrowLeft } from "lucide-react";
+import { Callout, Section, Stack } from "@ovelo/ui";
+import { PRICE_SOURCE_LABEL } from "@/features/markets/labels";
+import { formatUsd } from "@/features/shared/fixed";
+import { formatObservedAt } from "@/features/shared/freshness";
 import { v1Metadata } from "@/features/shared/metadata";
 import { routes } from "@/features/shared/routes";
-import { pageContainer, textLink } from "@/features/shared/styles";
-import { PriceChartLazy } from "@/features/stock/components/PriceChartLazy";
-import { ResearchTabs } from "@/features/stock/components/ResearchTabs";
+import { linkButtonSmall, pageContainer } from "@/features/shared/styles";
+import { ResearchSections } from "@/features/stock/components/ResearchSections";
+import { StickyBuyBar } from "@/features/stock/components/StickyBuyBar";
+import { StockFacts } from "@/features/stock/components/StockFacts";
 import { StockHeader } from "@/features/stock/components/StockHeader";
 import { TradeUnavailable } from "@/features/stock/components/TradePlaceholder";
 import { TradeIsland } from "@/features/trade/components/TradeIsland";
@@ -38,43 +41,43 @@ export default async function StockPage({ params }: Props) {
   const { symbol } = await params;
   const page = await getStockPage(symbol);
   if (page.state === "not-found") notFound();
+  const current =
+    page.state === "ok"
+      ? page.lookup.row.symbol
+      : decodeURIComponentSafe(symbol);
 
   return (
     <main
       id="main-content"
-      className={`${pageContainer} flex flex-col gap-8 py-8`}
+      className={`${pageContainer} flex flex-col gap-4 py-6 pb-24 md:gap-5 md:py-8 lg:pb-20`}
     >
-      <nav aria-label="Breadcrumb" className="text-caption">
-        <Link className={textLink} href={routes.markets}>
+      <nav
+        aria-label="Breadcrumb"
+        className="flex items-center gap-2 text-caption"
+      >
+        <Link
+          className={`${linkButtonSmall.ghost} -ml-2`}
+          href={routes.markets}
+        >
+          <ArrowLeft aria-hidden="true" className="size-4" />
           Markets
         </Link>
         <span aria-hidden="true" className="text-muted">
-          {" "}
-          /{" "}
+          /
         </span>
         <span aria-current="page" className="text-muted">
-          {page.state === "ok"
-            ? page.lookup.row.symbol
-            : decodeURIComponentSafe(symbol)}
+          {current}
         </span>
       </nav>
 
       {page.state === "unavailable" ? (
-        <>
-          <h1 className="text-page font-semibold max-md:text-page-mobile">
-            {decodeURIComponentSafe(symbol)}
-          </h1>
-          <DataNotice
-            tone="unavailable"
-            title="Market data is unavailable right now"
-          >
-            <p>
-              The issuer catalog could not be loaded, so this listing and its
-              price cannot be shown. {page.error.message} Try again in a few
-              minutes.
-            </p>
-          </DataNotice>
-        </>
+        <Section variant="hero" headingLevel="h1" title={current}>
+          <Callout tone="danger" title="Market data is unavailable right now">
+            The issuer catalog could not be loaded, so this listing and its
+            price cannot be shown. {page.error.message} Try again in a few
+            minutes.
+          </Callout>
+        </Section>
       ) : (
         <StockBody page={page} />
       )}
@@ -97,117 +100,69 @@ function StockBody({
 }) {
   const { row } = page.lookup;
   const research = page.research;
+  const tradable = !row.tradingHalted && row.verified;
+  const observed = row.priceObservedAt
+    ? formatObservedAt(row.priceObservedAt)
+    : null;
   return (
-    <>
-      <div className="grid gap-6 lg:grid-cols-[1fr_20rem]">
-        <StockHeader row={row} />
-        {row.tradingHalted || !row.verified ? (
-          <TradeUnavailable
-            name={row.symbol}
-            reason={
-              row.tradingHalted
-                ? "The issuer has paused trading for this asset."
-                : "This listing is not verified by its issuer, so it cannot be bought here."
-            }
-          />
-        ) : (
-          <TradeIsland
-            title={`Buy ${row.symbol}`}
-            target={{
-              kind: "spot",
-              mint: row.mint,
-              legs: [
-                {
-                  mint: row.mint,
-                  symbol: row.symbol,
-                  name: row.name,
-                  weightBps: 10_000,
-                },
-              ],
-            }}
-          />
-        )}
-      </div>
-
-      <section
-        aria-labelledby="research-heading"
-        className="flex flex-col gap-4"
-      >
-        <div className="flex flex-col gap-1">
-          <h2 id="research-heading" className="text-section font-semibold">
-            Company research: {row.underlyingSymbol}
-          </h2>
-          <p className="text-small text-muted">
-            About the underlying company. A token’s rights, price and liquidity
-            can differ from the share.
-          </p>
-        </div>
-        {research.state === "unavailable" ? (
-          <DataNotice
-            tone="unavailable"
-            title="Company research is unavailable"
-          >
-            <p>
-              Research providers could not be reached. The token data above is
-              unaffected. {research.error.message}
-            </p>
-          </DataNotice>
-        ) : (
-          <>
-            {research.data.warnings.length ? (
-              <DataNotice
-                title="Some research is missing"
-                items={research.data.warnings}
-              />
-            ) : null}
-            <section
-              aria-labelledby="chart-heading"
-              className="flex flex-col gap-2"
-            >
-              <h3 id="chart-heading" className="text-title font-semibold">
-                Underlying share, daily close
-              </h3>
-              {research.data.closes.length ? (
-                <PriceChartLazy
-                  closes={research.data.closes}
-                  symbol={row.underlyingSymbol}
-                />
-              ) : (
-                <p className="text-small text-muted">
-                  No daily closes were observed.
-                </p>
-              )}
-              <AsOf
-                observedAt={research.data.asOf}
-                source={
-                  research.data.sources.map((s) => s.name).join(", ") || null
-                }
-                staleAfterMs={STALE_AFTER_MS.research}
-                label="Research observed"
-              />
-            </section>
-            <ResearchTabs research={research.data} />
-            {research.data.sources.length ? (
-              <p className="text-caption text-muted">
-                Sources:{" "}
-                {research.data.sources.map((source, index) => (
-                  <span key={source.url}>
-                    {index ? ", " : null}
-                    <a
-                      className={textLink}
-                      href={source.url}
-                      rel="noreferrer"
-                      target="_blank"
-                    >
-                      {source.name}
-                    </a>
-                  </span>
-                ))}
-              </p>
-            ) : null}
-          </>
-        )}
-      </section>
-    </>
+    <Stack>
+      <StockHeader row={row} />
+      {tradable ? (
+        <TradeIsland
+          title={`Buy ${row.symbol}`}
+          target={{
+            kind: "spot",
+            mint: row.mint,
+            legs: [
+              {
+                mint: row.mint,
+                symbol: row.symbol,
+                name: row.name,
+                weightBps: 10_000,
+              },
+            ],
+          }}
+        />
+      ) : (
+        <TradeUnavailable
+          name={row.symbol}
+          reason={
+            row.tradingHalted
+              ? "The issuer has paused trading for this asset."
+              : "This listing is not verified by its issuer, so it cannot be bought here."
+          }
+        />
+      )}
+      <ResearchSections
+        research={research}
+        underlyingSymbol={row.underlyingSymbol}
+      />
+      <StockFacts
+        row={row}
+        research={research.state === "ok" ? research.data : null}
+      />
+      {tradable ? (
+        <StickyBuyBar
+          label={`Buy ${row.symbol}`}
+          detail={
+            row.price && row.priceSource && observed ? (
+              <>
+                <span className="tabular-nums text-ink">
+                  {formatUsd(row.price)}
+                </span>
+                <span>
+                  {PRICE_SOURCE_LABEL[row.priceSource]} ·{" "}
+                  <time dateTime={row.priceObservedAt ?? undefined}>
+                    {observed}
+                  </time>
+                </span>
+              </>
+            ) : (
+              <span>No token price observed</span>
+            )
+          }
+        />
+      ) : null}
+    </Stack>
   );
 }

@@ -1,6 +1,7 @@
 import { Badge, Button } from "@ovelo/ui";
 import Link from "next/link";
 import { routes } from "../../shared/routes";
+import { textLink } from "../../shared/styles";
 import type { Signer } from "../../wallet/context";
 import { useAcceptTerms } from "../queries";
 import type { ComplianceStatus } from "../schema";
@@ -22,19 +23,19 @@ export function TermsGate({
       role="region"
       aria-label="Accept the terms"
       data-terms-version={terms.version}
-      className="mt-4 rounded-control border border-line p-3 text-small"
+      className="mt-4 rounded-tile border border-line bg-raised p-4 text-small"
     >
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <p className="font-semibold">
+        <p className="font-semibold text-ink">
           Accept the terms before your first purchase
         </p>
         {terms.final ? null : (
           <Badge tone="neutral">Placeholder terms: pending counsel</Badge>
         )}
       </div>
-      <p className="mt-1">
+      <p className="mt-1.5 leading-body text-muted">
         Read the{" "}
-        <Link className="underline" href={routes.terms} target="_blank">
+        <Link className={textLink} href={routes.terms} target="_blank">
           terms
         </Link>{" "}
         (version {terms.version}). Your wallet signs a message with this version
@@ -42,7 +43,8 @@ export function TermsGate({
       </p>
       {signer.signMessage ? (
         <Button
-          className="mt-3"
+          variant="solid"
+          className="mt-4"
           onClick={() => accept.mutate()}
           loading={accept.isPending}
         >

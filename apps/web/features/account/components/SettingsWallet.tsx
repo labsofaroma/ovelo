@@ -6,6 +6,7 @@ import { QueryProvider } from "../../shared/components/QueryProvider";
 import { ConnectButton } from "../../wallet/ConnectButton";
 import { useWallet } from "../../wallet/context";
 import { WalletBoundary } from "../../wallet/WalletBoundary";
+import { SettingsRow } from "./SettingsRow";
 
 /** /settings wallet section: the connected wallet, its terms status (read-only), disconnect. */
 export function SettingsWallet() {
@@ -22,22 +23,24 @@ function WalletSection() {
   const wallet = useWallet();
   const address = wallet.signer?.address ?? null;
   return (
-    <div className="flex flex-col items-start gap-3">
-      {address ? (
-        <p className="text-small">
-          Connected wallet:{" "}
-          <span className="font-mono break-all">{address}</span>
-        </p>
-      ) : (
-        <p className="text-small text-muted">
-          No wallet connected. Ovelo never holds your keys or funds; connecting
-          only lets this page read your terms status.
-        </p>
-      )}
-      {/* Connect, or (when connected) disconnect: the same control as everywhere else. */}
-      <ConnectButton />
+    <div className="flex flex-col">
+      <SettingsRow
+        title={address ? "Connected wallet" : "Solana wallet"}
+        body={
+          address ? (
+            <span className="font-mono text-caption break-all text-ink">
+              {address}
+            </span>
+          ) : (
+            "No wallet connected. Ovelo never holds your keys or funds; connecting only lets this page read your terms status."
+          )
+        }
+      >
+        {/* Connect, or (when connected) disconnect: the same control as everywhere else. */}
+        <ConnectButton />
+      </SettingsRow>
       {wallet.error ? (
-        <p role="alert" className="text-small text-down">
+        <p role="alert" className="pb-5 text-small text-down">
           {wallet.error}
         </p>
       ) : null}
@@ -55,31 +58,43 @@ function TermsStatus({ address }: { address: string }) {
     retry: 1,
   });
   if (status.isPending)
-    return <p className="text-small text-muted">Checking the terms status…</p>;
+    return (
+      <SettingsRow title="Terms of use" body="Checking the terms status…" />
+    );
   if (status.isError)
     return (
-      <p role="alert" className="text-small text-muted">
-        The terms status is unavailable right now ({status.error.message}). It
-        does not mean the terms were not accepted.
-      </p>
+      <SettingsRow
+        title="Terms of use"
+        body={
+          <span role="alert">
+            The terms status is unavailable right now ({status.error.message}).
+            It does not mean the terms were not accepted.
+          </span>
+        }
+      />
     );
   const { terms } = status.data;
   return (
-    <dl className="grid gap-1 text-small" data-testid="terms-status">
-      <div className="flex flex-wrap gap-2">
-        <dt className="text-muted">Terms of use, version</dt>
-        <dd className="font-mono">{terms.version}</dd>
-      </div>
-      <div className="flex flex-wrap gap-2">
-        <dt className="text-muted">Accepted by this wallet</dt>
-        <dd>
-          {terms.accepted === true
-            ? "Yes, the current version"
-            : terms.accepted === false
-              ? "Not yet: you will be asked to sign them before your first quote"
-              : "Unknown"}
-        </dd>
-      </div>
-    </dl>
+    <div className="border-t border-line pt-5">
+      <dl
+        className="grid gap-3 text-small sm:grid-cols-2"
+        data-testid="terms-status"
+      >
+        <div className="flex flex-col gap-1 rounded-tile border border-line bg-raised p-4">
+          <dt className="text-caption text-muted">Terms of use, version</dt>
+          <dd className="font-mono text-ink">{terms.version}</dd>
+        </div>
+        <div className="flex flex-col gap-1 rounded-tile border border-line bg-raised p-4">
+          <dt className="text-caption text-muted">Accepted by this wallet</dt>
+          <dd className="text-ink">
+            {terms.accepted === true
+              ? "Yes, the current version"
+              : terms.accepted === false
+                ? "Not yet: you will be asked to sign them before your first quote"
+                : "Unknown"}
+          </dd>
+        </div>
+      </dl>
+    </div>
   );
 }

@@ -1,4 +1,4 @@
-import { Badge, Button } from "@ovelo/ui";
+import { Button, Callout, NetworkBadge } from "@ovelo/ui";
 import { formatUnits } from "@ovelo/ui/format";
 import { Fragment, useEffect, useState } from "react";
 import { quoteClock, type AnyQuote } from "../flow";
@@ -37,10 +37,12 @@ function Row({
 }) {
   return (
     <div
-      className={`flex justify-between gap-4 py-1${first ? " mt-1 border-t border-line pt-2" : ""}`}
+      className={`flex items-baseline justify-between gap-4 py-2.5 text-small${first ? " border-t border-border-strong" : " border-t border-line first:border-t-0"}`}
     >
       <dt className="text-muted">{label}</dt>
-      <dd className="text-right tabular-nums">{value}</dd>
+      <dd className="text-right font-medium tabular-nums text-ink [overflow-wrap:anywhere]">
+        {value}
+      </dd>
     </div>
   );
 }
@@ -69,19 +71,17 @@ export function ReviewPanel({
   const live = quote.channel === "live";
 
   return (
-    <section
-      aria-labelledby="review-title"
-      className="mt-4 rounded-panel border border-line p-4"
-    >
+    <section aria-labelledby="review-title" className="flex flex-col gap-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
-        <h3 id="review-title" className="text-body font-semibold">
+        <h3
+          id="review-title"
+          className="font-display text-title font-normal tracking-[-0.02em] text-ink"
+        >
           Review {live ? "mainnet spot purchase" : "paper practice order"}
         </h3>
-        <Badge tone={live ? "accent" : "neutral"}>
-          {live ? "Mainnet" : "Paper"}
-        </Badge>
+        <NetworkBadge kind={live ? "mainnet-spot" : "paper"} />
       </div>
-      <dl className="mt-3 text-small">
+      <dl className="flex flex-col rounded-tile border border-line bg-raised px-4">
         {live ? (
           <>
             <Row
@@ -181,12 +181,9 @@ export function ReviewPanel({
         />
       </dl>
       {live && quote.quote.atomicityWarning ? (
-        <p
-          role="note"
-          className="mt-2 rounded-control bg-warning-soft p-2 text-small text-warning"
-        >
+        <Callout role="note" tone="warning">
           {quote.quote.atomicityWarning}
-        </p>
+        </Callout>
       ) : null}
       {/* M9 compliance gate (additive): live confirm controls exist only inside the disclosure. */}
       {live ? (
@@ -201,7 +198,7 @@ export function ReviewPanel({
           />
         </RiskDisclosure>
       ) : (
-        <div className="mt-4">
+        <div>
           <ReviewActions
             live={false}
             expired={expired}
@@ -232,15 +229,23 @@ function ReviewActions({
   onCancel: () => void;
 }) {
   return (
-    <div className="flex flex-wrap gap-2">
+    <div className="flex flex-col gap-2">
       {expired ? (
-        <Button onClick={onRequote}>Quote expired: get a new quote</Button>
+        <Button variant="solid" size="lg" fullWidth onClick={onRequote}>
+          Quote expired: get a new quote
+        </Button>
       ) : (
-        <Button onClick={onConfirm} loading={busy}>
+        <Button
+          variant="solid"
+          size="lg"
+          fullWidth
+          onClick={onConfirm}
+          loading={busy}
+        >
           {live ? "Sign and buy on mainnet" : "Place paper order"}
         </Button>
       )}
-      <Button variant="secondary" onClick={onCancel} disabled={busy}>
+      <Button variant="secondary" fullWidth onClick={onCancel} disabled={busy}>
         Cancel
       </Button>
     </div>

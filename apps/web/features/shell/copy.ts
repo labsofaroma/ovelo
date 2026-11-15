@@ -1,0 +1,38 @@
+/** Wording for the app frame (sidebar, phone bars, search, account menu). */
+export const shell = {
+  nav: {
+    label: "Main navigation",
+    mobileLabel: "Mobile navigation",
+    groups: { invest: "Invest", you: "You" },
+    markets: "Markets",
+    baskets: "Baskets",
+    invest: "Invest (devnet)",
+    portfolio: "Portfolio",
+    watchlist: "Watchlist",
+    activity: "Activity",
+    creators: "Creators",
+    settings: "Settings",
+    more: "More",
+  },
+  searchButton: "Search stocks",
+  searchShortcut: "⌘K",
+  account: {
+    open: "Open account menu",
+    title: "Your account",
+    hint: "Wallet",
+    prompt: "Browse freely. Connect a wallet when you want to buy.",
+    custody: "Assets stay in your wallet. Ovelo never holds them.",
+    getStarted: "Get started",
+    portfolio: "Portfolio",
+    settings: "Account & settings",
+    terms: "Terms & policies",
+  },
+  search: {
+    title: "Search stocks",
+    label: "Company, ticker or mint address",
+    placeholder: "Company, ticker or mint address",
+    submit: "Search markets",
+    hint: "Try a company name, a ticker such as NVDAx, or a full mint address.",
+  },
+  more: { title: "More", open: "Open more pages" },
+} as const;

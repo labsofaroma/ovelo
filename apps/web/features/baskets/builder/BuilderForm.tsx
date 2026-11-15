@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, Field, Input } from "@ovelo/ui";
+import { Button, Callout, Field, Input, Section } from "@ovelo/ui";
 import { PublishPanel } from "../../creators/components/PublishPanel";
 import { useEffect, useMemo, useState } from "react";
 import {
@@ -156,15 +156,13 @@ export function BuilderForm({ market, asOf, initial }: BuilderFormProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 gap-8 lg:grid-cols-[minmax(0,5fr)_minmax(0,7fr)]">
-      <div className="flex min-w-0 flex-col gap-8">
-        <section
-          aria-labelledby="builder-details"
-          className="flex flex-col gap-4"
-        >
-          <h2 id="builder-details" className="text-title font-semibold">
-            Name it
-          </h2>
+    <div className="flex flex-col gap-4 md:gap-5">
+      <Section
+        eyebrow="Step 1"
+        title="Name it"
+        description="A name, a short ticker and, if you like, one line on what ties the assets together."
+      >
+        <div className="grid gap-4 md:grid-cols-2">
           <Field label="Basket name" required>
             <Input
               value={name}
@@ -186,66 +184,74 @@ export function BuilderForm({ market, asOf, initial }: BuilderFormProps) {
               onChange={(event) => setTicker(event.target.value.toUpperCase())}
             />
           </Field>
-          <Field
-            label="Description"
-            hint={`Optional, up to ${DESCRIPTION_MAX} characters.`}
-          >
-            <Input
-              value={description}
-              maxLength={DESCRIPTION_MAX}
-              onChange={(event) => setDescription(event.target.value)}
-            />
-          </Field>
-        </section>
-        <AssetPicker assets={assets} selected={selected} onToggle={toggle} />
-      </div>
-      <div className="flex min-w-0 flex-col gap-8">
-        <WeightEditor rows={rows} onChange={setRows} onRemove={remove} />
-        <BuilderPreview
-          name={name}
-          ticker={ticker}
-          description={description}
-          rows={rows}
-          market={market}
-          asOf={asOf}
-        />
-        <section
-          aria-labelledby="builder-publish"
-          className="flex flex-col gap-3 rounded-panel border border-line bg-surface p-4"
-        >
-          <h2 id="builder-publish" className="text-title font-semibold">
-            Publish
-          </h2>
+          <div className="md:col-span-2">
+            <Field
+              label="Description"
+              hint={`Optional, up to ${DESCRIPTION_MAX} characters.`}
+            >
+              <Input
+                value={description}
+                maxLength={DESCRIPTION_MAX}
+                onChange={(event) => setDescription(event.target.value)}
+              />
+            </Field>
+          </div>
+        </div>
+      </Section>
+      <AssetPicker assets={assets} selected={selected} onToggle={toggle} />
+      <WeightEditor rows={rows} onChange={setRows} onRemove={remove} />
+      <BuilderPreview
+        name={name}
+        ticker={ticker}
+        description={description}
+        rows={rows}
+        market={market}
+        asOf={asOf}
+      />
+      <Section
+        eyebrow="Step 5"
+        title="Publish"
+        description="Invited creators publish by signing the basket with their wallet."
+      >
+        <div className="flex flex-col gap-4">
           {problems.length ? (
-            <ul className="list-disc space-y-1 pl-5 text-small">
-              {problems.map((problem) => (
-                <li key={problem}>{problem}</li>
-              ))}
-            </ul>
+            <Callout tone="warning" title="Not ready to publish yet">
+              <ul className="list-disc space-y-1 pl-5">
+                {problems.map((problem) => (
+                  <li key={problem}>{problem}</li>
+                ))}
+              </ul>
+            </Callout>
           ) : (
-            <p className="text-small">The allocation is complete.</p>
+            <p className="text-small text-ink">The allocation is complete.</p>
           )}
-          <PublishPanel
-            problems={problems}
-            basket={{
-              name,
-              ticker,
-              description,
-              allocations: rows.map(({ mint, weightBps }) => ({
-                mint,
-                weightBps,
-              })),
-            }}
-            {...(initial ? { basketId: initial.basketId } : {})}
-            onPublished={() => {
-              if (!initial) clearDraft();
-            }}
-          />
-          {initial ? null : (
-            <div>
+          <div className="flex flex-col gap-4 rounded-tile border border-line bg-raised p-5">
+            <PublishPanel
+              problems={problems}
+              basket={{
+                name,
+                ticker,
+                description,
+                allocations: rows.map(({ mint, weightBps }) => ({
+                  mint,
+                  weightBps,
+                })),
+              }}
+              {...(initial ? { basketId: initial.basketId } : {})}
+              onPublished={() => {
+                if (!initial) clearDraft();
+              }}
+            />
+          </div>
+          <div className="flex flex-col-reverse gap-3 border-t border-line pt-4 sm:flex-row sm:items-center sm:justify-between">
+            <p role="status" className="text-caption text-muted">
+              {STORAGE_TEXT[storage]}
+            </p>
+            {initial ? null : (
               <Button
                 type="button"
                 variant="ghost"
+                size="sm"
                 onClick={() => {
                   clearDraft();
                   setName("");
@@ -256,13 +262,10 @@ export function BuilderForm({ market, asOf, initial }: BuilderFormProps) {
               >
                 Clear draft
               </Button>
-            </div>
-          )}
-          <p role="status" className="text-caption text-muted">
-            {STORAGE_TEXT[storage]}
-          </p>
-        </section>
-      </div>
+            )}
+          </div>
+        </div>
+      </Section>
     </div>
   );
 }

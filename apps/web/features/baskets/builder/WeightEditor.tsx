@@ -1,6 +1,6 @@
 "use client";
 
-import { Button, IconButton, Input } from "@ovelo/ui";
+import { Button, IconButton, Input, Section, cn } from "@ovelo/ui";
 import { Scale, Trash2 } from "lucide-react";
 import { type KeyboardEvent, useId, useState } from "react";
 import { formatBps } from "../../shared/fixed";
@@ -80,16 +80,15 @@ export function WeightEditor({ rows, onChange, onRemove }: WeightEditorProps) {
           ? `Total is ${formatBps(total)}. ${formatBps(difference)} left to assign.`
           : `Total is ${formatBps(total)}. ${formatBps(-difference)} over 100%.`;
 
+  const ready = difference === 0 && zeros === 0 && rows.length > 0;
+
   return (
-    <section
-      aria-labelledby={`${statusId}-title`}
-      className="flex flex-col gap-4"
-    >
-      <div className="flex flex-wrap items-center justify-between gap-3">
-        <h2 id={`${statusId}-title`} className="text-title font-semibold">
-          Set the weights
-        </h2>
-        <div className="flex flex-wrap gap-2">
+    <Section
+      eyebrow="Step 3"
+      title="Set the weights"
+      description="Weights are whole basis points (0.01%) and must add up to exactly 100%."
+      actions={
+        <>
           <Button
             type="button"
             variant="secondary"
@@ -123,83 +122,125 @@ export function WeightEditor({ rows, onChange, onRemove }: WeightEditorProps) {
             <Scale aria-hidden="true" className="size-4" />
             Normalize to 100%
           </Button>
-        </div>
-      </div>
-      {rows.length ? (
-        <ul className="flex flex-col divide-y divide-line rounded-panel border border-line">
-          {rows.map((row) => {
-            const inputId = `${statusId}-${row.mint}`;
-            const text =
-              editing?.mint === row.mint
-                ? editing.text
-                : bpsToPercentText(row.weightBps);
-            const invalid =
-              editing?.mint === row.mint && parsePercent(editing.text) === null;
-            return (
-              <li key={row.mint} className="flex items-center gap-3 px-3 py-2">
-                <label
-                  htmlFor={inputId}
-                  className="min-w-20 flex-1 truncate text-body font-semibold"
+        </>
+      }
+    >
+      <div className="flex flex-col gap-4">
+        {rows.length ? (
+          <ul className="flex flex-col gap-2">
+            {rows.map((row) => {
+              const inputId = `${statusId}-${row.mint}`;
+              const text =
+                editing?.mint === row.mint
+                  ? editing.text
+                  : bpsToPercentText(row.weightBps);
+              const invalid =
+                editing?.mint === row.mint &&
+                parsePercent(editing.text) === null;
+              return (
+                <li
+                  key={row.mint}
+                  className="grid grid-cols-[minmax(0,1fr)_auto_auto] items-center gap-x-3 gap-y-2 rounded-tile border border-line bg-raised p-3 md:grid-cols-[minmax(6rem,1fr)_minmax(6rem,2fr)_auto_auto_auto]"
                 >
-                  {row.symbol}
-                  <span className="sr-only"> weight, percent</span>
-                </label>
-                <div className="flex shrink-0 items-center gap-1">
-                  <div className="w-20 sm:w-24">
-                    <Input
-                      id={inputId}
-                      size="sm"
-                      inputMode="decimal"
-                      autoComplete="off"
-                      className="text-right tabular-nums"
-                      value={text}
-                      invalid={invalid}
-                      aria-describedby={statusId}
-                      onChange={(event) =>
-                        setEditing({ mint: row.mint, text: event.target.value })
-                      }
-                      onBlur={() => commit(row.mint)}
-                      onKeyDown={(event) => onKeyDown(event, row)}
+                  <label
+                    htmlFor={inputId}
+                    className="min-w-0 truncate text-small font-semibold text-ink"
+                  >
+                    {row.symbol}
+                    <span className="sr-only"> weight, percent</span>
+                  </label>
+                  <span
+                    aria-hidden="true"
+                    className="relative h-1.5 overflow-hidden rounded-full bg-raised-2 max-md:hidden"
+                  >
+                    <span
+                      className="absolute inset-y-0 left-0 rounded-full bg-accent"
+                      style={{
+                        width: `${Math.min(100, row.weightBps / 100)}%`,
+                      }}
                     />
-                  </div>
-                  <span aria-hidden="true" className="text-small text-muted">
-                    %
                   </span>
-                </div>
-                <span className="w-20 text-right text-caption text-muted tabular-nums max-sm:hidden">
-                  {row.weightBps.toLocaleString("en-US")} bps
-                </span>
-                <IconButton
-                  aria-label={`Remove ${row.symbol}`}
-                  size="sm"
-                  icon={<Trash2 aria-hidden="true" className="size-4" />}
-                  onClick={() => onRemove(row.mint)}
-                />
-              </li>
-            );
-          })}
-        </ul>
-      ) : null}
-      <p
-        id={statusId}
-        role="status"
-        aria-live="polite"
-        data-state={
-          difference === 0 && zeros === 0 && rows.length ? "ok" : "pending"
-        }
-        className={
-          difference === 0 && zeros === 0
-            ? "text-small text-ink"
-            : "text-small font-semibold text-down"
-        }
-      >
-        {status}
-      </p>
-      <p className="text-caption text-muted">
-        Weights are whole basis points (0.01%). Use the arrow keys to adjust by
-        0.01%, or Shift with the arrow keys for 1%. A basket must add up to
-        exactly 100%.
-      </p>
-    </section>
+                  <div className="flex shrink-0 items-center gap-1">
+                    <div className="relative w-24 sm:w-28">
+                      <Input
+                        id={inputId}
+                        size="sm"
+                        inputMode="decimal"
+                        autoComplete="off"
+                        className="pr-8 text-right tabular-nums"
+                        value={text}
+                        invalid={invalid}
+                        aria-describedby={statusId}
+                        onChange={(event) =>
+                          setEditing({
+                            mint: row.mint,
+                            text: event.target.value,
+                          })
+                        }
+                        onBlur={() => commit(row.mint)}
+                        onKeyDown={(event) => onKeyDown(event, row)}
+                      />
+                      <span
+                        aria-hidden="true"
+                        className="pointer-events-none absolute top-1/2 right-3 -translate-y-1/2 text-small text-muted"
+                      >
+                        %
+                      </span>
+                    </div>
+                  </div>
+                  <span className="inline-flex min-h-6.5 items-center rounded-full border border-line bg-raised-2 px-2.5 text-caption font-medium tabular-nums text-ink max-sm:hidden">
+                    {row.weightBps.toLocaleString("en-US")} bps
+                  </span>
+                  <IconButton
+                    aria-label={`Remove ${row.symbol}`}
+                    size="sm"
+                    icon={<Trash2 aria-hidden="true" className="size-4" />}
+                    onClick={() => onRemove(row.mint)}
+                  />
+                </li>
+              );
+            })}
+          </ul>
+        ) : null}
+        <div
+          className={cn(
+            "flex flex-wrap items-center justify-between gap-3 rounded-tile border p-4",
+            ready
+              ? "border-line bg-raised-2"
+              : "border-transparent bg-warning-soft",
+          )}
+        >
+          <div className="flex min-w-0 flex-col gap-0.5">
+            <span className="text-caption font-medium text-muted">Total</span>
+            <p
+              id={statusId}
+              role="status"
+              aria-live="polite"
+              data-state={ready ? "ok" : "pending"}
+              className={
+                difference === 0 && zeros === 0
+                  ? "text-small text-ink"
+                  : "text-small font-semibold text-down"
+              }
+            >
+              {status}
+            </p>
+          </div>
+          <strong
+            aria-hidden="true"
+            className={cn(
+              "font-display text-title font-medium tabular-nums",
+              ready ? "text-up" : "text-ink",
+            )}
+          >
+            {formatBps(total)}
+          </strong>
+        </div>
+        <p className="text-caption leading-body text-muted">
+          Use the arrow keys to adjust a weight by 0.01%, or Shift with the
+          arrow keys for 1%. Enter commits a typed weight.
+        </p>
+      </div>
+    </Section>
   );
 }

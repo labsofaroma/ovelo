@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { Glow, Grain } from "@ovelo/ui";
 import { NotFound } from "@/features/shared/components/NotFound";
 import { RootDocument } from "@/features/shared/components/RootDocument";
 import { siteUrl } from "@/features/shared/site";
@@ -20,7 +21,10 @@ export const metadata: Metadata = {
 export default function GlobalNotFound() {
   return (
     <RootDocument>
-      <div className="flex min-h-dvh flex-col bg-bg text-ink">
+      <div className="relative isolate flex min-h-dvh flex-col overflow-hidden bg-bg text-ink">
+        <Glow />
+        <Glow tone="warm" className="opacity-60" />
+        <Grain />
         <SiteHeader />
         <div className="flex-1">
           <NotFound />

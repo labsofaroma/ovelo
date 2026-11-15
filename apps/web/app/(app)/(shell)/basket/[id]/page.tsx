@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Suspense } from "react";
-import { Skeleton } from "@ovelo/ui";
+import { ArrowLeft } from "lucide-react";
+import { Section, Skeleton, Stack } from "@ovelo/ui";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { AllocationTable } from "@/features/baskets/components/AllocationTable";
@@ -13,7 +14,7 @@ import type { PerformanceRange } from "@/features/baskets/schema";
 import { DataNotice } from "@/features/shared/components/DataNotice";
 import { v1Metadata } from "@/features/shared/metadata";
 import { routes } from "@/features/shared/routes";
-import { pageContainer, textLink } from "@/features/shared/styles";
+import { linkButtonSmall, pageContainer } from "@/features/shared/styles";
 import { lookupCreatorBasket } from "@/features/creators/basket-page";
 import { CreatorBasketDetails } from "@/features/creators/components/CreatorBasketDetails";
 import { creatorBasketId } from "@/features/trade/server/creator-target";
@@ -61,65 +62,69 @@ export default async function BasketPage({ params, searchParams }: Props) {
   if (page.state === "not-found") notFound();
 
   return (
-    <main
-      id="main-content"
-      className={`${pageContainer} flex flex-col gap-8 py-8`}
-    >
-      <nav aria-label="Breadcrumb" className="text-caption">
-        <Link className={textLink} href={routes.baskets}>
-          Baskets
-        </Link>
-      </nav>
-      {page.state === "unavailable" ? (
-        <>
-          <h1 className="text-page font-semibold max-md:text-page-mobile">
-            Basket
-          </h1>
-          <DataNotice
-            tone="unavailable"
-            title="This basket is unavailable right now"
+    <main id="main-content" className={`${pageContainer} py-6 md:py-8`}>
+      <Stack className="pb-8">
+        <nav aria-label="Breadcrumb">
+          <Link
+            className={`${linkButtonSmall.ghost} -ml-2 w-fit`}
+            href={routes.baskets}
           >
-            <p>
-              Its constituents could not be matched because the issuer catalogs
-              could not be loaded. {page.error.message}
-            </p>
-          </DataNotice>
-        </>
-      ) : (
-        <>
-          <BasketHeader basket={page.basket} />
-          <section
-            aria-labelledby="allocation-heading"
-            className="flex flex-col gap-3"
-          >
-            <h2 id="allocation-heading" className="text-section font-semibold">
-              Allocation
-            </h2>
-            <AllocationTable
-              basket={page.basket}
-              rows={page.rows}
-              asOf={page.view.asOf}
-            />
-          </section>
-          <Suspense
-            fallback={
-              <section aria-busy="true" className="flex flex-col gap-3">
-                <p role="status" className="text-small text-muted">
-                  Loading daily closes for the performance view…
-                </p>
-                <Skeleton className="h-40 w-full" />
-              </section>
-            }
-          >
-            <PerformanceSection
-              basket={page.basket}
-              rows={page.view.rows}
-              range={range}
-            />
-          </Suspense>
-          <BasketBuy basket={page.basket} rows={page.rows} />
-        </>
-      )}
+            <ArrowLeft aria-hidden="true" className="size-4" />
+            Baskets
+          </Link>
+        </nav>
+        {page.state === "unavailable" ? (
+          <Section variant="hero" headingLevel="h1" title="Basket">
+            <DataNotice
+              tone="unavailable"
+              title="This basket is unavailable right now"
+            >
+              <p>
+                Its constituents could not be matched because the issuer
+                catalogs could not be loaded. {page.error.message}
+              </p>
+            </DataNotice>
+          </Section>
+        ) : (
+          <>
+            <BasketHeader basket={page.basket} />
+            <BasketBuy basket={page.basket} rows={page.rows} />
+            <Section
+              eyebrow="Weights"
+              title="Allocation"
+              description="Target weights from the published basket definition, in basis points, with each constituent's observed token price."
+            >
+              <AllocationTable
+                basket={page.basket}
+                rows={page.rows}
+                asOf={page.view.asOf}
+              />
+            </Section>
+            <Suspense
+              fallback={
+                <Section
+                  aria-busy="true"
+                  eyebrow="Performance"
+                  title="How these weights would have moved"
+                >
+                  <div className="flex flex-col gap-3">
+                    <p role="status" className="text-small text-muted">
+                      Loading daily closes for the performance view…
+                    </p>
+                    <Skeleton className="h-40 w-full" />
+                  </div>
+                </Section>
+              }
+            >
+              <PerformanceSection
+                basket={page.basket}
+                rows={page.view.rows}
+                range={range}
+              />
+            </Suspense>
+          </>
+        )}
+      </Stack>
     </main>
   );
 }

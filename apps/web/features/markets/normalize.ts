@@ -73,8 +73,11 @@ export function toBasketSummary(basket: MarketBasket): BasketSummary {
   };
 }
 
+/** Movers per ranking on the Markets pulse cards. */
+const MOVER_COUNT = 6;
+
 function toPulse(assets: MarketAsset[]): Pulse {
-  const pulse = getMarketPulse(assets, 3);
+  const pulse = getMarketPulse(assets, MOVER_COUNT);
   const mover = (asset: MarketAsset) => ({
     symbol: asset.symbol,
     name: asset.name,
@@ -91,6 +94,7 @@ function toPulse(assets: MarketAsset[]): Pulse {
     coveredAssets: pulse.breadth.coveredAssets,
     volume24h: usd(pulse.volume24hUsd),
     volumeCoveredAssets: pulse.volumeCoveredAssets,
+    topVolume: pulse.topVolume.map(mover),
     gainers: pulse.gainers.map(mover),
     losers: pulse.losers.map(mover),
   };

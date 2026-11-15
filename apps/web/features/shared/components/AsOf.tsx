@@ -50,7 +50,7 @@ export function AsOf({
           · Source:{" "}
           {sourceUrl ? (
             <a
-              className="text-ink underline underline-offset-2"
+              className="rounded-badge text-ink underline decoration-border-strong underline-offset-4 hover:decoration-current focus-ring"
               href={sourceUrl}
               rel="noreferrer"
               target="_blank"

@@ -1,4 +1,5 @@
-import { Badge } from "@ovelo/ui";
+import { Badge, Progress } from "@ovelo/ui";
+import { Repeat2 } from "lucide-react";
 import type { ReactNode } from "react";
 import { formatPeriod, formatRaw } from "../server/format";
 import type { PlanView } from "../schema";
@@ -23,22 +24,30 @@ export function PlanCard({
   actions?: ReactNode;
 }) {
   const installment = `${formatRaw(BigInt(plan.installmentRaw), plan.fundingDecimals)} ${plan.fundingSymbol}`;
+  const progress = plan.periods
+    ? Math.round((plan.executedPeriods / plan.periods) * 100)
+    : 0;
   return (
     <article
       data-testid="plan-card"
       data-plan={plan.pda}
-      className="flex flex-col gap-3 rounded-panel border border-line bg-surface p-4"
+      className="flex flex-col gap-4 rounded-tile border border-line bg-raised p-4 md:p-5"
     >
-      <header className="flex flex-wrap items-center justify-between gap-2">
-        <div className="flex flex-col gap-1">
-          <h3 className="text-body font-semibold">
-            {installment} {formatPeriod(BigInt(plan.periodSeconds))}
-          </h3>
-          <p className="text-caption text-muted">
-            Plan {plan.pda.slice(0, 4)}…{plan.pda.slice(-4)} · {plan.periods}{" "}
-            installments · catch-up window {plan.catchUpWindowPeriods}{" "}
-            {plan.catchUpWindowPeriods === 1 ? "period" : "periods"}
-          </p>
+      <header className="flex flex-wrap items-start justify-between gap-3">
+        <div className="flex min-w-0 items-center gap-3">
+          <span className="grid size-10 shrink-0 place-items-center rounded-full border border-line bg-raised-2 text-muted">
+            <Repeat2 className="size-4.5" aria-hidden />
+          </span>
+          <div className="flex min-w-0 flex-col gap-1">
+            <h3 className="font-display text-title text-ink tabular-nums">
+              {installment} {formatPeriod(BigInt(plan.periodSeconds))}
+            </h3>
+            <p className="text-caption text-muted">
+              Plan {plan.pda.slice(0, 4)}…{plan.pda.slice(-4)} · {plan.periods}{" "}
+              installments · catch-up window {plan.catchUpWindowPeriods}{" "}
+              {plan.catchUpWindowPeriods === 1 ? "period" : "periods"}
+            </p>
+          </div>
         </div>
         <div className="flex items-center gap-2">
           <Badge tone={plan.status === "active" ? "up" : "neutral"}>
@@ -47,27 +56,31 @@ export function PlanCard({
           {actions}
         </div>
       </header>
-      <dl className="grid grid-cols-2 gap-2 text-small md:grid-cols-3">
-        <div>
+      <Progress value={progress} aria-label="Installments executed" />
+      <dl className="grid grid-cols-1 gap-3 text-small sm:grid-cols-3">
+        <div className="flex flex-col gap-1 rounded-tile border border-line bg-raised-2 p-3">
           <dt className="text-caption text-muted">Executed</dt>
           <dd
             data-testid="plan-executed"
-            className="font-semibold tabular-nums"
+            className="font-display text-title text-ink tabular-nums"
           >
             {plan.executedPeriods} of {plan.periods}
           </dd>
         </div>
-        <div>
+        <div className="flex flex-col gap-1 rounded-tile border border-line bg-raised-2 p-3">
           <dt className="text-caption text-muted">
             Skipped (recorded on-chain)
           </dt>
-          <dd data-testid="plan-skipped" className="font-semibold tabular-nums">
+          <dd
+            data-testid="plan-skipped"
+            className="font-display text-title text-ink tabular-nums"
+          >
             {plan.skippedPeriods}
           </dd>
         </div>
-        <div>
+        <div className="flex flex-col gap-1 rounded-tile border border-line bg-raised-2 p-3">
           <dt className="text-caption text-muted">Split</dt>
-          <dd>
+          <dd className="text-ink tabular-nums">
             {plan.outputs
               .map(
                 (o) =>

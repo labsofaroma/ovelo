@@ -65,10 +65,12 @@ export function PlanTimeline({
             data-testid="timeline-row"
             data-status={entry.status}
             data-period={entry.period}
-            className="flex flex-col gap-1 rounded-control border border-line p-3 text-small"
+            className="flex flex-col gap-1.5 rounded-tile border border-line bg-raised-2 px-4 py-3 text-small"
           >
             <div className="flex flex-wrap items-center gap-2">
-              <span className="font-semibold">Period {entry.period + 1}</span>
+              <span className="font-medium text-ink tabular-nums">
+                Period {entry.period + 1}
+              </span>
               <Badge tone={label.tone}>{label.text}</Badge>
             </div>
             <p className="text-muted">{detail(entry)}</p>
@@ -78,7 +80,7 @@ export function PlanTimeline({
                 className="flex flex-col gap-1 border-t border-line pt-2"
               >
                 <a
-                  className="text-accent underline focus-ring"
+                  className="w-fit rounded-badge text-ink underline underline-offset-4 focus-ring"
                   href={explorerUrl(
                     execution.signature,
                     cluster,
@@ -94,7 +96,7 @@ export function PlanTimeline({
                     Confirmed {formatChainTime(BigInt(execution.blockTime))}
                   </span>
                 ) : null}
-                <ul className="flex flex-col gap-0.5">
+                <ul className="flex flex-col gap-0.5 text-muted">
                   {execution.legs.map((leg) => (
                     <li
                       key={`${execution.signature}-${leg.leg}`}

@@ -16,9 +16,11 @@ const unavailable = {
   error: { code: "UPSTREAM_UNAVAILABLE" as const, message: "unavailable" },
 };
 
-const internal = new Set<string>(
-  Object.values(routes).filter((r) => typeof r === "string"),
-);
+/** Internal routes plus the landing's own in-page anchor ("How it works"). */
+const internal = new Set<string>([
+  ...Object.values(routes).filter((r) => typeof r === "string"),
+  "#how-it-works",
+]);
 
 describe("Landing links and button texts", () => {
   it("does not say spot trading is still coming (it is live since M9)", () => {

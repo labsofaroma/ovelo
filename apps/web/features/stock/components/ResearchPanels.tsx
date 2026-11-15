@@ -1,4 +1,7 @@
 import {
+  Badge,
+  EmptyState,
+  StatTile,
   Table,
   TableBody,
   TableCaption,
@@ -7,6 +10,7 @@ import {
   TableHeader,
   TableRow,
 } from "@ovelo/ui";
+import { ArrowUpRight, CalendarDays } from "lucide-react";
 import { AsOf } from "../../shared/components/AsOf";
 import {
   formatCompactUsd,
@@ -16,12 +20,16 @@ import {
 import { formatDay, STALE_AFTER_MS } from "../../shared/freshness";
 import { textLink } from "../../shared/styles";
 import type { ResearchView } from "../schema";
+import { ResearchRange } from "./ResearchRange";
 
-function Row({ label, value }: { label: string; value: React.ReactNode }) {
+const tileLink =
+  "focus-ring flex rounded-tile border border-line bg-raised p-4 transition-colors motion-fast hover:border-border-strong";
+
+function Fact({ label, value }: { label: string; value: React.ReactNode }) {
   return (
-    <div className="flex justify-between gap-4 border-b border-line py-2">
-      <dt className="text-muted">{label}</dt>
-      <dd className="text-right font-semibold tabular-nums">
+    <div className="flex min-w-0 flex-col gap-1 rounded-tile border border-line bg-raised p-4">
+      <dt className="text-caption text-muted">{label}</dt>
+      <dd className="text-small font-medium text-ink [overflow-wrap:anywhere]">
         {value ?? "Not reported"}
       </dd>
     </div>
@@ -30,21 +38,20 @@ function Row({ label, value }: { label: string; value: React.ReactNode }) {
 
 export function OverviewPanel({ research }: { research: ResearchView }) {
   const { profile } = research;
-  if (!profile)
-    return (
-      <p className="text-small text-muted">No company profile was found.</p>
-    );
+  if (!profile) return <EmptyState title="No company profile was found." />;
   return (
-    <div className="flex flex-col gap-3">
+    <div className="flex flex-col gap-5">
       {profile.description ? (
-        <p className="max-w-3xl">{profile.description}</p>
+        <p className="max-w-[72ch] text-body leading-body text-ink">
+          {profile.description}
+        </p>
       ) : null}
-      <dl className="grid max-w-xl text-small">
-        <Row label="Exchange" value={profile.exchange} />
-        <Row label="Sector" value={profile.sector} />
-        <Row label="Industry" value={profile.industry} />
-        <Row label="Currency" value={profile.currency} />
-        <Row
+      <dl className="grid grid-cols-2 gap-3 md:grid-cols-5">
+        <Fact label="Exchange" value={profile.exchange} />
+        <Fact label="Sector" value={profile.sector} />
+        <Fact label="Industry" value={profile.industry} />
+        <Fact label="Currency" value={profile.currency} />
+        <Fact
           label="Website"
           value={
             profile.website ? (
@@ -80,28 +87,41 @@ const TREND = {
 
 export function TechnicalsPanel({ research }: { research: ResearchView }) {
   const t = research.technicals;
-  if (!t)
-    return <p className="text-small text-muted">Technicals are unavailable.</p>;
+  if (!t) return <EmptyState title="Technicals are unavailable." />;
   const usd = (value: typeof t.close | null) =>
-    value ? formatUsd(value) : null;
+    value ? formatUsd(value) : "Not reported";
+  const metrics = [
+    ["Last close", usd(t.close)],
+    ["50-day average", usd(t.sma50)],
+    ["200-day average", usd(t.sma200)],
+    ["RSI (14)", t.rsi14 ? formatUnitsText(t.rsi14, 1) : "Not reported"],
+  ] as const;
   return (
-    <div className="flex flex-col gap-3">
-      <p className="text-small text-muted">
-        Computed from daily closes of the underlying share, not the token. Not a
-        recommendation.
-      </p>
-      <dl className="grid max-w-xl text-small">
-        <Row label="Last close" value={usd(t.close)} />
-        <Row label="50-day average" value={usd(t.sma50)} />
-        <Row label="200-day average" value={usd(t.sma200)} />
-        <Row
-          label="RSI (14)"
-          value={t.rsi14 ? formatUnitsText(t.rsi14, 1) : null}
-        />
-        <Row label="52-week high" value={usd(t.high52w)} />
-        <Row label="52-week low" value={usd(t.low52w)} />
-        <Row label="Trend" value={TREND[t.trend]} />
-      </dl>
+    <div className="flex flex-col gap-5">
+      <div className="grid grid-cols-2 gap-3 md:grid-cols-4">
+        {metrics.map(([label, value]) => (
+          <StatTile key={label} label={label} value={value} />
+        ))}
+      </div>
+      <div className="flex flex-col gap-3 rounded-tile border border-line bg-raised p-4 md:flex-row md:items-center">
+        <Badge
+          tone={t.trend === "unavailable" ? "neutral" : "accent"}
+          className="w-fit shrink-0"
+        >
+          <span className="sr-only">Trend: </span>
+          {TREND[t.trend]}
+        </Badge>
+        <p className="text-small leading-body text-muted">
+          Computed from daily closes of the underlying share, not the token. Not
+          a recommendation.
+        </p>
+      </div>
+      <ResearchRange
+        label="52-week range"
+        low={t.low52w}
+        high={t.high52w}
+        current={t.close}
+      />
       <AsOf
         observedAt={t.asOf}
         source="Yahoo Finance daily closes"
@@ -115,11 +135,7 @@ export function TechnicalsPanel({ research }: { research: ResearchView }) {
 
 export function FinancialsPanel({ research }: { research: ResearchView }) {
   if (!research.fundamentals.length)
-    return (
-      <p className="text-small text-muted">
-        No reported financials were found.
-      </p>
-    );
+    return <EmptyState title="No reported financials were found." />;
   return (
     <Table>
       <TableCaption className="text-left">
@@ -148,7 +164,7 @@ export function FinancialsPanel({ research }: { research: ResearchView }) {
               </a>
             </TableCell>
             <TableCell>{formatDay(item.periodEnd) ?? item.periodEnd}</TableCell>
-            <TableCell className="text-right">
+            <TableCell className="text-right tabular-nums">
               {item.unit === "USD"
                 ? formatCompactUsd(item.value)
                 : `${formatUnitsText(item.value, 2)} ${item.unit}`}
@@ -162,26 +178,32 @@ export function FinancialsPanel({ research }: { research: ResearchView }) {
 
 export function EventsPanel({ research }: { research: ResearchView }) {
   if (!research.events.length)
-    return (
-      <p className="text-small text-muted">
-        No dividends, splits or filings were found.
-      </p>
-    );
+    return <EmptyState title="No dividends, splits or filings were found." />;
   return (
-    <ul className="flex flex-col divide-y divide-line">
+    <ul className="flex flex-col gap-3">
       {research.events.map((event) => (
-        <li key={event.id} className="flex flex-col gap-1 py-3 text-small">
+        <li key={event.id}>
           <a
-            className={textLink}
+            className={`${tileLink} items-start gap-4`}
             href={event.sourceUrl}
             rel="noreferrer"
             target="_blank"
           >
-            {event.title}
+            <span
+              aria-hidden="true"
+              className="inline-flex size-10 shrink-0 items-center justify-center rounded-full bg-raised-2 text-muted"
+            >
+              <CalendarDays className="size-4" />
+            </span>
+            <span className="flex min-w-0 flex-1 flex-col gap-1">
+              <span className="text-caption text-muted">
+                {formatDay(event.date) ?? event.date}
+              </span>
+              <span className="font-medium text-ink">{event.title}</span>
+              <span className="text-small text-muted">{event.detail}</span>
+            </span>
+            <ArrowUpRight aria-hidden="true" className="size-4 text-muted" />
           </a>
-          <span className="text-caption text-muted">
-            {formatDay(event.date) ?? event.date} · {event.detail}
-          </span>
         </li>
       ))}
     </ul>

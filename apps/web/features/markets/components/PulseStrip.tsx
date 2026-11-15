@@ -1,111 +1,94 @@
-import Link from "next/link";
-import { Change } from "@ovelo/ui";
+import {
+  Section,
+  StatTile,
+  Tabs,
+  TabsContent,
+  TabsList,
+  TabsTrigger,
+} from "@ovelo/ui";
 import { AsOf } from "../../shared/components/AsOf";
-import { changeProp, formatCompactUsd, plural } from "../../shared/fixed";
+import { formatCompactUsd, plural } from "../../shared/fixed";
 import { STALE_AFTER_MS } from "../../shared/freshness";
-import { routes } from "../../shared/routes";
-import { textLink } from "../../shared/styles";
 import type { MarketsView } from "../schema";
+import { BreadthBar } from "./BreadthBar";
+import { MoverCards } from "./MoverCards";
 
-function Stat({
-  label,
-  children,
-}: {
-  label: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="flex flex-col gap-1 rounded-panel border border-line bg-surface p-4">
-      <dt className="text-caption text-muted">{label}</dt>
-      <dd className="text-title font-semibold tabular-nums text-ink">
-        {children}
-      </dd>
-    </div>
-  );
-}
+const RANKINGS = [
+  { id: "topVolume", label: "Most traded" },
+  { id: "gainers", label: "Gainers" },
+  { id: "losers", label: "Losers" },
+] as const;
 
 /**
- * Observed token-market breadth across the catalog (lib/sdk `getMarketPulse`). Not an index and
- * not a sentiment score: every count says how many assets it covers.
+ * Observed token-market movers and breadth across the catalog (lib/sdk `getMarketPulse`). Not an
+ * index and not a sentiment score: every count says how many assets it covers. Server-rendered;
+ * only the ranking tabs are a client island (the @ovelo/ui Tabs primitive).
  */
 export function PulseStrip({ view }: { view: MarketsView }) {
   const { pulse } = view;
+  const rowsBySymbol = new Map(view.rows.map((row) => [row.symbol, row]));
   return (
-    <section aria-labelledby="pulse-heading" className="flex flex-col gap-3">
-      <div className="flex flex-wrap items-baseline justify-between gap-2">
-        <h2 id="pulse-heading" className="text-section font-semibold">
-          Market pulse
-        </h2>
-        <AsOf
-          observedAt={view.asOf}
-          source={view.sources.join(", ") || null}
-          staleAfterMs={STALE_AFTER_MS.snapshot}
-        />
-      </div>
-      <dl className="grid grid-cols-2 gap-3 md:grid-cols-4">
-        <Stat label="Assets with a token price">
-          {pulse.pricedAssets} of {pulse.totalAssets}
-        </Stat>
-        <Stat
-          label={`Advancing / declining (${pulse.coveredAssets} with 24h data)`}
-        >
-          {pulse.coveredAssets
-            ? `${pulse.advancing} / ${pulse.declining}`
-            : "Unavailable"}
-        </Stat>
-        <Stat
-          label={`24h token volume (${plural(pulse.volumeCoveredAssets, "asset")})`}
-        >
-          {pulse.volume24h ? formatCompactUsd(pulse.volume24h) : "Unavailable"}
-        </Stat>
-        <Stat label="Tradable listings">{pulse.tradableAssets}</Stat>
-      </dl>
-      {pulse.gainers.length || pulse.losers.length ? (
-        <div className="grid gap-3 md:grid-cols-2">
-          {(
-            [
-              ["Top gainers (24h)", pulse.gainers],
-              ["Top decliners (24h)", pulse.losers],
-            ] as const
-          ).map(([title, movers]) => (
-            <div
-              key={title}
-              className="rounded-panel border border-line bg-surface p-4"
-            >
-              <h3 className="text-small font-semibold">{title}</h3>
-              {movers.length ? (
-                <ul className="mt-2 flex flex-col gap-2">
-                  {movers.map((mover) => (
-                    <li
-                      key={mover.symbol}
-                      className="flex items-center justify-between gap-3"
-                    >
-                      <Link
-                        className={textLink}
-                        href={routes.stock(mover.symbol)}
-                      >
-                        {mover.symbol}
-                      </Link>
-                      <Change
-                        percent={changeProp(mover.change24h)}
-                        percentDigits={2}
-                      />
-                    </li>
-                  ))}
-                </ul>
-              ) : (
-                <p className="mt-2 text-caption text-muted">
-                  No asset met the liquidity filter.
-                </p>
-              )}
-            </div>
+    <Tabs defaultValue="topVolume">
+      <Section
+        eyebrow="Last 24 hours"
+        title="Market pulse"
+        description="The most traded and fastest moving tokenized stocks, observed on Solana token markets."
+        actions={
+          <TabsList aria-label="Rank movers by">
+            {RANKINGS.map(({ id, label }) => (
+              <TabsTrigger key={id} value={id}>
+                {label}
+              </TabsTrigger>
+            ))}
+          </TabsList>
+        }
+      >
+        <div className="flex flex-col gap-6">
+          {RANKINGS.map(({ id }) => (
+            <TabsContent key={id} value={id} className="pt-0">
+              <MoverCards
+                movers={pulse[id]}
+                rowsBySymbol={rowsBySymbol}
+                empty="No asset met the liquidity filter."
+              />
+            </TabsContent>
           ))}
+          <div className="flex flex-col gap-5 border-t border-line pt-5">
+            <BreadthBar pulse={pulse} />
+            <div className="grid gap-3 sm:grid-cols-3">
+              <StatTile
+                label="Assets with a token price"
+                value={`${pulse.pricedAssets} of ${pulse.totalAssets}`}
+              />
+              <StatTile
+                label={`24h token volume (${plural(pulse.volumeCoveredAssets, "asset")})`}
+                value={
+                  pulse.volume24h
+                    ? formatCompactUsd(pulse.volume24h)
+                    : "Unavailable"
+                }
+              />
+              <StatTile
+                label="Tradable listings"
+                value={pulse.tradableAssets}
+              />
+            </div>
+            <div className="flex flex-col gap-1">
+              <p className="text-caption text-muted">
+                Breadth covers {plural(pulse.coveredAssets, "asset")} with 24h
+                data out of {pulse.totalAssets}. Movers exclude listings with
+                under $1,000 pool liquidity or a token price more than 15% away
+                from the underlying share.
+              </p>
+              <AsOf
+                observedAt={view.asOf}
+                source={view.sources.join(", ") || null}
+                staleAfterMs={STALE_AFTER_MS.snapshot}
+              />
+            </div>
+          </div>
         </div>
-      ) : null}
-      <p className="text-caption text-muted">
-        Movers exclude listings with under $1,000 pool liquidity or a token
-        price more than 15% away from the underlying share.
-      </p>
-    </section>
+      </Section>
+    </Tabs>
   );
 }

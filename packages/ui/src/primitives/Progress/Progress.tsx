@@ -37,7 +37,7 @@ export const Progress = forwardRef<HTMLDivElement, ProgressProps>(
             )}
           </div>
         )}
-        <BaseProgress.Track className="relative h-2 w-full overflow-hidden rounded-full bg-raised">
+        <BaseProgress.Track className="relative h-2 w-full overflow-hidden rounded-full bg-line">
           <BaseProgress.Indicator
             className={cn(
               "h-full rounded-full bg-accent transition-[width] motion-slow",

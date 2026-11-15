@@ -1,6 +1,6 @@
 import Link from "next/link";
+import { Search } from "lucide-react";
 import { routes } from "../../shared/routes";
-import { linkButton, textLink } from "../../shared/styles";
 import { ISSUER_LABEL, KIND_LABEL, SORT_LABEL } from "../labels";
 import {
   ISSUER_FILTERS,
@@ -10,7 +10,10 @@ import {
 } from "../schema";
 
 const control =
-  "min-h-(--ovelo-control-height) rounded-control border border-border-strong bg-surface px-3 text-small text-ink focus-ring";
+  "min-h-(--ovelo-control-height) rounded-full border border-line bg-raised px-4 text-small text-ink transition-colors motion-base hover:border-border-strong focus-ring";
+const fieldLabel = "flex flex-col gap-1.5 text-caption font-medium text-muted";
+const pill =
+  "inline-flex min-h-(--ovelo-control-height) items-center justify-center gap-2 rounded-full px-5 text-small font-semibold transition-colors motion-base focus-ring";
 
 /**
  * A plain GET form: filters live in the URL, so every view is shareable, server-rendered and
@@ -23,20 +26,26 @@ export function MarketFilters({ filters }: { filters: Filters }) {
       action={routes.markets}
       role="search"
       aria-label="Filter markets"
-      className="flex flex-wrap items-end gap-3 rounded-panel border border-line bg-surface p-4"
+      className="flex flex-wrap items-end gap-3"
     >
-      <label className="flex min-w-48 flex-1 flex-col gap-1 text-caption font-semibold text-muted">
+      <label className={`${fieldLabel} min-w-48 flex-1`}>
         Search symbol or company
-        <input
-          type="search"
-          name="q"
-          defaultValue={filters.q}
-          maxLength={40}
-          autoComplete="off"
-          className={control}
-        />
+        <span className="relative flex">
+          <Search
+            aria-hidden="true"
+            className="pointer-events-none absolute top-1/2 left-4 size-4 -translate-y-1/2 text-muted"
+          />
+          <input
+            type="search"
+            name="q"
+            defaultValue={filters.q}
+            maxLength={40}
+            autoComplete="off"
+            className={`${control} w-full pl-10`}
+          />
+        </span>
       </label>
-      <label className="flex flex-col gap-1 text-caption font-semibold text-muted">
+      <label className={fieldLabel}>
         Issuer
         <select name="issuer" defaultValue={filters.issuer} className={control}>
           {ISSUER_FILTERS.map((value) => (
@@ -46,7 +55,7 @@ export function MarketFilters({ filters }: { filters: Filters }) {
           ))}
         </select>
       </label>
-      <label className="flex flex-col gap-1 text-caption font-semibold text-muted">
+      <label className={fieldLabel}>
         Type
         <select name="kind" defaultValue={filters.kind} className={control}>
           {KIND_FILTERS.map((value) => (
@@ -56,7 +65,7 @@ export function MarketFilters({ filters }: { filters: Filters }) {
           ))}
         </select>
       </label>
-      <label className="flex flex-col gap-1 text-caption font-semibold text-muted">
+      <label className={fieldLabel}>
         Sort by
         <select name="sort" defaultValue={filters.sort} className={control}>
           {SORTS.map((value) => (
@@ -66,21 +75,27 @@ export function MarketFilters({ filters }: { filters: Filters }) {
           ))}
         </select>
       </label>
-      <label className="flex min-h-(--ovelo-control-height) items-center gap-2 text-small text-ink">
+      <label className="flex min-h-(--ovelo-control-height) items-center gap-2 rounded-full border border-line bg-raised px-4 text-small text-ink">
         <input
           type="checkbox"
           name="priced"
           value="1"
           defaultChecked={filters.priced}
-          className="size-5 accent-(--ovelo-accent) focus-ring"
+          className="size-4 accent-(--ovelo-accent) focus-ring"
         />
         Only with a token price
       </label>
       <div className="flex items-center gap-3">
-        <button type="submit" className={linkButton.primary}>
+        <button
+          type="submit"
+          className={`${pill} bg-accent text-accent-ink hover:bg-accent-hover`}
+        >
           Apply filters
         </button>
-        <Link href={routes.markets} className={textLink}>
+        <Link
+          href={routes.markets}
+          className={`${pill} border border-border-strong text-ink hover:bg-raised-2`}
+        >
           Reset
         </Link>
       </div>
