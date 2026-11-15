@@ -4,47 +4,23 @@ import {
   type ReactNode,
   type Ref,
   type SVGProps,
-  useId,
 } from "react";
 import { cn } from "../../lib/cn";
-import { OVELO_MARK_PATH, OVELO_TILE_GRADIENT } from "./mark";
+import { OVELO_MARK_PATH } from "./mark";
 
-/**
- * Ovelo mark: the white mark on its peach-to-pink tile (mark.ts). Self-coloured, so it reads the
- * same on the light and dark page. The gradient id is per instance (several lockups per page).
- */
+/** Ovelo mark: the white mark on its own, no tile (the site is dark only). Decorative. */
 export function OveloGlyph({ className, ...props }: SVGProps<SVGSVGElement>) {
-  const gradient = `ovelo-tile-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
   return (
     <svg
       className={className}
-      width="32"
-      height="32"
-      viewBox="0 0 32 32"
+      width="28"
+      height="28"
+      viewBox="0 0 100 100"
       fill="none"
       aria-hidden="true"
       {...props}
     >
-      <defs>
-        <linearGradient
-          id={gradient}
-          x1="0"
-          y1="32"
-          x2="32"
-          y2="0"
-          gradientUnits="userSpaceOnUse"
-        >
-          <stop stopColor={OVELO_TILE_GRADIENT.from} />
-          <stop offset="1" stopColor={OVELO_TILE_GRADIENT.to} />
-        </linearGradient>
-      </defs>
-      <rect width="32" height="32" rx="8" fill={`url(#${gradient})`} />
-      <path
-        transform="translate(6 6) scale(0.2)"
-        fill="#fff"
-        fillRule="evenodd"
-        d={OVELO_MARK_PATH}
-      />
+      <path fill="#fff" fillRule="evenodd" d={OVELO_MARK_PATH} />
     </svg>
   );
 }

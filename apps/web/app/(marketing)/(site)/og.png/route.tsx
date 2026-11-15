@@ -13,12 +13,12 @@ import { OG_SIZE } from "@/features/shared/og";
  * `(app)` group could not reference it. Here the URL is stable and `v1Metadata` points at it.
  *
  * A branded static design: no prices or figures, nothing that can go stale or be mistaken for
- * market data. Colours are the brand palette from .21st/DESIGN.md (forest, cream, lime);
+ * market data. Colours are the redesign's near-black page, ink and muted silver (tokens.css);
  * ImageResponse cannot read CSS custom properties, so they are literal here.
  */
 export const dynamic = "force-static";
 
-const { forest: FOREST, cream: CREAM, lime: LIME } = BRAND_COLORS;
+const { bg: BG, ink: INK, muted: MUTED } = BRAND_COLORS;
 
 export function GET(): Response {
   return new ImageResponse(
@@ -30,8 +30,8 @@ export function GET(): Response {
         flexDirection: "column",
         justifyContent: "space-between",
         padding: 72,
-        background: FOREST,
-        color: CREAM,
+        background: BG,
+        color: INK,
         fontFamily: "sans-serif",
       }}
     >
@@ -41,11 +41,11 @@ export function GET(): Response {
           style={{
             display: "flex",
             fontSize: 56,
-            fontWeight: 700,
-            letterSpacing: -3,
+            fontWeight: 400,
+            letterSpacing: -2,
           }}
         >
-          ovelo<span style={{ color: LIME }}>.</span>
+          ovelo
         </div>
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
@@ -59,7 +59,7 @@ export function GET(): Response {
         >
           Own real stocks from your own wallet.
         </div>
-        <div style={{ fontSize: 32, color: LIME }}>
+        <div style={{ fontSize: 32, color: MUTED }}>
           Tokenized stocks and baskets on Solana · sourced market data
         </div>
       </div>
