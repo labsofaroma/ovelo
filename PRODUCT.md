@@ -3,7 +3,7 @@
 _Referenced by `.21st/DESIGN.md`._
 
 ## One line
-Own real stocks on Solana from your own wallet: research them, buy single names or themed baskets, and (soon) invest automatically every week.
+Own real stocks on Solana from your own wallet: research them, buy single names or themed baskets, and later invest automatically every week (mainnet recurring comes with Aroma Guard, M12; until then a devnet test).
 
 ## Who it's for
 1. **Crypto-native savers** who hold USDC and want equity exposure without a broker.
@@ -18,7 +18,7 @@ Final routes since the M9 cutover (the old `/v1/*`, `/landing`, `/app`, `/sip`, 
 | `/` | editorial landing page | mainnet data | mainnet spot, devnet test, paper practice |
 | `/markets`, `/stock/[symbol]` | catalog, research, news, charts, trade ticket | mainnet data; mainnet buy | mainnet spot purchase or paper practice (ticket) |
 | `/baskets`, `/basket/[id]`, `/basket/new` | curated and creator baskets, builder | mainnet buy | mainnet spot purchase or paper practice (ticket) |
-| `/invest` | recurring investing | **devnet only** | devnet recurring test, test tokens of no value |
+| `/invest` | recurring investing | **devnet only** | "Devnet test plans: test tokens, no real value", under a "Mainnet recurring: coming" notice that gives the reason and no date (M10, Path B) |
 | `/portfolio` (activity at `/portfolio#activity`), `/watchlist` | holdings, orders and saved assets | mainnet + paper | mainnet holdings; paper practice kept in the browser |
 | `/creators` | creator directory and publishing (invite-only) | mainnet | — |
 | `/settings` | theme, privacy choices, what each mode does, wallet terms status | — | all three modes explained |
@@ -30,6 +30,7 @@ Final routes since the M9 cutover (the old `/v1/*`, `/landing`, `/app`, `/sip`, 
 - Use only real, observed market data, with source and timestamp. Show stale or unavailable data as such.
 - Funds never leave the user's wallet except in a transaction the user signed.
 - Basket allocations shown must come from the SDK, not hard-coded figures.
+- Mainnet recurring is not offered through a third party that holds users' funds between rounds (M10 decision: Jupiter's current DCA keeps deposits in a custodial vault; see [docs/launch/DCA-SPIKE.md](docs/launch/DCA-SPIKE.md)).
 
 ## Never
 - Invent prices, returns, testimonials or creator metrics.

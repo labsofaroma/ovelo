@@ -1,6 +1,9 @@
 # DCA spike: Jupiter recurring orders for xStocks (M10 / Phase C)
 
-Status: **Step 1 done (desk research and read-only chain facts). Stopped before Step 2**: the plan's figures and its product model differ from what Jupiter offers today (§2, §7). No transaction was sent, signed or simulated; no Jupiter account or API key was used.
+Status:
+- **Step 1 done** (desk research and read-only chain facts). Step 2 (the fork spike) did not run: Jupiter's maintained DCA has no on-chain order program to fork (§7).
+- **Decision (owner, 2026-11-15): Path B.** No mainnet DCA is built. `/invest` keeps the devnet beta, under a "Mainnet recurring: coming" notice that gives the reason in §7 and no date. Mainnet recurring is M12 (Aroma Guard).
+- No transaction was sent, signed or simulated; no Jupiter account or API key was used; no P5 USDC was spent.
 
 ## Sources
 

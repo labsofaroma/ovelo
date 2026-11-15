@@ -48,7 +48,7 @@ There is no separate SDK package for now. The chain, market and basket helpers s
 
 ## 3. Phases
 
-**Phases → milestones** ([REWRITE-PLAN.md §7](./REWRITE-PLAN.md#7-build-order-and-exit-criteria)): Phase 0 = M0; Phase 1 (contract) = **M6** (core + devnet deploy), **M8** (Jupiter mainnet path) and **M12** (audit, multisig, mainnet deploy, when funded: REWRITE-PLAN §7.2); Phase 2 = M2 (helpers) and the v1 client in M6; Phase 3 (keeper) = **M7**; Phase 4 (web app) = M1, M3, M4, M5, **M7** (`features/invest`) and **M9** (cutover); Phase 5 (launch features) = **M10** (mainnet recurring through Jupiter DCA, no program deploy) and **M11** (the rest, launch); Phase 6 comes after launch.
+**Phases → milestones** ([REWRITE-PLAN.md §7](./REWRITE-PLAN.md#7-build-order-and-exit-criteria)): Phase 0 = M0; Phase 1 (contract) = **M6** (core + devnet deploy), **M8** (Jupiter mainnet path) and **M12** (audit, multisig, mainnet deploy, when funded: REWRITE-PLAN §7.2); Phase 2 = M2 (helpers) and the v1 client in M6; Phase 3 (keeper) = **M7**; Phase 4 (web app) = M1, M3, M4, M5, **M7** (`features/invest`) and **M9** (cutover); Phase 5 (launch features) = **M10** (spike of mainnet recurring through Jupiter DCA → Path B: not built; the devnet beta stays) and **M11** (the rest, launch); Phase 6 comes after launch.
 
 ### Phase 0: New foundation (week 1)
 - [ ] Commit the prototype as-is and tag it `prototype-final`, so nothing is lost.

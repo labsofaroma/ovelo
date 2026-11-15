@@ -14,7 +14,7 @@ It validates the production profile with the real boot schema (forced to `VERCEL
 
 ## 1. Web app (Vercel), by service
 
-Milestone = when it is needed: **M9** spot and baskets live; **M10** mainnet recurring through Jupiter DCA (no keeper, no program deploy; REWRITE-PLAN §7.2); **M12** Aroma Guard on mainnet when funded (keeper, Hermes, QStash); **M7** the devnet test surfaces that ship with the app.
+Milestone = when it is needed: **M9** spot and baskets live; **M10** no new variables (Path B: no Jupiter DCA; [DCA-SPIKE.md](./DCA-SPIKE.md)); **M12** Aroma Guard on mainnet when funded (keeper, Hermes, QStash); **M7** the devnet test surfaces that ship with the app.
 
 | Service | Variable(s) | What it is | Where to get it | Recommended plan | Needed |
 |---|---|---|---|---|---|
