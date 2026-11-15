@@ -1,10 +1,10 @@
 import { ImageResponse } from "next/og";
 import {
-  BRAND_COLORS,
   BrandGlyphImage,
+  TILE_BACKGROUND,
 } from "@/features/shared/brand-glyph-image";
 
-/** The iOS home-screen icon: the Ovelo gem on the light page colour (iOS rounds the corners). */
+/** The iOS home-screen icon: the white Ovelo mark on the full-bleed tile gradient (iOS rounds the corners). */
 export const size = { width: 180, height: 180 };
 export const contentType = "image/png";
 export const dynamic = "force-static";
@@ -18,14 +18,10 @@ export default function AppleIcon() {
         display: "flex",
         alignItems: "center",
         justifyContent: "center",
-        background: BRAND_COLORS.bg,
+        background: TILE_BACKGROUND,
       }}
     >
-      <BrandGlyphImage
-        height={120}
-        color={BRAND_COLORS.accent}
-        facet={BRAND_COLORS.bg}
-      />
+      <BrandGlyphImage height={112} tile={false} />
     </div>,
     size,
   );

@@ -12,6 +12,7 @@
     "./theme": "./src/theme/index.ts",
     "./format": "./src/format/index.ts",
     "./logos": "./logos.ts",
+    "./brand-mark": "./src/domain/Brand/mark.ts",
     "./tokens.css": "./tokens.css",
     "./theme.css": "./theme.css",
     "./fonts.css": "./fonts.css"

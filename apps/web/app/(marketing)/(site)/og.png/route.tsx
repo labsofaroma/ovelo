@@ -36,7 +36,7 @@ export function GET(): Response {
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
-        <BrandGlyphImage height={64} color={LIME} facet={FOREST} />
+        <BrandGlyphImage height={64} />
         <div
           style={{
             display: "flex",

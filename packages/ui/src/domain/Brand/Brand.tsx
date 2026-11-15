@@ -4,24 +4,47 @@ import {
   type ReactNode,
   type Ref,
   type SVGProps,
+  useId,
 } from "react";
 import { cn } from "../../lib/cn";
+import { OVELO_MARK_PATH, OVELO_TILE_GRADIENT } from "./mark";
 
-/** Ovelo mark: a faceted gem. Uses currentColor; the facet lines punch through to the page. */
+/**
+ * Ovelo mark: the white mark on its peach-to-pink tile (mark.ts). Self-coloured, so it reads the
+ * same on the light and dark page. The gradient id is per instance (several lockups per page).
+ */
 export function OveloGlyph({ className, ...props }: SVGProps<SVGSVGElement>) {
+  const gradient = `ovelo-tile-${useId().replace(/[^a-zA-Z0-9_-]/g, "")}`;
   return (
     <svg
       className={className}
-      width="30"
-      height="34"
-      viewBox="0 0 30 34"
+      width="32"
+      height="32"
+      viewBox="0 0 32 32"
       fill="none"
       aria-hidden="true"
       {...props}
     >
-      <path d="M15 1L29 13L15 28L1 13L15 1Z" fill="currentColor" />
-      <path d="M15 1V28M1 13H29" stroke="var(--ovelo-bg)" strokeWidth="1.5" />
-      <path d="M15 28L20 33" stroke="currentColor" strokeWidth="1.5" />
+      <defs>
+        <linearGradient
+          id={gradient}
+          x1="0"
+          y1="32"
+          x2="32"
+          y2="0"
+          gradientUnits="userSpaceOnUse"
+        >
+          <stop stopColor={OVELO_TILE_GRADIENT.from} />
+          <stop offset="1" stopColor={OVELO_TILE_GRADIENT.to} />
+        </linearGradient>
+      </defs>
+      <rect width="32" height="32" rx="8" fill={`url(#${gradient})`} />
+      <path
+        transform="translate(6 6) scale(0.2)"
+        fill="#fff"
+        fillRule="evenodd"
+        d={OVELO_MARK_PATH}
+      />
     </svg>
   );
 }
