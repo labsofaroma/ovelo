@@ -30,7 +30,6 @@ Final routes since the M9 cutover (the old `/v1/*`, `/landing`, `/app`, `/sip`, 
 - Use only real, observed market data, with source and timestamp. Show stale or unavailable data as such.
 - Funds never leave the user's wallet except in a transaction the user signed.
 - Basket allocations shown must come from the SDK, not hard-coded figures.
-- Mainnet recurring is not offered through a third party that holds users' funds between rounds (M10 decision: Jupiter's current DCA keeps deposits in a custodial vault; see [docs/launch/DCA-SPIKE.md](docs/launch/DCA-SPIKE.md)).
 
 ## Never
 - Invent prices, returns, testimonials or creator metrics.
