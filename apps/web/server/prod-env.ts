@@ -124,6 +124,14 @@ export function staticFindings(
     if (invalid.has(item.name)) continue;
     if (present(env, item.name))
       add(item.name, "ok", `${item.level}, ${item.milestone}`);
+    // Self-host: NEXT_PUBLIC_* are build values, baked into the image (image.yml repository
+    // variables) and applied at startup (deploy/public-env.mjs); the env file need not carry them.
+    else if (platform === "selfhost" && item.name.startsWith("NEXT_PUBLIC_"))
+      add(
+        item.name,
+        "warning",
+        `${item.level} for ${item.milestone}; a build value: set the image.yml repository variable (image.yml refuses to build without the required ones)`,
+      );
     else
       add(
         item.name,

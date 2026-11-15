@@ -51,6 +51,21 @@ describe("check:prod-env --platform", () => {
     expect(status(all, "AROMA_DEPLOY_ENV")).toContain("missing");
   });
 
+  it("selfhost passes a file without NEXT_PUBLIC_* (build values, baked into the image) with a warning", () => {
+    const fileOnly = Object.fromEntries(
+      Object.entries(SELF_BETA).filter(([k]) => !k.startsWith("NEXT_PUBLIC_")),
+    );
+    const all = findings(fileOnly, "selfhost");
+    expect(failed(all)).toBe(false);
+    expect(status(all, "NEXT_PUBLIC_SOLANA_RPC_URL")).toContain("warning");
+    expect(status(all, "NEXT_PUBLIC_SENTRY_DSN")).toContain("warning");
+    // On Vercel they stay required: there the runtime env is the build env.
+    const { AROMA_PLATFORM: _p, ...vercelFile } = fileOnly;
+    expect(
+      status(findings(vercelFile, "vercel"), "NEXT_PUBLIC_SOLANA_RPC_URL"),
+    ).toContain("missing");
+  });
+
   it("selfhost refuses a deploy env that is not the profile's", () => {
     const all = findings(
       { ...SELF_BETA, AROMA_DEPLOY_ENV: "development" },

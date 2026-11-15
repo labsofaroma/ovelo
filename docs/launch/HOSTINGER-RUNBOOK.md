@@ -240,7 +240,7 @@ On your machine, from the repo at the release tag:
 pnpm check:prod-env --env-file ./aroma.env --profile beta --platform selfhost
 ```
 
-**Verify:** it ends with `check:prod-env: OK`. Every finding is a variable name and a status, never a value.
+**Verify:** it ends with `check:prod-env: OK`. Every finding is a variable name and a status, never a value. The `NEXT_PUBLIC_*` lines are warnings on self-host: they are build values, set as the `image.yml` repository variables (which refuses to build without the RPC URL and the Sentry DSN), not in `aroma.env`.
 
 ## 8. First deploy and verification
 
