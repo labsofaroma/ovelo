@@ -135,9 +135,10 @@ test("a fallback on the wrong cluster is never used: primary down, the quote is 
   const health = (await (await request.get("/api/v1/health")).json()) as {
     checks: { rpc: Record<string, unknown> };
   };
+  // Phase H: the public body says "down" for a failing check (server/health-public.ts).
   expect(health.checks.rpc).toMatchObject({
-    primary: "fail",
-    fallback: "fail",
+    primary: "down",
+    fallback: "down",
   });
   expect(JSON.stringify(health)).not.toContain("127.0.0.1");
   expect(await usdcBalance()).toBe(before);

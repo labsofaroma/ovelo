@@ -3,6 +3,7 @@
 // - NEXT_MANUAL_SIG_HANDLE=true (set in the image) stops Next from exiting on SIGTERM itself;
 // - every HTTP server Next creates is tracked, and SIGTERM drains it (deploy/graceful.mjs).
 // Logs are one JSON line each on stdout, like the app's logger. Nothing secret is printed.
+import { existsSync } from "node:fs";
 import http from "node:http";
 import { createRequire } from "node:module";
 import { installGracefulShutdown, trackServers } from "./graceful.mjs";
@@ -14,6 +15,21 @@ const log = (msg, extra = {}) =>
 
 if (process.env.NEXT_MANUAL_SIG_HANDLE !== "true") {
   log("startup: NEXT_MANUAL_SIG_HANDLE must be true (set in the image)");
+  process.exit(1);
+}
+
+// The local fork-E2E image (test wallet bridge compiled in) must never serve a production or beta
+// deployment, whatever the env file says. The env schema refuses it too, but only from the env.
+const e2eBuild = existsSync(new URL("./E2E_BUILD", import.meta.url));
+const env = process.env;
+const productionLike =
+  // This entry point runs only on self-host; a missing platform answer counts as production.
+  ["production", "beta"].includes(env.AROMA_DEPLOY_ENV?.trim() ?? "") ||
+  !env.AROMA_PLATFORM?.trim();
+if (e2eBuild && productionLike) {
+  log(
+    "startup: refusing to run the fork-E2E image on a production or beta deployment",
+  );
   process.exit(1);
 }
 

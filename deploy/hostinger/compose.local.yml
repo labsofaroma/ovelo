@@ -1,0 +1,71 @@
+# Phase H Step 8: LOCAL verification only (never on the VPS). Layered on the production file:
+#   AROMA_IMAGE=aroma-web:local AROMA_LOCAL_ENV_FILE=<env> AROMA_LOCAL_SECRET_FILE=<secret file> \
+#     docker compose -f deploy/hostinger/docker-compose.yml -f deploy/hostinger/compose.local.yml up -d --wait
+#
+# - cloudflared is replaced by `edge`, a stand-in for Cloudflare's edge and the tunnel
+#   (local/edge-proxy.mjs), published on 127.0.0.1 only. It sets CF-Connecting-IP, CF-IPCountry,
+#   the origin header, X-Forwarded-Proto and the public Host, overwriting client values.
+# - `app` is ALSO published on 127.0.0.1:${AROMA_LOCAL_DIRECT_PORT}: that is the attacker's path
+#   straight to the origin (no Cloudflare), which the spoofing suite uses and must find refused.
+#   The production file publishes nothing (deploy-bundle.test.ts).
+# - The `bridge` profile adds the loopback bridge the fork E2E needs (local/loopback-bridge.mjs).
+# Everything else (read-only, tmpfs, no capabilities, limits, the drain) is the production file's.
+
+services:
+  app:
+    env_file: !override
+      - path: ${AROMA_LOCAL_ENV_FILE:?set AROMA_LOCAL_ENV_FILE}
+        required: true
+    ports:
+      - "127.0.0.1:${AROMA_LOCAL_DIRECT_PORT:-3299}:3000"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  cloudflared:
+    profiles: ["tunnel"]
+
+  edge:
+    image: node:24.12.0-slim@sha256:7326fb2dbdce998edd72140946851be64ef4a643e8715e138ca467e8e9d92c99
+    command: ["node", "/edge/edge-proxy.mjs"]
+    environment:
+      EDGE_UPSTREAM: http://app:3000
+      EDGE_PORT: "8080"
+      # Unset: the public hostname over https (verify.mjs). Empty + http: the fork E2E (container.ts).
+      EDGE_HOST: ${AROMA_LOCAL_EDGE_HOST-beta.aroma.test}
+      EDGE_SCHEME: ${AROMA_LOCAL_EDGE_SCHEME:-https}
+      EDGE_ORIGIN_SECRET_FILE: /run/secrets/origin
+    volumes:
+      - ./local/edge-proxy.mjs:/edge/edge-proxy.mjs:ro
+      - ${AROMA_LOCAL_SECRET_FILE:?set AROMA_LOCAL_SECRET_FILE}:/run/secrets/origin:ro
+    ports:
+      - "127.0.0.1:${AROMA_LOCAL_EDGE_PORT:-3201}:8080"
+    depends_on:
+      app:
+        condition: service_healthy
+    read_only: true
+    user: "1000:1000"
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+    networks:
+      - edge
+      - local-public
+
+  bridge:
+    profiles: ["bridge"]
+    image: node:24.12.0-slim@sha256:7326fb2dbdce998edd72140946851be64ef4a643e8715e138ca467e8e9d92c99
+    command: ["node", "/bridge/loopback-bridge.mjs"]
+    network_mode: "service:app"
+    environment:
+      BRIDGE_PORTS: ${BRIDGE_PORTS:-}
+      BRIDGE_TARGET: host.docker.internal
+    volumes:
+      - ./local/loopback-bridge.mjs:/bridge/loopback-bridge.mjs:ro
+    read_only: true
+    user: "1000:1000"
+    cap_drop: [ALL]
+    security_opt:
+      - no-new-privileges:true
+
+networks:
+  local-public: {}

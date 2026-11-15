@@ -19,6 +19,7 @@
 !deploy/graceful.mjs
 !deploy/healthcheck.mjs
 !deploy/build-migrate.mjs
+!deploy/build-app.sh
 # Manifests only, so pnpm sees the whole workspace (their sources stay out).
 !apps/keeper/package.json
 !packages/contracts/package.json

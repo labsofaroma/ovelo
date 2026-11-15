@@ -221,6 +221,7 @@ describe("deploy.sh and rollback.sh refuse anything but our digest", () => {
       join(ROOT, "deploy/hostinger/deploy.sh"),
       join(ROOT, "deploy/hostinger/rollback.sh"),
       join(ROOT, "deploy/hostinger/host-check.sh"),
+      join(ROOT, "deploy/build-app.sh"),
     ]);
     expect(result.stdout.toString()).toBe("");
     expect(result.status).toBe(0);
@@ -273,5 +274,46 @@ describe(".github/workflows/image.yml (Step 6; written, not run here)", () => {
     expect(wf).toMatch(/branches: \[main\]/);
     expect(wf).toMatch(/tags: \["v\*"\]/);
     expect(wf).not.toMatch(/pull_request|workflow_dispatch/);
+  });
+});
+
+describe("deploy/Dockerfile targets (Step 8)", () => {
+  const dockerfile = read("deploy/Dockerfile");
+  const stages = [...dockerfile.matchAll(/^FROM \S+ AS (\S+)$/gm)].map(
+    (m) => m[1],
+  );
+
+  it("the deployable `runtime` is the last stage (the default target) and what CI builds", () => {
+    expect(stages.at(-1)).toBe("runtime");
+    expect(read(".github/workflows/image.yml")).toMatch(/target: runtime/);
+  });
+
+  it("every FROM uses the same digest-pinned official node image", () => {
+    const bases = [...dockerfile.matchAll(/^FROM (node:\S+)/gm)].map(
+      (m) => m[1],
+    );
+    expect(bases.length).toBeGreaterThanOrEqual(2);
+    for (const b of bases)
+      expect(b).toMatch(/^node:24\.12\.0-slim@sha256:[0-9a-f]{64}$/);
+  });
+
+  it("the fork-E2E variant is marked and refused under production rules", () => {
+    const e2e = dockerfile.slice(
+      dockerfile.indexOf("AS runtime-e2e"),
+      dockerfile.lastIndexOf("AS runtime\n"),
+    );
+    expect(e2e).toMatch(/NEXT_PUBLIC_AROMA_E2E_WALLET=true/);
+    expect(e2e).toMatch(/org\.aroma\.e2e="true"/);
+    expect(read("deploy/build-app.sh")).toMatch(/E2E_BUILD/);
+    expect(read("deploy/server.mjs")).toMatch(
+      /E2E_BUILD[\s\S]*process\.exit\(1\)/,
+    );
+    const runtime = dockerfile.slice(dockerfile.lastIndexOf("AS runtime\n"));
+    expect(runtime).not.toMatch(/build-e2e|E2E_WALLET=true/);
+  });
+
+  it("deploy.sh never uses the local override", () => {
+    expect(read("deploy/hostinger/deploy.sh")).not.toMatch(/compose\.local/);
+    expect(read("deploy/hostinger/rollback.sh")).not.toMatch(/compose\.local/);
   });
 });

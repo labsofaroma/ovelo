@@ -42,6 +42,7 @@ import {
 import { creatorLegs, appReady, EDGE_START, localDbEnv } from "./creator-env";
 import { startJupiterStandIn } from "./jupiter-stand-in";
 import * as notify from "./notify-sink";
+import { startContainerApp } from "./container";
 import { controlUrl, proxyUrl, startRpcProxies } from "./rpc-proxy";
 
 /** Devnet's genesis: what the "wrong cluster" proxy claims (never the fork's). */
@@ -339,7 +340,11 @@ async function main() {
     ...notify.NOTIFY_E2E_ENV,
     ...creatorDb,
   };
-  if (process.env.E2E_SKIP_BUILD !== "1") {
+  const stopContainer = // Phase H Step 8: the image (e2e/fork/container.ts)
+    process.env.E2E_TARGET === "container"
+      ? startContainerApp(appEnv, WORK, APP_PORT)
+      : null;
+  if (!stopContainer && process.env.E2E_SKIP_BUILD !== "1") {
     // `next build` rewrites tsconfig.json and next-env.d.ts to point at its distDir; restore
     // them so an E2E run never leaves .next-e2e references in tracked files.
     const tracked = ["tsconfig.json", "next-env.d.ts"].map((file) => ({
@@ -350,7 +355,8 @@ async function main() {
     for (const file of tracked) writeFileSync(file.path, file.text);
     if (built !== 0) throw new Error("E2E build failed");
   }
-  await run("npx", ["next", "start", "-p", String(APP_PORT)], appEnv, true);
+  if (!stopContainer)
+    await run("npx", ["next", "start", "-p", String(APP_PORT)], appEnv, true);
   await appReady(APP_PORT, "/privacy");
   const code = await run(
     "npx",
@@ -372,6 +378,7 @@ async function main() {
       ...creatorDb,
     },
   );
+  stopContainer?.();
   stand.close();
   proxies.close();
   sink.close();

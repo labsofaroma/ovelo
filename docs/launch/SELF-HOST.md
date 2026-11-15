@@ -72,4 +72,15 @@ Proven locally (Phase H Step 3): pages, the data cache, `actions.json`, liveness
 
 ## 7. Measured
 
-Filled in by Phase H Step 8: image size, cold start, and memory under the fork E2E load.
+Phase H Step 8, on the owner's machine (Docker Desktop, arm64; the VPS image is amd64 with the same layers). The local stack was the production compose file plus `compose.local.yml`, with the Cloudflare stand-in in place of the tunnel.
+
+| What | Result |
+|---|---|
+| Image size | about **116 MB** compressed (what the VPS pulls), 516 MB unpacked (with the Node and Debian base) |
+| Cold start | **2.9 s** from `docker compose start app` to healthy; 4.0 s from `up` to the edge answering |
+| Memory, idle | about **129 MiB** |
+| Memory, peak under the fork E2E (45 specs, real spot and basket buys on the local fork through the container) | **267 MiB** |
+| Stop with a request in flight | under 1 s; the request was answered, then exit 0 |
+| `verify.mjs` | 40 of 40: read-only FS, headers including HSTS preload, the origin lock on every route and method (64 rows), spoofing on the direct path and through the edge, Tor fails closed, rate-limit key, image optimizer, logs, drain, restart |
+
+**Plan sizing.** The app needs well under the 1 GiB limit, so CPU and headroom decide the plan. **Hostinger KVM 2 (2 vCPU, 8 GB)** is the recommendation for the beta: the app gets 1.5 CPUs, cloudflared 0.5, and the OS and Docker the rest, with room for a candidate container during `deploy.sh` (two app processes for a few seconds). KVM 1 (1 vCPU, 4 GB) would run it but would be CPU-bound during deploys and traffic spikes. Revisit after real traffic: `docker stats` and hPanel's graphs.

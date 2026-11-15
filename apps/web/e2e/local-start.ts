@@ -25,11 +25,23 @@ export const EDGE_START = {
   AROMA_ORIGIN_SECRET: ORIGIN_SECRET,
 } as const;
 
+/**
+ * Step 8 (`E2E_TARGET=container`): a Cloudflare stand-in sits in front of the image. The browser
+ * then sends only where it "is" (x-edge-client-*), and the stand-in sets the CF headers and the
+ * origin secret, as the real edge does. Otherwise the browser plays the edge itself.
+ */
+const behindStandIn = () => process.env.AROMA_E2E_EDGE_PROXY === "1";
+
 /** The headers Cloudflare's edge adds: the country, the client IP (optional) and the lock. */
 export function edgeHeaders(
   country = "DE",
   ip?: string,
 ): Record<string, string> {
+  if (behindStandIn())
+    return {
+      "x-edge-client-country": country,
+      ...(ip ? { "x-edge-client-ip": ip } : {}),
+    };
   return {
     "cf-ipcountry": country,
     "x-aroma-origin": ORIGIN_SECRET,
@@ -38,9 +50,8 @@ export function edgeHeaders(
 }
 
 /** A client IP as Cloudflare reports it (merged with the context's edge headers). */
-export const clientIp = (ip: string): Record<string, string> => ({
-  "cf-connecting-ip": ip,
-});
+export const clientIp = (ip: string): Record<string, string> =>
+  behindStandIn() ? { "x-edge-client-ip": ip } : { "cf-connecting-ip": ip };
 
 /** Wait (up to `seconds`) until the app answers `path` through the edge headers. */
 export async function appReady(

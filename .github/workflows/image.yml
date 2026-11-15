@@ -103,6 +103,8 @@ jobs:
         with:
           context: .
           file: deploy/Dockerfile
+          # The deployable image only (never the local runtime-e2e variant).
+          target: runtime
           platforms: linux/amd64
           push: true
           tags: ${{ steps.meta.outputs.tags }}
