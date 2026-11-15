@@ -24,6 +24,11 @@ import { routes } from "@/features/shared/routes";
 import { quoteTrade } from "@/features/trade/server/service";
 import { readLimitedJson } from "@/server/http";
 import { assertTradingOpen } from "@/server/trading-switch";
+import {
+  ACTIONS_OFF_MESSAGE,
+  actionsOff,
+  assertActionsOpen,
+} from "@/server/actions-switch";
 
 export const dynamic = "force-dynamic";
 export const runtime = "nodejs";
@@ -35,13 +40,23 @@ type Context = { params: Promise<{ id: string }> };
  * Solana Action for a v1 basket (curated or published creator basket), M5b B4.
  * GET → Action metadata. POST ?amount= { account } → one unsigned mainnet transaction for that
  * account, quoted and simulated by M4's trade server, plus a `links.next` callback that records
- * the receipt once the transaction confirms. AROMA_TRADING=off refuses the POST (503).
+ * the receipt once the transaction confirms. AROMA_TRADING=off refuses the POST (503), and so
+ * does AROMA_ACTIONS, which is off by default under the production rules (server/actions-switch.ts).
  */
 export const GET = actionRoute<Context>(
   "v1/actions/baskets/:id",
   async (request, context) => {
     const basket = await resolveActionBasket((await context.params).id);
     const metadata = actionMetadata(basket, actionOrigin(request));
+    // Actions are off by default under the production rules (server/actions-switch.ts).
+    if (actionsOff())
+      return Response.json({
+        ...metadata,
+        disabled: true,
+        error: {
+          message: `${ACTIONS_OFF_MESSAGE.replace(" Nothing was quoted.", "")} ${actionOrigin(request)}${routes.basket(basket.id)}`,
+        },
+      });
     // M9 compliance gate: a restricted or unknown location sees the Action disabled, with why.
     const policy = complianceDeps().policy();
     const jurisdiction = requestJurisdiction(request, policy);
@@ -69,6 +84,7 @@ export const POST = actionRoute<Context>(
   "v1/actions/baskets/:id",
   async (request, context) => {
     assertTradingOpen();
+    assertActionsOpen();
     const basket = await resolveActionBasket((await context.params).id);
     const input = parseActionPost(
       new URL(request.url).searchParams,

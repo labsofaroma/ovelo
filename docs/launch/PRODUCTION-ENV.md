@@ -21,6 +21,7 @@ Milestone = when it is needed: **M9** spot and baskets live; **M10** no new vari
 
 | Service | Variable(s) | What it is | Where to get it | Recommended plan | Needed |
 |---|---|---|---|---|---|
+| Blinks | `AROMA_ACTIONS` | unset = **off** under the production rules (production and beta), on elsewhere; `on` opens the Action POST, `off` closes it everywhere. A Blink client may fetch the POST through its own servers, so the geo gate can see the client's country, not the user's: keep it off until counsel agrees (COMPLIANCE §1) | — | — | launch |
 | Emergency stop | `AROMA_TRADING` | `on` (default) or `off`: `off` refuses every mainnet trading entry point with 503, nothing else (M9; replaces the removed `AROMA_V1_ENABLED` flag; boot now always validates the environment) | — | — | M9 |
 | Domain | `AROMA_SITE_URL` | canonical `https://` origin: HTTPS redirect, metadata, the `Site:` line of every wallet challenge, Action links | Vercel project → Domains; DNS at the registrar | — | M9 |
 | Vercel | `VERCEL`, `VERCEL_ENV` (set by Vercel) | platform detection, read only by `server/platform.ts`; on Vercel the proxy mode defaults to `vercel` (`x-vercel-ip-country`, `X-Real-IP` trusted) | Vercel project (Git integration on `main` only) | **Pro** (team, protection, analytics, longer functions; `maxDuration` 60 s routes) | M9 |

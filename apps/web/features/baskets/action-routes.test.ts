@@ -115,6 +115,29 @@ describe("v1 Actions", () => {
     });
   });
 
+  it("AROMA_ACTIONS=off disables the GET and refuses the POST before any quote", async () => {
+    setup();
+    vi.stubEnv("AROMA_ACTIONS", "off");
+    const get = await actions.GET(
+      new Request("https://aroma.example/x"),
+      params("test-basket"),
+    );
+    expect(await get.json()).toMatchObject({ disabled: true });
+    const post = await actions.POST(
+      new Request(
+        "https://aroma.example/api/v1/actions/baskets/test-basket?amount=2",
+        {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ account: ACCOUNT }),
+        },
+      ),
+      params("test-basket"),
+    );
+    expect(post.status).toBe(503);
+    expect(quote.fn).not.toHaveBeenCalled();
+  });
+
   it("a trade-server refusal (e.g. an archived creator basket) comes back as { code, message }", async () => {
     setup();
     quote.fn.mockRejectedValue(

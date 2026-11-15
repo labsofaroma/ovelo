@@ -74,6 +74,8 @@ const serverShape = {
     .default("development"),
   /** M9 emergency stop: `off` refuses every mainnet trading entry point (503). Default on. */
   AROMA_TRADING: z.enum(["on", "off"]).default("on"),
+  /** Solana Actions POST: unset = off under the production rules, on elsewhere (server/actions-switch.ts). */
+  AROMA_ACTIONS: z.enum(["on", "off"]).optional(),
   LOG_LEVEL: z
     .enum(["fatal", "error", "warn", "info", "debug", "trace", "silent"])
     .default("info"),
