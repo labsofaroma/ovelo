@@ -15,6 +15,8 @@ export const routes = {
   privacy: "/privacy",
   terms: "/terms",
   settings: "/settings",
+  /** M11: wallet onboarding (wallet → SOL and USDC → first buy). */
+  getStarted: "/get-started",
   stock: (symbol: string) => `/stock/${encodeURIComponent(symbol)}`,
   basket: (id: string) => `/basket/${encodeURIComponent(id)}`,
 } as const;
@@ -25,6 +27,7 @@ export const SITEMAP_PATHS = [
   routes.markets,
   routes.baskets,
   routes.creators,
+  routes.getStarted,
   routes.privacy,
   routes.terms,
 ] as const;

@@ -25,3 +25,35 @@ export const WALLET_INSTALL_GUIDES: readonly WalletGuide[] = [
 export function solNeededNote(): string {
   return `Your first buy of each stock needs about ${NEW_STOCK_ACCOUNT_SOL} SOL in your wallet for its token account, plus network fees. You pay these to the Solana network, not to Aroma.`;
 }
+
+/**
+ * M11: open this page inside a wallet's in-app browser on a phone (the wallets' documented
+ * "browse" universal links; plain links, no referral or affiliate parameters beyond the page
+ * itself as `ref`). Not verified on a real phone in this build.
+ */
+export function walletBrowseLinks(pageUrl: string): readonly WalletGuide[] {
+  const url = encodeURIComponent(pageUrl);
+  const ref = encodeURIComponent(new URL(pageUrl).origin);
+  return [
+    {
+      name: "Phantom",
+      href: `https://phantom.app/ul/browse/${url}?ref=${ref}`,
+    },
+    {
+      name: "Solflare",
+      href: `https://solflare.com/ul/v1/browse/${url}?ref=${ref}`,
+    },
+    {
+      name: "Backpack",
+      href: `https://backpack.app/ul/v1/browse/${url}?ref=${ref}`,
+    },
+  ];
+}
+
+/** Lamports for `accounts` new token accounts at NEW_STOCK_ACCOUNT_SOL each (bigint, exact). */
+export function newAccountsLamports(accounts: number): bigint {
+  const [whole, fraction = ""] = NEW_STOCK_ACCOUNT_SOL.split(".");
+  const perAccount =
+    BigInt(whole!) * 1_000_000_000n + BigInt(fraction.padEnd(9, "0"));
+  return perAccount * BigInt(accounts);
+}

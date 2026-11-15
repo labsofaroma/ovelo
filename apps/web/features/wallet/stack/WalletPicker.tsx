@@ -8,6 +8,8 @@ import {
 import { useId } from "react";
 import type { WalletState } from "../context";
 import { CLUSTER_LABEL } from "../cluster";
+import { onboardingCopy } from "../../onboarding/copy";
+import { routes } from "../../shared/routes";
 import { solNeededNote, WALLET_INSTALL_GUIDES } from "../onboarding";
 
 /**
@@ -85,6 +87,12 @@ export function WalletPicker({
               {solNeededNote()}
             </p>
           ) : null}
+          {/* M11: the step-by-step onboarding page. */}
+          <p className="text-small">
+            <a href={routes.getStarted} className="underline">
+              {onboardingCopy.pickerLink}
+            </a>
+          </p>
         </section>
       </DialogContent>
     </Dialog>

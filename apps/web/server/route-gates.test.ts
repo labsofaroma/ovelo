@@ -224,6 +224,7 @@ const PAGES: Record<string, { sample: string; browseBlockable: boolean }> = {
   "/creators": { sample: "/creators", browseBlockable: true },
   "/invest": { sample: "/invest", browseBlockable: true },
   "/settings": { sample: "/settings", browseBlockable: true },
+  "/get-started": { sample: "/get-started", browseBlockable: true },
   "/ui-preview": { sample: "/ui-preview", browseBlockable: true },
   "/privacy": { sample: "/privacy", browseBlockable: false },
   "/terms": { sample: "/terms", browseBlockable: false },

@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useEffect, useRef, useState } from "react";
+import { CONSENT_KEY, readConsent } from "../analytics";
 import { OPEN_PRIVACY_EVENT } from "./PrivacyChoicesButton";
 import { routes } from "../routes";
 
@@ -12,27 +13,9 @@ import { routes } from "../routes";
  * opts in, the deployment configures a Plausible domain, and no Do-Not-Track / GPC signal is set.
  * Only the route category is sent: no wallet, order, search or referrer data.
  */
-const KEY = "aroma.privacy.v1";
+const KEY = CONSENT_KEY;
 const DOMAIN = process.env.NEXT_PUBLIC_PLAUSIBLE_DOMAIN ?? "";
-
-function readChoice(): boolean | null {
-  try {
-    const saved: unknown = JSON.parse(localStorage.getItem(KEY) ?? "null");
-    if (
-      saved &&
-      typeof saved === "object" &&
-      "analytics" in saved &&
-      typeof saved.analytics === "boolean" &&
-      "expiresAt" in saved &&
-      typeof saved.expiresAt === "number" &&
-      saved.expiresAt > Date.now()
-    )
-      return saved.analytics;
-  } catch {
-    /* blocked storage: ask again */
-  }
-  return null;
-}
+const readChoice = readConsent;
 
 function category(path: string): string {
   return path

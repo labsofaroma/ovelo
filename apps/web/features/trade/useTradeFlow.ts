@@ -16,6 +16,7 @@ import {
   PAPER_KEY,
   type PaperLeg,
 } from "./paper";
+import { useFunnelEvents } from "../onboarding/useFunnelEvents";
 import { useQuoteMutation, useSubmitMutation, useTradeStatus } from "./queries";
 import type { QuoteRequestBody } from "./schema";
 
@@ -74,6 +75,9 @@ export function useTradeFlow(target: TradeTarget) {
     );
     return () => clearInterval(timer);
   }, [state.step]);
+
+  // M11: consent-gated funnel events (first live quote, confirmed buy). Never blocks the flow.
+  useFunnelEvents(state, target.kind);
 
   const tracking = state.step === "confirming" ? state.tradeId : null;
   const status = useTradeStatus(tracking);
