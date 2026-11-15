@@ -87,6 +87,21 @@ jobs:
             echo "epoch=$(git log -1 --format=%ct)"
           } >> "$GITHUB_OUTPUT"
 
+      # An unset repository variable would be passed as an EMPTY build arg, which overrides the
+      # Dockerfile default and inlines "" into the browser bundle. Refuse instead.
+      - name: Required public build values (repository variables)
+        env:
+          RPC: ${{ vars.NEXT_PUBLIC_SOLANA_RPC_URL }}
+          SENTRY: ${{ vars.NEXT_PUBLIC_SENTRY_DSN }}
+        run: |
+          missing=""
+          [ -n "${RPC}" ] || missing="${missing} NEXT_PUBLIC_SOLANA_RPC_URL"
+          [ -n "${SENTRY}" ] || missing="${missing} NEXT_PUBLIC_SENTRY_DSN"
+          if [ -n "${missing}" ]; then
+            echo "::error::set these repository variables (Settings > Secrets and variables > Actions > Variables):${missing}"
+            exit 1
+          fi
+
       - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1
 
       - uses: docker/login-action@81c6f93d4bc991e510b342a00b419b3bb4efc5c6 # v4.7.0
@@ -160,21 +175,6 @@ jobs:
           DIGEST: ${{ steps.build.outputs.digest }}
         run: cosign sign --yes "${IMAGE}@${DIGEST}"
 
-      - name: Build provenance attestation
-        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
-        with:
-          subject-name: ${{ env.IMAGE }}
-          subject-digest: ${{ steps.build.outputs.digest }}
-          push-to-registry: true
-
-      - name: SBOM attestation
-        uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
-        with:
-          subject-name: ${{ env.IMAGE }}
-          subject-digest: ${{ steps.build.outputs.digest }}
-          sbom-path: sbom.cdx.json
-          push-to-registry: true
-
       - name: The digest to deploy
         env:
           DIGEST: ${{ steps.build.outputs.digest }}
@@ -186,3 +186,23 @@ jobs:
             echo
             echo "On the VPS: \`sudo /opt/aroma/deploy.sh ${DIGEST}\`"
           } >> "$GITHUB_STEP_SUMMARY"
+
+      # Artifact attestations need a public repository or GitHub Enterprise Cloud. On a private
+      # repository they fail; the signed digest above is what deploy.sh verifies, so they do not
+      # block the job.
+      - name: Build provenance attestation
+        continue-on-error: true
+        uses: actions/attest-build-provenance@4d101475d8b20a2381f78447822ac1eab6504dd8 # v4.2.2
+        with:
+          subject-name: ${{ env.IMAGE }}
+          subject-digest: ${{ steps.build.outputs.digest }}
+          push-to-registry: true
+
+      - name: SBOM attestation
+        continue-on-error: true
+        uses: actions/attest-sbom@c604332985a26aa8cf1bdc465b92731239ec6b9e # v4.1.0
+        with:
+          subject-name: ${{ env.IMAGE }}
+          subject-digest: ${{ steps.build.outputs.digest }}
+          sbom-path: sbom.cdx.json
+          push-to-registry: true

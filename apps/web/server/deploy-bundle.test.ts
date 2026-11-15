@@ -270,6 +270,22 @@ describe(".github/workflows/image.yml (Step 6; written, not run here)", () => {
     expect(wf).not.toMatch(/:latest\b/);
   });
 
+  it("refuses to build without the required public values, and prints the digest once signed", () => {
+    expect(wf).toMatch(
+      /\[ -n "\$\{RPC\}" \][\s\S]*\[ -n "\$\{SENTRY\}" \][\s\S]*exit 1/,
+    );
+    expect(wf.indexOf("Required public build values")).toBeLessThan(
+      wf.indexOf("Build and push"),
+    );
+    // The summary does not wait for the attestations (they fail on a private repository).
+    expect(wf.indexOf("cosign sign")).toBeLessThan(
+      wf.indexOf("The digest to deploy"),
+    );
+    expect(wf.indexOf("The digest to deploy")).toBeLessThan(
+      wf.indexOf("attest-build-provenance"),
+    );
+  });
+
   it("triggers only on main and v* tags (the identities deploy.sh accepts)", () => {
     expect(wf).toMatch(/branches: \[main\]/);
     expect(wf).toMatch(/tags: \["v\*"\]/);
