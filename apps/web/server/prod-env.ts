@@ -1,6 +1,7 @@
 import { loadPolicy } from "@/features/compliance/policy";
 import { parseEnv, TURNSTILE_TEST_SECRETS } from "./env.schema";
 import { m11Findings } from "./prod-env.m11";
+import { resolvePlatform, type DeployEnv, type Platform } from "./platform";
 
 /**
  * Production profile check (P3, `pnpm check:prod-env`). Pure apart from the injected `fetch`:
@@ -94,17 +95,22 @@ export const MAINNET_GENESIS = "5eykt4UsFv8P8NJdTREpY1vzqKqZKvdpKuc147dw2N9d";
 
 const present = (env: Env, name: string) => Boolean(env[name]?.trim());
 
-export function staticFindings(env: Env): Finding[] {
+export function staticFindings(
+  env: Env,
+  platform: Platform = "vercel",
+): Finding[] {
   const findings: Finding[] = [];
   const add = (name: string, status: Finding["status"], detail: string) =>
     findings.push({ name, status, detail });
 
-  // 1. The real boot schema, in production mode (VERCEL_ENV=production rules apply).
-  const parsed = parseEnv({
-    ...env,
-    NODE_ENV: "production",
-    VERCEL_ENV: "production",
-  });
+  // 1. The real boot schema, in production mode. On Vercel, VERCEL_ENV=production is what the
+  // platform sets; on self-host the env file itself must say AROMA_PLATFORM and
+  // AROMA_DEPLOY_ENV (platformFindings), and nothing is forced.
+  const parsed = parseEnv(
+    platform === "vercel"
+      ? { ...env, NODE_ENV: "production", VERCEL_ENV: "production" }
+      : { ...env, NODE_ENV: "production" },
+  );
   const invalid = new Set<string>();
   if (!parsed.ok)
     for (const issue of parsed.error.issues) {
@@ -293,4 +299,66 @@ export function report(findings: readonly Finding[]): string {
     )
     .map((f) => `${f.status.toUpperCase().padEnd(9)} ${f.name}: ${f.detail}`)
     .join("\n");
+}
+
+/** Phase H: the deploy environment each `check:prod-env` profile must run as. */
+const PROFILE_DEPLOY_ENV: Record<"production" | "beta", DeployEnv> = {
+  production: "production",
+  beta: "beta",
+};
+
+/**
+ * Phase H: the platform answer the env file gives (server/platform.ts), checked against the
+ * platform and profile the owner validates for. Self-host needs AROMA_PLATFORM=selfhost and the
+ * profile's AROMA_DEPLOY_ENV; Vercel needs neither (it sets VERCEL_ENV), and a Vercel env file
+ * that says selfhost is a contradiction the boot would refuse.
+ */
+export function platformFindings(
+  env: Env,
+  platform: Platform,
+  profile: "production" | "beta",
+): Finding[] {
+  const want = PROFILE_DEPLOY_ENV[profile];
+  if (platform === "vercel") {
+    const answer = resolvePlatform({
+      ...env,
+      NODE_ENV: "production",
+      VERCEL_ENV: "production",
+    });
+    if (answer.problems.length) return []; // reported by the boot schema (step 1)
+    return [
+      {
+        name: "AROMA_PLATFORM",
+        status: "ok",
+        detail: `vercel, ${answer.deployEnv} (VERCEL_ENV set by Vercel)`,
+      },
+    ];
+  }
+  const answer = resolvePlatform({ ...env, NODE_ENV: "production" });
+  const findings: Finding[] = [];
+  if (env.AROMA_PLATFORM?.trim() !== "selfhost")
+    findings.push({
+      name: "AROMA_PLATFORM",
+      status: env.AROMA_PLATFORM?.trim() ? "invalid" : "missing",
+      detail: "must be selfhost on the self-host platform",
+    });
+  else if (answer.platform !== "selfhost")
+    findings.push({
+      name: "AROMA_PLATFORM",
+      status: "invalid",
+      detail: "contradicts VERCEL or VERCEL_ENV in the same file",
+    });
+  else
+    findings.push({ name: "AROMA_PLATFORM", status: "ok", detail: "selfhost" });
+  const deploy = env.AROMA_DEPLOY_ENV?.trim();
+  findings.push(
+    deploy === want
+      ? { name: "AROMA_DEPLOY_ENV", status: "ok", detail: want }
+      : {
+          name: "AROMA_DEPLOY_ENV",
+          status: deploy ? "invalid" : "missing",
+          detail: `must be ${want} for the ${profile} profile`,
+        },
+  );
+  return findings;
 }

@@ -1,4 +1,5 @@
-// `pnpm check:prod-env [--env-file <path>] [--offline] [--profile production|beta]` (P3). The
+// `pnpm check:prod-env [--env-file <path>] [--offline] [--profile production|beta]
+//   [--platform vercel|selfhost]` (P3; --platform: Phase H, default vercel). The
 // production profile (default; M9 public launch, server/prod-env.public.ts) and the beta profile
 // (Phase A, server/prod-env.beta.ts) both start from the shared production checks. Validates
 // an env file (or the process env) with the real boot schema plus the launch rules in
@@ -9,6 +10,7 @@ import { parseEnv } from "node:util";
 import {
   failed,
   genesisFindings,
+  platformFindings,
   report,
   staticFindings,
 } from "../server/prod-env";
@@ -23,17 +25,26 @@ if (fileIndex >= 0 && !file) {
   process.exit(2);
 }
 const profileIndex = args.indexOf("--profile");
-const profile = profileIndex >= 0 ? args[profileIndex + 1] : "production";
-if (profile !== "production" && profile !== "beta") {
+const profileArg = profileIndex >= 0 ? args[profileIndex + 1] : "production";
+if (profileArg !== "production" && profileArg !== "beta") {
   process.stderr.write("check:prod-env: --profile is production or beta\n");
   process.exit(2);
 }
+const profile: "production" | "beta" = profileArg;
+const platformIndex = args.indexOf("--platform");
+const platformArg = platformIndex >= 0 ? args[platformIndex + 1] : "vercel";
+if (platformArg !== "vercel" && platformArg !== "selfhost") {
+  process.stderr.write("check:prod-env: --platform is vercel or selfhost\n");
+  process.exit(2);
+}
+const platform: "vercel" | "selfhost" = platformArg;
 const env: Record<string, string | undefined> = file
   ? parseEnv(readFileSync(file, "utf8"))
   : { ...process.env };
 
 async function main(): Promise<void> {
-  const findings = staticFindings(env);
+  const findings = staticFindings(env, platform);
+  findings.push(...platformFindings(env, platform, profile));
   findings.push(
     ...(profile === "beta" ? betaFindings(env) : publicLaunchFindings(env)),
   );
@@ -42,7 +53,7 @@ async function main(): Promise<void> {
       ...(await genesisFindings(env, (url, init) => fetch(url, init))),
     );
   process.stdout.write(
-    `check:prod-env (${profile} profile, ${file ? "env file" : "process env"}; values are never printed)\n${report(findings)}\n`,
+    `check:prod-env (${profile} profile, ${platform}, ${file ? "env file" : "process env"}; values are never printed)\n${report(findings)}\n`,
   );
   const bad = failed(findings);
   process.stdout.write(`check:prod-env: ${bad ? "FAILED" : "OK"}\n`);
