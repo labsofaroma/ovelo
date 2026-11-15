@@ -238,6 +238,7 @@ export const plansIndex = pgTable(
 );
 
 export const NOTIFICATION_CHANNELS = ["email", "push", "telegram"] as const;
+export const DELIVERY_STATUSES = ["pending", "sent", "dead"] as const;
 
 export const notifications = pgTable(
   "notifications",
@@ -252,13 +253,31 @@ export const notifications = pgTable(
       .default({}),
     sentAt: timestamptz("sent_at"),
     createdAt: timestamptz("created_at").notNull().defaultNow(),
+    // M11 (0007): one delivery per event and channel, with retries and a final state.
+    eventId: text("event_id").notNull(),
+    status: text("status", { enum: DELIVERY_STATUSES })
+      .notNull()
+      .default("pending"),
+    attempts: integer("attempts").notNull().default(0),
+    nextAttemptAt: timestamptz("next_attempt_at").notNull().defaultNow(),
+    /** While a worker holds the row; an expired lock makes it due again (at-least-once). */
+    lockedUntil: timestamptz("locked_until"),
+    /** A short error code, never a contact detail or a provider response body. */
+    lastError: text("last_error"),
   },
   (t) => [
     check(
       "notifications_channel_valid",
       sql`${t.channel} IN ('email', 'push', 'telegram')`,
     ),
+    check(
+      "notifications_status_valid",
+      sql`${t.status} IN ('pending', 'sent', 'dead')`,
+    ),
+    check("notifications_attempts_nonneg", sql`${t.attempts} >= 0`),
     index("notifications_wallet_idx").on(t.wallet, t.createdAt),
+    unique("notifications_event_channel").on(t.eventId, t.channel),
+    index("notifications_due_idx").on(t.status, t.nextAttemptAt),
   ],
 );
 
@@ -315,3 +334,5 @@ export const termsAcceptances = pgTable(
 export * from "./schema.beta";
 // Phase A per-day caps (REWRITE-PLAN §7.3 W3): trade_cap_days, trade_cap_reservations (0006).
 export * from "./schema.caps";
+// M11 notifications: notification_subscriptions, notification_events (0007).
+export * from "./schema.notify";

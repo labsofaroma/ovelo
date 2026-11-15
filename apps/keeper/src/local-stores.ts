@@ -68,12 +68,20 @@ export function memoryRedis(): KeeperRedis & {
 export function memoryDb(): KeeperDb & {
   rows: Map<string, PlanIndexRow>;
   receipts: InstallmentReceipt[];
+  notifications: Map<string, { wallet: string; kind: string }>;
 } {
   const rows = new Map<string, PlanIndexRow>();
   const receipts: InstallmentReceipt[] = [];
+  const notifications = new Map<string, { wallet: string; kind: string }>();
   return {
     rows,
     receipts,
+    notifications,
+    async recordNotification(event) {
+      if (notifications.has(event.id)) return false;
+      notifications.set(event.id, { wallet: event.wallet, kind: event.kind });
+      return true;
+    },
     async dueRows(now, limit) {
       const t = BigInt(Math.floor(now.getTime() / 1000));
       return [...rows.values()]

@@ -99,4 +99,24 @@ describe("keeper tables against the web migrations", () => {
       { kind: "installment", status: "confirmed", period: 0 },
     ]);
   });
+
+  it("M11: records a devnet notification event once, and only for a subscribed owner", async () => {
+    const event = {
+      id: "plan:p1:0:executed",
+      wallet: "owner-a",
+      kind: "plan_round_executed",
+      payload: { plan: "p1", period: 0 },
+    };
+    expect(await db.recordNotification(event)).toBe(false);
+    await client.query(
+      `insert into notification_subscriptions (wallet, channel, status, events, address, verified_at)
+       values ('owner-a', 'telegram', 'active', '["plan_round_executed"]', '{"chatId": 1}', now())`,
+    );
+    expect(await db.recordNotification(event)).toBe(true);
+    expect(await db.recordNotification(event)).toBe(false);
+    const { rows } = await client.query<{ cluster: string; kind: string }>(
+      "select cluster, kind from notification_events",
+    );
+    expect(rows).toEqual([{ cluster: "devnet", kind: "plan_round_executed" }]);
+  });
 });

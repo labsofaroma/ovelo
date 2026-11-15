@@ -213,6 +213,7 @@ export async function runOnce(deps: RunDeps): Promise<RunReport> {
             alerts,
             hermes,
             config,
+            notifyDevnet: !isMainnetCluster(env.KEEPER_CLUSTER),
             ...mode,
             send: {
               priorityMicroLamports: BigInt(env.KEEPER_PRIORITY_MICROLAMPORTS),

@@ -21,6 +21,7 @@ import {
 } from "./build";
 import type { KeeperDb } from "./db";
 import type { Logger } from "./log";
+import { notifyExecuted, notifyFailed } from "./notify";
 import type { KeeperRpc } from "./rpc";
 import {
   PermanentError,
@@ -56,6 +57,8 @@ export type ExecuteDeps = {
   };
   config: Config;
   leaseMs?: number;
+  /** M11: write devnet user-notification events (off in the mainnet modes). */
+  notifyDevnet?: boolean;
   /** Mainnet mode (M8): the routed batch runner and its smaller batch size. */
   runBatch?: BatchRunner;
   maxLegsPerTransaction?: number;
@@ -219,6 +222,8 @@ export async function executePlan(
           { err: error, code, legMask: mask },
           "installment dead-lettered",
         );
+        if (deps.notifyDevnet)
+          await notifyFailed(deps, address, plan.owner, period, code);
         return { status: "dead_lettered", plan: address, period, code };
       }
       current = (await readPlan(deps.rpc, address, decode)) ?? current;
@@ -228,6 +233,8 @@ export async function executePlan(
       { signatures, newlySkipped: view.due.newlySkipped },
       "installment executed",
     );
+    if (deps.notifyDevnet)
+      await notifyExecuted(deps, address, current, period, signatures.at(-1));
     return {
       status: "executed",
       plan: address,

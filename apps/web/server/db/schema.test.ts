@@ -52,7 +52,7 @@ afterAll(async () => {
 });
 
 describe("migrations", () => {
-  it("create the eight tables from REWRITE-PLAN §6, plus basket_versions (M5b, 0002), terms_acceptances (M9, 0004) the beta tables (Phase A, 0005) and the cap tables (Phase A, 0006)", async () => {
+  it("create the eight tables from REWRITE-PLAN §6, plus basket_versions (M5b, 0002), terms_acceptances (M9, 0004) the beta tables (Phase A, 0005), the cap tables (Phase A, 0006) and the notification tables (M11, 0007)", async () => {
     const { rows } = await db.query<{ table_name: string }>(
       `SELECT table_name FROM information_schema.tables WHERE table_schema = 'public' AND table_name NOT LIKE '\\_\\_%' ORDER BY 1`,
     );
@@ -65,6 +65,9 @@ describe("migrations", () => {
       "beta_invites",
       "creators",
       "invites",
+      // M11 notifications (0007).
+      "notification_events",
+      "notification_subscriptions",
       "notifications",
       "plans_index",
       "portfolio_snapshots",

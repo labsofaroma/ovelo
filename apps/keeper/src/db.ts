@@ -1,5 +1,5 @@
 import { Pool, neonConfig } from "@neondatabase/serverless";
-import { and, asc, eq, inArray, lte, ne } from "drizzle-orm";
+import { and, asc, eq, inArray, lte, ne, sql } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/neon-serverless";
 import {
   bigint,
@@ -66,6 +66,13 @@ export type KeeperDb = {
   upsertRows(rows: readonly PlanIndexRow[]): Promise<void>;
   closeRows(pdas: readonly string[]): Promise<void>;
   insertInstallment(receipt: InstallmentReceipt): Promise<boolean>;
+  /** M11: a devnet notification event, only for an owner with an active subscription (once). */
+  recordNotification(event: {
+    id: string;
+    wallet: string;
+    kind: string;
+    payload: Record<string, unknown>;
+  }): Promise<boolean>;
 };
 
 type Drizzle = ReturnType<typeof drizzle>;
@@ -88,7 +95,7 @@ const fromRow = (r: typeof plansIndex.$inferSelect): PlanIndexRow => ({
 });
 
 export function keeperDb(
-  db: Pick<Drizzle, "select" | "insert" | "update">,
+  db: Pick<Drizzle, "select" | "insert" | "update" | "execute">,
 ): KeeperDb {
   return {
     async dueRows(now, limit) {
@@ -145,6 +152,18 @@ export function keeperDb(
         .onConflictDoNothing({ target: receipts.signature })
         .returning({ signature: receipts.signature });
       return inserted.length > 0;
+    },
+    async recordNotification(event) {
+      const result = await db.execute(sql`
+        INSERT INTO notification_events (id, wallet, kind, cluster, payload)
+        SELECT ${event.id}, ${event.wallet}, ${event.kind}, 'devnet', ${JSON.stringify(event.payload)}::jsonb
+        WHERE EXISTS (
+          SELECT 1 FROM notification_subscriptions
+          WHERE wallet = ${event.wallet} AND status = 'active'
+        )
+        ON CONFLICT (id) DO NOTHING
+        RETURNING id`);
+      return (result as unknown as { rows: unknown[] }).rows.length > 0;
     },
   };
 }
