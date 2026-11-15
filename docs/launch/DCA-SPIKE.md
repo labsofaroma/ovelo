@@ -131,3 +131,32 @@ Options I see, for the owner to choose:
 - **(c) Something outside this prompt.** For example, a server-free "schedule a reminder, user signs each spot buy" flow on the existing trade path. That would be a new product decision.
 
 My recommendation is **(a)**, with (b) as an optional owner probe. The custody point alone is a product and legal decision outside Phase C's scope, and nothing in Step 2 can reduce the uncertainty without mainnet.
+
+## 8. Spot route review today (what Path B users can buy)
+
+Run 2026-11-15 06:05–06:08 UTC. For each of the 37 basket xStocks, at $10 and $50 USDC, a live keyless `GET https://api.jup.ag/swap/v2/build` response went through the server's own route review, `fetchLegRoute` (`features/trade/server/route.ts`): zod parse; mint, amount, ExactIn, slippage and zero-fee binding; and the pinned ExactIn instruction decode.
+
+- The taker was a freshly generated, **unfunded** public key, whose secret was never used.
+- Nothing was signed, simulated or sent.
+- Simulation and the settlement check need a funded wallet, so they were not run; a quote can still fail at those steps.
+- Raw results: [`dca-spike/spot-route-review.csv`](./dca-spike/spot-route-review.csv).
+
+| Result | Count | xStocks |
+| :- | :- | :- |
+| Accepted at $10 and $50 | 23 | AAPLx, AMDx, AMZNx, ASMLx, AVGOx, CVXx, GSx, HONx, JPMx, KOx, LLYx, MAx, MCDx, METAx, MSFTx, NFLXx, NVDAx, ORCLx, TSLAx, TSMx, UNHx, Vx, XOMx |
+| Accepted at one amount only | 3 | GLDx ($50), GOOGLx ($50), SPYx ($10) |
+| Refused: Jupiter build has no route | 9 | ABBVx, BAx, CRMx, JNJx, LMTx, MMMx, MRKx, NOCx, NOWx |
+| Refused: unsupported swap variant (fail closed) | 2 | PLTRx (BisonFi), QQQx (GoonFi V2 / BisonFi) |
+
+**DEXes.**
+- Manifest, Hadron, Whirlpool, Raydium CLMM, Meteora DLMM, PancakeSwap and Archer passed the review.
+- Routes through **BisonFi, GoonFi V2, Kipseli and Scorch** were refused as unsupported variants.
+- The build API returned "no route" for several stocks that the keyless quote API (§5) did route, so the two APIs disagree.
+- Routes change minute to minute. AAPLx, refused in Phase A, was accepted in this run.
+
+**Baskets** (a basket quote fails if any leg is refused; checked per leg at $10, which is close to, but not exactly, the leg size of a real order):
+
+- **All legs pass (9):** SOL-PAY, SOL-BRANDS, SOL-PHYS, SOL-CHIPS, SOL-LIFE, SOL-FIN, SOL-ENERGY, SOL-DIGITAL, SOL-LIFE3.
+- **Blocked (10):** SOL-MAG7, SOL-CONNECT, SOL-AI and SOL-AI3 by GOOGLx (Kipseli at $10); SOL-DIG12 by GOOGLx and CRMx; SOL-CLOUD by CRMx and NOWx; SOL-HEALTH by JNJx, ABBVx and MRKx; SOL-DEF by LMTx, NOCx and PLTRx; SOL-BUILD by BAx and MMMx; SOL-CORE by QQQx and GLDx.
+
+Follow-up (existing Phase B open item, not changed here): refresh the reviewed Jupiter swap schema for BisonFi, GoonFi V2, Kipseli and Scorch, with review. That unblocks 2 stocks fully, plus GOOGLx, GLDx and SPYx at the failing amounts. The 9 no-route stocks need liquidity, not code.

@@ -1,0 +1,75 @@
+symbol,mint,usd,verdict,dexes,detail
+AAPLx,XsbEhLAtcf6HdfpFZ5xEMdqW8nfAvcsP5bdudRLJzJp,10,accepted,Whirlpool,
+AAPLx,XsbEhLAtcf6HdfpFZ5xEMdqW8nfAvcsP5bdudRLJzJp,50,accepted,Whirlpool,
+ABBVx,XswbinNKyPmzTa5CskMbCPvMW6G5CMnZXZEeQSSQoie,10,refused:ROUTE_UNAVAILABLE,,Jupiter build 400 (no-route)
+ABBVx,XswbinNKyPmzTa5CskMbCPvMW6G5CMnZXZEeQSSQoie,50,refused:ROUTE_UNAVAILABLE,,Jupiter build 400 (no-route)
+AMDx,XsXcJ6GZ9kVnjqGsjBnktRcuwMBmvKWh8S93RefZ1rF,10,accepted,Whirlpool,
+AMDx,XsXcJ6GZ9kVnjqGsjBnktRcuwMBmvKWh8S93RefZ1rF,50,accepted,Archer+Whirlpool,
+AMZNx,Xs3eBt7uRfJX8QUs4suhyU8p2M6DoUDrJyWBa8LLZsg,10,accepted,Hadron,
+AMZNx,Xs3eBt7uRfJX8QUs4suhyU8p2M6DoUDrJyWBa8LLZsg,50,accepted,Hadron,
+ASMLx,XshuHQ6o6SVpUNawvnnTMxsZ4tacZsNgVCLorv7TkFq,10,accepted,Manifest,
+ASMLx,XshuHQ6o6SVpUNawvnnTMxsZ4tacZsNgVCLorv7TkFq,50,accepted,Manifest,
+AVGOx,XsgSaSvNSqLTtFuyWPBhK9196Xb9Bbdyjj4fH3cPJGo,10,accepted,Meteora DLMM,
+AVGOx,XsgSaSvNSqLTtFuyWPBhK9196Xb9Bbdyjj4fH3cPJGo,50,accepted,Meteora DLMM,
+BAx,XsBcnKnZMsPaerLiUQ4eMFy4Fjysot4RugYXYDjiqCP,10,refused:ROUTE_UNAVAILABLE,,Jupiter build 400 (no-route)
+BAx,XsBcnKnZMsPaerLiUQ4eMFy4Fjysot4RugYXYDjiqCP,50,refused:ROUTE_UNAVAILABLE,,Jupiter build 400 (no-route)
+CRMx,XsczbcQ3zfcgAEt9qHQES8pxKAVG5rujPSHQEXi4kaN,10,refused:ROUTE_UNAVAILABLE,,Jupiter build 400 (no-route)
+CRMx,XsczbcQ3zfcgAEt9qHQES8pxKAVG5rujPSHQEXi4kaN,50,refused:ROUTE_UNAVAILABLE,,Jupiter build 400 (no-route)
+CVXx,XsNNMt7WTNA2sV3jrb1NNfNgapxRF5i4i6GcnTRRHts,10,accepted,Raydium CLMM,
+CVXx,XsNNMt7WTNA2sV3jrb1NNfNgapxRF5i4i6GcnTRRHts,50,accepted,Raydium CLMM,
+GLDx,Xsv9hRk1z5ystj9MhnA7Lq4vjSsLwzL2nxrwmwtD3re,10,refused:ROUTE_UNAVAILABLE,GoonFi V2+Whirlpool,Unsupported Jupiter swap variant. Refresh the reviewed program schema before enabling this route.
+GLDx,Xsv9hRk1z5ystj9MhnA7Lq4vjSsLwzL2nxrwmwtD3re,50,accepted,Whirlpool,
+GOOGLx,XsCPL9dNWBMvFtTmwcCA5v3xWPSMEBCszbQdiLLq6aN,10,refused:ROUTE_UNAVAILABLE,Kipseli+Raydium CLMM,Unsupported Jupiter swap variant. Refresh the reviewed program schema before enabling this route.
+GOOGLx,XsCPL9dNWBMvFtTmwcCA5v3xWPSMEBCszbQdiLLq6aN,50,accepted,Whirlpool,
+GSx,XsgaUyp4jd1fNBCxgtTKkW64xnnhQcvgaxzsbAq5ZD1,10,accepted,Manifest,
+GSx,XsgaUyp4jd1fNBCxgtTKkW64xnnhQcvgaxzsbAq5ZD1,50,accepted,Manifest,
+HONx,XsRbLZthfABAPAfumWNEJhPyiKDW6TvDVeAeW7oKqA2,10,accepted,Manifest,
+HONx,XsRbLZthfABAPAfumWNEJhPyiKDW6TvDVeAeW7oKqA2,50,accepted,Manifest,
+JNJx,XsGVi5eo1Dh2zUpic4qACcjuWGjNv8GCt3dm5XcX6Dn,10,refused:ROUTE_UNAVAILABLE,,Jupiter build 400 (no-route)
+JNJx,XsGVi5eo1Dh2zUpic4qACcjuWGjNv8GCt3dm5XcX6Dn,50,refused:ROUTE_UNAVAILABLE,,Jupiter build 400 (no-route)
+JPMx,XsMAqkcKsUewDrzVkait4e5u4y8REgtyS7jWgCpLV2C,10,accepted,Raydium CLMM,
+JPMx,XsMAqkcKsUewDrzVkait4e5u4y8REgtyS7jWgCpLV2C,50,accepted,Raydium CLMM,
+KOx,XsaBXg8dU5cPM6ehmVctMkVqoiRG2ZjMo1cyBJ3AykQ,10,accepted,Whirlpool,
+KOx,XsaBXg8dU5cPM6ehmVctMkVqoiRG2ZjMo1cyBJ3AykQ,50,accepted,Whirlpool,
+LLYx,Xsnuv4omNoHozR6EEW5mXkw8Nrny5rB3jVfLqi6gKMH,10,accepted,Raydium CLMM,
+LLYx,Xsnuv4omNoHozR6EEW5mXkw8Nrny5rB3jVfLqi6gKMH,50,accepted,Raydium CLMM,
+LMTx,XssULacY8D3z3a8HoQuLid8wdJHcZLGpSST9MkNFzox,10,refused:ROUTE_UNAVAILABLE,,Jupiter build 400 (no-route)
+LMTx,XssULacY8D3z3a8HoQuLid8wdJHcZLGpSST9MkNFzox,50,refused:ROUTE_UNAVAILABLE,,Jupiter build 400 (no-route)
+MAx,XsApJFV9MAktqnAc6jqzsHVujxkGm9xcSUffaBoYLKC,10,accepted,Manifest,
+MAx,XsApJFV9MAktqnAc6jqzsHVujxkGm9xcSUffaBoYLKC,50,accepted,Manifest,
+MCDx,XsqE9cRRpzxcGKDXj1BJ7Xmg4GRhZoyY1KpmGSxAWT2,10,accepted,Whirlpool,
+MCDx,XsqE9cRRpzxcGKDXj1BJ7Xmg4GRhZoyY1KpmGSxAWT2,50,accepted,Whirlpool,
+METAx,Xsa62P5mvPszXL1krVUnU5ar38bBSVcWAB6fmPCo5Zu,10,accepted,Hadron,
+METAx,Xsa62P5mvPszXL1krVUnU5ar38bBSVcWAB6fmPCo5Zu,50,accepted,Hadron,
+MMMx,XsTEo8W2L8JprN57bmJgatDT84z57ReJYizr5f32BfP,10,refused:ROUTE_UNAVAILABLE,,Jupiter build 400 (no-route)
+MMMx,XsTEo8W2L8JprN57bmJgatDT84z57ReJYizr5f32BfP,50,refused:ROUTE_UNAVAILABLE,,Jupiter build 400 (no-route)
+MRKx,XsnQnU7AdbRZYe2akqqpibDdXjkieGFfSkbkjX1Sd1X,10,refused:ROUTE_UNAVAILABLE,,Jupiter build 400 (no-route)
+MRKx,XsnQnU7AdbRZYe2akqqpibDdXjkieGFfSkbkjX1Sd1X,50,refused:ROUTE_UNAVAILABLE,,Jupiter build 400 (no-route)
+MSFTx,XspzcW1PRtgf6Wj92HCiZdjzKCyFekVD8P5Ueh3dRMX,10,accepted,Hadron,
+MSFTx,XspzcW1PRtgf6Wj92HCiZdjzKCyFekVD8P5Ueh3dRMX,50,accepted,Hadron,
+NFLXx,XsEH7wWfJJu2ZT3UCFeVfALnVA6CP5ur7Ee11KmzVpL,10,accepted,Raydium CLMM,
+NFLXx,XsEH7wWfJJu2ZT3UCFeVfALnVA6CP5ur7Ee11KmzVpL,50,accepted,Raydium CLMM,
+NOCx,Xs1eyZcwrzzYW3hDjfpm7PiJrC9RyFszsHpqfTeUTCE,10,refused:ROUTE_UNAVAILABLE,,Jupiter build 400 (no-route)
+NOCx,Xs1eyZcwrzzYW3hDjfpm7PiJrC9RyFszsHpqfTeUTCE,50,refused:ROUTE_UNAVAILABLE,,Jupiter build 400 (no-route)
+NOWx,XsBnEFd2EtpwBRNVfN8qLZcVUnuqXRaGCSEEFChLfxL,10,refused:ROUTE_UNAVAILABLE,,Jupiter build 400 (no-route)
+NOWx,XsBnEFd2EtpwBRNVfN8qLZcVUnuqXRaGCSEEFChLfxL,50,refused:ROUTE_UNAVAILABLE,,Jupiter build 400 (no-route)
+NVDAx,Xsc9qvGR1efVDFGLrVsmkzv3qi45LTBjeUKSPmx9qEh,10,accepted,Whirlpool,
+NVDAx,Xsc9qvGR1efVDFGLrVsmkzv3qi45LTBjeUKSPmx9qEh,50,accepted,Whirlpool,
+ORCLx,XsjFwUPiLofddX5cWFHW35GCbXcSu1BCUGfxoQAQjeL,10,accepted,Raydium CLMM,
+ORCLx,XsjFwUPiLofddX5cWFHW35GCbXcSu1BCUGfxoQAQjeL,50,accepted,Raydium CLMM,
+PLTRx,XsoBhf2ufR8fTyNSjqfU71DYGaE6Z3SUGAidpzriAA4,10,refused:ROUTE_UNAVAILABLE,BisonFi+Meteora DLMM,Unsupported Jupiter swap variant. Refresh the reviewed program schema before enabling this route.
+PLTRx,XsoBhf2ufR8fTyNSjqfU71DYGaE6Z3SUGAidpzriAA4,50,refused:ROUTE_UNAVAILABLE,BisonFi+Meteora DLMM,Unsupported Jupiter swap variant. Refresh the reviewed program schema before enabling this route.
+QQQx,Xs8S1uUs1zvS2p7iwtsG3b6fkhpvmwz4GYU3gWAmWHZ,10,refused:ROUTE_UNAVAILABLE,GoonFi V2+Raydium CLMM,Unsupported Jupiter swap variant. Refresh the reviewed program schema before enabling this route.
+QQQx,Xs8S1uUs1zvS2p7iwtsG3b6fkhpvmwz4GYU3gWAmWHZ,50,refused:ROUTE_UNAVAILABLE,BisonFi+Raydium CLMM,Unsupported Jupiter swap variant. Refresh the reviewed program schema before enabling this route.
+SPYx,XsoCS1TfEyfFhfvj8EtZ528L3CaKBDBRqRapnBbDF2W,10,accepted,PancakeSwap+Whirlpool,
+SPYx,XsoCS1TfEyfFhfvj8EtZ528L3CaKBDBRqRapnBbDF2W,50,refused:ROUTE_UNAVAILABLE,Whirlpool+Scorch,Unsupported Jupiter swap variant. Refresh the reviewed program schema before enabling this route.
+TSLAx,XsDoVfqeBukxuZHWhdvWHBhgEHjGNst4MLodqsJHzoB,10,accepted,Whirlpool,
+TSLAx,XsDoVfqeBukxuZHWhdvWHBhgEHjGNst4MLodqsJHzoB,50,accepted,Whirlpool,
+TSMx,XsafvsGtzFqqHgTnA3aPC83EAMkacU5mcGtcSayhpVV,10,accepted,Whirlpool,
+TSMx,XsafvsGtzFqqHgTnA3aPC83EAMkacU5mcGtcSayhpVV,50,accepted,Whirlpool,
+UNHx,XszvaiXGPwvk2nwb3o9C1CX4K6zH8sez11E6uyup6fe,10,accepted,Raydium CLMM,
+UNHx,XszvaiXGPwvk2nwb3o9C1CX4K6zH8sez11E6uyup6fe,50,accepted,Raydium CLMM,
+Vx,XsqgsbXwWogGJsNcVZ3TyVouy2MbTkfCFhCGGGcQZ2p,10,accepted,Meteora DLMM,
+Vx,XsqgsbXwWogGJsNcVZ3TyVouy2MbTkfCFhCGGGcQZ2p,50,accepted,Manifest+Meteora DLMM,
+XOMx,XsaHND8sHyfMfsWPj6kSdd5VwvCayZvjYgKmmcNL5qh,10,accepted,Meteora DLMM,
+XOMx,XsaHND8sHyfMfsWPj6kSdd5VwvCayZvjYgKmmcNL5qh,50,accepted,Meteora DLMM,
