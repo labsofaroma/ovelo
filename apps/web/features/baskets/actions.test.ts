@@ -235,6 +235,34 @@ describe("recordActionPurchase", () => {
     return { taker, signature, authorization, deps, receipts, onChain };
   }
 
+  it("M11: marks the purchase as made through the Action; a failing mark changes nothing", async () => {
+    const p = await signedPurchase();
+    const marked: string[] = [];
+    const input = {
+      basketId: BASKET.id,
+      authorization: p.authorization,
+      body: { account: p.taker, signature: p.signature },
+    };
+    await recordActionPurchase(input, {
+      ...p.deps(),
+      markAction: async (signature) => void marked.push(signature),
+    });
+    expect(marked).toEqual([p.signature]);
+    const q = await signedPurchase();
+    const result = await recordActionPurchase(
+      {
+        ...input,
+        authorization: q.authorization,
+        body: { account: q.taker, signature: q.signature },
+      },
+      {
+        ...q.deps(),
+        markAction: async () => Promise.reject(new Error("db down")),
+      },
+    );
+    expect(result).toEqual({ status: "confirmed" });
+  });
+
   it("records a confirmed receipt for the authorized transaction read back from mainnet", async () => {
     const p = await signedPurchase();
     const result = await recordActionPurchase(

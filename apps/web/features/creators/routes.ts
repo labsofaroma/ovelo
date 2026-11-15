@@ -5,6 +5,8 @@ export const creatorRoutes = {
   directory: routes.creators,
   builder: routes.builder,
   basket: routes.basket,
+  /** M11: the signed-in creator's own dashboard. */
+  dashboard: "/creators/dashboard",
   /** The builder pre-filled with a published basket, to publish its next version. */
   edit: (id: string) => `${routes.builder}?from=${encodeURIComponent(id)}`,
 } as const;

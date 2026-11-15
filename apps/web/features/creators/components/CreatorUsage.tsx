@@ -9,7 +9,7 @@ const WINDOW_LABEL: Record<UsageWindow["window"], string> = {
 };
 
 /** Exact amount in the funding token's units; a mint without known precision stays raw. */
-function volumeText(volume: UsageWindow["volume"]): string {
+export function volumeText(volume: UsageWindow["volume"]): string {
   if (!volume.length) return "None";
   return volume
     .map((v) =>

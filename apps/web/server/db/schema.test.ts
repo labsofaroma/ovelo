@@ -71,6 +71,8 @@ describe("migrations", () => {
       "notifications",
       "plans_index",
       "portfolio_snapshots",
+      // M11 Blink attribution (0008).
+      "purchase_channels",
       "receipts",
       // M9 compliance gate (0004).
       "terms_acceptances",

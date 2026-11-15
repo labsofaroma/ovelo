@@ -57,6 +57,13 @@
       "when": 1794735127788,
       "tag": "0007_notifications",
       "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "7",
+      "when": 1794737412884,
+      "tag": "0008_purchase_channels",
+      "breakpoints": true
     }
   ]
 }

@@ -199,6 +199,11 @@ const APIS: Record<string, Api> = {
     methods: { POST: "write" },
     handler: ["openScopedSession"],
   },
+  "/api/v1/creators/dashboard": {
+    sample: "/api/v1/creators/dashboard",
+    methods: { GET: "read" },
+    handler: ["openSession", "getDashboard"],
+  },
   "/api/v1/portfolio/export": {
     sample: "/api/v1/portfolio/export",
     methods: { GET: "read" },
@@ -222,6 +227,10 @@ const PAGES: Record<string, { sample: string; browseBlockable: boolean }> = {
   "/watchlist": { sample: "/watchlist", browseBlockable: true },
   "/portfolio": { sample: "/portfolio", browseBlockable: true },
   "/creators": { sample: "/creators", browseBlockable: true },
+  "/creators/dashboard": {
+    sample: "/creators/dashboard",
+    browseBlockable: true,
+  },
   "/invest": { sample: "/invest", browseBlockable: true },
   "/settings": { sample: "/settings", browseBlockable: true },
   "/get-started": { sample: "/get-started", browseBlockable: true },

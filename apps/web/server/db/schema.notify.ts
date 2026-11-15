@@ -2,6 +2,7 @@ import { sql } from "drizzle-orm";
 import {
   check,
   index,
+  primaryKey,
   jsonb,
   pgTable,
   text,
@@ -87,5 +88,24 @@ export const notificationEvents = pgTable(
       sql`${t.cluster} IN ('mainnet', 'devnet', 'none')`,
     ),
     index("notification_events_pending_idx").on(t.fannedOutAt, t.createdAt),
+  ],
+);
+
+/**
+ * M11 Step 4 (migration `0008_purchase_channels`): which purchases came through the Solana Action
+ * (a Blink), recorded by the Action's confirm callback from M11 on. A purchase with no row here
+ * came through the app, or was made before tracking began (the dashboard says which).
+ */
+export const PURCHASE_CHANNELS = ["action"] as const;
+export const purchaseChannels = pgTable(
+  "purchase_channels",
+  {
+    signature: text("signature").notNull(),
+    channel: text("channel", { enum: PURCHASE_CHANNELS }).notNull(),
+    createdAt: timestamptz("created_at").notNull().defaultNow(),
+  },
+  (t) => [
+    primaryKey({ columns: [t.signature] }),
+    check("purchase_channels_channel_valid", sql`${t.channel} IN ('action')`),
   ],
 );

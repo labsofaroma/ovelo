@@ -7,6 +7,7 @@ import {
   completedAction,
   recordActionPurchase,
 } from "@/features/baskets/actions";
+import { markActionPurchase } from "@/features/creators/channels";
 import { receiptsReader } from "@/features/trade/server/deps";
 import { mainnetRpc } from "@/features/trade/server/rpc";
 import { keyringFromEnv } from "@/server/auth/trade";
@@ -36,6 +37,7 @@ export const POST = actionRoute<Context>(
         rpc: mainnetRpc,
         receipts: receiptsReader(),
         now: Date.now,
+        markAction: (signature) => markActionPurchase(signature),
       },
     );
     return Response.json(completedAction(actionOrigin(request), status));

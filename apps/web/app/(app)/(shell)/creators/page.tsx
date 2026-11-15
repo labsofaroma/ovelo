@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { dashboardCopy } from "@/features/creators/copy";
 import { CreatorBasketCard } from "@/features/creators/components/CreatorBasketCard";
 import { getDirectory } from "@/features/creators/directory";
 import { creatorRoutes } from "@/features/creators/routes";
@@ -38,9 +39,14 @@ export default async function CreatorsPage() {
             not review or endorse them.
           </p>
         </div>
-        <Link className={linkButton.secondary} href={creatorRoutes.builder}>
-          Build a basket
-        </Link>
+        <div className="flex flex-wrap gap-2">
+          <Link className={linkButton.secondary} href={creatorRoutes.builder}>
+            Build a basket
+          </Link>
+          <Link className={linkButton.secondary} href={creatorRoutes.dashboard}>
+            {dashboardCopy.title}
+          </Link>
+        </div>
       </header>
       {directory.state === "unavailable" ? (
         <DataNotice

@@ -196,6 +196,8 @@ export type ConfirmDeps = {
   rpc: MainnetRpc;
   receipts: ReceiptWriter;
   now: () => number;
+  /** M11: mark the purchase as made through the Action (Blink attribution). Best effort. */
+  markAction?: (signature: string) => Promise<void>;
 };
 
 type RpcTransaction = {
@@ -281,6 +283,8 @@ export async function recordActionPurchase(
     blockTime:
       found.blockTime === null ? null : new Date(found.blockTime * 1000),
   });
+  // Attribution only: a failure here never changes the receipt or the answer.
+  await deps.markAction?.(body.data.signature).catch(() => undefined);
   return { status };
 }
 
