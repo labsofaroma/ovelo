@@ -21,7 +21,7 @@ import {
 } from "node:fs";
 import { createServer } from "node:http";
 import { join } from "node:path";
-import { LOCAL_START } from "../local-start";
+import { EDGE_START, edgeHeaders } from "../local-start";
 
 const WEB = process.cwd();
 const ROOT = join(WEB, "../..");
@@ -195,7 +195,7 @@ async function main() {
     {
       ...buildEnv,
       NODE_ENV: "production",
-      ...LOCAL_START, // Phase H (e2e/local-start.ts)
+      ...EDGE_START, // Phase H: self-host behind Cloudflare (e2e/local-start.ts)
       AROMA_V1_ALLOW_TEST_SWITCHES: "true",
       AROMA_V1_INVEST_CLUSTER: "localnet",
       AROMA_V1_LOCALNET_RPC_URL: s.rpcUrl,
@@ -210,16 +210,20 @@ async function main() {
       UPSTASH_REDIS_REST_TOKEN: REDIS.token,
       LOG_LEVEL: "info",
       // M9's compliance gate blocks devnet plans and the faucet without a TRUSTED country (fail
-      // closed). As in the trade E2E, the app trusts the proxy headers and the browser sends an
-      // allowed country (invest.config.ts). Found in Phase A: the faucet claim was geo-refused.
-      AROMA_TRUST_PROXY: "true",
+      // closed). Phase H: the app trusts Cloudflare's headers behind the origin lock, and the
+      // browser plays the edge with an allowed country (invest.config.ts).
     },
     WEB,
     join(WORK, "web.log"),
   );
   await until(
     "next start",
-    async () => (await fetch(`http://127.0.0.1:${APP_PORT}/invest`)).ok,
+    async () =>
+      (
+        await fetch(`http://127.0.0.1:${APP_PORT}/invest`, {
+          headers: edgeHeaders(),
+        })
+      ).ok,
   );
   start(
     "npx",

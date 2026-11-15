@@ -64,7 +64,7 @@ describe("v1 Action paths in middleware", () => {
   });
 
   it("POST is in the trade bucket (10/min), JSON-only, with { code, message } rejections", async () => {
-    vi.stubEnv("AROMA_TRUST_PROXY", "true");
+    vi.stubEnv("VERCEL", "1");
     const post = (contentType = "application/json") =>
       middleware(
         req(`/api/v1/actions/baskets/${ID}?amount=1`, {

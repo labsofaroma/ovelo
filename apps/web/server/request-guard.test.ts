@@ -46,9 +46,7 @@ describe("clientIp", () => {
   const headers = new Headers({ "x-forwarded-for": "203.0.113.9, 10.0.0.1" });
   it("is per client behind a trusted proxy", () => {
     expect(clientIp(headers, { VERCEL: "1" })).toBe("203.0.113.9");
-    expect(clientIp(headers, { AROMA_TRUST_PROXY: "true" })).toBe(
-      "203.0.113.9",
-    );
+    expect(clientIp(headers, { VERCEL: "1" })).toBe("203.0.113.9");
   });
   it("ignores spoofable headers without one", () => {
     expect(clientIp(headers, {})).toBe("local");

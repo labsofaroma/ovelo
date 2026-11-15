@@ -2,6 +2,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { e2eWallet, USDC } from "../fork/accounts";
 import { expectNoAxeViolations, THEMES, useTheme } from "../helpers";
 import { installTestWallet, signAll } from "./wallet";
+import { clientIp } from "../local-start";
 
 /**
  * M4 exit criterion: browse → quote → review → sign → submit → confirm, on a LOCAL MAINNET FORK
@@ -154,7 +155,7 @@ test("rate limit: the trade bucket answers 429 with { code, message }", async ({
   const statuses: number[] = [];
   for (let i = 0; i < 12; i++) {
     const response = await request.post("/api/v1/trade/quote", {
-      headers: { "x-real-ip": "203.0.113.42" },
+      headers: clientIp("203.0.113.42"),
       data: { not: "a quote" },
     });
     statuses.push(response.status());

@@ -36,7 +36,7 @@ const TRADE_PATHS = [
 ];
 
 describe("geo gate in middleware", () => {
-  beforeEach(() => vi.stubEnv("AROMA_TRUST_PROXY", "true"));
+  beforeEach(() => vi.stubEnv("VERCEL", "1"));
 
   it.each(TRADE_PATHS)(
     "a restricted country is refused on POST %s",
@@ -146,7 +146,7 @@ describe("untrusted proxy", () => {
 });
 
 describe("browse rule", () => {
-  beforeEach(() => vi.stubEnv("AROMA_TRUST_PROXY", "true"));
+  beforeEach(() => vi.stubEnv("VERCEL", "1"));
   const page = (path: string, code: string) =>
     middleware(
       new NextRequest(`http://localhost:3000${path}`, {

@@ -35,7 +35,7 @@ const OTHER = "9xQeWvG816bUx9EPjHmaT23yvVM2ZWbrrpZb9PusVFin";
 beforeEach(() => {
   stubBaseEnv();
   vi.stubEnv("NODE_ENV", "development");
-  vi.stubEnv("AROMA_TRUST_PROXY", "true");
+  vi.stubEnv("VERCEL", "1");
   vi.stubEnv("AROMA_BETA_GATE", "on");
   vi.stubEnv("AROMA_TRADE_SECRET", "s".repeat(40));
   resetEnvCacheForTests();

@@ -34,7 +34,7 @@ describe("expectedOrigin", () => {
   });
 
   it("uses the client's Host, not request.url (next start rewrites it to localhost)", () => {
-    env({ AROMA_SITE_URL: "", VERCEL: "", AROMA_TRUST_PROXY: "false" });
+    env({ AROMA_SITE_URL: "", VERCEL: "" });
     expect(expectedOrigin(request({ host: "aroma.lan:3000" }))).toBe(
       "http://aroma.lan:3000",
     );
@@ -42,7 +42,7 @@ describe("expectedOrigin", () => {
   });
 
   it("trusts x-forwarded-proto and x-forwarded-host only behind a trusted proxy", () => {
-    env({ AROMA_SITE_URL: "", VERCEL: "", AROMA_TRUST_PROXY: "false" });
+    env({ AROMA_SITE_URL: "", VERCEL: "" });
     const forwarded = request({
       host: "internal:3000",
       "x-forwarded-proto": "https",

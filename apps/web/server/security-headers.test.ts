@@ -28,7 +28,7 @@ beforeEach(() => {
   vi.stubEnv("NODE_ENV", "production");
   vi.stubEnv("VERCEL_ENV", "production");
   vi.stubEnv("AROMA_SITE_URL", "https://aroma.example");
-  vi.stubEnv("AROMA_TRUST_PROXY", "true");
+  vi.stubEnv("VERCEL", "1");
   vi.stubEnv("NEXT_PUBLIC_SOLANA_RPC_URL", "https://rpc.aroma.example/k");
 });
 afterEach(() => vi.unstubAllEnvs());

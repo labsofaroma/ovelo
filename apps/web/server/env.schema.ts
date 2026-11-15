@@ -108,7 +108,6 @@ const serverShape = {
     .optional(),
   AROMA_SITE_URL: httpsUrl.optional(),
   AROMA_ALLOWED_ORIGINS: optionalText,
-  AROMA_TRUST_PROXY: bool.default(false),
   JUPITER_API_KEY: optionalText,
   PYTH_API_KEY: optionalText,
   /** Bearer secret for POST /api/v1/revalidate (M3). Unset: the route answers 503. */

@@ -91,7 +91,7 @@ afterAll(async () => client.close());
 beforeEach(() => {
   stubBaseEnv();
   vi.stubEnv("AROMA_SITE_URL", SITE);
-  vi.stubEnv("AROMA_TRUST_PROXY", "true");
+  vi.stubEnv("VERCEL", "1");
   vi.stubEnv("AROMA_BETA_GATE", "on");
   vi.stubEnv("AROMA_TRADE_SECRET", "s".repeat(40));
   // The rest of the v1-required set, so the validated env (and the trade keyring) loads.

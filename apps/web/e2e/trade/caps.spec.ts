@@ -1,6 +1,7 @@
 import { expect, test, type Page } from "@playwright/test";
 import { e2eWallet } from "../fork/accounts";
 import { installTestWallet } from "./wallet";
+import { edgeHeaders } from "../local-start";
 
 /**
  * Phase A caps (REWRITE-PLAN §7.3 W3) on the LOCAL FORK, with the beta defaults the runner sets
@@ -12,10 +13,7 @@ import { installTestWallet } from "./wallet";
 const STOCK = process.env.E2E_STOCK_SYMBOL ?? "AAPLx";
 const WALLET = e2eWallet().publicKey.toBase58();
 test.use({
-  extraHTTPHeaders: {
-    "x-vercel-ip-country": "DE",
-    "x-real-ip": "203.0.113.92",
-  },
+  extraHTTPHeaders: edgeHeaders("DE", "203.0.113.92"),
 });
 
 const ticketOf = (page: Page) =>

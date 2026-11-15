@@ -17,6 +17,7 @@ import {
   signed,
 } from "./creator-helpers";
 import { installTestWallet, signAll } from "./wallet";
+import { clientIp, edgeHeaders } from "../local-start";
 
 /**
  * M5 exit criterion (M5b B7), on the LOCAL MAINNET FORK with the local Postgres: admin CLI invite
@@ -44,7 +45,7 @@ async function open(
   theme: "light" | "dark" = "light",
 ) {
   await applyTheme(page, theme);
-  await page.setExtraHTTPHeaders({ "x-real-ip": IP.ui });
+  await page.setExtraHTTPHeaders({ ...edgeHeaders("DE"), ...clientIp(IP.ui) });
   await page.goto(path);
   // The consent banner is fixed bottom-right; dismiss it with essential storage only ("Got it"
   // when no analytics is configured) so captures show the page.

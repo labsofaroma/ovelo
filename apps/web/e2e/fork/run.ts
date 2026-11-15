@@ -39,7 +39,7 @@ import {
   USDC,
   walletJson,
 } from "./accounts";
-import { creatorLegs, LOCAL_START, localDbEnv } from "./creator-env";
+import { creatorLegs, appReady, EDGE_START, localDbEnv } from "./creator-env";
 import { startJupiterStandIn } from "./jupiter-stand-in";
 import * as notify from "./notify-sink";
 import { controlUrl, proxyUrl, startRpcProxies } from "./rpc-proxy";
@@ -328,13 +328,12 @@ async function main() {
   );
   const appEnv: Record<string, string> = {
     ...placeholders,
-    ...LOCAL_START, // Phase H (e2e/local-start.ts)
+    ...EDGE_START, // Phase H: self-host behind Cloudflare (e2e/local-start.ts)
     AROMA_V1_ALLOW_TEST_SWITCHES: "true",
     AROMA_V1_TEST_FORK_GENESIS: genesis,
     AROMA_V1_TEST_JUPITER_URL: `http://127.0.0.1:${JUPITER_PORT}`,
     SOLANA_RPC_URL: proxyUrl("primary"),
     SOLANA_RPC_FALLBACK_URL: proxyUrl("fallback"),
-    AROMA_TRUST_PROXY: "true",
     NEXT_PUBLIC_AROMA_E2E_WALLET: "true",
     AROMA_NEXT_DIST_DIR: ".next-e2e",
     ...notify.NOTIFY_E2E_ENV,
@@ -352,13 +351,7 @@ async function main() {
     if (built !== 0) throw new Error("E2E build failed");
   }
   await run("npx", ["next", "start", "-p", String(APP_PORT)], appEnv, true);
-  for (let i = 0; i < 60; i++) {
-    const ok = await fetch(`http://127.0.0.1:${APP_PORT}/privacy`)
-      .then((r) => r.ok)
-      .catch(() => false);
-    if (ok) break;
-    await new Promise((r) => setTimeout(r, 1000));
-  }
+  await appReady(APP_PORT, "/privacy");
   const code = await run(
     "npx",
     [

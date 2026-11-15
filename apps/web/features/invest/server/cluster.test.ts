@@ -97,6 +97,8 @@ describe("invest cluster (B0/B2)", () => {
       testPeriods({
         AROMA_PLATFORM: "selfhost",
         AROMA_DEPLOY_ENV: "beta",
+        AROMA_PROXY_MODE: "cloudflare",
+        AROMA_ORIGIN_SECRET: "test-origin-secret-0123456789abcdefABCDEF",
         NODE_ENV: "production",
         AROMA_V1_ALLOW_TEST_SWITCHES: "false",
       }),

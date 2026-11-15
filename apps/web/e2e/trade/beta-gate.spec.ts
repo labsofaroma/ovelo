@@ -3,6 +3,7 @@ import { expect, test, type Page } from "@playwright/test";
 import { e2eWallet } from "../fork/accounts";
 import { expectNoAxeViolations, THEMES, useTheme } from "../helpers";
 import { installTestWallet, signMessageBase64 } from "./wallet";
+import { clientIp, edgeHeaders } from "../local-start";
 
 /**
  * Phase A private-beta gate (REWRITE-PLAN §7.3 W2) on the LOCAL FORK. e2e/fork/run.ts starts the
@@ -23,7 +24,7 @@ test.skip(
 const STOCK = process.env.E2E_STOCK_SYMBOL ?? "AAPLx";
 const BASKET = process.env.E2E_BASKET_ID ?? "sol-energy";
 const WALLET = e2eWallet().publicKey.toBase58();
-const OWN_IP = { "x-real-ip": "203.0.113.91" };
+const OWN_IP = clientIp("203.0.113.91");
 const quoteBody = {
   target: { kind: "basket", basketId: BASKET },
   inputMint: "EPjFWdd5AufqSSqeM2qN1xzybapC8G4wEGGkZwyTDt1v",
@@ -32,7 +33,7 @@ const quoteBody = {
   supportedTransactionVersions: [0],
 };
 
-test.use({ extraHTTPHeaders: { "x-vercel-ip-country": "DE", ...OWN_IP } });
+test.use({ extraHTTPHeaders: { ...edgeHeaders("DE"), ...OWN_IP } });
 test.describe.configure({ mode: "serial" });
 
 /** The admin CLI against the local Postgres; the code is printed once. */

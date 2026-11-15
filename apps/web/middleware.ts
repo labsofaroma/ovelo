@@ -15,6 +15,12 @@ import { tradingOff } from "./server/trading-switch";
 import { gatedSurface } from "./features/compliance/jurisdiction";
 import { createRateLimiter, type RateLimiter } from "./server/ratelimit";
 import { getRedis } from "./server/redis";
+import { logger } from "./server/logger";
+import {
+  checkOrigin,
+  ORIGIN_HEADER,
+  originLockApplies,
+} from "./server/origin-lock";
 import {
   allowedOrigin,
   bucketFor,
@@ -38,6 +44,10 @@ import {
  *   read, write, trade and creator buckets (a bounded local fallback evicts the oldest key and never
  *   locks everyone out). Every refusal is `{ code, message }`.
  * - M9: the removed prototype APIs answer 410 GONE (server/gone.ts) before any other guard.
+ * - Phase H: in cloudflare proxy mode, the origin lock runs FIRST: a request without the edge's
+ *   x-aroma-origin secret gets 403 ORIGIN_REFUSED, whatever its path (pages, APIs, Actions,
+ *   the notifications worker, the image optimizer). The header is then stripped, so no route
+ *   ever sees it.
  * Runs on the Node.js runtime so it can use the server modules (pino, Upstash).
  */
 
@@ -94,6 +104,21 @@ function reject(
 export async function middleware(request: NextRequest): Promise<NextResponse> {
   const { pathname } = request.nextUrl;
   const env = process.env;
+  // Phase H origin lock (server/origin-lock.ts): before anything else reads the request.
+  if (originLockApplies(env)) {
+    const check = checkOrigin(request.headers, env);
+    if (check !== "ok") {
+      // The path and the reason only: never the header value or the secret.
+      logger.warn({ path: pathname, reason: check }, "origin lock refused");
+      return reject("ORIGIN_REFUSED");
+    }
+  }
+  // Every request forwarded below carries these headers: the edge secret never reaches a route.
+  const forwarded = new Headers(request.headers);
+  forwarded.delete(ORIGIN_HEADER);
+  // The image optimizer is matched only for the origin lock (it fetches and resizes on demand).
+  if (pathname.startsWith("/_next/image"))
+    return NextResponse.next({ request: { headers: forwarded } });
   const development = env.NODE_ENV !== "production";
   const protocol = requestProtocol(
     request.headers,
@@ -148,7 +173,7 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   // request's CSP header.
   const nonce = generateNonce();
   const csp = buildCsp({ nonce, env, development });
-  const requestHeaders = new Headers(request.headers);
+  const requestHeaders = forwarded;
   {
     requestHeaders.set("x-nonce", nonce);
     requestHeaders.set("Content-Security-Policy", csp);
@@ -271,5 +296,6 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
 
 export const config = {
   runtime: "nodejs",
-  matcher: ["/((?!_next/static|_next/image|icon.svg|favicon.ico).*)"],
+  // Phase H: /_next/image is matched too, for the origin lock only (see above).
+  matcher: ["/((?!_next/static|icon.svg|favicon.ico).*)"],
 };

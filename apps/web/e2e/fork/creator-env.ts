@@ -2,7 +2,7 @@ import { execFileSync } from "node:child_process";
 import { join } from "node:path";
 
 // Phase H: re-exported so run.ts stays under the line cap (e2e/local-start.ts).
-export { LOCAL_START } from "../local-start";
+export { appReady, EDGE_START, LOCAL_START } from "../local-start";
 
 /**
  * M5b B7: the creator E2E needs Postgres (creators, invites, baskets, receipts). It runs on the

@@ -66,7 +66,7 @@ let terms: ReturnType<typeof memoryTermsStore>;
 beforeEach(() => {
   stubBaseEnv();
   vi.stubEnv("AROMA_SITE_URL", SITE);
-  vi.stubEnv("AROMA_TRUST_PROXY", "true");
+  vi.stubEnv("VERCEL", "1");
   resetEnvCacheForTests();
   terms = memoryTermsStore();
   const challenges = memoryStore();
@@ -135,7 +135,7 @@ describe("POST /api/v1/trade/quote", () => {
       (await quote.POST(json("/api/v1/trade/quote", quoteBody(signer.wallet))))
         .status,
     ).toBe(451);
-    vi.stubEnv("AROMA_TRUST_PROXY", "false");
+    vi.stubEnv("VERCEL", "");
     expect(
       (
         await quote.POST(

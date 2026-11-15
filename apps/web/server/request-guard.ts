@@ -3,8 +3,6 @@
  * prototype middleware). No I/O and no `server-only`, so they are unit-tested directly.
  */
 
-import { vercelFlag } from "./platform";
-
 type Env = Record<string, string | undefined>;
 
 export function isLoopback(hostname: string): boolean {
@@ -36,23 +34,9 @@ export function allowedOrigin(
   return allowed.includes(origin);
 }
 
-// --- M9 compliance gate (additive): the one trusted-proxy rule, shared with the geo gate. ---
-/** True only behind a proxy that overwrites forwarding and geo headers (Vercel, or opted in). */
-export function trustsProxy(env: Env): boolean {
-  return vercelFlag(env) || env.AROMA_TRUST_PROXY === "true";
-}
-// --- end M9 compliance gate ---
-
-/** Client IP, trusting forwarding headers only behind a proxy that overwrites them. */
-export function clientIp(headers: Headers, env: Env): string {
-  const trustProxy = vercelFlag(env) || env.AROMA_TRUST_PROXY === "true";
-  if (!trustProxy) return "local";
-  return (
-    headers.get("x-real-ip")?.trim() ||
-    headers.get("x-forwarded-for")?.split(",")[0]?.trim() ||
-    "unknown"
-  );
-}
+// Phase H: client IP, scheme, host and proxy trust come from the one header parser.
+export { clientIp, requestHost, requestProtocol, trustsProxy } from "./proxy";
+import { requestHost } from "./proxy";
 
 export type Bucket = "read" | "write" | "trade" | "creator" | "faucet";
 
@@ -105,34 +89,6 @@ export const LIMITS: Record<Bucket, { limit: number; windowSeconds: number }> =
 export function maxBodyBytes(pathname: string): number {
   // Five 4,096-byte transactions are 27,320 base64 bytes before authorization and JSON.
   return /^\/api\/v1\/trade\/submit$/.test(pathname) ? 32_768 : 16_384;
-}
-
-/** The scheme the client used, trusting x-forwarded-proto only behind a trusted proxy. */
-export function requestProtocol(
-  headers: Headers,
-  urlProtocol: string,
-  env: Env,
-): string {
-  const trustProxy = vercelFlag(env) || env.AROMA_TRUST_PROXY === "true";
-  const forwarded = headers.get("x-forwarded-proto")?.split(",")[0]?.trim();
-  return (
-    (trustProxy && forwarded ? forwarded : urlProtocol.replace(":", "")) ||
-    "http"
-  ).toLowerCase();
-}
-
-/** Host (with port) the client used: x-forwarded-host only behind a trusted proxy, else Host. */
-export function requestHost(
-  headers: Headers,
-  fallback: string,
-  env: Env,
-): string {
-  const trustProxy = vercelFlag(env) || env.AROMA_TRUST_PROXY === "true";
-  return (
-    (trustProxy && headers.get("x-forwarded-host")?.split(",")[0]?.trim()) ||
-    headers.get("host") ||
-    fallback
-  );
 }
 
 /** Hostname (no port) the client used. */

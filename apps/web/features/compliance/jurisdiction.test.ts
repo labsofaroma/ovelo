@@ -8,12 +8,12 @@ import {
 import { loadPolicy } from "./policy";
 
 const policy = loadPolicy({});
-const trusted = { AROMA_TRUST_PROXY: "true" };
+const trusted = { VERCEL: "1" };
 const headers = (country?: string) =>
   new Headers(country === undefined ? {} : { [COUNTRY_HEADER]: country });
 
 describe("jurisdictionOf: the platform country, trusted only behind the proxy", () => {
-  it("allowed and restricted countries behind a trusted proxy (AROMA_TRUST_PROXY or VERCEL=1)", () => {
+  it("allowed and restricted countries behind a trusted proxy (VERCEL=1)", () => {
     expect(jurisdictionOf(headers("DE"), trusted, policy)).toEqual({
       status: "allowed",
       country: "DE",

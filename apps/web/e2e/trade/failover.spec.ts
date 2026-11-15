@@ -2,6 +2,7 @@ import { expect, test, type APIRequestContext } from "@playwright/test";
 import { walletTransactionSignature } from "../../lib/sdk/baskets/mainnet";
 import { e2eWallet, rpc, USDC } from "../fork/accounts";
 import { signAll } from "./wallet";
+import { clientIp } from "../local-start";
 
 /**
  * M9 server RPC failover on the LOCAL FORK (docs/launch/PRODUCTION-ENV.md §3). The app talks to
@@ -19,7 +20,7 @@ const CONTROL = process.env.E2E_RPC_CONTROL ?? "http://127.0.0.1:18900";
 const CHAIN = process.env.E2E_RPC_URL ?? "http://127.0.0.1:8899";
 const BASKET = process.env.E2E_BASKET_ID ?? "sol-energy";
 // Its own client IP, so this spec's quotes do not share a rate-limit window with the others.
-const HEADERS = { "x-real-ip": "198.51.100.77" };
+const HEADERS = clientIp("198.51.100.77");
 const taker = e2eWallet().publicKey.toBase58();
 
 test.describe.configure({ mode: "serial" });

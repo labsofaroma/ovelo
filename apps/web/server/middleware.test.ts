@@ -111,7 +111,7 @@ describe("request guards (ported from the prototype suites; v1 paths since M9)",
 
   it("trusted HTTPS termination accepts the public same-origin browser request", async () => {
     vi.stubEnv("NODE_ENV", "production");
-    vi.stubEnv("AROMA_TRUST_PROXY", "true");
+    vi.stubEnv("VERCEL", "1");
     const response = await middleware(
       req("http://aroma.example/api/v1/health", {
         headers: {
@@ -218,7 +218,7 @@ describe("M4 additions", () => {
   it("the loopback check uses the client's Host, not the server bind address", async () => {
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("AROMA_SITE_URL", "https://www.example.com");
-    vi.stubEnv("AROMA_TRUST_PROXY", "true");
+    vi.stubEnv("VERCEL", "1");
     const viaProxy = await middleware(
       req("http://127.0.0.1:3300/", {
         headers: { host: "www.example.com", "x-forwarded-proto": "https" },
@@ -232,7 +232,7 @@ describe("M4 additions", () => {
   it("one HSTS header with includeSubDomains and preload over HTTPS in production, none on loopback HTTP", async () => {
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("AROMA_SITE_URL", "https://aroma.example");
-    vi.stubEnv("AROMA_TRUST_PROXY", "true");
+    vi.stubEnv("VERCEL", "1");
     const https = await middleware(
       req("http://aroma.example/v1", {
         headers: { "x-forwarded-proto": "https" },
@@ -249,7 +249,7 @@ describe("M4 additions", () => {
   });
 
   it("no HSTS on a Vercel preview or a development run, even over HTTPS (M9: production only)", async () => {
-    vi.stubEnv("AROMA_TRUST_PROXY", "true");
+    vi.stubEnv("VERCEL", "1");
     const https = () =>
       middleware(
         req("http://aroma-git-x.vercel.app/", {
@@ -264,7 +264,7 @@ describe("M4 additions", () => {
   });
 
   it("v1 rejections are { code, message }; the trade bucket answers 429 before the write bucket", async () => {
-    vi.stubEnv("AROMA_TRUST_PROXY", "true");
+    vi.stubEnv("VERCEL", "1");
     const quote = () =>
       middleware(
         req("http://localhost:3000/api/v1/trade/quote", {

@@ -26,6 +26,7 @@ type Row = {
 };
 
 const PROD = { NODE_ENV: "production" };
+const SECRET = "test-origin-secret-0123456789abcdefABCDEF";
 const SELF = { AROMA_PLATFORM: "selfhost" };
 
 /** Every (platform, deploy env) combination, plus the contradictions and the missing answers. */
@@ -226,13 +227,13 @@ describe("server/platform.ts: the (platform, deploy env) table", () => {
   });
 
   it.each(TABLE)("the boot schema agrees: $name", (row) => {
-    // Production rules need the caps; give them so only the platform answer decides.
-    const result = parseEnv({
-      ...BASE,
-      AROMA_MAX_TRADE_USDC_RAW: "50000000",
-      AROMA_MAX_DAILY_USDC_RAW: "200000000",
-      ...row.env,
-    });
+    // Production rules need the caps (in BASE) and, on self-host, the Cloudflare proxy mode
+    // (Step 2); give them so only the platform answer decides.
+    const edge =
+      row.platform === "selfhost"
+        ? { AROMA_PROXY_MODE: "cloudflare", AROMA_ORIGIN_SECRET: SECRET }
+        : {};
+    const result = parseEnv({ ...BASE, ...edge, ...row.env });
     const named = result.ok ? [] : result.error.issues.map((i) => i.variable);
     for (const variable of row.refused) expect(named).toContain(variable);
     if (!row.refused.length) expect(result.ok).toBe(true);

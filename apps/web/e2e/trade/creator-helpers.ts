@@ -2,6 +2,7 @@ import { execFileSync } from "node:child_process";
 import { mkdirSync } from "node:fs";
 import { expect, type APIRequestContext, type Page } from "@playwright/test";
 import { makeSigner } from "../../server/test/creator-fixtures";
+import { clientIp } from "../local-start";
 
 /**
  * Helpers for the creator E2E (M5b B7). TEST-ONLY. The second wallet is a throwaway WebCrypto
@@ -48,7 +49,7 @@ export async function api(
     method,
     headers: {
       "content-type": "application/json",
-      "x-real-ip": ip,
+      ...clientIp(ip),
       ...headers,
     },
     ...(body === undefined ? {} : { data: body }),

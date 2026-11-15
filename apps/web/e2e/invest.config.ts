@@ -1,3 +1,4 @@
+import { edgeHeaders } from "./local-start";
 import { defineConfig, devices } from "@playwright/test";
 
 /**
@@ -15,8 +16,10 @@ export default defineConfig({
   use: {
     baseURL: process.env.E2E_BASE_URL ?? "http://127.0.0.1:3300",
     ...devices["Desktop Chrome"],
-    // M9 compliance gate: an allowed country, trusted because run.ts sets AROMA_TRUST_PROXY.
-    extraHTTPHeaders: { "x-vercel-ip-country": "DE" },
+    // Phase H: the app runs behind the origin lock in cloudflare mode, as in production; the
+    // browser plays Cloudflare's edge with an allowed country (e2e/local-start.ts). Specs that
+    // override extraHTTPHeaders start from edgeHeaders() too.
+    extraHTTPHeaders: edgeHeaders("DE"),
   },
   projects: [{ name: "chromium" }],
 });

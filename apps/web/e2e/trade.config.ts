@@ -1,3 +1,4 @@
+import { edgeHeaders } from "./local-start";
 import { defineConfig, devices } from "@playwright/test";
 
 /**
@@ -15,9 +16,10 @@ export default defineConfig({
   use: {
     baseURL: process.env.E2E_BASE_URL ?? "http://127.0.0.1:3200",
     ...devices["Desktop Chrome"],
-    // M9: the fork app trusts the proxy headers (AROMA_TRUST_PROXY=true), as on Vercel; an allowed
-    // country is the default so the purchase specs can quote. compliance.spec.ts overrides it.
-    extraHTTPHeaders: { "x-vercel-ip-country": "DE" },
+    // Phase H: the app runs behind the origin lock in cloudflare mode, as in production; the
+    // browser plays Cloudflare's edge with an allowed country (e2e/local-start.ts). Specs that
+    // override extraHTTPHeaders start from edgeHeaders() too.
+    extraHTTPHeaders: edgeHeaders("DE"),
   },
   // Phase A: the beta-gate spec runs first (no beta access yet), then M9's compliance spec
   // (beta access, no terms yet), then the purchase specs.

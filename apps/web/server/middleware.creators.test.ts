@@ -52,7 +52,7 @@ describe("creator routes: origin (A2)", () => {
 
   it("a same-site publish under next start is accepted (bind address localhost, public Host via proxy)", async () => {
     vi.stubEnv("NODE_ENV", "production");
-    vi.stubEnv("AROMA_TRUST_PROXY", "true");
+    vi.stubEnv("VERCEL", "1");
     vi.stubEnv("AROMA_SITE_URL", "https://aroma.example");
     const response = await middleware(
       post("http://localhost:3000/api/v1/creators/baskets", {
@@ -97,7 +97,7 @@ describe("creator routes: rate limits in middleware (A3)", () => {
     );
 
   it("challenge issuance is limited per client with Retry-After, without blocking other clients or writes", async () => {
-    vi.stubEnv("AROMA_TRUST_PROXY", "true");
+    vi.stubEnv("VERCEL", "1");
     for (let i = 0; i < 10; i++)
       expect((await challenge(ip(1))).status).toBe(200);
     const limited = await challenge(ip(1));
@@ -119,7 +119,7 @@ describe("creator routes: rate limits in middleware (A3)", () => {
   });
 
   it("invite redemption shares the creator bucket (code guessing is bounded)", async () => {
-    vi.stubEnv("AROMA_TRUST_PROXY", "true");
+    vi.stubEnv("VERCEL", "1");
     const redeem = () =>
       middleware(
         post("http://localhost:3000/api/v1/creators/invites/redeem", {

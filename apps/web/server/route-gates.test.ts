@@ -1,7 +1,8 @@
 import { readFileSync } from "node:fs";
 import { execFileSync } from "node:child_process";
 import { fileURLToPath } from "node:url";
-import { describe, expect, it } from "vitest";
+import { NextRequest } from "next/server";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { betaEntry } from "@/features/beta/paths";
 import { browseBlocked } from "@/features/compliance/edge";
 import { gatedSurface } from "@/features/compliance/jurisdiction";
@@ -319,9 +320,73 @@ describe.each(Object.entries(APIS))("%s", (route, api) => {
 });
 
 describe("browse=block (restricted visitor)", () => {
-  const env = { AROMA_COMPLIANCE_BROWSE: "block", AROMA_TRUST_PROXY: "true" };
+  const env = { AROMA_COMPLIANCE_BROWSE: "block", VERCEL: "1" };
   const us = new Headers({ "x-vercel-ip-country": "US" });
   it.each(Object.entries(PAGES))("%s", (_route, page) => {
     expect(browseBlocked(page.sample, us, env)).toBe(page.browseBlockable);
+  });
+});
+
+/**
+ * Phase H Step 2, the origin-lock column. In cloudflare proxy mode EVERY route in the tables
+ * above, for every method it serves, is refused without the edge secret (403 ORIGIN_REFUSED)
+ * and passes the lock with it. There are no exemptions: the Docker liveness probe sends the
+ * secret too (deploy/healthcheck.mjs).
+ */
+const ORIGIN_LOCK_EXEMPT: readonly string[] = [];
+
+describe("origin lock (cloudflare mode): every route, every method", () => {
+  const SECRET = "test-origin-secret-0123456789abcdefABCDEF";
+  const EDGE = {
+    NODE_ENV: "development",
+    AROMA_PLATFORM: "selfhost",
+    AROMA_DEPLOY_ENV: "development",
+    AROMA_PROXY_MODE: "cloudflare",
+    AROMA_ORIGIN_SECRET: SECRET,
+  };
+  beforeEach(() => {
+    for (const [k, v] of Object.entries(EDGE)) vi.stubEnv(k, v);
+  });
+  afterEach(() => vi.unstubAllEnvs());
+
+  const rows = [
+    ...Object.values(APIS).flatMap((api) =>
+      Object.keys(api.methods).map((method) => [method, api.sample] as const),
+    ),
+    ...Object.values(PAGES).map((page) => ["GET", page.sample] as const),
+  ];
+  let n = 0;
+  const send = async (method: string, path: string, secret?: string) => {
+    const { middleware } = await import("@/middleware");
+    const body = method === "GET" ? {} : { body: "{}" };
+    return middleware(
+      new NextRequest(`http://localhost:3000${path}`, {
+        method,
+        headers: {
+          "content-type": "application/json",
+          "cf-connecting-ip": `203.0.113.${++n % 250}`,
+          ...(secret ? { "x-aroma-origin": secret } : {}),
+        },
+        ...body,
+      }),
+    );
+  };
+  const refusedCode = async (response: Response) =>
+    response.status === 403
+      ? ((await response.clone().json()) as { code: string }).code
+      : null;
+
+  it("has no exemptions", () => {
+    expect(ORIGIN_LOCK_EXEMPT).toEqual([]);
+  });
+
+  it.each(rows)("%s %s", async (method, path) => {
+    expect(await refusedCode(await send(method, path))).toBe("ORIGIN_REFUSED");
+    expect(await refusedCode(await send(method, path, `${SECRET}!`))).toBe(
+      "ORIGIN_REFUSED",
+    );
+    expect(await refusedCode(await send(method, path, SECRET))).not.toBe(
+      "ORIGIN_REFUSED",
+    );
   });
 });

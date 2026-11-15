@@ -13,6 +13,9 @@ const SELF_BETA = {
   ...BETA_GOOD,
   AROMA_PLATFORM: "selfhost",
   AROMA_DEPLOY_ENV: "beta",
+  // Step 2: self-host production and beta run behind Cloudflare with the origin lock.
+  AROMA_PROXY_MODE: "cloudflare",
+  AROMA_ORIGIN_SECRET: "test-origin-secret-0123456789abcdefABCDEF",
 };
 
 const findings = (

@@ -60,6 +60,8 @@ export const FORBIDDEN_NAMES = [
   "VAPID_PRIVATE_KEY",
   "TELEGRAM_BOT_TOKEN",
   "TELEGRAM_WEBHOOK_SECRET",
+  // Phase H: the edge-to-origin secret (server/origin-lock.ts).
+  "AROMA_ORIGIN_SECRET",
   // M9: the prototype's variables are gone; their names stay forbidden in any client artifact.
   "BOT_KEYPAIR",
   "CREATOR_INVITE_CODES",

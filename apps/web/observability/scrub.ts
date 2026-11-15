@@ -36,6 +36,8 @@ export const SENSITIVE_KEYS = [
   "hmac",
   "databaseurl",
   "database_url",
+  // Phase H: the edge-to-origin secret header (server/origin-lock.ts).
+  "x-aroma-origin",
 ] as const;
 
 export function isSensitiveKey(key: string): boolean {

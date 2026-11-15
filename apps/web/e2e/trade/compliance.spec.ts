@@ -2,9 +2,10 @@ import { expect, test, type Page } from "@playwright/test";
 import { e2eWallet } from "../fork/accounts";
 import { expectNoAxeViolations, THEMES, useTheme } from "../helpers";
 import { installTestWallet } from "./wallet";
+import { clientIp, edgeHeaders } from "../local-start";
 
 /**
- * M9 compliance gate on the LOCAL FORK (e2e/fork/run.ts starts the app with AROMA_TRUST_PROXY=true,
+ * M9 compliance gate on the LOCAL FORK (e2e/fork/run.ts starts the app in cloudflare proxy mode,
  * so the platform country header is honoured, as on Vercel). Runs FIRST (trade.config.ts project
  * dependency): the shared test wallet has not accepted the terms yet.
  *   - a blocked country cannot quote (UI and API);
@@ -24,10 +25,10 @@ const quoteBody = {
 };
 
 /**
- * Its own client IP (the fork app trusts x-real-ip behind its trusted proxy, as on Vercel), so
+ * Its own client IP (the fork app trusts CF-Connecting-IP behind the origin lock, as in production), so
  * this spec's quotes do not use up the trade rate-limit window the purchase specs share.
  */
-const OWN_IP = { "x-real-ip": "203.0.113.90" };
+const OWN_IP = clientIp("203.0.113.90");
 
 const ticketOf = (page: Page) =>
   page.locator("section", {
@@ -46,7 +47,7 @@ async function openConnected(page: Page) {
 }
 
 test.describe("blocked country (US)", () => {
-  test.use({ extraHTTPHeaders: { "x-vercel-ip-country": "US", ...OWN_IP } });
+  test.use({ extraHTTPHeaders: { ...edgeHeaders("US"), ...OWN_IP } });
 
   test("cannot quote: honest notice in the ticket, 451 from the API, Action disabled", async ({
     page,
@@ -95,7 +96,7 @@ test.describe("blocked country (US)", () => {
 });
 
 test.describe("allowed country (DE)", () => {
-  test.use({ extraHTTPHeaders: { "x-vercel-ip-country": "DE", ...OWN_IP } });
+  test.use({ extraHTTPHeaders: { ...edgeHeaders("DE"), ...OWN_IP } });
 
   for (const theme of THEMES)
     test(`terms step has no axe violations (${theme})`, async ({ page }) => {

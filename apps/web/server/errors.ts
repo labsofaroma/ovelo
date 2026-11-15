@@ -51,6 +51,11 @@ export const ERROR_CODES = {
     status: 403,
     message: "This browser origin is not allowed.",
   },
+  // Phase H: the request did not come through the site's edge (origin lock, server/origin-lock.ts).
+  ORIGIN_REFUSED: {
+    status: 403,
+    message: "This request did not come through the site.",
+  },
   TRADING_UNAVAILABLE: {
     status: 503,
     message: "Trading is temporarily unavailable on this deployment.",

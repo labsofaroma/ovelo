@@ -2,6 +2,7 @@ import { loadPolicy } from "@/features/compliance/policy";
 import { parseEnv, TURNSTILE_TEST_SECRETS } from "./env.schema";
 import { m11Findings } from "./prod-env.m11";
 import { resolvePlatform, type DeployEnv, type Platform } from "./platform";
+import { ORIGIN_SECRET_PATTERN } from "./proxy";
 
 /**
  * Production profile check (P3, `pnpm check:prod-env`). Pure apart from the injected `fetch`:
@@ -350,6 +351,29 @@ export function platformFindings(
     });
   else
     findings.push({ name: "AROMA_PLATFORM", status: "ok", detail: "selfhost" });
+  // Phase H Step 2: behind Cloudflare with the origin lock (server/proxy.ts, origin-lock.ts).
+  findings.push(
+    env.AROMA_PROXY_MODE?.trim() === "cloudflare"
+      ? { name: "AROMA_PROXY_MODE", status: "ok", detail: "cloudflare" }
+      : {
+          name: "AROMA_PROXY_MODE",
+          status: env.AROMA_PROXY_MODE?.trim() ? "invalid" : "missing",
+          detail:
+            "must be cloudflare on self-host (client IP and country from Cloudflare)",
+        },
+    ORIGIN_SECRET_PATTERN.test(env.AROMA_ORIGIN_SECRET?.trim() ?? "")
+      ? {
+          name: "AROMA_ORIGIN_SECRET",
+          status: "ok",
+          detail:
+            "set (the Cloudflare Transform Rule must send the same value)",
+        }
+      : {
+          name: "AROMA_ORIGIN_SECRET",
+          status: env.AROMA_ORIGIN_SECRET?.trim() ? "invalid" : "missing",
+          detail: "32+ characters (openssl rand -base64 48)",
+        },
+  );
   const deploy = env.AROMA_DEPLOY_ENV?.trim();
   findings.push(
     deploy === want
