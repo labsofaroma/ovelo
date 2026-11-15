@@ -39,6 +39,9 @@ export function isRateLimited(error: unknown): boolean {
   return error instanceof MarketHttpError && error.status === 429;
 }
 
+/** Waits for the provider's next rate-limit window at most this many times per request. */
+export const MAX_RATE_LIMIT_RETRIES = 4;
+
 export function resolveJupiterApiKey(raw?: string): string | undefined {
   if (!raw) return undefined;
   return raw
@@ -62,7 +65,13 @@ export async function request(
   });
   // Jupiter shares its short rate-limit window across Tokens and Price requests.
   // Respect the actual reset; retrying a full catalog after one second loses whole batches.
-  if (response.status === 429) {
+  // Concurrent batches can land in the same exhausted window more than once, so keep waiting for
+  // the next window (bounded; the caller's deadline still applies) instead of giving up.
+  for (
+    let attempt = 0;
+    response.status === 429 && attempt < MAX_RATE_LIMIT_RETRIES;
+    attempt++
+  ) {
     const retrySeconds = Number(response.headers.get("retry-after"));
     const resetSeconds = Number(response.headers.get("x-ratelimit-reset"));
     const resetDelay =

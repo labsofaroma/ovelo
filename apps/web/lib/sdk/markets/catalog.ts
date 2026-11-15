@@ -115,11 +115,19 @@ export async function getMainnetCatalog(
 export const JUPITER_RATE_LIMITED_WARNING =
   "Jupiter rate-limited some price requests (HTTP 429), so some assets are unpriced. Configure a Jupiter API key or retry later.";
 
+/**
+ * Whole-refresh budget. A Jupiter key on the free tier allows 5 requests per 10 s, and a full
+ * refresh (about 1,600 issuer mints: 17 Tokens V2 batches plus the Price V3 batches for the mints
+ * Jupiter knows) needs roughly a minute of quota after the issuer catalogs. Readers are served the
+ * cached snapshot meanwhile (stale-while-revalidate), so only a cold cache waits this long.
+ */
+export const MARKET_SNAPSHOT_DEADLINE_MS = 90_000;
+
 /** Prices and metadata are requested only for mints obtained from the issuers themselves. */
 export async function getMainnetMarkets(
   options: MarketOptions = {},
 ): Promise<MarketSnapshot> {
-  const deadline = AbortSignal.timeout(30_000);
+  const deadline = AbortSignal.timeout(MARKET_SNAPSHOT_DEADLINE_MS);
   options = {
     ...options,
     signal: options.signal
@@ -143,6 +151,11 @@ export async function getMainnetMarkets(
   const batches: string[][] = [];
   for (let index = 0; index < mints.length; index += 100)
     batches.push(mints.slice(index, index + 100));
+  // Mints Jupiter returned, and mints whose Tokens V2 batch failed (unknown either way). Price V3
+  // is only asked about these: the rest are issuer listings Jupiter does not index, and asking
+  // about them spent most of a keyed refresh's quota for no data.
+  const jupiterKnown = new Set<string>();
+  const tokenLookupFailed = new Set<string>();
   // Bound concurrency to three rather than serializing hundreds of mints or flooding the provider.
   const hydrateBatch = async (batch: string[]): Promise<void> => {
     try {
@@ -157,6 +170,7 @@ export async function getMainnetMarkets(
         const token = jupiterTokenSchema.parse(item);
         const asset = byMint.get(token.id);
         if (!asset) continue;
+        jupiterKnown.add(token.id);
         asset.decimals = precision(token.decimals) ?? asset.decimals;
         asset.name = token.name || asset.name;
         // The issuer's own logo wins; Jupiter's icon only fills a gap (it can sit on any host).
@@ -180,6 +194,7 @@ export async function getMainnetMarkets(
       if (!sources.includes("Jupiter Tokens V2"))
         sources.push("Jupiter Tokens V2");
     } catch (error) {
+      for (const mint of batch) tokenLookupFailed.add(mint);
       warnings.push(
         isRateLimited(error)
           ? JUPITER_RATE_LIMITED_WARNING
@@ -218,7 +233,17 @@ export async function getMainnetMarkets(
             fallbackMints.has(mint) &&
             byMint.get(mint)?.priceSource !== "jupiter-tokens-v2",
         )
-      : mints;
+      : mints
+          .filter(
+            (mint) => jupiterKnown.has(mint) || tokenLookupFailed.has(mint),
+          )
+          // Mints still without a token price first: if the deadline cuts the pass short, what
+          // is lost is supplemental underlying references, not token prices.
+          .sort(
+            (a, b) =>
+              Number(byMint.get(a)?.priceUsd != null) -
+              Number(byMint.get(b)?.priceUsd != null),
+          );
   if (!priceMints.length) return snapshot();
   // Price V3 also supplies issuer-backed underlying reference quotes for xStocks
   // with no recent onchain swap. Never turn those references into token fills.

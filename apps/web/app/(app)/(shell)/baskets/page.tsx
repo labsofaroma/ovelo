@@ -22,6 +22,11 @@ export const metadata: Metadata = v1Metadata({
 
 export default async function BasketsPage() {
   const markets = await getMarkets();
+  const rowsByMint = new Map(
+    markets.state === "ok"
+      ? markets.data.rows.map((row) => [row.mint, row] as const)
+      : [],
+  );
   return (
     <main id="main-content" className={`${pageContainer} py-6 md:py-8`}>
       <Stack>
@@ -71,7 +76,11 @@ export default async function BasketsPage() {
           >
             <ul className="flex flex-col gap-3">
               {markets.data.baskets.map((basket) => (
-                <BasketCard key={basket.id} basket={basket} />
+                <BasketCard
+                  key={basket.id}
+                  basket={basket}
+                  rowsByMint={rowsByMint}
+                />
               ))}
             </ul>
           </Section>

@@ -1,7 +1,8 @@
 import Link from "next/link";
 import { ArrowUpRight } from "lucide-react";
-import { Badge } from "@ovelo/ui";
-import type { BasketSummary } from "../../markets/schema";
+import { AssetAvatar, Badge } from "@ovelo/ui";
+import type { BasketSummary, MarketRow } from "../../markets/schema";
+import { NextAvatarImage } from "../../shared/components/NextAvatarImage";
 import { formatBps, plural } from "../../shared/fixed";
 import { routes } from "../../shared/routes";
 import { BasketStatusBadge } from "./BasketStatusBadge";
@@ -13,7 +14,14 @@ const SHOWN = 4;
  * A basket as one wide row (the redesign's BasketRow). The name is a stretched link over the
  * whole row. Weights are the published integer basis points from lib/sdk.
  */
-export function BasketCard({ basket }: { basket: BasketSummary }) {
+export function BasketCard({
+  basket,
+  rowsByMint,
+}: {
+  basket: BasketSummary;
+  /** The snapshot's catalog rows, for each constituent's issuer logo. */
+  rowsByMint?: ReadonlyMap<string, MarketRow>;
+}) {
   const count = basket.members.length + basket.missingSymbols.length;
   const legs = [...basket.members].sort((a, b) => b.weightBps - a.weightBps);
   const shown = legs.slice(0, SHOWN);
@@ -52,15 +60,32 @@ export function BasketCard({ basket }: { basket: BasketSummary }) {
               }))}
             />
             <ul className="flex flex-wrap gap-1.5">
-              {shown.map((leg) => (
-                <li
-                  key={leg.mint}
-                  className="inline-flex items-center gap-1.5 rounded-full border border-line bg-raised-2 px-2.5 py-1 text-caption tabular-nums text-ink"
-                >
-                  {leg.symbol}
-                  <span className="text-muted">{formatBps(leg.weightBps)}</span>
-                </li>
-              ))}
+              {shown.map((leg) => {
+                const row = rowsByMint?.get(leg.mint);
+                return (
+                  <li
+                    key={leg.mint}
+                    className="inline-flex items-center gap-1.5 rounded-full border border-line bg-raised-2 py-1 pr-2.5 pl-1 text-caption tabular-nums text-ink"
+                  >
+                    <AssetAvatar
+                      asset={{
+                        symbol: leg.symbol,
+                        mint: leg.mint,
+                        issuer: row?.issuer,
+                        underlyingSymbol: row?.underlyingSymbol,
+                        logoUrl: row?.logoUrl ?? null,
+                      }}
+                      size="sm"
+                      className="size-5 rounded-full"
+                      ImageComponent={NextAvatarImage}
+                    />
+                    {leg.symbol}
+                    <span className="text-muted">
+                      {formatBps(leg.weightBps)}
+                    </span>
+                  </li>
+                );
+              })}
               {legs.length > shown.length ? (
                 <li className="inline-flex items-center px-1.5 text-caption text-muted">
                   +{legs.length - shown.length} more

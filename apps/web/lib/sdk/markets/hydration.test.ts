@@ -320,3 +320,79 @@ test("the issuer's logo wins over Jupiter's icon, which only fills a missing log
   expect(logo(mintA)).toBe(issuerLogo);
   expect(logo(mintB)).toBe(jupiterIcon);
 });
+
+const twoMintCatalog = (url: string) =>
+  url.includes("xstocks.fi")
+    ? j({
+        nodes: [
+          {
+            symbol: "Ax",
+            name: "A",
+            deployments: [{ network: "Solana", address: mintA }],
+          },
+          {
+            symbol: "Bx",
+            name: "B",
+            deployments: [{ network: "Solana", address: mintB }],
+          },
+        ],
+        page: { hasNextPage: false },
+      })
+    : url.endsWith("/products")
+      ? new Response("")
+      : url.endsWith("/api/metrics")
+        ? j({ metrics: [] })
+        : null;
+
+test("Price V3 is asked only about mints Jupiter knows (quota goes to real tokens)", async () => {
+  const priceIds: string[] = [];
+  const fetcher = async (input: unknown) => {
+    const url = String(input);
+    if (url.includes("api.backpack.exchange")) return j([]);
+    const issuer = twoMintCatalog(url);
+    if (issuer) return issuer;
+    // Jupiter indexes A only; B is an issuer listing with no Jupiter token.
+    if (url.includes("/tokens/v2/")) return j([{ id: mintA, usdPrice: 5 }]);
+    priceIds.push(...new URL(url).searchParams.get("ids")!.split(","));
+    return j({ [mintA]: { usdPrice: 5, decimals: 8 } });
+  };
+  await getMainnetMarkets({ fetcher });
+  expect(priceIds).toEqual([mintA]);
+});
+
+test("a Tokens V2 batch that failed still gets its Price V3 lookup", async () => {
+  const priceIds: string[] = [];
+  const fetcher = async (input: unknown) => {
+    const url = String(input);
+    if (url.includes("api.backpack.exchange")) return j([]);
+    const issuer = twoMintCatalog(url);
+    if (issuer) return issuer;
+    if (url.includes("/tokens/v2/")) return new Response("", { status: 503 });
+    priceIds.push(...new URL(url).searchParams.get("ids")!.split(","));
+    return j({});
+  };
+  await getMainnetMarkets({ fetcher });
+  expect(priceIds.sort()).toEqual([mintA, mintB].sort());
+});
+
+test("a batch rate-limited twice waits for the next window instead of being dropped", async () => {
+  let tokenCalls = 0;
+  const fetcher = async (input: unknown) => {
+    const url = String(input);
+    if (url.includes("api.backpack.exchange")) return j([]);
+    const issuer = twoMintCatalog(url);
+    if (issuer) return issuer;
+    if (url.includes("/tokens/v2/")) {
+      if (tokenCalls++ < 2)
+        return new Response("", {
+          status: 429,
+          headers: { "x-ratelimit-reset": String((Date.now() + 50) / 1000) },
+        });
+      return j([{ id: mintA, usdPrice: 7 }]);
+    }
+    return j({ [mintA]: { usdPrice: 7, decimals: 8 } });
+  };
+  const snapshot = await getMainnetMarkets({ fetcher });
+  expect(tokenCalls).toBe(3);
+  expect(snapshot.assets.find((a) => a.mint === mintA)!.priceUsd).toBe(7);
+});

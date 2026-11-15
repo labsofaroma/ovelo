@@ -1,5 +1,6 @@
 import Link from "next/link";
 import {
+  AssetAvatar,
   Change,
   Table,
   TableBody,
@@ -10,6 +11,7 @@ import {
   TableRow,
 } from "@ovelo/ui";
 import { PriceCell } from "../../markets/components/PriceCell";
+import { NextAvatarImage } from "../../shared/components/NextAvatarImage";
 import type { BasketSummary, MarketRow } from "../../markets/schema";
 import { changeProp, formatBps } from "../../shared/fixed";
 import { formatObservedAt } from "../../shared/freshness";
@@ -60,14 +62,27 @@ export function AllocationTable({
                   <TableCell>
                     {row ? (
                       <Link
-                        className="group flex min-w-0 flex-col rounded-control focus-ring"
+                        className="group flex min-w-0 items-center gap-3 rounded-control focus-ring"
                         href={routes.stock(row.symbol)}
                       >
-                        <span className="font-medium text-ink underline-offset-4 group-hover:underline">
-                          {row.symbol}
-                        </span>
-                        <span className="truncate text-caption text-muted">
-                          {row.name}
+                        <AssetAvatar
+                          asset={{
+                            symbol: row.symbol,
+                            mint: row.mint,
+                            issuer: row.issuer,
+                            underlyingSymbol: row.underlyingSymbol,
+                            logoUrl: row.logoUrl,
+                          }}
+                          size="sm"
+                          ImageComponent={NextAvatarImage}
+                        />
+                        <span className="flex min-w-0 flex-col">
+                          <span className="font-medium text-ink underline-offset-4 group-hover:underline">
+                            {row.symbol}
+                          </span>
+                          <span className="truncate text-caption text-muted">
+                            {row.name}
+                          </span>
                         </span>
                       </Link>
                     ) : (
