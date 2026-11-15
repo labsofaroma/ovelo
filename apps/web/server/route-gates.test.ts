@@ -75,6 +75,11 @@ const APIS: Record<string, Api> = {
     sample: "/api/v1/actions/baskets/sol-core/confirm",
     methods: { POST: "trade" },
   },
+  // Phase H: the liveness probe (process only; skips the limiter, still origin-locked).
+  "/api/v1/health/live": {
+    sample: "/api/v1/health/live",
+    methods: { GET: "read" },
+  },
   "/api/v1/beta/challenge": {
     sample: "/api/v1/beta/challenge",
     methods: { POST: "write" },

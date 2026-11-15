@@ -31,6 +31,8 @@ const NO_ERROR_PATH = new Set([
   "app/api/v1/compliance/status/route.ts",
   // M11: which notification channels exist (public facts, no input).
   "app/api/v1/notifications/config/route.ts",
+  // Phase H: the liveness probe (process only; no input, no error path).
+  "app/api/v1/health/live/route.ts",
 ]);
 /** The health report is its own documented contract (facts only), 503 when something is down. */
 const HEALTH = "app/api/v1/health/route.ts";

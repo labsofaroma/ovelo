@@ -3,6 +3,7 @@ import { Pool } from "@neondatabase/serverless";
 import { drizzle } from "drizzle-orm/neon-serverless";
 import { AppError } from "../errors";
 import { tryGetEnv } from "../env";
+import { registerShutdown } from "../shutdown";
 import { configureLocalNeon } from "./local-neon";
 import * as schema from "./schema";
 
@@ -32,6 +33,9 @@ export function getDb(): Database {
         detail: "DATABASE_URL is not configured",
       });
     instance = createDb(url);
+    // Phase H: SIGTERM closes the pool after the HTTP drain (deploy/server.mjs).
+    const { pool } = instance;
+    registerShutdown("postgres", () => pool.end());
   }
   return instance.db;
 }

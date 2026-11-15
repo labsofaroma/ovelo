@@ -101,6 +101,8 @@ function reject(
   );
 }
 
+const LIVENESS_PATH = "/api/v1/health/live";
+
 export async function middleware(request: NextRequest): Promise<NextResponse> {
   const { pathname } = request.nextUrl;
   const env = process.env;
@@ -117,7 +119,11 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
   const forwarded = new Headers(request.headers);
   forwarded.delete(ORIGIN_HEADER);
   // The image optimizer is matched only for the origin lock (it fetches and resizes on demand).
-  if (pathname.startsWith("/_next/image"))
+  // Liveness (Phase H Step 4) skips the limiter: a Redis outage must not fail the process probe.
+  if (
+    pathname.startsWith("/_next/image") ||
+    (pathname === LIVENESS_PATH && request.method === "GET")
+  )
     return NextResponse.next({ request: { headers: forwarded } });
   const development = env.NODE_ENV !== "production";
   const protocol = requestProtocol(
@@ -296,6 +302,11 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
 
 export const config = {
   runtime: "nodejs",
-  // Phase H: /_next/image is matched too, for the origin lock only (see above).
-  matcher: ["/((?!_next/static|icon.svg|favicon.ico).*)"],
+  // Phase H: /_next/image is matched too, for the origin lock only (see above). The public
+  // asset folders are not: they are public, read-only files, and the image optimizer fetches
+  // them through the app itself without the edge header. Every top-level entry of public/ is
+  // either listed here or deliberately matched (server/middleware-matcher.test.ts).
+  matcher: [
+    "/((?!_next/static|icon.svg|favicon.ico|images/|fonts/|company-logos/|token-logos/|xstocks-devnet/).*)",
+  ],
 };

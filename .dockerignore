@@ -1,0 +1,65 @@
+# Phase H: the image build context is an ALLOWLIST. Everything is excluded, then only what the
+# web build needs is put back, then secrets, local state and build output are excluded again
+# (later lines win). apps/web/server/dockerignore.test.ts fails if a required exclusion is lost.
+*
+
+# What the build needs.
+!package.json
+!pnpm-lock.yaml
+!pnpm-workspace.yaml
+!.npmrc
+!.nvmrc
+!turbo.json
+!apps/web
+!packages/ui
+!packages/guard
+!packages/config
+!scripts/check-client-secrets.mjs
+!deploy/server.mjs
+!deploy/graceful.mjs
+!deploy/healthcheck.mjs
+# Manifests only, so pnpm sees the whole workspace (their sources stay out).
+!apps/keeper/package.json
+!packages/contracts/package.json
+
+# Never in the image: env files (the template is kept), keys and local chain state.
+**/.env
+**/.env.*
+!apps/web/.env.example
+.git
+**/.git
+.keys
+**/.keys
+.e2e-local
+**/.e2e-local
+.e2e-fork
+**/.e2e-fork
+.devnet
+**/.devnet
+**/*.keypair.json
+**/*-keypair.json
+**/id.json
+packages/contracts/target
+**/target
+
+# Never in the image: dependencies and build output (rebuilt inside), caches.
+node_modules
+**/node_modules
+**/.next
+**/.next-e2e
+**/.next-e2e-invest
+**/.turbo
+**/dist
+**/*.tsbuildinfo
+**/.pnpm-store
+
+# Never in the image: tests output, screenshots, logs, editor and OS files.
+**/test-results
+**/playwright-report
+**/coverage
+**/.lighthouseci
+**/screenshots
+**/*.log
+**/.DS_Store
+**/.vscode
+**/.idea

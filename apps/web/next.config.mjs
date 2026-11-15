@@ -1,9 +1,22 @@
+import { fileURLToPath } from "node:url";
 import { IMAGE_HOSTS } from "./image-hosts.mjs";
 import { LEGACY_REDIRECTS } from "./redirects.mjs";
+
+// Phase H: the self-host image (deploy/Dockerfile) sets AROMA_BUILD_STANDALONE=1 for a traced,
+// self-contained server (.next/standalone). Every other build, Vercel's included, is unchanged:
+// no `output` key at all, so the Vercel build is byte-for-byte what it was.
+const standalone = process.env.AROMA_BUILD_STANDALONE === "1";
 
 /** @type {import('next').NextConfig} */
 const config = {
   poweredByHeader: false,
+  ...(standalone
+    ? {
+        output: "standalone",
+        // The monorepo root, so workspace packages (@aroma/ui, @aroma/guard) are traced in.
+        outputFileTracingRoot: fileURLToPath(new URL("../..", import.meta.url)),
+      }
+    : {}),
   // E2E builds (with the test wallet bridge) go to their own directory so they can never be
   // mistaken for, or overwrite, the production build in .next (e2e/fork/run.ts).
   distDir: process.env.AROMA_NEXT_DIST_DIR || ".next",
