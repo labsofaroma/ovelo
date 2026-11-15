@@ -281,3 +281,42 @@ test("token observations publish before blocked references and remain detached",
   ).toBe(12);
   expect(early.assets[0]!.underlyingPriceUsd).toBe(undefined);
 });
+
+test("the issuer's logo wins over Jupiter's icon, which only fills a missing logo", async () => {
+  const issuerLogo = "https://xstocks-metadata.backed.fi/logos/a.png";
+  const jupiterIcon = "https://static.datapi.jup.ag/token-icons/x.webp";
+  const fetcher = async (input: unknown) => {
+    const url = String(input);
+    if (url.includes("api.backpack.exchange")) return j([]);
+    if (url.includes("xstocks.fi"))
+      return j({
+        nodes: [
+          {
+            symbol: "Ax",
+            name: "A",
+            logo: issuerLogo,
+            deployments: [{ network: "Solana", address: mintA }],
+          },
+          {
+            symbol: "Bx",
+            name: "B",
+            deployments: [{ network: "Solana", address: mintB }],
+          },
+        ],
+        page: { hasNextPage: false },
+      });
+    if (url.endsWith("/products")) return new Response("");
+    if (url.endsWith("/api/metrics")) return j({ metrics: [] });
+    if (url.includes("/tokens/v2/"))
+      return j([
+        { id: mintA, icon: jupiterIcon },
+        { id: mintB, icon: jupiterIcon },
+      ]);
+    return j({});
+  };
+  const snapshot = await getMainnetMarkets({ fetcher });
+  const logo = (mint: string) =>
+    snapshot.assets.find((asset) => asset.mint === mint)?.logoUrl;
+  expect(logo(mintA)).toBe(issuerLogo);
+  expect(logo(mintB)).toBe(jupiterIcon);
+});

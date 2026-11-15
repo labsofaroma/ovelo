@@ -1,4 +1,8 @@
 import { ImageResponse } from "next/og";
+import {
+  BRAND_COLORS,
+  BrandGlyphImage,
+} from "@/features/shared/brand-glyph-image";
 import { OG_SIZE } from "@/features/shared/og";
 
 /**
@@ -14,9 +18,7 @@ import { OG_SIZE } from "@/features/shared/og";
  */
 export const dynamic = "force-static";
 
-const FOREST = "#193c2b";
-const CREAM = "#f6f5ef";
-const LIME = "#d5f478";
+const { forest: FOREST, cream: CREAM, lime: LIME } = BRAND_COLORS;
 
 export function GET(): Response {
   return new ImageResponse(
@@ -34,17 +36,16 @@ export function GET(): Response {
       }}
     >
       <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+        <BrandGlyphImage height={64} color={LIME} facet={FOREST} />
         <div
           style={{
-            width: 56,
-            height: 56,
-            borderRadius: 28,
-            background: LIME,
             display: "flex",
+            fontSize: 56,
+            fontWeight: 700,
+            letterSpacing: -3,
           }}
-        />
-        <div style={{ fontSize: 48, fontWeight: 700, letterSpacing: -2 }}>
-          aroma
+        >
+          aroma<span style={{ color: LIME }}>.</span>
         </div>
       </div>
       <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>

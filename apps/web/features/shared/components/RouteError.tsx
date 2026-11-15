@@ -9,6 +9,8 @@ export interface RouteErrorProps {
   error: Error & { digest?: string };
   reset: () => void;
   title?: string;
+  /** The way out besides "Try again". Default: markets (the markets page itself goes home). */
+  escape?: { href: string; label: string };
 }
 
 /**
@@ -19,6 +21,7 @@ export function RouteError({
   error,
   reset,
   title = "This page could not be loaded",
+  escape = { href: routes.markets, label: "Go to markets" },
 }: RouteErrorProps) {
   const heading = useRef<HTMLHeadingElement>(null);
   useEffect(() => heading.current?.focus(), []);
@@ -46,8 +49,8 @@ export function RouteError({
         <button type="button" className={linkButton.primary} onClick={reset}>
           Try again
         </button>
-        <Link className={textLink} href={routes.markets}>
-          Go to markets
+        <Link className={textLink} href={escape.href}>
+          {escape.label}
         </Link>
       </div>
     </main>

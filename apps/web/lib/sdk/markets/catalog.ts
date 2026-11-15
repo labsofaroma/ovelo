@@ -159,7 +159,8 @@ export async function getMainnetMarkets(
         if (!asset) continue;
         asset.decimals = precision(token.decimals) ?? asset.decimals;
         asset.name = token.name || asset.name;
-        asset.logoUrl = token.icon ?? asset.logoUrl;
+        // The issuer's own logo wins; Jupiter's icon only fills a gap (it can sit on any host).
+        asset.logoUrl = asset.logoUrl ?? token.icon ?? null;
         if (token.usdPrice !== null) {
           asset.priceUsd = token.usdPrice;
           asset.priceObservedAt = observedAt;

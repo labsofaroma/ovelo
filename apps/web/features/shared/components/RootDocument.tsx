@@ -17,8 +17,11 @@ export async function RootDocument({ children }: { children: ReactNode }) {
       {/* An App Router root layout renders <head> itself; next/head is Pages Router only. */}
       {/* eslint-disable-next-line @next/next/no-head-element */}
       <head>
+        {/* Browsers blank `nonce` in the DOM once applied (so it cannot be read back by other
+            scripts), so React would report a hydration mismatch on this one attribute. */}
         <script
           nonce={nonce}
+          suppressHydrationWarning
           dangerouslySetInnerHTML={{ __html: themeInitScript }}
         />
       </head>

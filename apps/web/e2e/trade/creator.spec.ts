@@ -46,8 +46,11 @@ async function open(
   await applyTheme(page, theme);
   await page.setExtraHTTPHeaders({ "x-real-ip": IP.ui });
   await page.goto(path);
-  // The consent banner is fixed bottom-right; choose "Essential only" so captures show the page.
-  const consent = page.getByRole("button", { name: "Essential only" });
+  // The consent banner is fixed bottom-right; dismiss it with essential storage only ("Got it"
+  // when no analytics is configured) so captures show the page.
+  const consent = page.getByRole("button", {
+    name: /^(Essential only|Got it)$/,
+  });
   if (await consent.isVisible().catch(() => false)) await consent.click();
 }
 

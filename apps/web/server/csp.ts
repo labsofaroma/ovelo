@@ -12,7 +12,10 @@
  *   §7.3 W1): no embedded-wallet provider hosts in connect-src or frame-src.
  * - style-src keeps 'unsafe-inline': React style attributes and Base UI positioning need it,
  *   and styles cannot execute code. Scripts are the XSS vector this closes.
+ * - img-src: 'self' plus the logo hosts in image-hosts.mjs (the same list next/image allows).
  */
+
+import { IMAGE_HOSTS } from "../image-hosts.mjs";
 
 type Env = Record<string, string | undefined>;
 
@@ -104,7 +107,7 @@ export function buildCsp(input: {
     "form-action 'self'",
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${development ? " 'unsafe-eval'" : ""}`,
     "style-src 'self' 'unsafe-inline'",
-    "img-src 'self' data: blob: https://xstocks-metadata.backed.fi https://prestocks.com https://backpack.exchange",
+    `img-src 'self' data: blob: ${IMAGE_HOSTS.map((host) => `https://${host}`).join(" ")}`,
     "font-src 'self' data:",
     `connect-src ${connectSources(env).join(" ")}`,
     "frame-src https://verify.walletconnect.org https://challenges.cloudflare.com",

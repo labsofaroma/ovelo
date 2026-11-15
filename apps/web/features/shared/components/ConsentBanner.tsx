@@ -114,7 +114,8 @@ export function ConsentBanner() {
           onClick={() => save(false)}
           className="rounded-control border border-border-strong px-3 py-1.5 font-semibold focus-ring"
         >
-          Essential only
+          {/* With no analytics configured there is nothing to choose: just acknowledge. */}
+          {DOMAIN ? "Essential only" : "Got it"}
         </button>
         {DOMAIN && (
           <button

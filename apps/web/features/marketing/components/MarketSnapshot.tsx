@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { Change } from "@aroma/ui";
+import { AssetAvatar, Change } from "@aroma/ui";
+import { NextAvatarImage } from "../../shared/components/NextAvatarImage";
 import { AsOf } from "../../shared/components/AsOf";
 import { DataNotice } from "../../shared/components/DataNotice";
 import {
@@ -68,11 +69,24 @@ export function MarketSnapshot({
                 key={row.mint}
                 className="rounded-panel border border-line bg-surface p-4"
               >
-                <dt className="text-caption text-muted">
-                  <Link className={textLink} href={routes.stock(row.symbol)}>
-                    {row.symbol}
-                  </Link>{" "}
-                  token price
+                <dt className="flex items-center gap-2 text-caption text-muted">
+                  <AssetAvatar
+                    asset={{
+                      symbol: row.symbol,
+                      mint: row.mint,
+                      issuer: row.issuer,
+                      underlyingSymbol: row.underlyingSymbol,
+                      logoUrl: row.logoUrl,
+                    }}
+                    size="sm"
+                    ImageComponent={NextAvatarImage}
+                  />
+                  <span>
+                    <Link className={textLink} href={routes.stock(row.symbol)}>
+                      {row.symbol}
+                    </Link>{" "}
+                    token price
+                  </span>
                 </dt>
                 <dd className="flex flex-wrap items-baseline gap-2 text-title font-semibold tabular-nums">
                   {row.price ? formatUsd(row.price) : "No price"}

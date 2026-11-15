@@ -1,3 +1,4 @@
+import { IMAGE_HOSTS } from "./image-hosts.mjs";
 import { LEGACY_REDIRECTS } from "./redirects.mjs";
 
 /** @type {import('next').NextConfig} */
@@ -26,15 +27,19 @@ const config = {
   experimental: { optimizePackageImports: ["@aroma/ui"], globalNotFound: true },
   images: {
     formats: ["image/avif", "image/webp"],
-    remotePatterns: [
-      { protocol: "https", hostname: "xstocks-metadata.backed.fi" },
-      { protocol: "https", hostname: "prestocks.com" },
-      { protocol: "https", hostname: "backpack.exchange" },
-    ],
+    // One list for next/image, the CSP and the avatar adapter (image-hosts.mjs).
+    remotePatterns: IMAGE_HOSTS.map((hostname) => ({
+      protocol: "https",
+      hostname,
+    })),
   },
   // M9: old URLs (the /v1 prefix and the prototype paths that moved) answer 308 (redirects.mjs).
   async redirects() {
-    return LEGACY_REDIRECTS;
+    // Browsers and crawlers ask for /favicon.ico directly; the icon is app/icon.svg.
+    return [
+      ...LEGACY_REDIRECTS,
+      { source: "/favicon.ico", destination: "/icon.svg", permanent: true },
+    ];
   },
   async headers() {
     return [

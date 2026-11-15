@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { Badge } from "@aroma/ui";
 import { routes } from "../../shared/routes";
-import { linkButton, pageContainer } from "../../shared/styles";
+import { linkButton, pageContainer, textLink } from "../../shared/styles";
 import type { Loaded } from "../../shared/upstream";
 import type { LandingSnapshot } from "../server";
 import { LandingMotionLazy } from "./LandingMotionLazy";
@@ -12,17 +12,23 @@ const MODES = [
   {
     badge: "Mainnet",
     title: "Spot purchases",
-    body: "Buy tokenized stocks and baskets on Solana mainnet. Each purchase is a transaction you review and sign in your own wallet. Coming to this preview with wallet trading.",
+    body: "Buy tokenized stocks and baskets on Solana mainnet. Each purchase is a transaction you review and sign in your own wallet.",
+    href: routes.markets,
+    cta: "Buy on mainnet",
   },
   {
     badge: "Devnet test",
     title: "Recurring investing test",
     body: "A vaultless recurring plan that runs on Solana devnet with test tokens only. It is not available on mainnet.",
+    href: routes.invest,
+    cta: "Try the devnet test",
   },
   {
     badge: "Paper",
     title: "Paper practice",
-    body: "Practise with simulated funds stored on your device. Paper fills are not real trades and cannot be withdrawn.",
+    body: "Practise with simulated funds stored on your device. Paper fills are not real trades and cannot be withdrawn. Choose Paper practice on any stock's buy ticket.",
+    href: routes.markets,
+    cta: "Pick a stock to practise",
   },
 ] as const;
 
@@ -96,6 +102,12 @@ export function Landing({ snapshot }: { snapshot: Loaded<LandingSnapshot> }) {
               </Badge>
               <h3 className="text-title font-semibold">{mode.title}</h3>
               <p className="text-small text-muted">{mode.body}</p>
+              <Link
+                className={`${textLink} mt-auto self-start text-small font-semibold`}
+                href={mode.href}
+              >
+                {mode.cta}
+              </Link>
             </li>
           ))}
         </ul>
@@ -138,7 +150,7 @@ export function Landing({ snapshot }: { snapshot: Loaded<LandingSnapshot> }) {
           and follow the ones you care about on this device.
         </p>
         <Link className={linkButton.primary} href={routes.markets}>
-          Open markets
+          Browse all listings
         </Link>
       </section>
       <LandingMotionLazy />
