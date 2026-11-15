@@ -43,6 +43,6 @@ export const dashboardCopy = {
   archiveConfirm:
     "Archive this basket? It can no longer be bought; past buys stay recorded.",
   feeShare: "Fee share: off",
-  feeShareNote:
-    "Aroma charges no platform fee during the beta, so there is nothing to share.",
+  feeShareNote: (entries: number) =>
+    `Aroma charges no platform fee during the beta, so there is nothing to share. ${entries} confirmed buy${entries === 1 ? " is" : "s are"} recorded in the fee-share ledger for the record; no payout exists.`,
 } as const;

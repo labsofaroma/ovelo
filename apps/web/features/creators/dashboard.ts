@@ -8,6 +8,8 @@ import {
 } from "@/server/db/schema";
 import { AppError } from "@/server/errors";
 import type { CreatorsDb } from "./db";
+import { feeSettings } from "@/server/env.fees";
+import { ledgerSummary } from "./fee-share";
 import { listCreatorBaskets } from "./server";
 import { receiptUsage, USAGE_SOURCE, USAGE_WINDOWS } from "./stats";
 
@@ -123,6 +125,14 @@ export async function getDashboard(
         publishedAt: basket.publishedAt,
         usage: await receiptUsage(db, { basketId: basket.id }, now),
         blink: await blinkShare(db, basket.id, now),
+        // Accounting only (M11 5a): off while no platform fee is charged.
+        feeShare: {
+          state:
+            feeSettings(process.env).platformFeeBps === 0
+              ? ("off" as const)
+              : ("on" as const),
+          ...(await ledgerSummary(db, wallet, basket.id)),
+        },
         versions: versions.map((v) => ({
           version: v.version,
           name: v.name,

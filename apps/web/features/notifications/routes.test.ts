@@ -321,7 +321,7 @@ describe("test send, worker and deletes", () => {
       req("/api/v1/notifications/test", { channel: "telegram" }, auth),
     );
     cfg = { ...cfg, enabled: false };
-    expect(await (await run()).json()).toEqual({ paused: true });
+    expect(await (await run()).json()).toEqual({ paused: true, ledger: 0 });
     expect(mem.sent).toHaveLength(0);
   });
 

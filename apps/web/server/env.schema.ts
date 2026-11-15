@@ -2,6 +2,7 @@ import { z } from "zod";
 import { betaShape, capRules } from "./env.beta";
 import { complianceShape } from "./env.compliance";
 import { localnetRules } from "./env.rules";
+import { feeShape } from "./env.fees";
 import { notifyRules, notifyShape } from "./env.notify";
 import { sentryDsn } from "./env.sentry";
 export { TURNSTILE_TEST_SECRETS } from "./env.rules";
@@ -139,6 +140,7 @@ const serverShape = {
   // --- Phase A private beta (W2, W3) ---
   ...betaShape,
   ...notifyShape, // M11 notifications
+  ...feeShape, // M11 fee-share ledger (accounting only)
 };
 
 const loopbackHttp = z

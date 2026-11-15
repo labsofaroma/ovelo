@@ -51,6 +51,11 @@ export const dashboardSchema = z.object({
           untracked: z.number().int(),
         }),
       ),
+      feeShare: z.object({
+        state: z.enum(["off", "on"]),
+        entries: z.number().int(),
+        shareRaw: z.string().regex(/^\d+$/),
+      }),
       versions: z.array(
         z.object({
           version: z.number().int(),

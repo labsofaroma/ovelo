@@ -336,3 +336,5 @@ export * from "./schema.beta";
 export * from "./schema.caps";
 // M11 notifications: notification_subscriptions, notification_events (0007).
 export * from "./schema.notify";
+// M11 Step 5a: fee-share ledger, accounting only (0009).
+export * from "./schema.fees";

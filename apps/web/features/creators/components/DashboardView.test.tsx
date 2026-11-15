@@ -68,6 +68,7 @@ const basket = (
     { window: "30d", tracked: 2, viaAction: 1, untracked: 0 },
     { window: "all", tracked: 2, viaAction: 1, untracked: 1 },
   ],
+  feeShare: { state: "off", entries: 3, shareRaw: "0" },
   versions: [
     {
       version: 2,
@@ -133,7 +134,9 @@ describe("DashboardView", () => {
         .map((c) => c.textContent),
     ).toEqual(["3", "3", "6.000000 USDC", "1 of 2 (1 earlier not recorded)"]);
     expect(screen.getByText(/Version 2, published/)).toBeTruthy();
-    expect(screen.getByText(/Fee share: off/)).toBeTruthy();
+    expect(screen.getByText(/Fee share: off/).textContent).toContain(
+      "3 confirmed buys are recorded in the fee-share ledger",
+    );
   });
 
   it("share links carry only the basket URL; archive asks first", () => {

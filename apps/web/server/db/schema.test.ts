@@ -64,6 +64,8 @@ describe("migrations", () => {
       "beta_access",
       "beta_invites",
       "creators",
+      // M11 fee-share ledger, accounting only (0009).
+      "fee_share_ledger",
       "invites",
       // M11 notifications (0007).
       "notification_events",

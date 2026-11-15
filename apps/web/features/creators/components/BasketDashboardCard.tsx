@@ -132,7 +132,7 @@ export function BasketDashboardCard({
       </div>
 
       <p className="text-small text-muted">
-        {copy.feeShare}. {copy.feeShareNote}
+        {copy.feeShare}. {copy.feeShareNote(basket.feeShare.entries)}
       </p>
 
       <div className="flex flex-wrap items-center gap-3 text-small">
