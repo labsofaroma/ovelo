@@ -272,6 +272,8 @@ describe("one header parser", () => {
       .filter(
         (f) =>
           f !== "server/proxy.ts" &&
+          // Names them only to REDACT them from logs (never reads a request header).
+          f !== "observability/scrub.ts" &&
           !/\.test\.tsx?$/.test(f) &&
           // E2E specs and fixtures SEND these headers as a client would (an edge stand-in).
           !f.startsWith("e2e/"),

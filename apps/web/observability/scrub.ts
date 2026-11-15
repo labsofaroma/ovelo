@@ -38,6 +38,18 @@ export const SENSITIVE_KEYS = [
   "database_url",
   // Phase H: the edge-to-origin secret header (server/origin-lock.ts).
   "x-aroma-origin",
+  // Phase H Step 4: client IPs (by header or field name) and contact details are never logged.
+  "clientip",
+  "x-forwarded-for",
+  "x-real-ip",
+  "true-client-ip",
+  "cf-connecting-ip",
+  "email",
+  "phone",
+  "chatid",
+  "chat_id",
+  "subscription",
+  "p256dh",
 ] as const;
 
 export function isSensitiveKey(key: string): boolean {

@@ -5,6 +5,8 @@ import { scrubSentryEvent, type ScrubbableEvent } from "./scrub";
 export type AromaSentryOptions = {
   dsn: string;
   environment: string;
+  /** Phase H: the image's commit (AROMA_REVISION label), or SENTRY_RELEASE when set. */
+  release?: string;
   sendDefaultPii: false;
   tracesSampleRate: number;
   maxBreadcrumbs: number;
@@ -26,10 +28,23 @@ export function buildSentryOptions(
     dsn: trimmed,
     // SENTRY_ENVIRONMENT wins; else the deploy environment from server/platform.ts (Phase H).
     environment: environment?.trim() || deployEnvOf(process.env),
+    ...releaseOf(process.env),
     sendDefaultPii: false,
     tracesSampleRate: 0.1,
     maxBreadcrumbs: 30,
     beforeSend: (event) => scrubSentryEvent(event),
     beforeSendTransaction: (event) => scrubSentryEvent(event),
   };
+}
+
+/** SENTRY_RELEASE wins; else the self-host image's commit (deploy/Dockerfile AROMA_REVISION). */
+export function releaseOf(env: Readonly<Record<string, string | undefined>>): {
+  release?: string;
+} {
+  const release =
+    env.SENTRY_RELEASE?.trim() ||
+    (env.AROMA_REVISION?.trim() && env.AROMA_REVISION.trim() !== "unknown"
+      ? `aroma-web@${env.AROMA_REVISION.trim()}`
+      : "");
+  return release ? { release } : {};
 }

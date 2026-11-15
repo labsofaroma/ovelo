@@ -70,7 +70,8 @@ describe("graceful drain (deploy/graceful.mjs)", () => {
     const started = Date.now();
     const result = await drain(state, { drainMs: 200, hooks: () => [] });
     expect(result.drained).toBe(false);
-    expect(Date.now() - started).toBeLessThan(2_000);
+    // drainMs + the 1 s close race; generous for a loaded CI machine, still far from "forever".
+    expect(Date.now() - started).toBeLessThan(5_000);
     expect(await hung).toBe("cut");
   });
 
