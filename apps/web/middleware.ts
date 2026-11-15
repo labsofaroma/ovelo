@@ -211,7 +211,9 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
       response = new NextResponse(null, { status: 204 });
     else {
       const mutation = !["GET", "HEAD"].includes(request.method);
-      const decision = await limiter(bucketFor(pathname, request.method)).check(
+      // The normalized path, like the geo and beta gates: an encoded or cased spelling of a
+      // trade route must land in the trade bucket, not the looser write bucket.
+      const decision = await limiter(bucketFor(gatePath, request.method)).check(
         clientIp(request.headers, env),
       );
       if (!decision.allowed)
@@ -230,7 +232,7 @@ export async function middleware(request: NextRequest): Promise<NextResponse> {
       else if (
         mutation &&
         Number(request.headers.get("content-length") ?? 0) >
-          maxBodyBytes(pathname)
+          maxBodyBytes(gatePath)
       )
         response = reject("PAYLOAD_TOO_LARGE");
       // M9 emergency stop: AROMA_TRADING=off closes every mainnet trading entry point.

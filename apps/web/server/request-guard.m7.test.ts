@@ -11,6 +11,13 @@ describe("M7 rate buckets", () => {
         "POST",
       ),
     ).toBe("trade");
+    // Middleware passes the normalized (lower-cased) path.
+    expect(
+      bucketFor(
+        "/api/v1/plans/9xqewvg816bux9epjhmat23yvvm2zwbrrpzb9pusvfin/prepare-close",
+        "POST",
+      ),
+    ).toBe("trade");
     expect(
       bucketFor("/api/v1/plans/not-an-address!/prepare-close", "POST"),
     ).toBe("write");

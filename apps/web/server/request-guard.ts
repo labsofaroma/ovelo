@@ -47,7 +47,8 @@ const TRADE_PATHS = [
   /^\/api\/v1\/actions\//,
   // M7: plan prepare (chain reads + simulation) and submit (send + confirm) on devnet.
   /^\/api\/v1\/plans\/(prepare-create|submit)$/,
-  /^\/api\/v1\/plans\/[1-9A-HJ-NP-Za-km-z]{32,44}\/prepare-close$/,
+  // The middleware passes the normalized (lower-cased) path, so an address may hold "l" here.
+  /^\/api\/v1\/plans\/[1-9A-Za-z]{32,44}\/prepare-close$/,
 ];
 
 /** M7: the devnet faucet sends tokens; its own per-wallet, per-IP and daily limits apply too. */
@@ -85,7 +86,10 @@ export const LIMITS: Record<Bucket, { limit: number; windowSeconds: number }> =
     faucet: { limit: 5, windowSeconds: 60 },
   };
 
-/** Request body cap, enforced on Content-Length before the route reads the stream. */
+/**
+ * Request body cap, enforced on Content-Length before the route reads the stream. Both this and
+ * bucketFor receive the normalized path (features/beta/paths.ts normalizePath) from middleware.
+ */
 export function maxBodyBytes(pathname: string): number {
   // Five 4,096-byte transactions are 27,320 base64 bytes before authorization and JSON.
   return /^\/api\/v1\/trade\/submit$/.test(pathname) ? 32_768 : 16_384;

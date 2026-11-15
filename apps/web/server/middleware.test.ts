@@ -263,6 +263,34 @@ describe("M4 additions", () => {
     expect((await https()).headers.get("strict-transport-security")).toBeNull();
   });
 
+  it("encoded or cased spellings of a trade route share the trade bucket", async () => {
+    vi.stubEnv("VERCEL", "1");
+    const spellings = [
+      "/api/v1/trade/quote",
+      "/api/v1/trade/%71uote",
+      "/API/v1/Trade/quote",
+      "/api/v1/trade/%2571uote",
+    ];
+    const statuses: number[] = [];
+    for (let i = 0; i < 11; i++)
+      statuses.push(
+        (
+          await middleware(
+            req(`http://localhost:3000${spellings[i % spellings.length]}`, {
+              method: "POST",
+              headers: {
+                "content-type": "application/json",
+                "x-real-ip": "198.51.100.77",
+              },
+              body: "{}",
+            }),
+          )
+        ).status,
+      );
+    expect(statuses.slice(0, 10).every((s) => s !== 429)).toBe(true);
+    expect(statuses[10]).toBe(429);
+  });
+
   it("v1 rejections are { code, message }; the trade bucket answers 429 before the write bucket", async () => {
     vi.stubEnv("VERCEL", "1");
     const quote = () =>
