@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
 import { Landing } from "@/features/marketing/components/Landing";
-import { getLandingSnapshot } from "@/features/marketing/server";
 import { v1Metadata } from "@/features/shared/metadata";
 import { routes } from "@/features/shared/routes";
 
-/** M4: rendered per request (per-request CSP nonce); data comes from the Next data cache. */
+/** M4: rendered per request (per-request CSP nonce). The landing shows no market data. */
 
 export const metadata: Metadata = v1Metadata({
   title: "Own real stocks from your own wallet",
@@ -13,6 +12,6 @@ export const metadata: Metadata = v1Metadata({
   path: routes.home,
 });
 
-export default async function LandingPage() {
-  return <Landing snapshot={await getLandingSnapshot()} />;
+export default function LandingPage() {
+  return <Landing />;
 }

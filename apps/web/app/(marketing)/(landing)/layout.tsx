@@ -1,12 +1,9 @@
 import type { ReactNode } from "react";
-import { SiteFooter } from "@/features/shared/components/SiteFooter";
 
-/** The landing page draws its own header (Landing.tsx); only the shared footer is added here. */
+/**
+ * The landing page draws its own header (Landing.tsx) and, by the owner's choice, no site footer.
+ * Terms and Privacy stay reachable from the consent banner and every app page's footer.
+ */
 export default function LandingLayout({ children }: { children: ReactNode }) {
-  return (
-    <div className="flex min-h-dvh flex-col bg-bg text-ink">
-      <div className="flex-1">{children}</div>
-      <SiteFooter />
-    </div>
-  );
+  return <div className="min-h-dvh bg-bg text-ink">{children}</div>;
 }
