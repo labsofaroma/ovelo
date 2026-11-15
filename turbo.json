@@ -19,7 +19,8 @@
         "PYTH_API_KEY",
         "KEEPER_*",
         "JITO_*",
-        "VERCEL_ENV"
+        "VERCEL_ENV",
+        "VERCEL"
       ],
       "inputs": ["$TURBO_DEFAULT$", ".env.example"],
       "outputs": [".next/**", "!.next/cache/**", "dist/**"]

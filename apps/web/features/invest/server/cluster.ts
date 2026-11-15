@@ -14,6 +14,7 @@ import {
 import type { Env } from "@/server/env.schema";
 import { testSwitchesAllowed } from "@/server/env.schema";
 import { AppError } from "@/server/errors";
+import { productionRules } from "@/server/platform";
 import type { InvestClusterName } from "../schema";
 
 /**
@@ -68,15 +69,9 @@ export function resolveInvestNetwork(env: Env): NetworkResolution {
     const genesisHash = env.devnet.AROMA_V1_LOCALNET_GENESIS;
     const fundingMint = env.devnet.AROMA_V1_LOCALNET_FUNDING_MINT;
     const allowed =
-      env.server.VERCEL_ENV !== "production" &&
+      !productionRules(env.server) &&
       env.public.NEXT_PUBLIC_AROMA_LOCALNET === "true" &&
-      testSwitchesAllowed({
-        NODE_ENV: env.server.NODE_ENV,
-        AROMA_V1_ALLOW_TEST_SWITCHES: env.server.AROMA_V1_ALLOW_TEST_SWITCHES
-          ? "true"
-          : "false",
-        VERCEL_ENV: env.server.VERCEL_ENV,
-      });
+      testSwitchesAllowed(env.server);
     if (
       !allowed ||
       !rpcUrl ||
@@ -117,13 +112,7 @@ export function resolveInvestNetwork(env: Env): NetworkResolution {
       rpcUrl: env.devnet.AROMA_RECURRING_RPC_URL ?? DEFAULT_DEVNET_RPC,
       browserRpcUrl:
         env.public.NEXT_PUBLIC_SOLANA_DEVNET_RPC_URL ?? DEFAULT_DEVNET_RPC,
-      testPeriods: testSwitchesAllowed({
-        NODE_ENV: env.server.NODE_ENV,
-        AROMA_V1_ALLOW_TEST_SWITCHES: env.server.AROMA_V1_ALLOW_TEST_SWITCHES
-          ? "true"
-          : "false",
-        VERCEL_ENV: env.server.VERCEL_ENV,
-      }),
+      testPeriods: testSwitchesAllowed(env.server),
       deployment: {
         programId: deployment.programId,
         fundingMint: deployment.fundingMint,

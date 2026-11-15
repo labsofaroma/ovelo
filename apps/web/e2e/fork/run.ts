@@ -39,7 +39,7 @@ import {
   USDC,
   walletJson,
 } from "./accounts";
-import { creatorLegs, localDbEnv } from "./creator-env";
+import { creatorLegs, LOCAL_START, localDbEnv } from "./creator-env";
 import { startJupiterStandIn } from "./jupiter-stand-in";
 import * as notify from "./notify-sink";
 import { controlUrl, proxyUrl, startRpcProxies } from "./rpc-proxy";
@@ -328,6 +328,7 @@ async function main() {
   );
   const appEnv: Record<string, string> = {
     ...placeholders,
+    ...LOCAL_START, // Phase H (e2e/local-start.ts)
     AROMA_V1_ALLOW_TEST_SWITCHES: "true",
     AROMA_V1_TEST_FORK_GENESIS: genesis,
     AROMA_V1_TEST_JUPITER_URL: `http://127.0.0.1:${JUPITER_PORT}`,

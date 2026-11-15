@@ -1,3 +1,5 @@
+import { vercelProductionHost } from "@/server/platform";
+
 /**
  * The public site origin: metadataBase (canonical and OG URLs), robots and the sitemap (M9).
  * `AROMA_SITE_URL` (validated at boot, required in production by check:prod-env), else Vercel's
@@ -9,8 +11,8 @@ export function siteUrl(
 ): URL {
   const configured =
     env.AROMA_SITE_URL ||
-    (env.VERCEL_PROJECT_PRODUCTION_URL
-      ? `https://${env.VERCEL_PROJECT_PRODUCTION_URL}`
+    (vercelProductionHost(env)
+      ? `https://${vercelProductionHost(env)}`
       : "http://localhost:3000");
   const url = new URL(configured);
   if (

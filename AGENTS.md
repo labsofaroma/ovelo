@@ -23,6 +23,7 @@ Node 24.12.0, pnpm 10.31.0. Copy `apps/web/.env.example` to `apps/web/.env.local
 5. Use `bigint` or raw integer units for token amounts. Never float math on amounts that get signed.
 6. Keep the IDL, the generated client and builders in `packages/guard` (`@aroma/guard`, re-exported by the web app as `@/lib/sdk/guard/v1`) and the Rust program in sync. `idl:check` and the Codama drift test fail if they drift.
 7. Never commit a keypair. Program, localnet and devnet-only keys live in git-ignored paths (`packages/contracts/target/`, `.keys/`, `.e2e-local/`, `.devnet/`); agents never create, read or use the owner's deployer wallet.
+8. **One platform answer.** Only `apps/web/server/platform.ts` reads `VERCEL`, `VERCEL_ENV` or `VERCEL_*`. Everything else asks it (`productionRules`, `deployEnvOf`), and lint enforces this. A production boot with no platform answer is refused: self-host sets `AROMA_PLATFORM=selfhost` and `AROMA_DEPLOY_ENV`.
 
 ## Before you open a PR
 ```bash

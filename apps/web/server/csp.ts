@@ -16,6 +16,7 @@
  */
 
 import { IMAGE_HOSTS } from "../image-hosts.mjs";
+import { productionRules } from "./platform";
 
 type Env = Record<string, string | undefined>;
 
@@ -122,8 +123,9 @@ export const HSTS = "max-age=63072000; includeSubDomains; preload";
 
 /**
  * HSTS with preload is a domain-wide, long-lived commitment: only a production deployment sends
- * it (VERCEL_ENV=production, or a production build off Vercel), only over HTTPS, never on
- * loopback. Vercel previews and local runs never do (M9).
+ * it (the production rules of server/platform.ts: production or beta on either platform, and
+ * fail closed when the platform answer is missing), only over HTTPS, never on loopback. Vercel
+ * previews, self-host preview and development, and local runs never do (M9, Phase H).
  */
 export function hstsApplies(
   env: Env,
@@ -131,6 +133,5 @@ export function hstsApplies(
   protocol: string,
 ): boolean {
   if (loopback || protocol !== "https") return false;
-  if (env.VERCEL_ENV) return env.VERCEL_ENV === "production";
-  return env.NODE_ENV === "production";
+  return productionRules(env);
 }

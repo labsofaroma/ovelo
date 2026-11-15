@@ -3,6 +3,8 @@
  * prototype middleware). No I/O and no `server-only`, so they are unit-tested directly.
  */
 
+import { vercelFlag } from "./platform";
+
 type Env = Record<string, string | undefined>;
 
 export function isLoopback(hostname: string): boolean {
@@ -37,13 +39,13 @@ export function allowedOrigin(
 // --- M9 compliance gate (additive): the one trusted-proxy rule, shared with the geo gate. ---
 /** True only behind a proxy that overwrites forwarding and geo headers (Vercel, or opted in). */
 export function trustsProxy(env: Env): boolean {
-  return env.VERCEL === "1" || env.AROMA_TRUST_PROXY === "true";
+  return vercelFlag(env) || env.AROMA_TRUST_PROXY === "true";
 }
 // --- end M9 compliance gate ---
 
 /** Client IP, trusting forwarding headers only behind a proxy that overwrites them. */
 export function clientIp(headers: Headers, env: Env): string {
-  const trustProxy = env.VERCEL === "1" || env.AROMA_TRUST_PROXY === "true";
+  const trustProxy = vercelFlag(env) || env.AROMA_TRUST_PROXY === "true";
   if (!trustProxy) return "local";
   return (
     headers.get("x-real-ip")?.trim() ||
@@ -111,7 +113,7 @@ export function requestProtocol(
   urlProtocol: string,
   env: Env,
 ): string {
-  const trustProxy = env.VERCEL === "1" || env.AROMA_TRUST_PROXY === "true";
+  const trustProxy = vercelFlag(env) || env.AROMA_TRUST_PROXY === "true";
   const forwarded = headers.get("x-forwarded-proto")?.split(",")[0]?.trim();
   return (
     (trustProxy && forwarded ? forwarded : urlProtocol.replace(":", "")) ||
@@ -125,7 +127,7 @@ export function requestHost(
   fallback: string,
   env: Env,
 ): string {
-  const trustProxy = env.VERCEL === "1" || env.AROMA_TRUST_PROXY === "true";
+  const trustProxy = vercelFlag(env) || env.AROMA_TRUST_PROXY === "true";
   return (
     (trustProxy && headers.get("x-forwarded-host")?.split(",")[0]?.trim()) ||
     headers.get("host") ||

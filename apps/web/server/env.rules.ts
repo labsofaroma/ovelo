@@ -1,8 +1,12 @@
 import type { z } from "zod";
+import { productionRules } from "./platform";
 
 /** The M7 variables these rules read (a structural view of the parsed environment). */
 export type InvestEnvView = {
   VERCEL_ENV?: "production" | "preview" | "development";
+  VERCEL?: string;
+  AROMA_PLATFORM?: string;
+  AROMA_DEPLOY_ENV?: string;
   AROMA_V1_ALLOW_TEST_SWITCHES: boolean;
   NEXT_PUBLIC_AROMA_LOCALNET?: "true" | "false";
   AROMA_V1_INVEST_CLUSTER: "devnet" | "localnet";
@@ -22,7 +26,7 @@ export function localnetRules(env: InvestEnvView, ctx: z.RefinementCtx): void {
       redis,
     );
     const testRun =
-      env.VERCEL_ENV !== "production" &&
+      !productionRules(env) &&
       (env.NODE_ENV !== "production" || env.AROMA_V1_ALLOW_TEST_SWITCHES);
     if (!loopback || !testRun)
       ctx.addIssue({
@@ -33,7 +37,7 @@ export function localnetRules(env: InvestEnvView, ctx: z.RefinementCtx): void {
   }
   const issue = (key: string, message: string) =>
     ctx.addIssue({ code: "custom", path: [key], message });
-  const production = env.VERCEL_ENV === "production";
+  const production = productionRules(env);
   if (production) {
     if (env.NEXT_PUBLIC_AROMA_LOCALNET === "true")
       issue(

@@ -58,4 +58,8 @@ jobs:
         run: |
           set -a; . ./.env.example; set +a
           export AROMA_SITE_URL=https://www.example.com
+          # Phase H: measure the build as a self-host production deployment (server/platform.ts),
+          # so robots allows indexing; production rules need the caps (the beta defaults).
+          export AROMA_PLATFORM=selfhost AROMA_DEPLOY_ENV=production
+          export AROMA_MAX_TRADE_USDC_RAW=50000000 AROMA_MAX_DAILY_USDC_RAW=200000000
           npx --yes @lhci/cli@0.14.0 autorun --config=lighthouserc.json

@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
+import { productionRules } from "@/server/platform";
 import {
   AssetAvatar,
   Badge,
@@ -42,7 +43,7 @@ const DEMO_ROWS = [
  * A design-system preview: never served on a production deployment (M9).
  */
 export default function UiPreviewPage() {
-  if (process.env.VERCEL_ENV === "production") notFound();
+  if (productionRules(process.env)) notFound();
   return (
     <main className="mx-auto flex max-w-3xl flex-col gap-6 bg-bg p-6 text-ink">
       <header className="flex items-center justify-between">

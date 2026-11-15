@@ -10,8 +10,10 @@ import { defineConfig, devices } from "@playwright/test";
  * Two servers from the same build: the normal one, and one with the upstream-outage switch on
  * (AROMA_V1_SIMULATE_UPSTREAM_OUTAGE) to prove the "unavailable" states.
  */
+import { LOCAL_START } from "./e2e/local-start";
 import { OUTAGE_PORT, PORT } from "./e2e/ports";
-const appEnv = { ...process.env } as Record<string, string>;
+// Phase H: a local `next start` declares itself (server/platform.ts) unless the caller says more.
+const appEnv = { ...LOCAL_START, ...process.env } as Record<string, string>;
 
 export default defineConfig({
   testDir: "./e2e",

@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { productionRules } from "./platform";
 
 /**
  * M11 notification variables. Every channel is optional, and a channel is either fully set or
@@ -87,7 +88,7 @@ export function notifyRules(
   }
   if (
     anyChannel &&
-    env.VERCEL_ENV === "production" &&
+    productionRules(env) &&
     env.AROMA_NOTIFY_WORKER_SECRET === undefined
   )
     ctx.addIssue({
@@ -95,7 +96,7 @@ export function notifyRules(
       path: ["AROMA_NOTIFY_WORKER_SECRET"],
       message: "is required in production when a notification channel is set",
     });
-  if (env.VERCEL_ENV === "production" && env.AROMA_V1_TEST_NOTIFY_SINK_URL)
+  if (productionRules(env) && env.AROMA_V1_TEST_NOTIFY_SINK_URL)
     ctx.addIssue({
       code: "custom",
       path: ["AROMA_V1_TEST_NOTIFY_SINK_URL"],

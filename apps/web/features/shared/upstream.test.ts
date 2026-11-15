@@ -43,6 +43,9 @@ describe("A2: AROMA_V1_SIMULATE_UPSTREAM_OUTAGE is inert in production", () => {
   });
 
   it("works for a local `next start` that opts in (the Playwright outage server)", () => {
+    // Phase H: a local `next start` declares itself (server/platform.ts).
+    vi.stubEnv("AROMA_PLATFORM", "selfhost");
+    vi.stubEnv("AROMA_DEPLOY_ENV", "development");
     vi.stubEnv("NODE_ENV", "production");
     vi.stubEnv("AROMA_V1_SIMULATE_UPSTREAM_OUTAGE", "true");
     vi.stubEnv("AROMA_V1_ALLOW_TEST_SWITCHES", "true");
@@ -64,10 +67,20 @@ describe("testSwitchesAllowed and the env schema", () => {
     expect(testSwitchesAllowed({ NODE_ENV: "production" })).toBe(false);
     expect(
       testSwitchesAllowed({
+        // Phase H: a local `next start` declares itself (server/platform.ts).
+        AROMA_PLATFORM: "selfhost",
+        AROMA_DEPLOY_ENV: "development",
         NODE_ENV: "production",
         AROMA_V1_ALLOW_TEST_SWITCHES: "true",
       }),
     ).toBe(true);
+    // Phase H: without a platform answer, production refuses them (fail closed).
+    expect(
+      testSwitchesAllowed({
+        NODE_ENV: "production",
+        AROMA_V1_ALLOW_TEST_SWITCHES: "true",
+      }),
+    ).toBe(false);
     expect(
       testSwitchesAllowed({
         NODE_ENV: "development",

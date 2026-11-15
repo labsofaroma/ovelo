@@ -1,5 +1,6 @@
 import { isAddress } from "@solana/kit";
 import { z } from "zod";
+import { productionRules } from "./platform";
 
 const U64_MAX = 2n ** 64n - 1n;
 /** Raw USDC units (6 decimals) as a base-10 integer string; > 0 and within u64. */
@@ -17,7 +18,7 @@ const usdcRaw = z
  * unless `off` is set explicitly) and fails closed on anything it cannot read.
  */
 export const betaShape = {
-  /** `on` | `off`. Unset: on when NODE_ENV or VERCEL_ENV is production, off in development. */
+  /** `on` | `off`. Unset: on when NODE_ENV is production or the production rules apply (server/platform.ts). */
   AROMA_BETA_GATE: z.enum(["on", "off"]).optional(),
   /** Optional allowlist: comma-separated base58 wallet addresses with beta access. */
   AROMA_BETA_WALLETS: z
@@ -53,12 +54,17 @@ type Ctx = {
 export function capRules(
   env: {
     VERCEL_ENV?: string;
+    VERCEL?: string;
+    AROMA_PLATFORM?: string;
+    AROMA_DEPLOY_ENV?: string;
+    NODE_ENV?: string;
+    NEXT_PHASE?: string;
     AROMA_MAX_TRADE_USDC_RAW?: string;
     AROMA_MAX_DAILY_USDC_RAW?: string;
   },
   ctx: Ctx,
 ): void {
-  if (env.VERCEL_ENV === "production")
+  if (productionRules(env))
     for (const key of [
       "AROMA_MAX_TRADE_USDC_RAW",
       "AROMA_MAX_DAILY_USDC_RAW",

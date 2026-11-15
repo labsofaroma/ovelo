@@ -103,15 +103,18 @@ describe("local Redis proxy URL (M7 E2E)", () => {
   it("accepts loopback http only for a local run with test switches, never in production", () => {
     const local = { UPSTASH_REDIS_REST_URL: "http://127.0.0.1:8079" };
     expect(problems(local)).toEqual([]);
-    expect(problems({ ...local, NODE_ENV: "production" })).toEqual([
+    // Phase H: a local `next start` declares itself (server/platform.ts).
+    const start = {
+      ...local,
+      AROMA_PLATFORM: "selfhost",
+      AROMA_DEPLOY_ENV: "development",
+      NODE_ENV: "production",
+    };
+    expect(problems(start)).toEqual([
       "UPSTASH_REDIS_REST_URL: must be an https:// URL",
     ]);
     expect(
-      problems({
-        ...local,
-        NODE_ENV: "production",
-        AROMA_V1_ALLOW_TEST_SWITCHES: "true",
-      }),
+      problems({ ...start, AROMA_V1_ALLOW_TEST_SWITCHES: "true" }),
     ).toEqual([]);
     expect(problems({ ...local, VERCEL_ENV: "production" })).toContain(
       "UPSTASH_REDIS_REST_URL: must be an https:// URL",

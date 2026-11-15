@@ -5,7 +5,10 @@ import { localnetRules } from "./env.rules";
 import { feeShape } from "./env.fees";
 import { notifyRules, notifyShape } from "./env.notify";
 import { sentryDsn } from "./env.sentry";
+import { platformRules, platformShape } from "./env.platform";
+import { productionRules } from "./platform";
 export { TURNSTILE_TEST_SECRETS } from "./env.rules";
+export { testSwitchesAllowed } from "./env.platform";
 
 /**
  * Pure environment schema (no `server-only`, no I/O) so it can be reused by the boot hook,
@@ -112,11 +115,11 @@ const serverShape = {
   AROMA_REVALIDATE_SECRET: secret32.optional(),
   SENTRY_DSN: sentryDsn.optional(),
   SENTRY_ENVIRONMENT: optionalText,
-  /** Set by Vercel: "production" | "preview" | "development". */
-  VERCEL_ENV: z.enum(["production", "preview", "development"]).optional(),
+  ...platformShape,
   /**
    * Lets a local `next start` (NODE_ENV=production) honour test-only switches such as
-   * AROMA_V1_SIMULATE_UPSTREAM_OUTAGE. Rejected outright when VERCEL_ENV=production.
+   * AROMA_V1_SIMULATE_UPSTREAM_OUTAGE. Rejected outright when the production rules apply
+   * (server/platform.ts: production or beta, or no sound platform answer).
    */
   AROMA_V1_ALLOW_TEST_SWITCHES: bool.default(false),
   /**
@@ -229,7 +232,9 @@ function sameUrl(a: string, b: string): boolean {
 }
 
 const flatSchema = z.object(flatShape).superRefine((env, ctx) => {
-  if (env.VERCEL_ENV === "production") {
+  platformRules(env, ctx); // Phase H: server/platform.ts
+  const production = productionRules(env);
+  if (production) {
     for (const key of [
       "AROMA_V1_ALLOW_TEST_SWITCHES",
       "AROMA_V1_TEST_FORK_GENESIS",
@@ -243,10 +248,7 @@ const flatSchema = z.object(flatShape).superRefine((env, ctx) => {
         });
     }
   }
-  if (
-    env.VERCEL_ENV === "production" &&
-    env.NEXT_PUBLIC_AROMA_E2E_WALLET === "true"
-  )
+  if (production && env.NEXT_PUBLIC_AROMA_E2E_WALLET === "true")
     ctx.addIssue({
       code: "custom",
       path: ["NEXT_PUBLIC_AROMA_E2E_WALLET"],
@@ -375,19 +377,6 @@ export function parseEnv(
       keeper: pick(flat, keeperShape),
     },
   };
-}
-
-/**
- * Whether test-only switches (outage simulation, M3; the E2E wallet, M4) may take effect. Always in
- * development and test. Under NODE_ENV=production only for a local `next start` that opts in with
- * AROMA_V1_ALLOW_TEST_SWITCHES=true, and never on a Vercel production deployment.
- */
-export function testSwitchesAllowed(
-  source: Record<string, string | undefined>,
-): boolean {
-  if (source.VERCEL_ENV?.trim() === "production") return false;
-  if (source.NODE_ENV !== "production") return true;
-  return source.AROMA_V1_ALLOW_TEST_SWITCHES?.trim() === "true";
 }
 
 /** Throws EnvValidationError (a readable list of variable names and problems) when invalid. */

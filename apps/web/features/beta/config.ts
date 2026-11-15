@@ -2,12 +2,14 @@
  * Phase A private beta configuration (REWRITE-PLAN §7.3 W2). Pure and edge-safe: middleware, the
  * route handlers and the UI's server components read the same answer.
  *
- * - `AROMA_BETA_GATE=on|off`. Unset means ON in production (`NODE_ENV` or `VERCEL_ENV` is
- *   `production`, which includes a local `next start`) and off in development and tests. Phase B
+ * - `AROMA_BETA_GATE=on|off`. Unset means ON in production (`NODE_ENV` is `production`, which
+ *   includes a local `next start`, or the production rules of server/platform.ts apply) and off in development and tests. Phase B
  *   switches it off by setting `off` explicitly; it never turns off by accident.
  * - `AROMA_BETA_WALLETS`: optional comma-separated allowlist (validated at boot).
  * - Anything unreadable fails CLOSED: the gate is on and the allowlist is empty.
  */
+import { productionRules } from "@/server/platform";
+
 type Env = Record<string, string | undefined>;
 
 export type BetaConfig = {
@@ -22,10 +24,7 @@ export function betaGateOn(env: Env): boolean {
   if (value === "off") return false;
   if (value === "on") return true;
   if (value) return true; // an invalid value fails closed (boot refuses it as well)
-  return (
-    env.NODE_ENV?.trim() === "production" ||
-    env.VERCEL_ENV?.trim() === "production"
-  );
+  return env.NODE_ENV?.trim() === "production" || productionRules(env);
 }
 
 export function betaConfig(env: Env): BetaConfig {

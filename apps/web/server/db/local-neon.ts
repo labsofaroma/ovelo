@@ -1,4 +1,5 @@
 import { neonConfig } from "@neondatabase/serverless";
+import { productionRules } from "../platform";
 
 /**
  * LOCAL DEVELOPMENT AND E2E ONLY (M5b B6). The Neon serverless driver speaks Postgres over a
@@ -9,7 +10,8 @@ import { neonConfig } from "@neondatabase/serverless";
  * - AROMA_LOCAL_NEON_WS_PROXY is set (a host:port, outside the env schema like the other local
  *   test switches),
  * - the DATABASE_URL host is loopback (localhost, 127.0.0.1, ::1),
- * - this is not a Vercel production deployment.
+ * - the production rules do not apply (server/platform.ts: not production or beta, on any
+ *   platform, and the platform answer is sound).
  */
 type Env = Record<string, string | undefined>;
 const LOOPBACK = new Set(["localhost", "127.0.0.1", "[::1]", "::1"]);
@@ -20,7 +22,7 @@ export function localNeonProxy(
   env: Env = process.env,
 ): string | null {
   const proxy = env.AROMA_LOCAL_NEON_WS_PROXY?.trim();
-  if (!proxy || env.VERCEL_ENV === "production") return null;
+  if (!proxy || productionRules(env)) return null;
   let host: string;
   try {
     host = new URL(url).hostname;

@@ -2,6 +2,7 @@ import "server-only";
 import type { z } from "zod";
 import { AppError, mapError } from "./errors";
 import { logger } from "./logger";
+import { vercelFlag } from "./platform";
 
 const DEFAULT_MAX_BYTES = 16_384;
 
@@ -119,7 +120,7 @@ export function assertSameOrigin(request: Request): void {
   // origin the browser actually used is rebuilt from Host (forwarded headers only behind a
   // trusted proxy), exactly as middleware.ts does.
   const trustProxy =
-    process.env.VERCEL === "1" || process.env.AROMA_TRUST_PROXY === "true";
+    vercelFlag(process.env) || process.env.AROMA_TRUST_PROXY === "true";
   const host =
     (trustProxy && request.headers.get("x-forwarded-host")) ||
     request.headers.get("host");

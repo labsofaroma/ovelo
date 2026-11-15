@@ -85,9 +85,27 @@ describe("invest cluster (B0/B2)", () => {
       if (!r.available) throw new Error("expected devnet");
       return r.network.testPeriods;
     };
-    expect(testPeriods({ NODE_ENV: "production" })).toBe(false);
+    // Phase H: a production boot needs a platform answer (server/platform.ts).
     expect(
       testPeriods({
+        AROMA_PLATFORM: "selfhost",
+        AROMA_DEPLOY_ENV: "development",
+        NODE_ENV: "production",
+      }),
+    ).toBe(false);
+    expect(
+      testPeriods({
+        AROMA_PLATFORM: "selfhost",
+        AROMA_DEPLOY_ENV: "beta",
+        NODE_ENV: "production",
+        AROMA_V1_ALLOW_TEST_SWITCHES: "false",
+      }),
+    ).toBe(false);
+    expect(
+      testPeriods({
+        // Phase H: a local `next start` declares itself (server/platform.ts).
+        AROMA_PLATFORM: "selfhost",
+        AROMA_DEPLOY_ENV: "development",
         NODE_ENV: "production",
         AROMA_V1_ALLOW_TEST_SWITCHES: "true",
       }),

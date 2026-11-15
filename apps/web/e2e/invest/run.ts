@@ -21,6 +21,7 @@ import {
 } from "node:fs";
 import { createServer } from "node:http";
 import { join } from "node:path";
+import { LOCAL_START } from "../local-start";
 
 const WEB = process.cwd();
 const ROOT = join(WEB, "../..");
@@ -194,6 +195,7 @@ async function main() {
     {
       ...buildEnv,
       NODE_ENV: "production",
+      ...LOCAL_START, // Phase H (e2e/local-start.ts)
       AROMA_V1_ALLOW_TEST_SWITCHES: "true",
       AROMA_V1_INVEST_CLUSTER: "localnet",
       AROMA_V1_LOCALNET_RPC_URL: s.rpcUrl,

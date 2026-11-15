@@ -1,3 +1,4 @@
+import { deployEnvOf } from "../server/platform";
 import { scrubSentryEvent, type ScrubbableEvent } from "./scrub";
 
 /** The Sentry init options we use in every runtime. Kept SDK-free so it is trivially testable. */
@@ -23,7 +24,8 @@ export function buildSentryOptions(
   if (!trimmed) return null;
   return {
     dsn: trimmed,
-    environment: environment?.trim() || process.env.NODE_ENV || "development",
+    // SENTRY_ENVIRONMENT wins; else the deploy environment from server/platform.ts (Phase H).
+    environment: environment?.trim() || deployEnvOf(process.env),
     sendDefaultPii: false,
     tracesSampleRate: 0.1,
     maxBreadcrumbs: 30,

@@ -4,9 +4,12 @@
  *
  * - Set: used as given (boot validates: > 0, within u64, daily ≥ per-trade).
  * - Unset outside production: the beta defaults, $50 per trade and $200 per wallet per UTC day.
- * - Unset, 0 or unreadable in production (`NODE_ENV` or `VERCEL_ENV` production): refused, so
+ * - Unset, 0 or unreadable in production (`NODE_ENV` production, or the production rules of
+ *   server/platform.ts): refused, so
  *   every capped request fails CLOSED (TRADE_CAP_UNAVAILABLE) rather than trading uncapped.
  */
+import { productionRules } from "@/server/platform";
+
 type Env = Record<string, string | undefined>;
 
 export const USDC_DECIMALS = 6;
@@ -33,8 +36,7 @@ function parse(value: string | undefined): bigint | null | "invalid" {
 
 export function capsConfig(env: Env): CapsConfig {
   const production =
-    env.NODE_ENV?.trim() === "production" ||
-    env.VERCEL_ENV?.trim() === "production";
+    env.NODE_ENV?.trim() === "production" || productionRules(env);
   const trade = parse(env.AROMA_MAX_TRADE_USDC_RAW);
   const daily = parse(env.AROMA_MAX_DAILY_USDC_RAW);
   const bad: string[] = [];
