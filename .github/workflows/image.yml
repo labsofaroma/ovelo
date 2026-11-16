@@ -26,7 +26,7 @@ concurrency:
   cancel-in-progress: false
 
 env:
-  IMAGE: ghcr.io/labsofovelo/ovelo-web
+  IMAGE: ghcr.io/labsofaroma/ovelo-web
   NEXT_TELEMETRY_DISABLED: "1"
   TRIVY_VERSION: v0.76.1
   COSIGN_VERSION: v3.1.4

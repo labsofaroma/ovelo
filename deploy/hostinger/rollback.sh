@@ -12,10 +12,10 @@
 set -Eeuo pipefail
 umask 077
 
-REPO="${OVELO_IMAGE_REPO:-ghcr.io/labsofovelo/ovelo-web}"
+REPO="${OVELO_IMAGE_REPO:-ghcr.io/labsofaroma/ovelo-web}"
 ETC="${OVELO_ETC:-/etc/ovelo}"
 COMPOSE_FILE="${OVELO_COMPOSE_FILE:-/opt/ovelo/docker-compose.yml}"
-SIGNER_IDENTITY='^https://github\.com/labsofovelo/ovelo/\.github/workflows/image\.yml@refs/(heads/main|tags/v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?)$'
+SIGNER_IDENTITY='^https://github\.com/labsofaroma/ovelo/\.github/workflows/image\.yml@refs/(heads/main|tags/v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?)$'
 OIDC_ISSUER="https://token.actions.githubusercontent.com"
 
 # Compose reads .env next to the compose file for ${OVELO_IMAGE}, so plain `docker compose ps`,

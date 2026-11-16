@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Phase H Step 5: deploy one image DIGEST to the VPS (docs/launch/HOSTINGER-RUNBOOK.md §8).
 #
-#   sudo /opt/ovelo/deploy.sh ghcr.io/labsofovelo/ovelo-web@sha256:<64 hex>
+#   sudo /opt/ovelo/deploy.sh ghcr.io/labsofaroma/ovelo-web@sha256:<64 hex>
 #   sudo /opt/ovelo/deploy.sh sha256:<64 hex>            (the repository is implied)
 #
 # 1. Refuse anything but a digest of OUR repository; check /etc/ovelo ownership and modes.
@@ -21,10 +21,10 @@
 set -Eeuo pipefail
 umask 077
 
-REPO="${OVELO_IMAGE_REPO:-ghcr.io/labsofovelo/ovelo-web}"
+REPO="${OVELO_IMAGE_REPO:-ghcr.io/labsofaroma/ovelo-web}"
 ETC="${OVELO_ETC:-/etc/ovelo}"
 COMPOSE_FILE="${OVELO_COMPOSE_FILE:-/opt/ovelo/docker-compose.yml}"
-SIGNER_IDENTITY='^https://github\.com/labsofovelo/ovelo/\.github/workflows/image\.yml@refs/(heads/main|tags/v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?)$'
+SIGNER_IDENTITY='^https://github\.com/labsofaroma/ovelo/\.github/workflows/image\.yml@refs/(heads/main|tags/v[0-9]+\.[0-9]+\.[0-9]+(-[0-9A-Za-z.-]+)?)$'
 OIDC_ISSUER="https://token.actions.githubusercontent.com"
 
 log() { printf '%s deploy: %s\n' "$(date -u +%FT%TZ)" "$*" >&2; }
@@ -91,7 +91,7 @@ log "verifying the signature of ${IMAGE}"
 cosign verify "$IMAGE" \
   --certificate-identity-regexp "$SIGNER_IDENTITY" \
   --certificate-oidc-issuer "$OIDC_ISSUER" >/dev/null \
-  || die "signature verification failed: not built and signed by labsofovelo/ovelo image.yml (or ghcr.io login missing: HOSTINGER-RUNBOOK §2.8)"
+  || die "signature verification failed: not built and signed by labsofaroma/ovelo image.yml (or ghcr.io login missing: HOSTINGER-RUNBOOK §2.8)"
 
 # --- 3. pull ------------------------------------------------------------------------------
 log "pulling by digest"

@@ -176,11 +176,11 @@ describe("deploy.sh and rollback.sh refuse anything but our digest", () => {
 
   it.each([
     [[]],
-    [["ghcr.io/labsofovelo/ovelo-web:latest"]],
-    [["ghcr.io/labsofovelo/ovelo-web:v1.0.0"]],
+    [["ghcr.io/labsofaroma/ovelo-web:latest"]],
+    [["ghcr.io/labsofaroma/ovelo-web:v1.0.0"]],
     [[`ghcr.io/someone/ovelo-web@sha256:${DIGEST}`]],
-    [[`ghcr.io/labsofovelo/ovelo-web@sha256:${"A".repeat(64)}`]],
-    [[`ghcr.io/labsofovelo/ovelo-web@sha256:${DIGEST.slice(1)}`]],
+    [[`ghcr.io/labsofaroma/ovelo-web@sha256:${"A".repeat(64)}`]],
+    [[`ghcr.io/labsofaroma/ovelo-web@sha256:${DIGEST.slice(1)}`]],
     [[`sha256:${DIGEST}; rm -rf /`]],
     [["a", "b"]],
   ])("deploy.sh %j → exit 2 before touching anything", (args) => {
@@ -197,7 +197,7 @@ describe("deploy.sh and rollback.sh refuse anything but our digest", () => {
 
   it("rollback.sh refuses a tag or another repository", () => {
     expect(
-      run("rollback.sh", "ghcr.io/labsofovelo/ovelo-web:latest").status,
+      run("rollback.sh", "ghcr.io/labsofaroma/ovelo-web:latest").status,
     ).toBe(2);
     expect(run("rollback.sh", `docker.io/x/y@sha256:${DIGEST}`).status).toBe(2);
   });
@@ -207,7 +207,7 @@ describe("deploy.sh and rollback.sh refuse anything but our digest", () => {
       const text = read(`deploy/hostinger/${script}`);
       expect(text).toMatch(/cosign verify/);
       expect(text).toContain(
-        "labsofovelo/ovelo/\\.github/workflows/image\\.yml@refs/",
+        "labsofaroma/ovelo/\\.github/workflows/image\\.yml@refs/",
       );
       expect(text).toContain("https://token.actions.githubusercontent.com");
     }
@@ -223,7 +223,7 @@ describe("deploy.sh and rollback.sh refuse anything but our digest", () => {
     expect(identities[0]).toBe(identities[1]);
     const re = new RegExp(identities[0]!);
     const ref = (r: string) =>
-      `https://github.com/labsofovelo/ovelo/.github/workflows/image.yml@refs/${r}`;
+      `https://github.com/labsofaroma/ovelo/.github/workflows/image.yml@refs/${r}`;
     for (const r of ["heads/main", "tags/v1.0.0", "tags/v1.2.3-beta.1"])
       expect(re.test(ref(r)), r).toBe(true);
     for (const r of ["heads/dev", "tags/v1", "tags/vX", "tags/v1.0.0;x"])

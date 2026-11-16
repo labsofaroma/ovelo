@@ -69,7 +69,7 @@ RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack 
 ARG OVELO_REVISION=unknown
 ARG OVELO_VERSION=0.0.0-local
 LABEL org.opencontainers.image.title="ovelo-web" \
-      org.opencontainers.image.source="https://github.com/labsofovelo/ovelo" \
+      org.opencontainers.image.source="https://github.com/labsofaroma/ovelo" \
       org.opencontainers.image.revision="${OVELO_REVISION}" \
       org.opencontainers.image.version="${OVELO_VERSION}" \
       org.opencontainers.image.licenses="NOASSERTION"

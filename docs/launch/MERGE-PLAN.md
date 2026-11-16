@@ -78,7 +78,7 @@ GitHub matches a required check by the job's `name:`.
 ```bash
 # Branch protection on main: required checks, 1 approving review, code owners, linear history,
 # no force-push, no deletion, conversations resolved, admins included.
-gh api -X PUT repos/labsofovelo/ovelo/branches/main/protection \
+gh api -X PUT repos/labsofaroma/ovelo/branches/main/protection \
   -H "Accept: application/vnd.github+json" --input - <<'JSON'
 {
   "required_status_checks": {
@@ -103,10 +103,10 @@ gh api -X PUT repos/labsofovelo/ovelo/branches/main/protection \
 JSON
 
 # Check what is set:
-gh api repos/labsofovelo/ovelo/branches/main/protection --jq '{checks: .required_status_checks.contexts, linear: .required_linear_history.enabled, force: .allow_force_pushes.enabled}'
+gh api repos/labsofaroma/ovelo/branches/main/protection --jq '{checks: .required_status_checks.contexts, linear: .required_linear_history.enabled, force: .allow_force_pushes.enabled}'
 
 # Protect the rollback tag from deletion or moving (repository ruleset):
-gh api -X POST repos/labsofovelo/ovelo/rulesets -H "Accept: application/vnd.github+json" --input - <<'JSON'
+gh api -X POST repos/labsofaroma/ovelo/rulesets -H "Accept: application/vnd.github+json" --input - <<'JSON'
 {
   "name": "protect prototype-final",
   "target": "tag",

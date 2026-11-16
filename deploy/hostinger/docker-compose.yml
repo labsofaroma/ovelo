@@ -12,7 +12,7 @@ name: ovelo
 
 services:
   app:
-    image: ${OVELO_IMAGE:?set OVELO_IMAGE to ghcr.io/labsofovelo/ovelo-web@sha256:<digest> (deploy.sh does)}
+    image: ${OVELO_IMAGE:?set OVELO_IMAGE to ghcr.io/labsofaroma/ovelo-web@sha256:<digest> (deploy.sh does)}
     env_file:
       - path: /etc/ovelo/ovelo.env
         required: true
