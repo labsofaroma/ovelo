@@ -26,12 +26,13 @@
     "devnet:audit": "vite-node scripts/audit-devnet.ts --"
   },
   "devDependencies": {
-    "@ovelo/config": "workspace:*",
-    "@ovelo/keeper": "workspace:*",
     "@noble/curves": "1.9.7",
     "@noble/hashes": "1.8.0",
+    "@ovelo/config": "workspace:*",
+    "@ovelo/keeper": "workspace:*",
     "@solana/kit": "7.1.1",
     "@solana/spl-token": "0.4.15",
+    "@solana/subscriptions": "0.5.0",
     "@solana/web3.js": "1.98.4",
     "@types/node": "22.20.2",
     "eslint": "9.39.4",
