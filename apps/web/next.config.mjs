@@ -15,6 +15,16 @@ const config = {
         output: "standalone",
         // The monorepo root, so workspace packages (@ovelo/ui, @ovelo/guard) are traced in.
         outputFileTracingRoot: fileURLToPath(new URL("../..", import.meta.url)),
+        // Build-only native tools that tracing follows in from the build config but the server
+        // never loads. esbuild's Go binary also carried a vulnerable Go stdlib (Trivy, image.yml).
+        outputFileTracingExcludes: {
+          "*": [
+            "**/node_modules/esbuild/**",
+            "**/node_modules/@esbuild/**",
+            "**/node_modules/@swc/core*/**",
+            "**/node_modules/typescript/**",
+          ],
+        },
       }
     : {}),
   // E2E builds (with the test wallet bridge) go to their own directory so they can never be

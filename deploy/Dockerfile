@@ -58,8 +58,12 @@ RUN deploy/build-app.sh e2e
 
 # ---------- runtime base ----------
 FROM node:24.12.0-slim@sha256:7326fb2dbdce998edd72140946851be64ef4a643e8715e138ca467e8e9d92c99 AS runtime-base
-# No package manager or shell tooling beyond what the base needs: drop npm, npx, corepack and
-# yarn; add the unprivileged user (no shell, no home).
+# Debian security updates first: the pinned base image lags them (Trivy fails the build on fixed
+# Critical/High OS packages). Then no package manager or shell tooling beyond what the base needs:
+# drop npm, npx, corepack and yarn; add the unprivileged user (no shell, no home).
+RUN apt-get update \
+ && DEBIAN_FRONTEND=noninteractive apt-get -y --no-install-recommends upgrade \
+ && apt-get clean && rm -rf /var/lib/apt/lists/*
 RUN rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack \
            /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack \
            /usr/local/bin/yarn /usr/local/bin/yarnpkg /opt/yarn-* \
