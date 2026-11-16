@@ -89,14 +89,14 @@ jobs:
 
       # An unset repository variable would be passed as an EMPTY build arg, which overrides the
       # Dockerfile default and inlines "" into the browser bundle. Refuse instead.
+      # Sentry is optional (owner's choice, 2026-11-16): an empty DSN is treated as unset by the env
+      # parser, so the app runs without error reporting until NEXT_PUBLIC_SENTRY_DSN is set.
       - name: Required public build values (repository variables)
         env:
           RPC: ${{ vars.NEXT_PUBLIC_SOLANA_RPC_URL }}
-          SENTRY: ${{ vars.NEXT_PUBLIC_SENTRY_DSN }}
         run: |
           missing=""
           [ -n "${RPC}" ] || missing="${missing} NEXT_PUBLIC_SOLANA_RPC_URL"
-          [ -n "${SENTRY}" ] || missing="${missing} NEXT_PUBLIC_SENTRY_DSN"
           if [ -n "${missing}" ]; then
             echo "::error::set these repository variables (Settings > Secrets and variables > Actions > Variables):${missing}"
             exit 1

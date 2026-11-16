@@ -41,8 +41,9 @@ export const WEB_PRODUCTION: readonly {
   // Phase A caps (W3): boot refuses them unset or 0 in production.
   { name: "OVELO_MAX_TRADE_USDC_RAW", level: "required", milestone: "Phase A" },
   { name: "OVELO_MAX_DAILY_USDC_RAW", level: "required", milestone: "Phase A" },
-  { name: "SENTRY_DSN", level: "required", milestone: "M9" },
-  { name: "NEXT_PUBLIC_SENTRY_DSN", level: "required", milestone: "M9" },
+  // Optional by the owner's choice (2026-11-16): no error reporting until a DSN is set.
+  { name: "SENTRY_DSN", level: "recommended", milestone: "M9" },
+  { name: "NEXT_PUBLIC_SENTRY_DSN", level: "recommended", milestone: "M9" },
   { name: "SENTRY_ENVIRONMENT", level: "recommended", milestone: "M9" },
   { name: "JITO_BLOCK_ENGINE_URL", level: "recommended", milestone: "M9" },
   { name: "OVELO_REVALIDATE_SECRET", level: "recommended", milestone: "M9" },

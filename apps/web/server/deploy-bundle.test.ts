@@ -320,9 +320,9 @@ describe(".github/workflows/image.yml (Step 6; written, not run here)", () => {
   });
 
   it("refuses to build without the required public values, and prints the digest once signed", () => {
-    expect(wf).toMatch(
-      /\[ -n "\$\{RPC\}" \][\s\S]*\[ -n "\$\{SENTRY\}" \][\s\S]*exit 1/,
-    );
+    expect(wf).toMatch(/\[ -n "\$\{RPC\}" \][\s\S]*exit 1/);
+    // Sentry is optional (owner's choice): the gate no longer requires its DSN.
+    expect(wf).not.toMatch(/\[ -n "\$\{SENTRY\}" \]/);
     expect(wf.indexOf("Required public build values")).toBeLessThan(
       wf.indexOf("Build and push"),
     );
