@@ -1,7 +1,6 @@
 //! Unit and property tests for `math.rs`.
 
 mod tests {
-    use crate::constants::*;
     use crate::errors::GuardError;
     use crate::math::*;
 
@@ -151,7 +150,6 @@ mod tests {
 }
 
 mod proptests {
-    use crate::constants::*;
     use crate::math::*;
     use proptest::prelude::*;
 

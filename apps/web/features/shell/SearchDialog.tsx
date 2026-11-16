@@ -28,7 +28,9 @@ export function SearchDialog({
     event.preventDefault();
     const q = query.trim();
     onOpenChange(false);
-    router.push(q ? `${routes.markets}?q=${encodeURIComponent(q)}` : routes.markets);
+    router.push(
+      q ? `${routes.markets}?q=${encodeURIComponent(q)}` : routes.markets,
+    );
   }
 
   return (

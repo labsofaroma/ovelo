@@ -43,7 +43,9 @@ export function AccountMenu({ compact = false }: { compact?: boolean }) {
               <span className="truncate text-small font-medium text-ink">
                 {shell.account.title}
               </span>
-              <span className="text-micro text-muted">{shell.account.hint}</span>
+              <span className="text-micro text-muted">
+                {shell.account.hint}
+              </span>
             </span>
             <ChevronsUpDown className="size-4 text-muted" aria-hidden />
           </>
@@ -55,7 +57,9 @@ export function AccountMenu({ compact = false }: { compact?: boolean }) {
         align={compact ? "end" : "start"}
       >
         <div className="flex flex-col gap-1 px-3 pt-2 pb-3">
-          <p className="font-display text-title text-ink">{shell.account.title}</p>
+          <p className="font-display text-title text-ink">
+            {shell.account.title}
+          </p>
           <p className="text-caption text-muted">{shell.account.prompt}</p>
           <p className="text-caption text-muted">{shell.account.custody}</p>
         </div>

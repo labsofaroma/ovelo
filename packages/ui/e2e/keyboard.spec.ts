@@ -169,7 +169,7 @@ test("focus ring: a keyboard-focused control shows the 2px token-colored outline
   expect(ring.color).not.toBe("rgba(0, 0, 0, 0)");
 });
 
-test("typography: Manrope is the font actually used, not a silent fallback", async ({
+test("typography: Inter (body) and Manrope (display) are the fonts actually used, not silent fallbacks", async ({
   page,
 }) => {
   await openStory(page, "foundations--typography");
@@ -178,17 +178,21 @@ test("typography: Manrope is the font actually used, not a silent fallback", asy
     const sample = document.querySelector<HTMLElement>(
       "[data-testid=type-scale] span[style]",
     );
+    const root = getComputedStyle(document.documentElement);
+    const loaded = (family: string) =>
+      [...document.fonts].some(
+        (f) => f.family === family && f.status === "loaded",
+      );
     return {
       family: sample ? getComputedStyle(sample).fontFamily : "",
-      loaded: [...document.fonts].some(
-        (f) => f.family === "Manrope" && f.status === "loaded",
-      ),
-      token: getComputedStyle(document.documentElement)
-        .getPropertyValue("--ovelo-font-sans")
-        .trim(),
+      interLoaded: loaded("Inter"),
+      sans: root.getPropertyValue("--ovelo-font-sans").trim(),
+      display: root.getPropertyValue("--ovelo-font-display").trim(),
     };
   });
-  expect(info.token).toMatch(/^Manrope,/);
-  expect(info.family).toMatch(/^Manrope/);
-  expect(info.loaded).toBe(true);
+  // The redesign: Inter for body text, Manrope for display (packages/ui/tokens.css, fonts.css).
+  expect(info.sans).toMatch(/^Inter,/);
+  expect(info.display).toMatch(/^Manrope/);
+  expect(info.family).toMatch(/^Inter/);
+  expect(info.interLoaded).toBe(true);
 });
