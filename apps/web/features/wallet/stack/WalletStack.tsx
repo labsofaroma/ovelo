@@ -5,7 +5,12 @@ import {
   WalletProvider as AdapterProvider,
   useWallet as useAdapter,
 } from "@solana/wallet-adapter-react";
-import type { WalletName } from "@solana/wallet-adapter-base";
+import {
+  WalletAdapterNetwork,
+  type Adapter,
+  type WalletName,
+} from "@solana/wallet-adapter-base";
+import { WalletConnectWalletAdapter } from "@solana/wallet-adapter-walletconnect";
 import { VersionedTransaction } from "@solana/web3.js";
 import {
   useCallback,
@@ -43,7 +48,9 @@ import {
 /**
  * The wallet bridge (M4 B2): wallet-adapter with Wallet Standard auto-discovery (desktop
  * extensions, wallet in-app browsers) and, on Android, Mobile Wallet Adapter, which
- * wallet-adapter-react adds by itself. Wallet-only login (REWRITE-PLAN §7.3 W1): no embedded or
+ * wallet-adapter-react adds by itself. WalletConnect (when NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID is
+ * set at build time) adds a QR code for phone wallets on desktop and a deep link on mobile; it is
+ * still the user's own wallet that signs. Wallet-only login (REWRITE-PLAN §7.3 W1): no embedded or
  * email wallets, so every signer is the user's own wallet.
  * This is the ONLY place v1 code uses @solana/web3.js (V0 fallback for legacy adapters).
  * One cluster per stack (M7 B2): the browser RPC must report that cluster's genesis, and an
@@ -207,6 +214,33 @@ function Bridge({
   );
 }
 
+const WALLETCONNECT_PROJECT_ID =
+  process.env.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID?.trim();
+
+/** The WalletConnect adapter for mainnet or devnet; none on localnet or without a project ID. */
+function walletConnectAdapters(cluster: ClusterConfig["cluster"]): Adapter[] {
+  if (!WALLETCONNECT_PROJECT_ID || typeof window === "undefined") return [];
+  if (cluster !== "mainnet" && cluster !== "devnet") return [];
+  const origin = window.location.origin;
+  return [
+    new WalletConnectWalletAdapter({
+      network:
+        cluster === "mainnet"
+          ? WalletAdapterNetwork.Mainnet
+          : WalletAdapterNetwork.Devnet,
+      options: {
+        projectId: WALLETCONNECT_PROJECT_ID,
+        metadata: {
+          name: "Ovelo",
+          description: "Tokenized stocks and baskets on Solana",
+          url: origin,
+          icons: [`${origin}/icon.svg`],
+        },
+      },
+    }),
+  ];
+}
+
 export default function WalletStack({
   children,
   initiallyOpen = false,
@@ -216,7 +250,10 @@ export default function WalletStack({
   initiallyOpen?: boolean;
   cluster: ClusterConfig;
 }) {
-  const wallets = useMemo(() => [], []);
+  const wallets = useMemo(
+    () => walletConnectAdapters(cluster.cluster),
+    [cluster.cluster],
+  );
   return (
     <ConnectionProvider endpoint={cluster.rpcUrl}>
       <AdapterProvider

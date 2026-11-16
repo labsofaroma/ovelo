@@ -65,11 +65,11 @@ describe.each(Object.entries(SAMPLES))("%s", (_type, path) => {
     );
   });
 
-  it("img-src is exactly 'self', data:, blob: and the four logo hosts (image-hosts.mjs)", async () => {
+  it("img-src is exactly 'self', data:, blob:, the four logo hosts (image-hosts.mjs) and WalletConnect's wallet logos", async () => {
     const csp = (await get(path)).headers.get("content-security-policy") ?? "";
     // Spelled out here, not read from IMAGE_HOSTS, so a host added to the list must be added here.
     expect(csp.split("; ").find((d) => d.startsWith("img-src "))).toBe(
-      "img-src 'self' data: blob: https://xstocks-metadata.backed.fi https://prestocks.com https://backpack.exchange https://static.datapi.jup.ag",
+      "img-src 'self' data: blob: https://xstocks-metadata.backed.fi https://prestocks.com https://backpack.exchange https://static.datapi.jup.ag https://api.web3modal.org",
     );
   });
 

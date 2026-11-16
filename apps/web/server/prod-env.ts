@@ -48,6 +48,7 @@ export const WEB_PRODUCTION: readonly {
   { name: "JITO_BLOCK_ENGINE_URL", level: "recommended", milestone: "M9" },
   { name: "OVELO_REVALIDATE_SECRET", level: "recommended", milestone: "M9" },
   { name: "PYTH_API_KEY", level: "recommended", milestone: "M10" },
+  { name: "NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID", level: "recommended", milestone: "WalletConnect" }, // prettier-ignore
   {
     name: "NEXT_PUBLIC_TURNSTILE_SITE_KEY",
     level: "recommended",

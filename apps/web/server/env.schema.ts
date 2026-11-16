@@ -56,6 +56,11 @@ const publicShape = {
   NEXT_PUBLIC_OVELO_LOCALNET: z.enum(["true", "false"]).optional(),
   /** M7: Cloudflare Turnstile site key for the devnet faucet (public). */
   NEXT_PUBLIC_TURNSTILE_SITE_KEY: optionalText,
+  /** WalletConnect (Reown) project ID (public): QR and phone-wallet connections. Unset: none. */
+  NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: z
+    .string()
+    .regex(/^[0-9a-f]{32}$/, "must be a 32-character hex project ID")
+    .optional(),
 };
 
 /**

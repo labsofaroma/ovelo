@@ -138,6 +138,7 @@ jobs:
             NEXT_PUBLIC_SENTRY_DSN=${{ vars.NEXT_PUBLIC_SENTRY_DSN }}
             NEXT_PUBLIC_PLAUSIBLE_DOMAIN=${{ vars.NEXT_PUBLIC_PLAUSIBLE_DOMAIN }}
             NEXT_PUBLIC_TURNSTILE_SITE_KEY=${{ vars.NEXT_PUBLIC_TURNSTILE_SITE_KEY }}
+            NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID=${{ vars.NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID }}
 
       - name: Scan for vulnerabilities (fail on Critical or High with a fix available)
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0

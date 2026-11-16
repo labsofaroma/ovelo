@@ -34,6 +34,7 @@ const GOOD = {
   OVELO_REVALIDATE_SECRET: secret("r"),
   PYTH_API_KEY: "pyth",
   NEXT_PUBLIC_TURNSTILE_SITE_KEY: "0x4AAAAAAA-real",
+  NEXT_PUBLIC_WALLETCONNECT_PROJECT_ID: "0123456789abcdef0123456789abcdef",
   TURNSTILE_SECRET_KEY: "0x4AAAAAAA-real-secret",
 };
 const byName = (env: Record<string, string>, name: string) =>

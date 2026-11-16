@@ -17,6 +17,9 @@ describe("v1 CSP after wallet-only login", () => {
       "wss://relay.walletconnect.org",
       "https://verify.walletconnect.org",
       "https://explorer-api.walletconnect.com",
+      "https://rpc.walletconnect.org",
+      "https://api.web3modal.org",
+      "https://pulse.walletconnect.org",
       "https://challenges.cloudflare.com",
     ]);
   });
@@ -25,7 +28,7 @@ describe("v1 CSP after wallet-only login", () => {
     const csp = buildCsp({ nonce: "n", env: {}, development: false });
     const frame = csp.split("; ").find((d) => d.startsWith("frame-src"));
     expect(frame).toBe(
-      "frame-src https://verify.walletconnect.org https://challenges.cloudflare.com",
+      "frame-src https://verify.walletconnect.org https://verify.walletconnect.com https://challenges.cloudflare.com",
     );
   });
 

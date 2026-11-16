@@ -64,3 +64,4 @@ coverage/
 .e2e-invest/
 .lighthouseci/
 .lighthouseci-reports/
+.neon

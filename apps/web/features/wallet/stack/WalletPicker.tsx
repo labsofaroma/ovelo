@@ -14,7 +14,8 @@ import { solNeededNote, WALLET_INSTALL_GUIDES } from "../onboarding";
 
 /**
  * Wallet chooser built from packages/ui (no wallet-adapter-react-ui and its global CSS). Lists
- * only the Wallet Standard wallets the browser exposes (and Mobile Wallet Adapter on Android),
+ * the Wallet Standard wallets the browser exposes (and Mobile Wallet Adapter on Android), plus
+ * WalletConnect for phone wallets (QR) when a project ID is configured,
  * on every cluster. Wallet-only login (REWRITE-PLAN §7.3 W1): no embedded or email option, so
  * users bring their own wallet; the install guides and the SOL note help them get one.
  */
@@ -53,7 +54,16 @@ export function WalletPicker({
                   // eslint-disable-next-line @next/next/no-img-element
                   <img src={option.icon} alt="" width={20} height={20} />
                 ) : null}
-                {option.name}
+                {option.name === "WalletConnect" ? (
+                  <span className="flex flex-col items-start">
+                    <span>WalletConnect</span>
+                    <span className="text-small font-normal text-muted">
+                      Scan a QR code with your phone wallet
+                    </span>
+                  </span>
+                ) : (
+                  option.name
+                )}
               </Button>
             </li>
           ))}

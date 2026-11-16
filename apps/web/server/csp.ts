@@ -33,6 +33,10 @@ export const FIXED_CONNECT_SOURCES = [
   "wss://relay.walletconnect.org",
   "https://verify.walletconnect.org",
   "https://explorer-api.walletconnect.com",
+  // WalletConnect QR modal (Reown AppKit): JSON-RPC proxy, wallet list and event pulse.
+  "https://rpc.walletconnect.org",
+  "https://api.web3modal.org",
+  "https://pulse.walletconnect.org",
   // Cloudflare Turnstile.
   "https://challenges.cloudflare.com",
 ] as const;
@@ -108,10 +112,11 @@ export function buildCsp(input: {
     "form-action 'self'",
     `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'${development ? " 'unsafe-eval'" : ""}`,
     "style-src 'self' 'unsafe-inline'",
-    `img-src 'self' data: blob: ${IMAGE_HOSTS.map((host) => `https://${host}`).join(" ")}`,
+    // api.web3modal.org: wallet logos in the WalletConnect QR modal.
+    `img-src 'self' data: blob: ${IMAGE_HOSTS.map((host) => `https://${host}`).join(" ")} https://api.web3modal.org`,
     "font-src 'self' data:",
     `connect-src ${connectSources(env).join(" ")}`,
-    "frame-src https://verify.walletconnect.org https://challenges.cloudflare.com",
+    "frame-src https://verify.walletconnect.org https://verify.walletconnect.com https://challenges.cloudflare.com",
     "worker-src 'self' blob:",
     "manifest-src 'self'",
     ...(development ? [] : ["upgrade-insecure-requests"]),
