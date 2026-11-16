@@ -117,7 +117,7 @@ jobs:
         working-directory: packages/contracts
         run: bash scripts/verify-build.sh --docker
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: ovelo-guard-verifiable
           path: packages/contracts/target/build/verifiable/ovelo_guard.so
@@ -165,7 +165,7 @@ jobs:
       - name: e2e:fork (3 one-hour periods, then close + revoke)
         run: pnpm --filter @ovelo/contracts e2e:fork
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: e2e-fork-report
