@@ -32,7 +32,7 @@
     "@types/node": "^20.14.0",
     "eslint": "9.39.5",
     "typescript": "^5.7.3",
-    "vitest": "3.2.7"
+    "vitest": "5.1.1"
   },
   "peerDependencies": {
     "eslint": "^9.0.0",
