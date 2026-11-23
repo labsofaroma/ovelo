@@ -18,7 +18,7 @@
   "devDependencies": {
     "@ovelo/config": "workspace:*",
     "@electric-sql/pglite": "0.5.16",
-    "@types/node": "^20.14.0",
+    "@types/node": "^26.6.6",
     "@vitest/coverage-v8": "3.2.7",
     "eslint": "9.39.5",
     "fast-check": "4.10.2",
