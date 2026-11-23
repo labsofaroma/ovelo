@@ -36,8 +36,8 @@
     "@solana/web3.js": "1.98.4",
     "@types/node": "22.20.2",
     "eslint": "9.39.4",
-    "litesvm": "1.2.1",
-    "tsx": "4.20.6",
+    "litesvm": "1.6.2",
+    "tsx": "4.23.15",
     "typescript": "5.9.3",
     "vite-node": "3.2.4",
     "vitest": "3.2.7"
