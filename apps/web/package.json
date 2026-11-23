@@ -68,7 +68,7 @@
     "drizzle-kit": "0.31.11",
     "eslint": "9.39.5",
     "fast-check": "4.10.2",
-    "jsdom": "^26.1.0",
+    "jsdom": "^31.0.1",
     "msw": "2.15.0",
     "tailwindcss": "^4.3.5",
     "tsx": "4.20.6",
