@@ -28,7 +28,7 @@
   },
   "dependencies": {
     "@ovelo/guard": "workspace:*",
-    "@neondatabase/serverless": "1.2.0",
+    "@neondatabase/serverless": "1.2.1",
     "@solana/kit": "7.1.1",
     "@upstash/redis": "1.41.0",
     "drizzle-orm": "0.45.4",
